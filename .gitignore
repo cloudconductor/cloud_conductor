@@ -2,3 +2,6 @@
 /Gemfile.lock
 /tmp/*
 /log/*
+
+# Ignore database files
+/db/*.sqlite3

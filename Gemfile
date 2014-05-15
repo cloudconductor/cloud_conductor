@@ -4,7 +4,11 @@ gem 'rake'
 
 gem 'rack'
 gem 'sinatra'
+
+gem 'sqlite3'
+gem 'activerecord'
 gem 'activesupport', :require => 'active_support/dependencies'
+gem 'sinatra-activerecord'
 
 group :development do
   gem 'guard'
