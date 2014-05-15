@@ -12,9 +12,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'sinatra'
+require 'json'
 
 class SystemsController < Sinatra::Base
   get '/' do
-    "systems"
+    System.all.to_json
+  end
+
+  get '/:id' do
+    System.find(params[:id]).to_json
   end
 end
