@@ -1,5 +1,6 @@
 require 'sinatra/activerecord'
 require 'sinatra/activerecord/rake'
+require './src/helpers/loader'
 
 environment = ENV['RAILS_ENV'] || :development
 

@@ -12,7 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require './src/helpers/loader'
+require 'bundler'
 
-# Register route
-map('/systems') { run SystemsController }
+Bundler.require
+
+# Autoload Settings
+autoload_paths = ['../models', '../controllers']
+autoload_paths.each do |path|
+  ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
+end
+
