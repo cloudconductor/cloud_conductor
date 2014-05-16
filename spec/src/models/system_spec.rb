@@ -12,23 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
-require 'sinatra/activerecord/rake'
-require 'rspec/core/rake_task'
-require './src/helpers/loader'
+describe System do
+  it "create with valid parameters" do
+    count = System.count
 
-environment = ENV['RAILS_ENV'] || :development
+    system = System.new
+    system.name = "Test"
+    system.save!
 
-ActiveRecord::Tasks::DatabaseTasks.env = environment
-ActiveRecord::Base.configurations = YAML.load_file('config/database.yml')
-ActiveRecord::Base.establish_connection environment.to_sym
-
-desc "Launch console wih database connection"
-task :console do
-  require 'irb'
-  ARGV.clear
-  IRB.start
+    expect(System.count).to eq(count + 1)
+  end
 end
-
-# load rspec tasks
-RSpec::Core::RakeTask.new(:spec)

@@ -12,23 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
-require 'sinatra/activerecord/rake'
-require 'rspec/core/rake_task'
-require './src/helpers/loader'
+require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
+Bundler.require(:development, :test)
 
-environment = ENV['RAILS_ENV'] || :development
+ActiveRecord::Base.establish_connection :test
 
-ActiveRecord::Tasks::DatabaseTasks.env = environment
-ActiveRecord::Base.configurations = YAML.load_file('config/database.yml')
-ActiveRecord::Base.establish_connection environment.to_sym
-
-desc "Launch console wih database connection"
-task :console do
-  require 'irb'
-  ARGV.clear
-  IRB.start
+RSpec.configure do |config|
+  config.before :suite do
+    DatabaseCleaner.strategy = :truncation
+    DatabaseCleaner.clean
+  end
 end
-
-# load rspec tasks
-RSpec::Core::RakeTask.new(:spec)

@@ -16,3 +16,8 @@ gem 'actionpack'
 group :development do
   gem 'guard'
 end
+
+group :test do
+  gem 'rspec'
+  gem 'database_cleaner'
+end
