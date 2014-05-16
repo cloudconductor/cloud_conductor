@@ -23,4 +23,11 @@ class SystemsController < Sinatra::Base
   get '/:id' do
     json System.find(params[:id])
   end
+
+  post '/' do
+    system = System.new params
+    system.save
+
+    json system
+  end
 end
