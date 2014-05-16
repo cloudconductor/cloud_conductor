@@ -22,3 +22,5 @@ autoload_paths.each do |path|
   ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
 end
 
+require 'sinatra'
+require 'json'
