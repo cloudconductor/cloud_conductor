@@ -11,7 +11,17 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140515020825) do
+ActiveRecord::Schema.define(version: 20140516013558) do
+
+  create_table "clouds", force: true do |t|
+    t.string   "name"
+    t.string   "type"
+    t.string   "key"
+    t.string   "secret"
+    t.string   "tenant_name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "systems", force: true do |t|
     t.string   "name"

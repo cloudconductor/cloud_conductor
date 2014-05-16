@@ -12,12 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require './src/helpers/loader'
+require 'sinatra/activerecord'
 
-use Rack::Parser, :content_types => {
-  'application/json'  => Proc.new { |body| JSON.parse(body) }
-}
-
-# Register route
-map('/systems') { run SystemsController }
-map('/clouds') { run CloudsController }
+class Cloud < ActiveRecord::Base
+end

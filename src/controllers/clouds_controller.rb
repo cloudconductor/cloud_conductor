@@ -1,5 +1,4 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014 TIS Inc.
+# Copyright 2014 TIS inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,12 +11,27 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require './src/helpers/loader'
+class CloudsController < Sinatra::Base
+  configure :development do
+    register Sinatra::Reloader
+  end
 
-use Rack::Parser, :content_types => {
-  'application/json'  => Proc.new { |body| JSON.parse(body) }
-}
+  get '/' do
+    json Cloud.all
+  end
 
-# Register route
-map('/systems') { run SystemsController }
-map('/clouds') { run CloudsController }
+  get '/:id' do
+    json Cloud.find(params[:id])
+  end
+
+  post '/' do
+    cloud = Cloud.new permit_params
+    cloud.save
+    status 201
+    json cloud
+  end
+
+  def permit_params
+    ActionController::Parameters.new(params).permit(:name, :type, :key, :secret, :tenant_name)
+  end
+end
