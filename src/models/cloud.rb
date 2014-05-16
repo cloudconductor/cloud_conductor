@@ -15,4 +15,17 @@
 require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
+  validates :name, presence: true
+  validates :key, presence: true
+  validates :secret, presence: true
+
+  validate do
+    if type != 'aws' && type != 'openstack'
+      errors.add(:type, ' must be "aws" or "openstack"')
+    end
+    if type == 'openstack' && tenant_id.blank?
+      errors.add(:tenant_id, 'must not be blank in case that type is "openstack".')
+    end
+  end
+
 end

@@ -18,7 +18,7 @@ ActiveRecord::Schema.define(version: 20140516013558) do
     t.string   "type"
     t.string   "key"
     t.string   "secret"
-    t.string   "tenant_name"
+    t.string   "tenant_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

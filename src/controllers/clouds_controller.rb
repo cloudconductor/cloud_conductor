@@ -26,12 +26,12 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new permit_params
-    cloud.save
+    puts cloud.save
     status 201
     json cloud
   end
 
   def permit_params
-    ActionController::Parameters.new(params).permit(:name, :type, :key, :secret, :tenant_name)
+    ActionController::Parameters.new(params).permit(:name, :type, :key, :secret, :tenant_id)
   end
 end
