@@ -25,9 +25,13 @@ class SystemsController < Sinatra::Base
   end
 
   post '/' do
-    system = System.new params
+    system = System.new permit_params
     system.save
 
     json system
+  end
+
+  def permit_params
+    ActionController::Parameters.new(params).permit(:name, :template_body, :template_url, :parameters, :primary_cloud_id, :secondary_cloud_id)
   end
 end

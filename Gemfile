@@ -11,6 +11,7 @@ gem 'sqlite3'
 gem 'activerecord'
 gem 'activesupport', :require => 'active_support/dependencies'
 gem 'sinatra-activerecord'
+gem 'actionpack'
 
 group :development do
   gem 'guard'
