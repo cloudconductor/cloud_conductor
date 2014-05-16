@@ -26,7 +26,7 @@ ActiveRecord::Schema.define(version: 20140516013558) do
   create_table "systems", force: true do |t|
     t.string   "name"
     t.text     "template_body"
-    t.string   "tempalte_url"
+    t.string   "template_url"
     t.text     "parameters"
     t.integer  "primary_cloud_id_id"
     t.integer  "secondary_cloud_id_id"
