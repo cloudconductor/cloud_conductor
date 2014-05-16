@@ -20,4 +20,5 @@ end
 group :test do
   gem 'rspec'
   gem 'database_cleaner'
+  gem 'guard-rspec', require: false
 end
