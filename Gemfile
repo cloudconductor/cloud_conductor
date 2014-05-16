@@ -17,6 +17,7 @@ group :development do
   gem 'guard'
   gem 'byebug'
   gem 'pry-byebug'
+  gem 'pry-doc'
 end
 
 group :test do
