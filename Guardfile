@@ -11,3 +11,9 @@ guard :rspec do
   watch('config.ru') { "spec" }
 end
 
+
+guard 'spork', :rspec_env => { 'RAILS_ENV' => 'test' } do
+  watch('config.ru')
+  watch('Gemfile.lock')
+  watch('spec/spec_helper.rb') { :rspec }
+end

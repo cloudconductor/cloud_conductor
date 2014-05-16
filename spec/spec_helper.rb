@@ -12,14 +12,22 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
-Bundler.require(:development, :test)
+require 'rubygems'
+require 'spork'
 
-ActiveRecord::Base.establish_connection :test
+Spork.prefork do
+  require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
+  Bundler.require(:development, :test)
 
-RSpec.configure do |config|
-  config.before :suite do
-    DatabaseCleaner.strategy = :truncation
-    DatabaseCleaner.clean
+  ActiveRecord::Base.establish_connection :test
+
+  RSpec.configure do |config|
+    config.before :suite do
+      DatabaseCleaner.strategy = :truncation
+      DatabaseCleaner.clean
+    end
   end
+end
+
+Spork.each_run do
 end
