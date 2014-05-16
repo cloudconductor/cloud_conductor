@@ -32,6 +32,7 @@ class SystemsController < Sinatra::Base
   end
 
   def permit_params
-    ActionController::Parameters.new(params).permit(:name, :template_body, :template_url, :parameters, :primary_cloud_id, :secondary_cloud_id)
+    ActionController::Parameters.new(params)
+      .permit(:name, :template_body, :template_url, :parameters, :primary_cloud_id, :secondary_cloud_id)
   end
 end

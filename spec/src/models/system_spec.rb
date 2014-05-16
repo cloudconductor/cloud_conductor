@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe System do
-  it "create with valid parameters" do
+  it 'create with valid parameters' do
     count = System.count
 
     system = System.new
-    system.name = "Test"
     system.save!
 
     expect(System.count).to eq(count + 1)

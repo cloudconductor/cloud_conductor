@@ -1,0 +1,15 @@
+AllCops:
+  Exclude:
+    - db/schema.rb
+
+LineLength:
+  Max: 130
+
+MethodLength:
+  Max: 20
+
+AsciiComments:
+  Enabled: false
+
+Documentation:
+  Enabled: false

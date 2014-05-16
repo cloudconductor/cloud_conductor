@@ -18,6 +18,7 @@ group :development do
   gem 'byebug'
   gem 'pry-byebug'
   gem 'pry-doc'
+  gem 'guard-rubocop'
 end
 
 group :test do
