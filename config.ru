@@ -14,5 +14,9 @@
 # limitations under the License.
 require './src/helpers/loader'
 
+use Rack::Parser, :content_types => {
+  'application/json'  => Proc.new { |body| JSON.parse(body) }
+}
+
 # Register route
 map('/systems') { run SystemsController }
