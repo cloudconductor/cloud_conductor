@@ -15,4 +15,23 @@
 require 'sinatra/activerecord'
 
 class System < ActiveRecord::Base
+  validates :name, presence: true
+  validates :template_url, format: { with: URI.regexp }, allow_blank: true
+
+  validate do
+    if template_body.blank? && template_url.blank?
+      errors.add(:template_body, ' or template_url must be required')
+    end
+    if !template_body.blank? && !template_url.blank?
+      errors.add(:template_body, 'can\'t set with template_url')
+    end
+  end
+
+  validates_each :template_body, :parameters do |record, attr, value|
+    begin
+      JSON.parse(value) unless value.nil?
+    rescue JSON::ParserError
+      record.errors.add(attr, 'is malformed or invalid json string')
+    end
+  end
 end

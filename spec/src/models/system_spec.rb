@@ -13,12 +13,64 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe System do
+  before do
+    @system = System.new
+    @system.name = 'Test'
+    @system.template_body = '{}'
+    @system.parameters = '{}'
+  end
+
   it 'create with valid parameters' do
     count = System.count
 
-    system = System.new
-    system.save!
+    @system.save!
 
     expect(System.count).to eq(count + 1)
+  end
+
+  describe '#valid?' do
+    it 'returns true when valid model' do
+      expect(@system.valid?).to be_true
+    end
+
+    it 'returns false when name is unset' do
+      @system.name = nil
+      expect(@system.valid?).to be_false
+
+      @system.name = ''
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when unset template_body and template_url both' do
+      @system.template_body = nil
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when set template_body and template_url both' do
+      @system.template_url = 'http://www.example.com/'
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns true when set template_url only' do
+      @system.template_body = nil
+      @system.template_url = 'http://www.example.com/'
+      expect(@system.valid?).to be_true
+    end
+
+    it 'returns false when template_body is invalid JSON string' do
+      @system.template_body = '{'
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when template_url is invalid URL' do
+      @system.template_body = nil
+      @system.template_url = 'INVALID URL'
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when parameters is invalid JSON string' do
+      @system.parameters = '{'
+      expect(@system.valid?).to be_false
+    end
   end
 end
