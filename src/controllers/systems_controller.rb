@@ -12,6 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 class SystemsController < Sinatra::Base
+  configure :development do
+    register Sinatra::Reloader
+  end
+
   get '/' do
     System.all.to_json
   end

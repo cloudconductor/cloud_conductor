@@ -5,6 +5,7 @@ gem 'rake'
 gem 'rack'
 gem 'rack-parser'
 gem 'sinatra'
+gem 'sinatra-contrib'
 
 gem 'sqlite3'
 gem 'activerecord'

@@ -24,3 +24,4 @@ end
 
 require 'sinatra'
 require 'json'
+require "sinatra/reloader"
