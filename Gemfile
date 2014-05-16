@@ -15,6 +15,8 @@ gem 'actionpack'
 
 group :development do
   gem 'guard'
+  gem 'byebug'
+  gem 'pry-byebug'
 end
 
 group :test do
