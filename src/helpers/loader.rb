@@ -23,5 +23,5 @@ autoload_paths.each do |path|
 end
 
 require 'sinatra'
-require 'json'
+require 'sinatra/json'
 require "sinatra/reloader"

@@ -17,10 +17,10 @@ class SystemsController < Sinatra::Base
   end
 
   get '/' do
-    System.all.to_json
+    json System.all
   end
 
   get '/:id' do
-    System.find(params[:id]).to_json
+    json System.find(params[:id])
   end
 end
