@@ -26,8 +26,12 @@ class SystemsController < Sinatra::Base
 
   post '/' do
     system = System.new permit_params
-    system.save
+    unless system.save
+      status 400
+      return json system.errors
+    end
 
+    status 201
     json system
   end
 
