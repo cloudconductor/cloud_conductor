@@ -95,6 +95,24 @@ describe System do
   end
 
   describe '#before_create' do
+    it 'just use template_body without download when already set template_body' do
+      @system.should_not_receive(:open)
+      @system.save!
+    end
+
+    it 'download json from url that is specified by template_url' do
+      @system.template_body = nil
+      @system.template_url = 'http://example.com/'
+
+      @system.should_receive(:open).with(@system.template_url) do
+        double(:file).tap do |proxy|
+          proxy.stub(:read).and_return('{}')
+        end
+      end
+
+      @system.save!
+    end
+
     it 'instantiate cloud client with primary cloud adapter' do
       CloudClient::Client.should_receive(:new).and_call_original
       @system.save!
