@@ -45,4 +45,12 @@ class System < ActiveRecord::Base
       errors.add(:secondary_cloud, 'can\'t set cloud that equals primary cloud')
     end
   end
+
+  before_create do
+    template = template_body
+    template = open(template_url).read if template.nil?
+
+    client = CloudClient::Client.new primary_cloud.cloud_type.to_sym
+    client.create_stack template, parameters, primary_cloud.attributes
+  end
 end

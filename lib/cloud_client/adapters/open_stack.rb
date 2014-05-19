@@ -12,22 +12,16 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'bundler'
-Bundler.require
+module CloudClient
+  module Adapters
+    class OpenStack < AbstractAdapter
+      TYPE = :openstack
 
-# Add load path
-$LOAD_PATH.unshift File.expand_path('../../lib', File.dirname(__FILE__))
+      def initialize
+      end
 
-# Autoload Settings
-autoload_paths = ['../models', '../controllers', '../../lib']
-autoload_paths.each do |path|
-  ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
+      def create_stack(template, parameters, options = {})
+      end
+    end
+  end
 end
-
-require 'sinatra'
-require 'sinatra/json'
-require 'sinatra/reloader'
-require 'action_controller'
-
-# SetLocale
-I18n.enforce_available_locales = false

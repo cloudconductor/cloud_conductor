@@ -24,6 +24,7 @@ end
 
 group :test do
   gem 'rspec'
+  gem 'rspec-mocks'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
   gem 'spork'

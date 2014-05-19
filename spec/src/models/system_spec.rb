@@ -93,4 +93,16 @@ describe System do
       expect(@system.valid?).to be_false
     end
   end
+
+  describe '#before_create' do
+    it 'instantiate cloud client with primary cloud adapter' do
+      CloudClient::Client.should_receive(:new).and_call_original
+      @system.save!
+    end
+
+    it 'call create_stack on client' do
+      CloudClient::Client.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
+      @system.save!
+    end
+  end
 end
