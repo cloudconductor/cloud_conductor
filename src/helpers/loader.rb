@@ -26,3 +26,6 @@ require 'sinatra'
 require 'sinatra/json'
 require 'sinatra/reloader'
 require 'action_controller'
+
+# SetLocale
+I18n.enforce_available_locales = false
