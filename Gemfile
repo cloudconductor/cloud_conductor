@@ -28,4 +28,5 @@ group :test do
   gem 'guard-rspec', require: false
   gem 'spork'
   gem 'guard-spork'
+  gem 'factory_girl'
 end
