@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'sinatra/activerecord'
+require 'open-uri'
 
 class System < ActiveRecord::Base
   belongs_to :primary_cloud, class_name: Cloud
