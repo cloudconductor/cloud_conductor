@@ -12,9 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'cloud_client/adapters'
+require 'cloud_conductor/adapters'
 
-module CloudClient
+module CloudConductor
   class Client
     attr_reader :type, :adapter
 

@@ -12,19 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-module CloudClient
+module CloudConductor
   describe Client do
     describe '#new' do
       it 'returns initialized client with aws adapter' do
         client = Client.new :aws
         expect(client.type).to eq(:aws)
-        expect(client.adapter.class).to eq(Adapters::AWS)
+        expect(client.adapter.class).to eq(Adapters::AWSAdapter)
       end
 
       it 'returns initialized client with openstack adapter' do
         client = Client.new :openstack
         expect(client.type).to eq(:openstack)
-        expect(client.adapter.class).to eq(Adapters::OpenStack)
+        expect(client.adapter.class).to eq(Adapters::OpenStackAdapter)
       end
     end
 
@@ -35,7 +35,7 @@ module CloudClient
         options = {}
 
         # expect_any_instance_of(Adapters::AWS).to receive(:create_stack)
-        Adapters::AWS.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
 
         client = Client.new :aws
         client.create_stack template, parameters, options

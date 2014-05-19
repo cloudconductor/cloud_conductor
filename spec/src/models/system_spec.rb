@@ -114,12 +114,12 @@ describe System do
     end
 
     it 'instantiate cloud client with primary cloud adapter' do
-      CloudClient::Client.should_receive(:new).and_call_original
+      CloudConductor::Client.should_receive(:new).and_call_original
       @system.save!
     end
 
     it 'call create_stack on client' do
-      CloudClient::Client.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
+      CloudConductor::Client.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
       @system.save!
     end
   end

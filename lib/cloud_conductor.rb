@@ -12,16 +12,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-module CloudClient
-  module Adapters
-    class OpenStack < AbstractAdapter
-      TYPE = :openstack
-
-      def initialize
-      end
-
-      def create_stack(template, parameters, options = {})
-      end
-    end
-  end
+module CloudConductor
 end

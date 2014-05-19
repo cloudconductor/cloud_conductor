@@ -12,26 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-module CloudClient
+module CloudConductor
   module Adapters
-    describe AWS do
-      before do
-        @adapter = AWS.new
-      end
-
-      it 'extend AbstractAdapter class' do
-        expect(AWS.superclass).to eq(AbstractAdapter)
-      end
-
-      it 'has :aws type' do
-        expect(AWS::TYPE).to eq(:aws)
-      end
-
-      describe '#create_stack' do
-        it 'execute without exception' do
-          @adapter.create_stack '{}', '{}', {}
-        end
-      end
-    end
   end
 end

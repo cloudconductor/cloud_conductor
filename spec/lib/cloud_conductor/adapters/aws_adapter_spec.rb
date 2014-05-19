@@ -12,15 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-module CloudClient
+module CloudConductor
   module Adapters
-    class AbstractAdapter
-      def initialize
-        fail "Can't instantiate abstract adapter"
+    describe AWSAdapter do
+      before do
+        @adapter = AWSAdapter.new
       end
 
-      def create_stack
-        fail 'Unimplement method'
+      it 'extend AbstractAdapter class' do
+        expect(AWSAdapter.superclass).to eq(AbstractAdapter)
+      end
+
+      it 'has :aws type' do
+        expect(AWSAdapter::TYPE).to eq(:aws)
+      end
+
+      describe '#create_stack' do
+        it 'execute without exception' do
+          @adapter.create_stack '{}', '{}', {}
+        end
       end
     end
   end

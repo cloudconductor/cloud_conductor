@@ -12,15 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-module CloudClient
+module CloudConductor
   module Adapters
-    class AWS < AbstractAdapter
-      TYPE = :aws
-
-      def initialize
+    describe OpenStackAdapter do
+      before do
+        @adapter = OpenStackAdapter.new
       end
 
-      def create_stack(template, parameters, options = {})
+      it 'extend AbstractAdapter class' do
+        expect(OpenStackAdapter.superclass).to eq(AbstractAdapter)
+      end
+
+      it 'has :aws type' do
+        expect(OpenStackAdapter::TYPE).to eq(:openstack)
+      end
+
+      describe '#create_stack' do
+        it 'execute without exception' do
+          @adapter.create_stack '{}', '{}', {}
+        end
       end
     end
   end

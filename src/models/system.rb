@@ -51,7 +51,7 @@ class System < ActiveRecord::Base
     template = template_body
     template = open(template_url).read if template.nil?
 
-    client = CloudClient::Client.new primary_cloud.cloud_type.to_sym
+    client = CloudConductor::Client.new primary_cloud.cloud_type.to_sym
     client.create_stack template, parameters, primary_cloud.attributes
   end
 end
