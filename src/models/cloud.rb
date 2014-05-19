@@ -16,6 +16,7 @@ require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
   validates :name, presence: true
+  validates :cloud_entry_point_url, format: { with: URI.regexp }, presence: true
   validates :key, presence: true
   validates :secret, presence: true
 

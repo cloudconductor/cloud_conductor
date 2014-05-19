@@ -16,6 +16,7 @@
 cloud_aws = Cloud.new
 cloud_aws.name = 'cloud-aws'
 cloud_aws.cloud_type = 'aws'
+cloud_aws.cloud_entry_point_url = 'http://cloudformation.ap-northeast-1.amazonaws.com/'
 cloud_aws.key = '1234567890abcdef'
 cloud_aws.secret = '1234567890abcdef'
 cloud_aws.tenant_id = nil
@@ -24,6 +25,7 @@ cloud_aws.save!
 cloud_openstack = Cloud.new
 cloud_openstack.name = 'cloud-openstack'
 cloud_openstack.cloud_type = 'openstack'
+cloud_openstack.cloud_entry_point_url = 'http://192.168.166.100:5000/v2.0/'
 cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
 cloud_openstack.tenant_id = '1234567890abcdef'

@@ -17,6 +17,7 @@ describe Cloud do
     @cloud = Cloud.new
     @cloud.name = 'Test'
     @cloud.cloud_type = 'aws'
+    @cloud.cloud_entry_point_url = 'http://cloudformation.ap-northeast-1.amazonaws.com/'
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
     @cloud.tenant_id = 'TestTenant'
@@ -47,6 +48,19 @@ describe Cloud do
       expect(@cloud.valid?).to be_false
 
       @cloud.name = ''
+      expect(@cloud.valid?).to be_false
+    end
+
+    it 'returns false when cloud_entry_point_url is unset' do
+      @cloud.cloud_entry_point_url = nil
+      expect(@cloud.valid?).to be_false
+
+      @cloud.cloud_entry_point_url = ''
+      expect(@cloud.valid?).to be_false
+    end
+
+    it 'returns false when cloud_entry_point_url is invalid URL' do
+      @cloud.cloud_entry_point_url = 'INVALID URL'
       expect(@cloud.valid?).to be_false
     end
 
