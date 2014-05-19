@@ -28,8 +28,8 @@ ActiveRecord::Schema.define(version: 20140516013558) do
     t.text     "template_body"
     t.string   "template_url"
     t.text     "parameters"
-    t.integer  "primary_cloud_id_id"
-    t.integer  "secondary_cloud_id_id"
+    t.integer  "primary_cloud_id"
+    t.integer  "secondary_cloud_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

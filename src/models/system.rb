@@ -15,8 +15,13 @@
 require 'sinatra/activerecord'
 
 class System < ActiveRecord::Base
+  belongs_to :primary_cloud, class_name: Cloud
+  belongs_to :secondary_cloud, class_name: Cloud
+
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
+  validates :primary_cloud, presence: true
+  validates :secondary_cloud, presence: true
 
   validate do
     if template_body.blank? && template_url.blank?
@@ -32,6 +37,12 @@ class System < ActiveRecord::Base
       JSON.parse(value) unless value.nil?
     rescue JSON::ParserError
       record.errors.add(attr, 'is malformed or invalid json string')
+    end
+  end
+
+  validate do
+    if primary_cloud == secondary_cloud
+      errors.add(:secondary_cloud, 'can\'t set cloud that equals primary cloud')
     end
   end
 end

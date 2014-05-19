@@ -14,10 +14,15 @@
 # limitations under the License.
 describe System do
   before do
+    @cloud_aws = FactoryGirl.create(:cloud_aws)
+    @cloud_openstack = FactoryGirl.create(:cloud_openstack)
+
     @system = System.new
     @system.name = 'Test'
     @system.template_body = '{}'
     @system.parameters = '{}'
+    @system.primary_cloud = @cloud_aws
+    @system.secondary_cloud = @cloud_openstack
   end
 
   it 'create with valid parameters' do
@@ -70,6 +75,21 @@ describe System do
 
     it 'returns false when parameters is invalid JSON string' do
       @system.parameters = '{'
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when primary cloud is unset' do
+      @system.primary_cloud = nil
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when secondary cloud is unset' do
+      @system.primary_cloud = nil
+      expect(@system.valid?).to be_false
+    end
+
+    it 'returns false when primary cloud equals secondary cloud' do
+      @system.secondary_cloud = @system.primary_cloud
       expect(@system.valid?).to be_false
     end
   end

@@ -5,8 +5,8 @@ class CreateSystems < ActiveRecord::Migration
       t.text :template_body
       t.string :template_url
       t.text :parameters
-      t.references :primary_cloud_id
-      t.references :secondary_cloud_id
+      t.references :primary_cloud
+      t.references :secondary_cloud
       t.timestamps
     end
   end
