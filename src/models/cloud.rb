@@ -20,11 +20,11 @@ class Cloud < ActiveRecord::Base
   validates :secret, presence: true
 
   validate do
-    if cloudtype != 'aws' && cloudtype != 'openstack'
-      errors.add(:cloudtype, ' must be "aws" or "openstack"')
+    if cloud_type != 'aws' && cloud_type != 'openstack'
+      errors.add(:cloud_type, ' must be "aws" or "openstack"')
     end
-    if cloudtype == 'openstack' && tenant_id.blank?
-      errors.add(:tenant_id, 'must not be blank in case that cloudtype is "openstack".')
+    if cloud_type == 'openstack' && tenant_id.blank?
+      errors.add(:tenant_id, 'must not be blank in case that cloud_type is "openstack".')
     end
   end
 
