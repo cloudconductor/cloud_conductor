@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :cloud_aws, class: Cloud do
     name 'cloud-aws-12345678'
-    type 'aws'
+    cloud_type 'aws'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id nil
@@ -23,7 +23,7 @@ FactoryGirl.define do
 
   factory :cloud_openstack, class: Cloud do
     name 'cloud-openstack-12345678'
-    type 'openstack'
+    cloud_type 'openstack'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id '1'
