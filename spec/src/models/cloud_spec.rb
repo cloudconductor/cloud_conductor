@@ -16,7 +16,7 @@ describe Cloud do
   before do
     @cloud = Cloud.new
     @cloud.name = 'Test'
-    @cloud.type = 'aws'
+    @cloud.cloudtype = 'aws'
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
     @cloud.tenant_id = 'TestTenant'
@@ -34,10 +34,10 @@ describe Cloud do
     it 'returns true when valid model' do
       expect(@cloud.valid?).to be_true
 
-      @cloud.type = 'openstack'
+      @cloud.cloudtype = 'openstack'
       expect(@cloud.valid?).to be_true
 
-      @cloud.type = 'aws'
+      @cloud.cloudtype = 'aws'
       @cloud.tenant_id = nil
       expect(@cloud.valid?).to be_true
     end
@@ -66,19 +66,19 @@ describe Cloud do
       expect(@cloud.valid?).to be_false
     end
 
-    it 'returns false when type is neither aws nor openstack' do
-      @cloud.type = nil
+    it 'returns false when cloudtype is neither aws nor openstack' do
+      @cloud.cloudtype = nil
       expect(@cloud.valid?).to be_false
 
-      @cloud.type = ''
+      @cloud.cloudtype = ''
       expect(@cloud.valid?).to be_false
 
-      @cloud.type = 'test'
+      @cloud.cloudtype = 'test'
       expect(@cloud.valid?).to be_false
     end
 
-    it 'returns false when type is openstack and tenant_id is blank' do
-      @cloud.type = 'openstack'
+    it 'returns false when cloudtype is openstack and tenant_id is blank' do
+      @cloud.cloudtype = 'openstack'
       @cloud.tenant_id = ''
       expect(@cloud.valid?).to be_false
 
