@@ -30,15 +30,16 @@ module CloudConductor
 
     describe '#create_stack' do
       it 'call adapter#create_stack with same arguments' do
+        name = 'stack_name'
         template = '{}'
         parameters = '{}'
         options = {}
 
-        # expect_any_instance_of(Adapters::AWS).to receive(:create_stack)
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
+          .with(kind_of(String), kind_of(String), kind_of(String), kind_of(Hash))
 
         client = Client.new :aws
-        client.create_stack template, parameters, options
+        client.create_stack name, template, parameters, options
       end
     end
   end

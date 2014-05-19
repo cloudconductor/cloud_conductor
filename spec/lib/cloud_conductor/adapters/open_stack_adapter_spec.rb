@@ -29,7 +29,7 @@ module CloudConductor
 
       describe '#create_stack' do
         it 'execute without exception' do
-          @adapter.create_stack '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', '{}', {}
         end
       end
     end

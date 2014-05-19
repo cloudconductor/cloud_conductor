@@ -20,7 +20,7 @@ module CloudConductor
       def initialize
       end
 
-      def create_stack(template, parameters, options = {})
+      def create_stack(name, template, parameters, options = {})
       end
     end
   end

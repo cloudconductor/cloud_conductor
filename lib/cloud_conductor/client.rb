@@ -36,8 +36,8 @@ module CloudConductor
       @adapter = Adapters.const_get(adapter_name).new
     end
 
-    def create_stack(template, parameters, options)
-      @adapter.create_stack template, parameters, options
+    def create_stack(name, template, parameters, options)
+      @adapter.create_stack name, template, parameters, options
     end
   end
 end

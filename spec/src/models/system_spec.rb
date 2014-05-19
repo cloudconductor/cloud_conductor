@@ -119,7 +119,9 @@ describe System do
     end
 
     it 'call create_stack on client' do
-      CloudConductor::Client.any_instance.should_receive(:create_stack).with(kind_of(String), kind_of(String), kind_of(Hash))
+      CloudConductor::Client.any_instance.should_receive(:create_stack)
+        .with(@system.name, @system.template_body, @system.parameters, @system.primary_cloud.attributes)
+
       @system.save!
     end
   end
