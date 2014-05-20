@@ -23,6 +23,8 @@ describe System do
     @system.parameters = '{}'
     @system.primary_cloud = @cloud_aws
     @system.secondary_cloud = @cloud_openstack
+
+    CloudConductor::Client.stub_chain(:new, :create_stack)
   end
 
   it 'create with valid parameters' do
@@ -114,13 +116,17 @@ describe System do
     end
 
     it 'instantiate cloud client with primary cloud adapter' do
-      CloudConductor::Client.should_receive(:new).and_call_original
+      CloudConductor::Client.should_receive(:new)
       @system.save!
     end
 
     it 'call create_stack on client' do
-      CloudConductor::Client.any_instance.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @system.parameters, @system.primary_cloud.attributes)
+      CloudConductor::Client.stub(:new) do
+        double('client').tap do |client|
+          client.should_receive(:create_stack)
+            .with(@system.name, @system.template_body, @system.parameters, @system.primary_cloud.attributes)
+        end
+      end
 
       @system.save!
     end
