@@ -20,10 +20,6 @@ cloud_aws.entry_point = 'ap-northeast-1'
 cloud_aws.key = '1234567890abcdef'
 cloud_aws.secret = '1234567890abcdef'
 cloud_aws.tenant_id = nil
-cloud_aws.proxy_url = nil
-cloud_aws.proxy_user = nil
-cloud_aws.proxy_password = nil
-cloud_aws.no_proxy = nil
 cloud_aws.save!
 
 cloud_openstack = Cloud.new
@@ -33,8 +29,4 @@ cloud_openstack.entry_point = 'http://192.168.166.100:5000/'
 cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
 cloud_openstack.tenant_id = '1234567890abcdef'
-cloud_openstack.proxy_url = nil
-cloud_openstack.proxy_user = nil
-cloud_openstack.proxy_password = nil
-cloud_openstack.no_proxy = nil
 cloud_openstack.save!
