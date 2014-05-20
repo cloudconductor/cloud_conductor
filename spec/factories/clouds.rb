@@ -16,7 +16,7 @@ FactoryGirl.define do
   factory :cloud_aws, class: Cloud do
     name 'cloud-aws-12345678'
     cloud_type 'aws'
-    cloud_entry_point_url 'http://example.com/'
+    entry_point 'ap-northeast-1'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id nil
@@ -25,7 +25,7 @@ FactoryGirl.define do
   factory :cloud_openstack, class: Cloud do
     name 'cloud-openstack-12345678'
     cloud_type 'openstack'
-    cloud_entry_point_url 'http://example.com/'
+    entry_point 'http://example.com/'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id '1'
