@@ -32,8 +32,8 @@ module CloudConductor
           AWS::CloudFormation.stub_chain(:new, :stacks, :create)
 
           @options = {}
-          @options[:access_key_id] = '1234567890abcdef'
-          @options[:secret_access_key] = 'abcdef1234567890'
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
