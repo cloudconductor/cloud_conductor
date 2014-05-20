@@ -21,6 +21,8 @@ module CloudConductor
       end
 
       def create_stack(name, template, parameters, options = {})
+        cf = AWS::CloudFormation.new options.slice(:access_key_id, :secret_access_key)
+        cf.stacks.create name, template, parameters: parameters
       end
     end
   end

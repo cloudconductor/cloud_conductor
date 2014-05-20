@@ -13,6 +13,8 @@ gem 'activesupport', :require => 'active_support/dependencies'
 gem 'sinatra-activerecord'
 gem 'actionpack'
 
+gem 'aws-sdk'
+
 group :development do
   gem 'guard'
   gem 'byebug'
