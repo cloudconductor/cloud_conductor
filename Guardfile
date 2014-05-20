@@ -10,6 +10,7 @@ end
 
 guard :rspec, :cmd => "rspec --drb --drb-port #{RSPEC_PORT}" do
   watch(%r{^spec/.+_spec\.rb$})
+  watch(%r{^spec/factories/.+\.rb$}) { 'spec' }
   watch(%r{^src/(.+)\.rb$})     { |m| "spec/src/#{m[1]}_spec.rb" }
   watch(%r{^lib/(.+)\.rb$})     { |m| "spec/lib/#{m[1]}_spec.rb" }
 
