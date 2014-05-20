@@ -29,6 +29,10 @@ Spork.prefork do
     config.filter_run focus: true
     config.run_all_when_everything_filtered = true
 
+    config.before :all do
+      FactoryGirl.reload
+    end
+
     config.before :suite do
       DatabaseCleaner.strategy = :truncation
       DatabaseCleaner.clean
