@@ -49,6 +49,13 @@ module CloudConductor
           @adapter.create_stack 'stack_name', '{}', '{}', @options
         end
 
+        it 'set region for aws-sdk' do
+          @options[:entry_point] = 'ap-northeast-1'
+          AWS::CloudFormation.should_receive(:new).with(hash_including(region: 'ap-northeast-1'))
+
+          @adapter.create_stack 'stack_name', '{}', '{}', @options
+        end
+
         it 'call CloudFormation#create to create stack on aws' do
           AWS::CloudFormation.stub_chain(:new, :stacks) do
             double('stacks').tap do |stacks|

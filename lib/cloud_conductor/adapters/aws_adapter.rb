@@ -23,11 +23,12 @@ module CloudConductor
       def create_stack(name, template, parameters, options = {})
         options = options.with_indifferent_access
 
-        credentials = {}
-        credentials[:access_key_id] = options[:key]
-        credentials[:secret_access_key] = options[:secret]
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
 
-        cf = AWS::CloudFormation.new credentials
+        cf = AWS::CloudFormation.new aws_options
         cf.stacks.create name, template, parameters: JSON.parse(parameters)
       end
     end
