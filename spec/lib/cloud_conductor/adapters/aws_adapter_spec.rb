@@ -37,7 +37,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.create_stack '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', '{}', {}
         end
 
         it 'set credentials for aws-sdk' do
