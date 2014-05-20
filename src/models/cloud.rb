@@ -16,10 +16,9 @@ require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
   validates :name, presence: true
-  validates :cloud_entry_point_url, format: { with: URI.regexp }, presence: true
+  validates :entry_point, presence: true
   validates :key, presence: true
   validates :secret, presence: true
-
   validate do
     if cloud_type != 'aws' && cloud_type != 'openstack'
       errors.add(:cloud_type, ' must be "aws" or "openstack"')
