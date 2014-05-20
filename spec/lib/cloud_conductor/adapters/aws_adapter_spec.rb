@@ -32,12 +32,12 @@ module CloudConductor
           AWS::CloudFormation.stub_chain(:new, :stacks, :create)
 
           @options = {}
-          @options[:access_key_id] = '1234567890abcdef'
-          @options[:secret_access_key] = 'abcdef1234567890'
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.create_stack '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', '{}', {}
         end
 
         it 'set credentials for aws-sdk' do
@@ -52,7 +52,7 @@ module CloudConductor
         it 'call CloudFormation#create to create stack on aws' do
           AWS::CloudFormation.stub_chain(:new, :stacks) do
             double('stacks').tap do |stacks|
-              stacks.should_receive(:create).with('stack_name', '{}', hash_including(parameters: '{}'))
+              stacks.should_receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
             end
           end
 
