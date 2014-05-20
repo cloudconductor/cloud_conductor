@@ -28,7 +28,7 @@ module CloudConductor
         credentials[:secret_access_key] = options[:secret]
 
         cf = AWS::CloudFormation.new credentials
-        cf.stacks.create name, template, parameters: parameters
+        cf.stacks.create name, template, parameters: JSON.parse(parameters)
       end
     end
   end

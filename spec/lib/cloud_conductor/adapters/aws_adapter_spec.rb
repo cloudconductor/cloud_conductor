@@ -52,7 +52,7 @@ module CloudConductor
         it 'call CloudFormation#create to create stack on aws' do
           AWS::CloudFormation.stub_chain(:new, :stacks) do
             double('stacks').tap do |stacks|
-              stacks.should_receive(:create).with('stack_name', '{}', hash_including(parameters: '{}'))
+              stacks.should_receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
             end
           end
 
