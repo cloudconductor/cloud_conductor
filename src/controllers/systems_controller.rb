@@ -26,6 +26,10 @@ class SystemsController < Sinatra::Base
 
   post '/' do
     system = System.new permit_params
+    (params[:clouds] || []).each do |cloud|
+      system.add_cloud Cloud.find(cloud[:id]), cloud[:priority]
+    end
+
     unless system.save
       status 400
       return json system.errors
@@ -37,6 +41,6 @@ class SystemsController < Sinatra::Base
 
   def permit_params
     ActionController::Parameters.new(params)
-      .permit(:name, :template_body, :template_url, :parameters, :primary_cloud_id, :secondary_cloud_id)
+      .permit(:name, :template_body, :template_url, :parameters)
   end
 end
