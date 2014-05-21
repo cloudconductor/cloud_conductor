@@ -21,8 +21,9 @@ describe System do
     @system.name = 'Test'
     @system.template_body = '{}'
     @system.parameters = '{}'
-    @system.primary_cloud = @cloud_aws
-    @system.secondary_cloud = @cloud_openstack
+
+    @system.clouds << @cloud_aws
+    @system.clouds << @cloud_openstack
 
     CloudConductor::Client.stub_chain(:new, :create_stack)
   end
@@ -80,18 +81,15 @@ describe System do
       expect(@system.valid?).to be_false
     end
 
-    it 'returns false when primary cloud is unset' do
-      @system.primary_cloud = nil
+    it 'returns false when clouds is empty' do
+      @system.clouds.reset
       expect(@system.valid?).to be_false
     end
 
-    it 'returns false when secondary cloud is unset' do
-      @system.primary_cloud = nil
-      expect(@system.valid?).to be_false
-    end
-
-    it 'returns false when primary cloud equals secondary cloud' do
-      @system.secondary_cloud = @system.primary_cloud
+    it 'returns false when clouds collection has duplicate cloud' do
+      @system.clouds.reset
+      @system.clouds << @cloud_aws
+      @system.clouds << @cloud_aws
       expect(@system.valid?).to be_false
     end
   end
@@ -124,7 +122,7 @@ describe System do
       CloudConductor::Client.stub(:new) do
         double('client').tap do |client|
           client.should_receive(:create_stack)
-            .with(@system.name, @system.template_body, @system.parameters, @system.primary_cloud.attributes)
+            .with(@system.name, @system.template_body, @system.parameters, @system.clouds.first.attributes)
         end
       end
 

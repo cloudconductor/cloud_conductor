@@ -11,7 +11,16 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140516013558) do
+ActiveRecord::Schema.define(version: 20140520051330) do
+
+  create_table "available_clouds", id: false, force: true do |t|
+    t.integer  "cloud_id"
+    t.integer  "system_id"
+    t.integer  "priority"
+    t.boolean  "active"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "clouds", force: true do |t|
     t.string   "name"
@@ -29,8 +38,6 @@ ActiveRecord::Schema.define(version: 20140516013558) do
     t.text     "template_body"
     t.string   "template_url"
     t.text     "parameters"
-    t.integer  "primary_cloud_id"
-    t.integer  "secondary_cloud_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

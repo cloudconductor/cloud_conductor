@@ -16,13 +16,12 @@ require 'sinatra/activerecord'
 require 'open-uri'
 
 class System < ActiveRecord::Base
-  belongs_to :primary_cloud, class_name: Cloud
-  belongs_to :secondary_cloud, class_name: Cloud
+  has_many :available_clouds
+  has_many :clouds, through: :available_clouds
 
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
-  validates :primary_cloud, presence: true
-  validates :secondary_cloud, presence: true
+  validates :clouds, presence: true
 
   validate do
     if template_body.blank? && template_url.blank?
@@ -42,16 +41,15 @@ class System < ActiveRecord::Base
   end
 
   validate do
-    if primary_cloud == secondary_cloud
-      errors.add(:secondary_cloud, 'can\'t set cloud that equals primary cloud')
-    end
+    errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
   before_create do
     template = template_body
     template = open(template_url).read if template.nil?
 
-    client = CloudConductor::Client.new primary_cloud.cloud_type.to_sym
-    client.create_stack name, template, parameters, primary_cloud.attributes
+    cloud = clouds.first
+    client = CloudConductor::Client.new cloud.cloud_type.to_sym
+    client.create_stack name, template, parameters, cloud.attributes
   end
 end
