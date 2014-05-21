@@ -14,6 +14,7 @@ gem 'sinatra-activerecord'
 gem 'actionpack'
 
 gem 'aws-sdk'
+gem 'fog'
 
 group :development do
   gem 'guard'
