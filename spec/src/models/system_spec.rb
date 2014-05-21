@@ -165,4 +165,24 @@ describe System do
       expect(@system.available_clouds.map(&:priority)).to eq([45, 32])
     end
   end
+
+  describe '#dup' do
+    it 'duplicate all attributes in system' do
+      duplicated_system = @system.dup
+      expect(duplicated_system.name).to eq(@system.name)
+      expect(duplicated_system.template_body).to eq(@system.template_body)
+      expect(duplicated_system.template_url).to eq(@system.template_url)
+      expect(duplicated_system.parameters).to eq(@system.parameters)
+    end
+
+    it 'duplicated associated clouds' do
+      duplicated_system = @system.dup
+      expect(duplicated_system.clouds).to eq(@system.clouds)
+
+      original_clouds = @system.available_clouds
+      duplicated_clouds = duplicated_system.available_clouds
+      expect(duplicated_clouds.map(&:cloud)).to match_array(original_clouds.map(&:cloud))
+      expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
+    end
+  end
 end

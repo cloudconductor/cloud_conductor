@@ -63,4 +63,13 @@ class System < ActiveRecord::Base
 
     clouds
   end
+
+  def dup
+    system = super
+    available_clouds.each do |available_cloud|
+      system.add_cloud available_cloud.cloud, available_cloud.priority
+    end
+
+    system
+  end
 end
