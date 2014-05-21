@@ -166,7 +166,7 @@ describe System do
     end
   end
 
-  describe '#dup', focus: true do
+  describe '#dup' do
     it 'duplicate all attributes in system without name' do
       duplicated_system = @system.dup
       expect(duplicated_system.template_body).to eq(@system.template_body)
