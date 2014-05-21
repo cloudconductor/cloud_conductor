@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'bundler'
-Bundler.require
+Bundler.require(:default)
+Bundler.require((ENV['RACK_ENV'] || :development).to_sym)
 
 # Add load path
 $LOAD_PATH.unshift File.expand_path('../../lib', File.dirname(__FILE__))
