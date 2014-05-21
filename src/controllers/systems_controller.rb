@@ -16,6 +16,12 @@ class SystemsController < Sinatra::Base
     register Sinatra::Reloader
   end
 
+  set(:clone) do |is_clone|
+    condition do
+      is_clone ? params[:system_id] : params[:system_id].nil?
+    end
+  end
+
   get '/' do
     json System.all
   end
@@ -24,12 +30,30 @@ class SystemsController < Sinatra::Base
     json System.find(params[:id])
   end
 
-  post '/' do
+  post '/', clone: false do
     system = System.new permit_params
     (params[:clouds] || []).each do |cloud|
       system.add_cloud Cloud.find(cloud[:id]), cloud[:priority]
     end
 
+    unless system.save
+      status 400
+      return json system.errors
+    end
+
+    status 201
+    json system
+  end
+
+  post '/', clone: true do
+    begin
+      previous_system = System.find(params[:system_id])
+    rescue
+      status 400
+      return '{ "message": "Template system does not exist" }'
+    end
+
+    system = previous_system.dup
     unless system.save
       status 400
       return json system.errors
