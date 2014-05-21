@@ -66,6 +66,13 @@ class System < ActiveRecord::Base
 
   def dup
     system = super
+
+    matches = name.match(/^(.*?)(_(\d+))?$/)
+    base_name = matches[1]
+    number = (matches[3] || 0).to_i
+
+    system.name = format('%s_%d', base_name, (number + 1))
+
     available_clouds.each do |available_cloud|
       system.add_cloud available_cloud.cloud, available_cloud.priority
     end
