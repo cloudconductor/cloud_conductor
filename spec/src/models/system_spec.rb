@@ -36,6 +36,16 @@ describe System do
     expect(System.count).to eq(count + 1)
   end
 
+  it 'delete all relatioship between system and cloud' do
+    expect(@system.clouds).not_to be_empty
+    expect(@system.available_clouds).not_to be_empty
+
+    @system.clouds.delete_all
+
+    expect(@system.clouds).to be_empty
+    expect(@system.available_clouds).to be_empty
+  end
+
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@system.valid?).to be_true
@@ -82,12 +92,12 @@ describe System do
     end
 
     it 'returns false when clouds is empty' do
-      @system.clouds.reset
+      @system.clouds.delete_all
       expect(@system.valid?).to be_false
     end
 
     it 'returns false when clouds collection has duplicate cloud' do
-      @system.clouds.reset
+      @system.clouds.delete_all
       @system.clouds << @cloud_aws
       @system.clouds << @cloud_aws
       expect(@system.valid?).to be_false
