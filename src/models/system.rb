@@ -52,4 +52,15 @@ class System < ActiveRecord::Base
     client = CloudConductor::Client.new cloud.cloud_type.to_sym
     client.create_stack name, template, parameters, cloud.attributes
   end
+
+  def add_cloud(cloud, priority)
+    clouds << cloud
+
+    available_cloud = available_clouds.find do |c|
+      c.cloud_id == cloud.id
+    end
+    available_cloud.priority = priority
+
+    clouds
+  end
 end

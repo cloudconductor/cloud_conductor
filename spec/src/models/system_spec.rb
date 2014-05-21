@@ -139,4 +139,18 @@ describe System do
       @system.save!
     end
   end
+
+  describe '#add_cloud' do
+    it 'build relationship between system and specified cloud via AvailableCloud', focus: true do
+      @system.clouds.delete_all
+      expect(@system.clouds).to be_empty
+      expect(@system.available_clouds).to be_empty
+
+      @system.add_cloud(@cloud_aws, 45)
+      @system.add_cloud(@cloud_openstack, 32)
+
+      expect(@system.clouds).to eq([@cloud_aws, @cloud_openstack])
+      expect(@system.available_clouds.map(&:priority)).to eq([45, 32])
+    end
+  end
 end
