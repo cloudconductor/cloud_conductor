@@ -141,7 +141,7 @@ describe System do
   end
 
   describe '#add_cloud' do
-    it 'build relationship between system and specified cloud via AvailableCloud', focus: true do
+    it 'build relationship between system and specified cloud via AvailableCloud' do
       @system.clouds.delete_all
       expect(@system.clouds).to be_empty
       expect(@system.available_clouds).to be_empty
