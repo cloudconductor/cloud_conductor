@@ -45,12 +45,12 @@ class System < ActiveRecord::Base
   end
 
   before_create do
-    template = template_body
-    template = open(template_url).read if template.nil?
+    self.template_body = open(template_url).read if template_body.nil?
+    self.template_url = nil
 
     cloud = clouds.first
     client = CloudConductor::Client.new cloud.cloud_type.to_sym
-    client.create_stack name, template, parameters, cloud.attributes
+    client.create_stack name, template_body, parameters, cloud.attributes
   end
 
   def add_cloud(cloud, priority)

@@ -123,6 +123,18 @@ describe System do
       @system.save!
     end
 
+    it 'set template_body with downloaded json' do
+      @system.template_body = nil
+      @system.template_url = 'http://example.com/'
+
+      dummy_json = '{ "dummy" : "data"}'
+      @system.stub_chain(:open, :read).and_return(dummy_json)
+      @system.save!
+
+      expect(@system.template_body).to eq(dummy_json)
+      expect(@system.template_url).to be_nil
+    end
+
     it 'instantiate cloud client with primary cloud adapter' do
       CloudConductor::Client.should_receive(:new)
       @system.save!
