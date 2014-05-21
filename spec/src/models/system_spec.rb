@@ -22,8 +22,8 @@ describe System do
     @system.template_body = '{}'
     @system.parameters = '{}'
 
-    @system.clouds << @cloud_aws
-    @system.clouds << @cloud_openstack
+    @system.add_cloud(@cloud_aws, 1)
+    @system.add_cloud(@cloud_openstack, 2)
 
     CloudConductor::Client.stub_chain(:new, :create_stack)
   end
