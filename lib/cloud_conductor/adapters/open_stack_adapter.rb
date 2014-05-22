@@ -21,15 +21,16 @@ module CloudConductor
 
       def create_stack(name, template, parameters, options = {})
         options = options.with_indifferent_access
-        orc = ::Fog::Orchestration.new(:provider => :OpenStack,
-          :openstack_auth_url => options[:entry_point] + 'v2.0/tokens',
-          :openstack_api_key => options[:secret],
-          :openstack_username => options[:key],
-          :openstack_tenant => options[:tenant_id]
+        orc = ::Fog::Orchestration.new(
+          provider: :OpenStack,
+          openstack_auth_url: options[:entry_point] + 'v2.0/tokens',
+          openstack_api_key: options[:secret],
+          openstack_username: options[:key],
+          openstack_tenant: options[:tenant_id]
         )
         stack_params = {
-          :template => template,
-          :parameters => JSON.parse(parameters)
+          template: template,
+          parameters: JSON.parse(parameters)
         }
         orc.create_stack name, stack_params
       end
