@@ -43,6 +43,11 @@ describe Cloud do
       expect(@cloud.valid?).to be_true
     end
 
+    it 'returns true when cloud_type is dummy' do
+      @cloud.cloud_type = 'dummy'
+      expect(@cloud.valid?).to be_true
+    end
+
     it 'returns false when name is unset' do
       @cloud.name = nil
       expect(@cloud.valid?).to be_false
@@ -75,7 +80,7 @@ describe Cloud do
       expect(@cloud.valid?).to be_false
     end
 
-    it 'returns false when cloud_type is neither aws nor openstack' do
+    it 'returns false when cloud_type is neither aws, openstack nor dummy' do
       @cloud.cloud_type = nil
       expect(@cloud.valid?).to be_false
 
