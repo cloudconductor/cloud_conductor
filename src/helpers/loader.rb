@@ -35,3 +35,6 @@ CloudConductor::Config.from_file File.expand_path('../../config/config.rb', File
 
 # SetLocale
 I18n.enforce_available_locales = false
+
+# Initialize logger
+Log.setup CloudConductor::Config.log_file, CloudConductor::Config.log_level
