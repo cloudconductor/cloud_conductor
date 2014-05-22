@@ -41,32 +41,12 @@ class Log
   extend Core::LogFormatter
   extend Mixlib::Log
 
-  def initialize(logdev, loglevel)
-    Log.logger = Logger.new(logdev)
-    Log.logger.level = convert_loglevel(loglevel)
+  def self.setup(output, level)
+    Log.logger = Logger.new(output)
+    Log.logger.level = Logger.const_get(level.upcase)
     Log.formatter = proc do |severity, datetime, progname, msg|
-      thread = Thread.current || ''
-      "[#{severity[0]}, #{datetime.iso8601(3)} #{thread}] #{severity} -- : #{msg}\n"
+      "#{datetime.iso8601(3)} #{severity} -- : #{msg}\n"
     end
     Log.debug('Start logging')
-  end
-
-  private
-
-  def convert_loglevel(loglevel)
-    case loglevel
-    when :fatal
-      Logger::FATAL
-    when :error
-      Logger::ERROR
-    when :warn
-      Logger::WARN
-    when :info
-      Logger::INFO
-    when :debug
-      Logger::DEBUG
-    else
-      Logger::ERROR
-    end
   end
 end
