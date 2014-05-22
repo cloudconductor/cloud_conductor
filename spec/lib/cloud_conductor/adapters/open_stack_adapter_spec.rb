@@ -23,13 +23,48 @@ module CloudConductor
         expect(OpenStackAdapter.superclass).to eq(AbstractAdapter)
       end
 
-      it 'has :aws type' do
+      it 'has :openstack type' do
         expect(OpenStackAdapter::TYPE).to eq(:openstack)
       end
 
       describe '#create_stack' do
+        before do
+          ::Fog::Orchestration.stub_chain(:new, :create_stack)
+
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'test_user'
+          @options[:secret] = 'test_secret'
+          @options[:tenant_id] = 'test_tenant'
+        end
+
         it 'execute without exception' do
           @adapter.create_stack 'stack_name', '{}', '{}', {}
+        end
+
+        it 'instantiate' do
+          @options[:dummy] = 'dummy'
+
+          ::Fog::Orchestration.should_receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_user',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.create_stack 'stack_name', '{}', '{}', @options
+        end
+
+        it 'call Fog::Orchestration#create_stack to create stack on openstack' do
+          ::Fog::Orchestration.stub_chain(:new) do
+            double('newfog').tap do |newfog|
+              newfog.should_receive(:create_stack).with('stack_name', hash_including(template: '{}', parameters: {}))
+            end
+          end
+
+          @adapter.create_stack 'stack_name', '{}', '{}', @options
         end
       end
     end

@@ -23,7 +23,7 @@ module CloudConductor
         options = options.with_indifferent_access
         orc = ::Fog::Orchestration.new(
           provider: :OpenStack,
-          openstack_auth_url: options[:entry_point] + 'v2.0/tokens',
+          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
           openstack_api_key: options[:secret],
           openstack_username: options[:key],
           openstack_tenant: options[:tenant_id]
