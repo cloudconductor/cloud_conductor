@@ -32,6 +32,8 @@ module CloudConductor
           @options = {}
           @options[:key] = '1234567890abcdef'
           @options[:secret] = 'abcdef1234567890'
+
+          Log.stub(:debug)
         end
 
         it 'execute without exception' do
