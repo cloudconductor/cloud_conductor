@@ -13,6 +13,7 @@ gem 'activesupport', :require => 'active_support/dependencies'
 gem 'sinatra-activerecord'
 gem 'actionpack'
 
+gem 'mixlib-config'
 gem 'mixlib-log'
 
 gem 'aws-sdk'

@@ -30,5 +30,8 @@ require 'sinatra/json'
 require 'sinatra/reloader'
 require 'action_controller'
 
+# Load config
+CloudConductor::Config.from_file File.expand_path('../../config/config.rb', File.dirname(__FILE__))
+
 # SetLocale
 I18n.enforce_available_locales = false
