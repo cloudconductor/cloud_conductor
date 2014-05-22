@@ -20,7 +20,7 @@ Bundler.require((ENV['RACK_ENV'] || :development).to_sym)
 $LOAD_PATH.unshift File.expand_path('../../lib', File.dirname(__FILE__))
 
 # Autoload Settings
-autoload_paths = ['../models', '../controllers', '../../lib']
+autoload_paths = ['../models', '../controllers', '../../lib', '../helpers']
 autoload_paths.each do |path|
   ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
 end
