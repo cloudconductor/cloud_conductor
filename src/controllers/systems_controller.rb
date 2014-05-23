@@ -63,6 +63,12 @@ class SystemsController < Sinatra::Base
     json system
   end
 
+  put '/:id' do
+    system = System.find(params[:id])
+    system.enable_monitoring
+    status 200
+  end
+
   def permit_params
     ActionController::Parameters.new(params)
       .permit(:name, :template_body, :template_url, :parameters)
