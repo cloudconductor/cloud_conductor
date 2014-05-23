@@ -22,6 +22,10 @@ module CloudConductor
       def create_stack(name, template, parameters, options = {})
         fail 'Unimplement method'
       end
+
+      def get_stack_status(name)
+        fail 'Unimplement method'
+      end
     end
   end
 end
