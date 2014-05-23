@@ -9,6 +9,6 @@ when :development
   log_file 'log/conductor_development.log'
   log_level :debug
 when :test
-  log_file STDOUT
+  log_file 'log/conductor_test.log'
   log_level :debug
 end
