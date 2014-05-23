@@ -167,6 +167,30 @@ describe System do
     end
   end
 
+  describe '#before_save' do
+    before do
+      @client = double('client')
+      CloudConductor::Client.stub(:new).and_return(@client)
+      @client.stub('create_stack')
+    end
+
+    it 'doesn\'t call Client#enable_monitoring when monitoring_host is nil' do
+      @client.should_not_receive(:enable_monitoring)
+
+      @system.monitoring_host = nil
+      @system.save!
+    end
+
+    it 'call Client#enable_monitoring when monitoring_host isn\'t nil' do
+      @system.monitoring_host = 'example.com'
+
+      @client.should_receive(:enable_monitoring)
+        .with(@system.name, hash_including(system_id: @system.id, target_host: @system.monitoring_host))
+
+      @system.save!
+    end
+  end
+
   describe '#add_cloud' do
     it 'build relationship between system and specified cloud via AvailableCloud' do
       @system.clouds.delete_all

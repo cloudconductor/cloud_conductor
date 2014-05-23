@@ -19,6 +19,8 @@ class System < ActiveRecord::Base
   has_many :available_clouds
   has_many :clouds, through: :available_clouds
 
+  before_save :enable_monitoring, if: -> { monitoring_host }
+
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
   validates :clouds, presence: true
