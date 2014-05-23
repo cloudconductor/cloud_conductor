@@ -71,16 +71,17 @@ class SystemsController < Sinatra::Base
       return '{ "message": "System does not exist" }'
     end
 
-    if params[:monitoring]
-      system.enable_monitoring
-      status 201
+    system.update_attributes permit_paras
+    unless system.save
+      status 400
+      return json system.errors
     end
 
-    status 400
+    status 200
   end
 
   def permit_params
     ActionController::Parameters.new(params)
-      .permit(:name, :template_body, :template_url, :parameters)
+      .permit(:name, :template_body, :template_url, :parameters, :monitoring_host)
   end
 end

@@ -22,7 +22,6 @@ class System < ActiveRecord::Base
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
   validates :clouds, presence: true
-  validates :monitoring, inclusion: { in: [true, false] }
 
   validate do
     if template_body.blank? && template_url.blank?
@@ -91,12 +90,12 @@ class System < ActiveRecord::Base
   end
 
   def enable_monitoring
-    self.monitoring = true
-    client = CloudConductor::Client.new cloud.cloud_type.to_sym
+    # TODO: Separate zabbix api from client because zabbix api independs cloud_type
+    client = CloudConductor::Client.new :dummy
+
     parameters = {}
     parameters[:system_id] = id
-    # TODO: set from somewhere
-    parameters[:target_host] = 'demo.cloudconductor.jp'
+    parameters[:target_host] = monitoring_host
     client.enable_monitoring name, parameters
   end
 end
