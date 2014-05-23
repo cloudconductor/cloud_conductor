@@ -66,6 +66,37 @@ module CloudConductor
           @adapter.create_stack 'stack_name', '{}', '{}', @options
         end
       end
+
+      describe '#get_stack_status' do
+        before do
+          @stacks = double('stacks', :[] => '')
+          AWS::CloudFormation.stub_chain(:new, :stacks).and_return(@stacks)
+
+          @options = {}
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
+        end
+
+        it 'execute without exception' do
+          @adapter.get_stack_status 'stack_name', @options
+        end
+
+        it 'set credentials for aws-sdk' do
+          @options[:dummy] = 'dummy'
+
+          AWS::CloudFormation.should_receive(:new)
+            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
+
+          @adapter.get_stack_status 'stack_name', @options
+        end
+
+        it 'return stack status via aws-sdk' do
+          @stacks.should_receive(:[]).with('stack_name').and_return('dummy_status')
+
+          status = @adapter.get_stack_status 'stack_name', @options
+          expect(status).to eq('dummy_status')
+        end
+      end
     end
   end
 end

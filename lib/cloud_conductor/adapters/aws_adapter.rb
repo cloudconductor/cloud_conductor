@@ -31,6 +31,18 @@ module CloudConductor
         cf = AWS::CloudFormation.new aws_options
         cf.stacks.create name, template, parameters: JSON.parse(parameters)
       end
+
+      def get_stack_status(name, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        cf = AWS::CloudFormation.new aws_options
+        cf.stacks[name]
+      end
     end
   end
 end
