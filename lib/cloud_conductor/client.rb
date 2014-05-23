@@ -39,5 +39,74 @@ module CloudConductor
     def create_stack(name, template, parameters, options)
       @adapter.create_stack name, template, parameters, options
     end
+
+    def enable_monitoring(name, parameters)
+      # TODO: load from somewhehre
+      params = {
+        url: 'http://192.168.166.217/zabbix/api_jsonrpc.php',
+        user: 'admin',
+        password: 'zabbix'
+      }
+      zbx = ZabbixApi.connect params
+
+      zbx.hostgroups.create_or_update name: name
+      template_id = zbx.templates.get_id host: 'Template App HTTP Service'
+
+      params = {
+        host: parameters[:target_host],
+        interfaces: [
+          {
+            type: 1,
+            main: 1,
+            ip: '',
+            dns: parameters[:target_host],
+            port: 10050,
+            useip: 0
+          }
+        ],
+        groups: [ groupid: zbx.hostgroups.get_id(name: name) ],
+        templates: [ templateid: template_id ]
+      }
+      host_id = zbx.hosts.create_or_update params
+
+      params = {
+        method: 'action.create',
+        params: {
+          name: 'FailOver',
+          eventsource: 0,
+          evaltype: 1,
+          status: 1,
+          esc_period: 120,
+          def_shortdata: "{TRIGGER.NAME}: {TRIGGER.STATUS}",
+          def_longdata: "{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}",
+          conditions: [
+            {
+              conditiontype: 1,
+              operator: 0,
+              value: host_id
+            },
+            {
+              conditiontype: 5,
+              operator: 0,
+              value: 1
+            }
+          ],
+          operations: [
+            {
+              operationtype: 1,
+              opcommand_hst: {
+                hostid: 0
+              },
+              opcommand: {
+                type: 0,
+                command: 'echo 0',
+                execute_on: '1'
+              }
+            }
+          ]
+        }
+      }    
+      zbx.client.api_request params
+    end
   end
 end

@@ -5,6 +5,7 @@ class CreateSystems < ActiveRecord::Migration
       t.text :template_body
       t.string :template_url
       t.text :parameters
+      t.boolean :monitoring
       t.timestamps
     end
   end

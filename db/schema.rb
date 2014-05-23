@@ -38,6 +38,7 @@ ActiveRecord::Schema.define(version: 20140520051330) do
     t.text     "template_body"
     t.string   "template_url"
     t.text     "parameters"
+    t.boolean  "monitoring"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

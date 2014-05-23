@@ -15,6 +15,7 @@ gem 'actionpack'
 
 gem 'aws-sdk'
 gem 'fog'
+gem 'zabbixapi'
 
 group :development do
   gem 'guard'
