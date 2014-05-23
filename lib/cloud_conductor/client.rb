@@ -97,7 +97,7 @@ module CloudConductor
           name: action_name,
           eventsource: 0,
           evaltype: 1,
-          status: 1,
+          status: 0,
           esc_period: 120,
           def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
           def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
