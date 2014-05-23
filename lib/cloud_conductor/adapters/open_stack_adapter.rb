@@ -46,7 +46,7 @@ module CloudConductor
         )
         body = (orc.list_stacks)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack[:stack_status]
+        target_stack[:stack_status].to_sym
       end
     end
   end

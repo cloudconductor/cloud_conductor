@@ -67,6 +67,58 @@ module CloudConductor
           @adapter.create_stack 'stack_name', '{}', '{}', @options
         end
       end
+
+      describe '#get_stack_status' do
+        before do
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'test_user'
+          @options[:secret] = 'test_secret'
+          @options[:tenant_id] = 'test_tenant'
+
+          @stacks = {
+            body: {
+              stacks: [
+                {
+                  stack_name: 'abc',
+                  stack_status: 'DUMMY'
+                },
+                {
+                  stack_name: 'stack_name',
+                  stack_status: 'TESTSTATUS'
+                }
+              ]
+            }
+          }
+
+          ::Fog::Orchestration.stub_chain(:new, :list_stacks).and_return(@stacks)
+
+        end
+
+        it 'execute without exception' do
+          @adapter.get_stack_status 'stack_name', @options
+        end
+
+        it 'instantiate' do
+          @options[:dummy] = 'dummy'
+
+          ::Fog::Orchestration.should_receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_user',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.get_stack_status 'stack_name', @options
+        end
+
+        it 'return stack status' do
+          status = @adapter.get_stack_status 'stack_name', @options
+          expect(status).to eq(:TESTSTATUS)
+        end
+      end
     end
   end
 end
