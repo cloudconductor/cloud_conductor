@@ -12,19 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
+module CloudConductor
+  module Adapters
+    class DummyAdapter < AbstractAdapter
+      TYPE = :dummy
 
-class Cloud < ActiveRecord::Base
-  validates :name, presence: true
-  validates :entry_point, presence: true
-  validates :key, presence: true
-  validates :secret, presence: true
-  validate do
-    unless %w(aws openstack dummy).include? cloud_type
-      errors.add(:cloud_type, ' must be "aws", "openstack" or "dummy"')
-    end
-    if cloud_type == 'openstack' && tenant_id.blank?
-      errors.add(:tenant_id, 'must not be blank in case that cloud_type is "openstack".')
+      def initialize
+      end
+
+      def create_stack(name, template, parameters, options = {})
+        Log.debug(Log.format_method_start(self.class, __method__))
+      end
     end
   end
 end

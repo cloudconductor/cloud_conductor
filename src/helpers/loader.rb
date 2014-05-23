@@ -20,7 +20,7 @@ Bundler.require((ENV['RACK_ENV'] || :development).to_sym)
 $LOAD_PATH.unshift File.expand_path('../../lib', File.dirname(__FILE__))
 
 # Autoload Settings
-autoload_paths = ['../models', '../controllers', '../../lib']
+autoload_paths = ['../models', '../controllers', '../../lib', '../helpers']
 autoload_paths.each do |path|
   ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
 end
@@ -30,5 +30,11 @@ require 'sinatra/json'
 require 'sinatra/reloader'
 require 'action_controller'
 
+# Load config
+CloudConductor::Config.from_file File.expand_path('../../config/config.rb', File.dirname(__FILE__))
+
 # SetLocale
 I18n.enforce_available_locales = false
+
+# Initialize logger
+Log.setup CloudConductor::Config.log_file, CloudConductor::Config.log_level

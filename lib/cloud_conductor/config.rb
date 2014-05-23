@@ -12,19 +12,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
+require 'mixlib/config'
 
-class Cloud < ActiveRecord::Base
-  validates :name, presence: true
-  validates :entry_point, presence: true
-  validates :key, presence: true
-  validates :secret, presence: true
-  validate do
-    unless %w(aws openstack dummy).include? cloud_type
-      errors.add(:cloud_type, ' must be "aws", "openstack" or "dummy"')
-    end
-    if cloud_type == 'openstack' && tenant_id.blank?
-      errors.add(:tenant_id, 'must not be blank in case that cloud_type is "openstack".')
-    end
+module CloudConductor
+  class Config
+    extend Mixlib::Config
+
+    default :log_file, STDOUT
+    default :log_level, :info
   end
 end

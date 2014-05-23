@@ -30,3 +30,12 @@ cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
 cloud_openstack.tenant_id = '1234567890abcdef'
 cloud_openstack.save!
+
+cloud_dummy = Cloud.new
+cloud_dummy.name = 'cloud-dummy'
+cloud_dummy.cloud_type = 'dummy'
+cloud_dummy.entry_point = 'http://192.168.166.100:5000/'
+cloud_dummy.key = '1234567890abcdef'
+cloud_dummy.secret = '1234567890abcdef'
+cloud_dummy.tenant_id = '1234567890abcdef'
+cloud_dummy.save!
