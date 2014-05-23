@@ -60,12 +60,12 @@ module CloudConductor
             main: 1,
             ip: '',
             dns: parameters[:target_host],
-            port: 10050,
+            port: 10_050,
             useip: 0
           }
         ],
-        groups: [ groupid: zbx.hostgroups.get_id(name: name) ],
-        templates: [ templateid: template_id ]
+        groups: [groupid: zbx.hostgroups.get_id(name: name)],
+        templates: [templateid: template_id]
       }
       host_id = zbx.hosts.create_or_update params
 
@@ -77,8 +77,8 @@ module CloudConductor
           evaltype: 1,
           status: 1,
           esc_period: 120,
-          def_shortdata: "{TRIGGER.NAME}: {TRIGGER.STATUS}",
-          def_longdata: "{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}",
+          def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
+          def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
           conditions: [
             {
               conditiontype: 1,
@@ -105,7 +105,7 @@ module CloudConductor
             }
           ]
         }
-      }    
+      }
       zbx.client.api_request params
     end
   end

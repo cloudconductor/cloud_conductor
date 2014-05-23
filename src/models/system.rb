@@ -22,7 +22,7 @@ class System < ActiveRecord::Base
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
   validates :clouds, presence: true
-  validates :monitoring, :inclusion => {in:  [true, false]}
+  validates :monitoring, inclusion: { in: [true, false] }
 
   validate do
     if template_body.blank? && template_url.blank?
