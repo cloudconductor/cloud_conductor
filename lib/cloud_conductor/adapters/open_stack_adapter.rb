@@ -45,8 +45,8 @@ module CloudConductor
           openstack_tenant: options[:tenant_id]
         )
         body = (orc.list_stacks)[:body].with_indifferent_access
-        stack = body[:stacks].find {|stack| stack[:stack_name] == name}
-        stack[:stack_status] 
+        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
+        target_stack[:stack_status]
       end
     end
   end
