@@ -21,6 +21,7 @@ describe System do
     @system.name = 'Test'
     @system.template_body = '{}'
     @system.parameters = '{}'
+    @system.monitoring = false
 
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)

@@ -22,6 +22,7 @@ class System < ActiveRecord::Base
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
   validates :clouds, presence: true
+  validates :monitoring, :inclusion => {in:  [true, false]}
 
   validate do
     if template_body.blank? && template_url.blank?
@@ -86,6 +87,6 @@ class System < ActiveRecord::Base
     parameters = {}
     # TODO: set from somewhere
     parameters[:target_host] = 'demo.cloudconductor.jp'
-    client.enable_monitoring self.name, parameters
+    client.enable_monitoring name, parameters
   end
 end
