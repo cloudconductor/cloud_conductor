@@ -34,6 +34,20 @@ module CloudConductor
         }
         orc.create_stack name, stack_params
       end
+
+      def get_stack_status(name, options = {})
+        options = options.with_indifferent_access
+        orc = ::Fog::Orchestration.new(
+          provider: :OpenStack,
+          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: options[:secret],
+          openstack_username: options[:key],
+          openstack_tenant: options[:tenant_id]
+        )
+        body = (orc.list_stacks)[:body].with_indifferent_access
+        stack = body[:stacks].find {|stack| stack[:stack_name] == name}
+        stack[:stack_status] 
+      end
     end
   end
 end
