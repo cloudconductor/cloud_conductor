@@ -49,9 +49,18 @@ class System < ActiveRecord::Base
     self.template_body = open(template_url).read if template_body.nil?
     self.template_url = nil
 
-    cloud = clouds.first
-    client = CloudConductor::Client.new cloud.cloud_type.to_sym
-    client.create_stack name, template_body, parameters, cloud.attributes
+    available_clouds.sort_by(&:priority).map(&:cloud).reverse.each do |cloud|
+      client = CloudConductor::Client.new cloud.cloud_type.to_sym
+      begin
+        client.create_stack name, template_body, parameters, cloud.attributes
+      rescue
+        Log.info("Create stack on #{cloud.name} ... FAILED")
+        next
+      end
+
+      Log.info("Create stack on #{cloud.name} ... SUCCESS")
+      break
+    end
   end
 
   def add_cloud(cloud, priority)
