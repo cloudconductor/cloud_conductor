@@ -42,6 +42,7 @@ module CloudConductor
 
     def enable_monitoring(name, parameters)
       # TODO: load from somewhehre
+      cc_api_url = 'http://127.0.0.1:8080/systems'
       params = {
         url: 'http://192.168.166.217/zabbix/api_jsonrpc.php',
         user: 'admin',
@@ -52,27 +53,53 @@ module CloudConductor
       zbx.hostgroups.create_or_update name: name
       template_id = zbx.templates.get_id host: 'Template App HTTP Service'
 
+      host_id = add_host_zabbix zbx, parameters[:target_host], zbx.hostgroups.get_id(name: name), template_id
+      add_action_zabbix zbx, host_id, cc_api_url, parameters[:system_id]
+    end
+
+    def add_host_zabbix(zbx, target_host, hostgroup_id, template_id)
       params = {
-        host: parameters[:target_host],
+        host: target_host,
         interfaces: [
           {
             type: 1,
             main: 1,
             ip: '',
-            dns: parameters[:target_host],
+            dns: target_host,
             port: 10_050,
             useip: 0
           }
         ],
-        groups: [groupid: zbx.hostgroups.get_id(name: name)],
+        groups: [groupid: hostgroup_id],
         templates: [templateid: template_id]
       }
-      host_id = zbx.hosts.create_or_update params
+      zbx.hosts.create_or_update params
+    end
+
+    def check_if_action_exists_zabbix(zbx, action_name)
+      params = {
+        method: 'action.exists',
+        params: {
+          name: action_name
+        }
+      }
+      zbx.client.api_request(params)
+    end
+
+    def create_action_command_zabbix(cc_api_url, system_id)
+      "curl -X -H \"Content-Type:application/json\" -X POST -d '{\"system-id\": \"#{system_id}\"}' #{cc_api_url}"
+    end
+
+    def add_action_zabbix(zbx, host_id, cc_api_url, system_id)
+      action_name = 'FailOver'
+      action_exists = check_if_action_exists_zabbix zbx, action_name
+
+      return if action_exists
 
       params = {
         method: 'action.create',
         params: {
-          name: 'FailOver',
+          name: action_name,
           eventsource: 0,
           evaltype: 1,
           status: 1,
@@ -99,7 +126,7 @@ module CloudConductor
               },
               opcommand: {
                 type: 0,
-                command: 'echo 0',
+                command: create_action_command_zabbix(cc_api_url, system_id),
                 execute_on: '1'
               }
             }

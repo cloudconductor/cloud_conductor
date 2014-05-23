@@ -85,6 +85,7 @@ class System < ActiveRecord::Base
     self.monitoring = true
     client = CloudConductor::Client.new cloud.cloud_type.to_sym
     parameters = {}
+    parameters[:system_id] = id
     # TODO: set from somewhere
     parameters[:target_host] = 'demo.cloudconductor.jp'
     client.enable_monitoring name, parameters

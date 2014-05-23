@@ -64,9 +64,19 @@ class SystemsController < Sinatra::Base
   end
 
   put '/:id' do
-    system = System.find(params[:id])
-    system.enable_monitoring
-    status 200
+    begin
+      system = System.find(params[:id])
+    rescue
+      status 400
+      return '{ "message": "System does not exist" }'
+    end
+
+    if params[:monitoring]
+      system.enable_monitoring
+      status 201
+    end
+
+    status 400
   end
 
   def permit_params
