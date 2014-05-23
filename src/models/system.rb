@@ -54,8 +54,9 @@ class System < ActiveRecord::Base
       client = CloudConductor::Client.new cloud.cloud_type.to_sym
       begin
         client.create_stack name, template_body, parameters, cloud.attributes
-      rescue
+      rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
+        Log.error(e)
         next
       end
 
