@@ -141,13 +141,27 @@ describe System do
       @system.save!
     end
 
-    it 'call create_stack on client' do
+    it 'call create_stack on cloud that has highest priority' do
       CloudConductor::Client.stub(:new) do
         double('client').tap do |client|
           client.should_receive(:create_stack)
-            .with(@system.name, @system.template_body, @system.parameters, @system.clouds.first.attributes)
+            .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes)
         end
       end
+
+      @system.save!
+    end
+
+    it 'call create_stack on clouds with priority order' do
+      client = double('client')
+      client.should_receive(:create_stack)
+        .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes).ordered
+        .and_raise('Dummy exception')
+
+      client.should_receive(:create_stack)
+        .with(@system.name, @system.template_body, @system.parameters, @cloud_aws.attributes).ordered
+
+      CloudConductor::Client.stub(:new).and_return(client)
 
       @system.save!
     end
