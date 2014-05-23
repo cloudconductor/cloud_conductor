@@ -12,3 +12,8 @@ when :test
   log_file 'log/conductor_test.log'
   log_level :debug
 end
+
+# zabbix server settings
+zabbix.url 'http://192.168.166.217/zabbix/api_jsonrpc.php'
+zabbix.user 'admin'
+zabbix.password 'zabbix'

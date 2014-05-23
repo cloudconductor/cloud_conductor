@@ -43,12 +43,7 @@ module CloudConductor
     def enable_monitoring(name, parameters)
       # TODO: load from somewhehre
       cc_api_url = 'http://127.0.0.1:8080/systems'
-      params = {
-        url: 'http://192.168.166.217/zabbix/api_jsonrpc.php',
-        user: 'admin',
-        password: 'zabbix'
-      }
-      zbx = ZabbixApi.connect params
+      zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
 
       zbx.hostgroups.create_or_update name: name
       template_id = zbx.templates.get_id host: 'Template App HTTP Service'
