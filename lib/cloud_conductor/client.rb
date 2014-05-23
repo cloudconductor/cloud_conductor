@@ -45,10 +45,10 @@ module CloudConductor
       cc_api_url = 'http://127.0.0.1:8080/systems'
       zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
 
-      zbx.hostgroups.create_or_update name: name
+      hostgroup_id = zbx.hostgroups.create_or_update name: name
       template_id = zbx.templates.get_id host: 'Template App HTTP Service'
 
-      host_id = add_host_zabbix zbx, parameters[:target_host], zbx.hostgroups.get_id(name: name), template_id
+      host_id = add_host_zabbix zbx, parameters[:target_host], hostgroup_id, template_id
       add_action_zabbix zbx, host_id, cc_api_url, parameters[:system_id]
     end
 
