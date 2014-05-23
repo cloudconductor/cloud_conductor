@@ -19,7 +19,7 @@ module CloudConductor
         fail "Can't instantiate abstract adapter"
       end
 
-      def create_stack
+      def create_stack(name, template, parameters, options = {})
         fail 'Unimplement method'
       end
     end
