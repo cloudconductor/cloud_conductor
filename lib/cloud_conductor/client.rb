@@ -41,8 +41,7 @@ module CloudConductor
     end
 
     def enable_monitoring(name, parameters)
-      # TODO: load from somewhehre
-      cc_api_url = 'http://127.0.0.1:8080/systems'
+      cc_api_url = CloudConductor::Config.cloudconductor.configuration[:url]
       zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
 
       hostgroup_id = zbx.hostgroups.create_or_update name: name

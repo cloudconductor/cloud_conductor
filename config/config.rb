@@ -13,6 +13,9 @@ when :test
   log_level :debug
 end
 
+# cloudconductor server settings
+cloudconductor.url 'http://127.0.0.1/'
+
 # zabbix server settings
 zabbix.url 'http://192.168.166.217/zabbix/api_jsonrpc.php'
 zabbix.user 'admin'

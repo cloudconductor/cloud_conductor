@@ -21,6 +21,8 @@ module CloudConductor
     default :log_file, STDOUT
     default :log_level, :info
 
+    config_context :cloudconductor do
+    end
     config_context :zabbix do
     end
   end
