@@ -69,7 +69,7 @@ module CloudConductor
 
       describe '#get_stack_status' do
         before do
-          @stacks = double('stacks', :[] => '')
+          @stacks = double('stacks', :[] => double('stack', status: ''))
           AWS::CloudFormation.stub_chain(:new, :stacks).and_return(@stacks)
 
           @options = {}
@@ -91,7 +91,8 @@ module CloudConductor
         end
 
         it 'return stack status via aws-sdk' do
-          @stacks.should_receive(:[]).with('stack_name').and_return('dummy_status')
+          @stack.should_receive(:status).and_return('dummy_status')
+          @stacks.should_receive(:[]).with('stack_name').and_return(@stack)
 
           status = @adapter.get_stack_status 'stack_name', @options
           expect(status).to eq('dummy_status')
