@@ -19,15 +19,19 @@ module CloudConductor
       def initialize
       end
 
-      def create_stack(name, template, parameters, options = {})
-        options = options.with_indifferent_access
-        orc = ::Fog::Orchestration.new(
+      def create_orchestration(options)
+        ::Fog::Orchestration.new(
           provider: :OpenStack,
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
           openstack_api_key: options[:secret],
           openstack_username: options[:key],
           openstack_tenant: options[:tenant_id]
         )
+      end
+
+      def create_stack(name, template, parameters, options = {})
+        options = options.with_indifferent_access
+        orc = create_orchestration options
         stack_params = {
           template: template,
           parameters: JSON.parse(parameters)
@@ -37,13 +41,7 @@ module CloudConductor
 
       def get_stack_status(name, options = {})
         options = options.with_indifferent_access
-        orc = ::Fog::Orchestration.new(
-          provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_id]
-        )
+        orc = create_orchestration options
         body = (orc.list_stacks)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
@@ -51,18 +49,12 @@ module CloudConductor
 
       def get_outputs(name, options = {})
         options = options.with_indifferent_access
-        orc = ::Fog::Orchestration.new(
-          provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_id]
-        )
+        orc = create_orchestration options
         body = (orc.list_stacks)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack_id = target_stack[:id]
 
-        url = URI.parse "#{options[:entry_point].to_s}/v1/#{options[:tenant_id]}/stacks/#{name}/#{target_stack_id}"
+        url = URI.parse "#{options[:entry_point]}/v1/#{options[:tenant_id]}/stacks/#{name}/#{target_stack_id}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
         request.add_field 'X-Auth-Token', orc.auth_token
@@ -73,7 +65,7 @@ module CloudConductor
         target_stack = response[:stack]
 
         outputs = {}
-        response[:outputs].each do |output|
+        target_stack[:outputs].each do |output|
           outputs[output[:output_key]] = output[:output_value]
         end
 
