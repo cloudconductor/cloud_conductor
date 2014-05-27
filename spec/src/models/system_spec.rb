@@ -22,6 +22,7 @@ describe System do
     @system.template_body = '{}'
     @system.parameters = '{}'
     @system.monitoring_host = nil
+    @system.domain = 'example.com'
 
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)

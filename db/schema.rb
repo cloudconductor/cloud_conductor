@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(version: 20140520051330) do
     t.string   "template_url"
     t.text     "parameters"
     t.string   "monitoring_host"
+    t.string   "domain"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
