@@ -23,7 +23,7 @@ ActiveRecord::Tasks::DatabaseTasks.env = environment
 ActiveRecord::Base.configurations = YAML.load_file('config/database.yml')
 ActiveRecord::Base.establish_connection environment.to_sym
 
-desc "Launch console wih database connection"
+desc 'Launch console wih database connection'
 task :console do
   require 'irb'
   ARGV.clear

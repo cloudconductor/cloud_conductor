@@ -19,6 +19,7 @@ module CloudConductor
         fail "Can't instantiate abstract adapter"
       end
 
+      # rubocop: disable UnusedMethodArgument
       def create_stack(name, template, parameters, options = {})
         fail 'Unimplement method'
       end
@@ -30,6 +31,7 @@ module CloudConductor
       def get_outputs(name, options = {})
         fail 'Unimplement method'
       end
+      # rubocop: enable UnusedMethodArgument
     end
   end
 end

@@ -15,6 +15,7 @@
 require 'cloud_conductor/adapters'
 
 module CloudConductor
+  # rubocop: disable ClassLength
   class Client
     attr_reader :type, :adapter
 
@@ -92,6 +93,7 @@ module CloudConductor
       "curl -X -H \"Content-Type:application/json\" -X POST -d '{\"system-id\": \"#{system_id}\"}' #{cc_api_url}"
     end
 
+    # rubocop: disable MethodLength
     def add_action_zabbix(zbx, host_id, cc_api_url, system_id)
       action_name = 'FailOver'
       action_exists = check_if_action_exists_zabbix zbx, action_name
@@ -137,5 +139,7 @@ module CloudConductor
       }
       zbx.client.api_request params
     end
+    # rubocop: enable MethodLength
   end
+  # rubocop: enable ClassLength
 end
