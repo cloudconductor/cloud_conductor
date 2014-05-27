@@ -119,6 +119,65 @@ module CloudConductor
           expect(status).to eq(:TESTSTATUS)
         end
       end
+
+      describe '#get_outputs' do
+        before do
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'test_user'
+          @options[:secret] = 'test_secret'
+          @options[:tenant_id] = 'test_tenant'
+
+          @stacks = double('stacks', :[] => double('body', :with_indifferent_access => double('stacks', :[] => double('ary', :find => double('stack', :[] => double('href', :find => double('rel', :[] => 'http://dummy/')))))))
+          @orc = stub(:list_stacks => @stacks, :auth_token => 'dummy_token')
+          ::Fog::Orchestration.stub_chain(:new).and_return(@orc)
+
+          @request = double('request')
+          @request.stub(:content_type=)
+          @request.stub(:add_field)
+          Net::HTTP::Get.stub_chain(:new).and_return(@request)
+
+          @response = double('response')
+          @response.stub(:body).and_return(
+            {
+              stack: {
+                outputs: [
+                  {
+                    output_key: "testkey",
+                    output_value: "testvalue"
+                  }
+                ]
+              }
+            }.to_json
+          )
+          Net::HTTP.stub(:start).and_return(@response)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_outputs 'stack_name', @options
+        end
+
+        it 'instantiate' do
+          @options[:dummy] = 'dummy'
+
+          ::Fog::Orchestration.should_receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_user',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.get_outputs 'stack_name', @options
+        end
+
+        it 'return outputs' do
+          outputs = @adapter.get_outputs 'stack_name', @options
+          outputs = outputs.with_indifferent_access
+          expect(outputs[:testkey]).to eq('testvalue')
+        end
+      end
     end
   end
 end
