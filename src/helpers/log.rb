@@ -44,7 +44,7 @@ class Log
   def self.setup(output, level)
     Log.logger = Logger.new(output)
     Log.logger.level = Logger.const_get(level.upcase)
-    Log.formatter = proc do |severity, datetime, progname, msg|
+    Log.formatter = proc do |severity, datetime, _progname, msg|
       "#{datetime.iso8601(3)} #{severity} -- : #{msg}\n"
     end
     Log.debug('Start logging')
