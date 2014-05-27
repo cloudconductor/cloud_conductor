@@ -105,7 +105,7 @@ class System < ActiveRecord::Base
 
   def status
     cloud = available_clouds.active
-    client = CloudConductor::Client.new cloud.cloud_type
+    client = CloudConductor::Client.new cloud.cloud_type.to_sym
     client.get_stack_status name, cloud.attributes
   end
 end
