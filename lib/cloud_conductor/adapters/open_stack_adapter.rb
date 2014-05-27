@@ -52,9 +52,8 @@ module CloudConductor
         orc = create_orchestration options
         body = (orc.list_stacks)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack_id = target_stack[:id]
-
-        url = URI.parse "#{options[:entry_point]}/v1/#{options[:tenant_id]}/stacks/#{name}/#{target_stack_id}"
+        target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
+        url = URI.parse "#{target_link[:href]}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
         request.add_field 'X-Auth-Token', orc.auth_token
@@ -63,7 +62,6 @@ module CloudConductor
         end
         response = (JSON.parse response.body).with_indifferent_access
         target_stack = response[:stack]
-
         outputs = {}
         target_stack[:outputs].each do |output|
           outputs[output[:output_key]] = output[:output_value]
