@@ -69,7 +69,8 @@ module CloudConductor
 
       describe '#get_stack_status' do
         before do
-          @stacks = double('stacks', :[] => double('stack', status: ''))
+          @stack = double('stack', status: '')
+          @stacks = double('stacks', :[] => @stack)
           AWS::CloudFormation.stub_chain(:new, :stacks).and_return(@stacks)
 
           @options = {}
