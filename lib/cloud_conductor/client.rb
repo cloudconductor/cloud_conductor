@@ -44,6 +44,10 @@ module CloudConductor
       @adapter.get_stack_status name, options
     end
 
+    def get_outputs(name, options)
+      @adapter.get_outputs name, options
+    end
+
     def enable_monitoring(name, parameters)
       cc_api_url = CloudConductor::Config.cloudconductor.configuration[:url]
       zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration

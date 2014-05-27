@@ -43,6 +43,23 @@ module CloudConductor
         cf = AWS::CloudFormation.new aws_options
         cf.stacks[name].status.to_sym
       end
+
+      def get_outputs(name, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        cf = AWS::CloudFormation.new aws_options
+        outputs = {}
+        cf.stacks[name].outputs.each do |output|
+          outputs[output.key] = output.value
+        end
+
+        outputs
+      end
     end
   end
 end

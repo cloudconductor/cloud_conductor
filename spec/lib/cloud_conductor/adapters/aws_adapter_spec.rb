@@ -99,6 +99,39 @@ module CloudConductor
           expect(status).to eq(:dummy_status)
         end
       end
+
+      describe '#get_outputs' do
+        before do
+          @outputs = []
+          AWS::CloudFormation.stub_chain(:new, :stacks, :[], :outputs).and_return(@outputs)
+
+          @options = {}
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
+        end
+
+        it 'execute without exception' do
+          @adapter.get_outputs 'stack_name', @options
+        end
+
+        it 'set credentials for aws-sdk' do
+          @options[:dummy] = 'dummy'
+
+          AWS::CloudFormation.should_receive(:new)
+            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
+
+          @adapter.get_outputs 'stack_name', @options
+        end
+
+        it 'returns outputs hash that is converted from Array<StackOutput>' do
+          stack = double(:stack)
+          @outputs << AWS::CloudFormation::StackOutput.new(stack, 'key1', 'value1', 'description1')
+          @outputs << AWS::CloudFormation::StackOutput.new(stack, 'key2', 'value2', 'description2')
+
+          results = @adapter.get_outputs 'stack_name', @options
+          expect(results).to eq('key1' => 'value1', 'key2' => 'value2')
+        end
+      end
     end
   end
 end

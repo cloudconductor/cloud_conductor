@@ -56,6 +56,19 @@ module CloudConductor
       end
     end
 
+    describe '#get_outputs' do
+      it 'call adapter#get_outputs with same arguments' do
+        name = 'stack_name'
+        options = {}
+
+        Adapters::AWSAdapter.any_instance.should_receive(:get_outputs)
+          .with(kind_of(String), kind_of(Hash))
+
+        client = Client.new :aws
+        client.get_outputs name, options
+      end
+    end
+
     describe '#enable_monitoring' do
       before do
         @zabbix = double('zabbix')

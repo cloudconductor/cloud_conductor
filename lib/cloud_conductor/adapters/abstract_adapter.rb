@@ -26,6 +26,10 @@ module CloudConductor
       def get_stack_status(name, options = {})
         fail 'Unimplement method'
       end
+
+      def get_outputs(name, options = {})
+        fail 'Unimplement method'
+      end
     end
   end
 end
