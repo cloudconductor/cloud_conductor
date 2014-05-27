@@ -17,4 +17,6 @@ require 'sinatra/activerecord'
 class AvailableCloud < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :system
+
+  scope :active, -> { where(active: true).first.cloud }
 end

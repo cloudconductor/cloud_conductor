@@ -243,4 +243,12 @@ describe System do
       expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
     end
   end
+
+  describe '#available_clouds.active' do
+    it 'return cloud that has active flag' do
+      @system.save!
+
+      expect(@system.available_clouds.active).to eq(@cloud_openstack)
+    end
+  end
 end
