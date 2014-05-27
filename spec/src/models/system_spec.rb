@@ -251,4 +251,20 @@ describe System do
       expect(@system.available_clouds.active).to eq(@cloud_openstack)
     end
   end
+
+  describe '#status' do
+    it 'call get_stack_status on adapter that related active cloud' do
+      @system.save!
+
+      CloudConductor::Client.stub(:new) do
+        double('client').tap do |client|
+          expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
+          client.should_receive(:get_stack_status)
+            .with(@system.name, hash_including(expect_arguments)).and_return(:dummy)
+        end
+      end
+
+      expect(@system.status).to eq(:dummy)
+    end
+  end
 end

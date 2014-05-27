@@ -43,6 +43,19 @@ module CloudConductor
       end
     end
 
+    describe '#get_stack_status' do
+      it 'call adapter#get_stack_status with same arguments' do
+        name = 'stack_name'
+        options = {}
+
+        Adapters::AWSAdapter.any_instance.should_receive(:get_stack_status)
+          .with(kind_of(String), kind_of(Hash))
+
+        client = Client.new :aws
+        client.get_stack_status name, options
+      end
+    end
+
     describe '#enable_monitoring' do
       before do
         @zabbix = double('zabbix')

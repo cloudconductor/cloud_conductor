@@ -102,4 +102,10 @@ class System < ActiveRecord::Base
     parameters[:target_host] = monitoring_host
     client.enable_monitoring name, parameters
   end
+
+  def status
+    cloud = available_clouds.active
+    client = CloudConductor::Client.new cloud.cloud_type
+    client.get_stack_status name, cloud.attributes
+  end
 end
