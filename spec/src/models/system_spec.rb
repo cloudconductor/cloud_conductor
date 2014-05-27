@@ -165,6 +165,11 @@ describe System do
 
       @system.save!
     end
+
+    it 'update active flag on successful cloud' do
+      @system.save!
+      expect(@system.available_clouds.find_by_cloud_id(@cloud_openstack).active).to be_true
+    end
   end
 
   describe '#before_save' do
