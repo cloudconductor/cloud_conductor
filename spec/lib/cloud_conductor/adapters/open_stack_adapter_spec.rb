@@ -128,8 +128,22 @@ module CloudConductor
           @options[:secret] = 'test_secret'
           @options[:tenant_id] = 'test_tenant'
 
-          @stacks = double('stacks', :[] => double('body', :with_indifferent_access => double('stacks', :[] => double('ary', :find => double('stack', :[] => double('href', :find => double('rel', :[] => 'http://dummy/')))))))
-          @orc = stub(:list_stacks => @stacks, :auth_token => 'dummy_token')
+          @stacks = double(
+            'stacks', :[] => double(
+              'body', with_indifferent_access: double(
+                'stacks', :[] => double(
+                  'ary', find: double(
+                    'stack', :[] => double(
+                      'href', find: double(
+                        'rel', :[] => 'http://dummy/'
+                      )
+                    )
+                  )
+                )
+              )
+            )
+          )
+          @orc = stub(list_stacks: @stacks, auth_token: 'dummy_token')
           ::Fog::Orchestration.stub_chain(:new).and_return(@orc)
 
           @request = double('request')
@@ -143,8 +157,8 @@ module CloudConductor
               stack: {
                 outputs: [
                   {
-                    output_key: "testkey",
-                    output_value: "testvalue"
+                    output_key: 'testkey',
+                    output_value: 'testvalue'
                   }
                 ]
               }
