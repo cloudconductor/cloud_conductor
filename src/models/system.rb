@@ -106,4 +106,9 @@ class System < ActiveRecord::Base
     cloud = available_clouds.active
     cloud.client.get_stack_status name, cloud.attributes
   end
+
+  def outputs
+    cloud = available_clouds.active
+    cloud.client.get_outputs name, cloud.attributes
+  end
 end

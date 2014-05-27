@@ -267,4 +267,20 @@ describe System do
       expect(@system.status).to eq(:dummy)
     end
   end
+
+  describe '#outputs' do
+    it 'call get_outputs on adapter that related active cloud' do
+      @system.save!
+
+      CloudConductor::Client.stub(:new) do
+        double('client').tap do |client|
+          expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
+          client.should_receive(:get_outputs)
+            .with(@system.name, hash_including(expect_arguments)).and_return(key: 'value')
+        end
+      end
+
+      expect(@system.outputs).to eq(key: 'value')
+    end
+  end
 end
