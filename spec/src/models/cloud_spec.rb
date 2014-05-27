@@ -100,4 +100,13 @@ describe Cloud do
       expect(@cloud.valid?).to be_false
     end
   end
+
+  describe '#client' do
+    it 'return instance of CloudConductor::Client that is initialized by cloud type' do
+      client = double('client')
+      CloudConductor::Client.should_receive(:new).with(:aws).and_return(client)
+
+      expect(@cloud.client).to eq(client)
+    end
+  end
 end

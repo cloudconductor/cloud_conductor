@@ -52,9 +52,8 @@ class System < ActiveRecord::Base
 
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
-      client = CloudConductor::Client.new cloud.cloud_type.to_sym
       begin
-        client.create_stack name, template_body, parameters, cloud.attributes
+        cloud.client.create_stack name, template_body, parameters, cloud.attributes
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
@@ -105,7 +104,6 @@ class System < ActiveRecord::Base
 
   def status
     cloud = available_clouds.active
-    client = CloudConductor::Client.new cloud.cloud_type.to_sym
-    client.get_stack_status name, cloud.attributes
+    cloud.client.get_stack_status name, cloud.attributes
   end
 end

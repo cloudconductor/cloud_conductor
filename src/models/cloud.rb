@@ -27,4 +27,8 @@ class Cloud < ActiveRecord::Base
       errors.add(:tenant_id, 'must not be blank in case that cloud_type is "openstack".')
     end
   end
+
+  def client
+    CloudConductor::Client.new cloud_type.to_sym
+  end
 end
