@@ -41,7 +41,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks[name].status
+        cf.stacks[name].status.to_sym
       end
     end
   end
