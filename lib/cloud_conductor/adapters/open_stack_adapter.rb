@@ -48,6 +48,37 @@ module CloudConductor
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
+
+      def get_outputs(name, options = {})
+        options = options.with_indifferent_access
+        orc = ::Fog::Orchestration.new(
+          provider: :OpenStack,
+          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: options[:secret],
+          openstack_username: options[:key],
+          openstack_tenant: options[:tenant_id]
+        )
+        body = (orc.list_stacks)[:body].with_indifferent_access
+        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
+        target_stack_id = target_stack[:id]
+
+        url = URI.parse "#{options[:entry_point].to_s}/v1/#{options[:tenant_id]}/stacks/#{name}/#{target_stack_id}"
+        request = Net::HTTP::Get.new url.path
+        request.content_type = 'application/json'
+        request.add_field 'X-Auth-Token', orc.auth_token
+        response = Net::HTTP.start url.host, url.port do |http|
+          http.request request
+        end
+        response = (JSON.parse response.body).with_indifferent_access
+        target_stack = response[:stack]
+
+        outputs = {}
+        response[:outputs].each do |output|
+          outputs[output[:output_key]] = output[:output_value]
+        end
+
+        outputs
+      end
     end
   end
 end
