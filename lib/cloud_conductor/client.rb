@@ -90,7 +90,7 @@ module CloudConductor
     end
 
     def create_action_command_zabbix(cc_api_url, system_id)
-      "curl -X -H \"Content-Type:application/json\" -X POST -d '{\"system-id\": \"#{system_id}\"}' #{cc_api_url}"
+      "curl -X -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{cc_api_url}"
     end
 
     # rubocop: disable MethodLength
