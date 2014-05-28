@@ -143,7 +143,7 @@ module CloudConductor
               )
             )
           )
-          @orc = stub(list_stacks: @stacks, auth_token: 'dummy_token')
+          @orc = double('orc', list_stacks: @stacks, auth_token: 'dummy_token')
           ::Fog::Orchestration.stub_chain(:new).and_return(@orc)
 
           @request = double('request')
