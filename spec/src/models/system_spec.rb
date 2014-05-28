@@ -176,6 +176,7 @@ describe System do
   describe '#before_save' do
     before do
       @client = double('client')
+      Cloud.any_instance.stub(:client).and_return(@client)
       CloudConductor::Client.stub(:new).and_return(@client)
       @client.stub('create_stack')
     end
@@ -188,6 +189,8 @@ describe System do
     end
 
     it 'call Client#enable_monitoring when monitoring_host isn\'t nil' do
+      @system.save!
+
       @system.monitoring_host = 'example.com'
 
       @client.should_receive(:enable_monitoring)
