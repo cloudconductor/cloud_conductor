@@ -16,4 +16,4 @@
 # limitations under the License.
 require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
 
-CloudConductor::StackObserver.new.check_stacks if __FILE__ == $PROGRAM_NAME
+CloudConductor::StackObserver.new.update if __FILE__ == $PROGRAM_NAME

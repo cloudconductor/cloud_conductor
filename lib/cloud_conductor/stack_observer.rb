@@ -14,7 +14,15 @@
 # limitations under the License.
 module CloudConductor
   class StackObserver
-    def check_stacks
+    def update
+      update_systems do |system, ip_address|
+        system.ip_address = ip_address
+        system.monitoring_host = system.domain
+        system.save!
+      end
+    end
+
+    def update_systems(&block)
       System.in_progress.each do |system|
         Log.info "Check and update stack with #{system.name}"
         next if system.status != :CREATE_COMPLETE
@@ -32,9 +40,7 @@ module CloudConductor
         next if $CHILD_STATUS.exitstatus != 0
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
-
-        system.monitoring_host = ip_address
-        system.save!
+        yield system, ip_address
       end
     end
   end
