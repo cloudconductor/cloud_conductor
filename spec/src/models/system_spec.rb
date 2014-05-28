@@ -176,6 +176,7 @@ describe System do
   describe '#before_save' do
     before do
       @client = double('client')
+      Cloud.any_instance.stub(:client).and_return(@client)
       CloudConductor::Client.stub(:new).and_return(@client)
       @client.stub('create_stack')
     end
@@ -188,6 +189,8 @@ describe System do
     end
 
     it 'call Client#enable_monitoring when monitoring_host isn\'t nil' do
+      @system.save!
+
       @system.monitoring_host = 'example.com'
 
       @client.should_receive(:enable_monitoring)
@@ -282,6 +285,24 @@ describe System do
       end
 
       expect(@system.outputs).to eq(key: 'value')
+    end
+  end
+
+  describe '.in_progress scope' do
+    it 'returns systems without monitoring host' do
+      count = System.in_progress.count
+
+      client = double('client', create_stack: nil, enable_monitoring: nil)
+      Cloud.any_instance.stub_chain(:client).and_return(client)
+      CloudConductor::Client.stub(:new).and_return(client)
+      @system.save!
+
+      expect(System.in_progress.count).to eq(count + 1)
+
+      @system.monitoring_host = 'example.com'
+      @system.save!
+
+      expect(System.in_progress.count).to eq(count)
     end
   end
 end
