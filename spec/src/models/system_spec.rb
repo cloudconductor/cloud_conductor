@@ -28,6 +28,7 @@ describe System do
     @system.add_cloud(@cloud_openstack, 2)
 
     CloudConductor::Client.stub_chain(:new, :create_stack)
+    CloudConductor::DNSClient.stub_chain(:new, :update)
   end
 
   it 'create with valid parameters' do
@@ -173,7 +174,7 @@ describe System do
     end
   end
 
-  describe '#before_save' do
+  describe '#enable_monitoring(before_save)' do
     before do
       @client = double('client')
       Cloud.any_instance.stub(:client).and_return(@client)
@@ -208,6 +209,28 @@ describe System do
 
       @client.should_not_receive(:enable_monitoring)
       @system.monitoring_host = 'example.com'
+      @system.save!
+    end
+  end
+
+  describe '#update_dns(before_save)' do
+    before do
+      @dns_client = double('dns_client')
+      CloudConductor::DNSClient.stub(:new).and_return(@dns_client)
+      @dns_client.stub('update')
+    end
+
+    it 'doesn\'t call DNSClient#update when ip_address is nil' do
+      @dns_client.should_not_receive(:update)
+
+      @system.ip_address = nil
+      @system.save!
+    end
+
+    it 'call Client#update when monitoring_host isn\'t nil' do
+      @system.ip_address = '192.168.0.1'
+      @dns_client.should_receive(:update).with(@system.domain, @system.ip_address)
+
       @system.save!
     end
   end

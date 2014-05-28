@@ -20,6 +20,7 @@ class System < ActiveRecord::Base
   has_many :clouds, through: :available_clouds
 
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
+  before_save :update_dns, if: -> { ip_address }
 
   scope :in_progress, -> { where(ip_address: nil) }
 
@@ -103,6 +104,11 @@ class System < ActiveRecord::Base
     parameters[:system_id] = id
     parameters[:target_host] = monitoring_host
     client.enable_monitoring name, parameters
+  end
+
+  def update_dns
+    client = CloudConductor::DNSClient.new
+    client.update domain, ip_address
   end
 
   def status
