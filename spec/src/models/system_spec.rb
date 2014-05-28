@@ -287,4 +287,22 @@ describe System do
       expect(@system.outputs).to eq(key: 'value')
     end
   end
+
+  describe '.in_progress scope' do
+    it 'returns systems without monitoring host' do
+      count = System.in_progress.count
+
+      client = double('client', create_stack: nil, enable_monitoring: nil)
+      Cloud.any_instance.stub_chain(:client).and_return(client)
+      CloudConductor::Client.stub(:new).and_return(client)
+      @system.save!
+
+      expect(System.in_progress.count).to eq(count + 1)
+
+      @system.monitoring_host = 'example.com'
+      @system.save!
+
+      expect(System.in_progress.count).to eq(count)
+    end
+  end
 end
