@@ -179,6 +179,7 @@ describe System do
       Cloud.any_instance.stub(:client).and_return(@client)
       CloudConductor::Client.stub(:new).and_return(@client)
       @client.stub('create_stack')
+      @client.stub('enable_monitoring')
     end
 
     it 'doesn\'t call Client#enable_monitoring when monitoring_host is nil' do
@@ -196,6 +197,17 @@ describe System do
       @client.should_receive(:enable_monitoring)
         .with(@system.name, hash_including(system_id: @system.id, target_host: @system.monitoring_host))
 
+      @system.save!
+    end
+
+    it 'doesn\'t call Client#enable_monitoring when monitoring_host isn\'t changed' do
+      @system.save!
+
+      @system.monitoring_host = 'example.com'
+      @system.save!
+
+      @client.should_not_receive(:enable_monitoring)
+      @system.monitoring_host = 'example.com'
       @system.save!
     end
   end
