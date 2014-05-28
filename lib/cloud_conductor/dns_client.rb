@@ -14,5 +14,20 @@
 # limitations under the License.
 module CloudConductor
   class DNSClient
+    def update(domain, ip_address)
+      dns_keyfile = CloudConductor::Config.cloudconductor.configuration[:dns_keyfile]
+      dns_server = CloudConductor::Config.cloudconductor.configuration[:dns_server]
+      ttl = CloudConductor::Config.cloudconductor.configuration[:dns_ttl]
+      ip_address_rev = IPAddr.new(ip_address).reverse
+      command = "server #{dns_server}\n" \
+      "update delete #{domain}\n" \
+      "send\n" \
+      "update add #{domain} #{ttl} A #{ip_address}\n" \
+      "send\n" \
+      "update add #{ip_address_rev} #{ttl} IN PTR #{domain}\n" \
+      "send\n"
+      Log.debug command
+      `sudo echo -e "#{command}" | sudo nsupdate -k #{dns_keyfile}`
+    end
   end
 end
