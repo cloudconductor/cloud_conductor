@@ -14,9 +14,9 @@ when :test
 end
 
 # cloudconductor server settings
-cloudconductor.url 'http://127.0.0.1/'
+cloudconductor.url 'http://cc.demo.cloudconductor.jp:9292/systems (Change to CloudConductor REST API endpoint of system)'
 
 # zabbix server settings
-zabbix.url 'http://192.168.166.217/zabbix/api_jsonrpc.php'
-zabbix.user 'admin'
-zabbix.password 'zabbix'
+zabbix.url 'http://zabbix.demo.cloudconductor.jp/zabbix/api_jsonrpc.php (Change to Zabbix API endpoint)'
+zabbix.user 'admin (Change to Zabbix user)'
+zabbix.password 'zabbix (Change to Zabbix password)'
