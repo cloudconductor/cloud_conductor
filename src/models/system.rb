@@ -21,7 +21,7 @@ class System < ActiveRecord::Base
 
   before_save :enable_monitoring, if: -> { monitoring_host }
 
-  scope :in_progress, -> { where(monitoring_host: nil) }
+  scope :in_progress, -> { where(ip_address: nil) }
 
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true

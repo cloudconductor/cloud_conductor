@@ -304,7 +304,7 @@ describe System do
 
       expect(System.in_progress.count).to eq(count + 1)
 
-      @system.monitoring_host = 'example.com'
+      @system.ip_address = '192.168.0.1'
       @system.save!
 
       expect(System.in_progress.count).to eq(count)
