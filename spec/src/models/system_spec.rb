@@ -27,8 +27,11 @@ describe System do
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
 
-    CloudConductor::Client.stub_chain(:new, :create_stack)
+    @client = double('client', create_stack: nil)
+    Cloud.any_instance.stub(:client).and_return(@client)
+
     CloudConductor::DNSClient.stub_chain(:new, :update)
+    CloudConductor::ZabbixClient.stub_chain(:new, :register)
   end
 
   it 'create with valid parameters' do
@@ -138,32 +141,20 @@ describe System do
       expect(@system.template_url).to be_nil
     end
 
-    it 'instantiate cloud client with primary cloud adapter' do
-      CloudConductor::Client.should_receive(:new)
-      @system.save!
-    end
-
     it 'call create_stack on cloud that has highest priority' do
-      CloudConductor::Client.stub(:new) do
-        double('client').tap do |client|
-          client.should_receive(:create_stack)
-            .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes)
-        end
-      end
+      @client.should_receive(:create_stack)
+        .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes)
 
       @system.save!
     end
 
     it 'call create_stack on clouds with priority order' do
-      client = double('client')
-      client.should_receive(:create_stack)
+      @client.should_receive(:create_stack)
         .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes).ordered
         .and_raise('Dummy exception')
 
-      client.should_receive(:create_stack)
+      @client.should_receive(:create_stack)
         .with(@system.name, @system.template_body, @system.parameters, @cloud_aws.attributes).ordered
-
-      CloudConductor::Client.stub(:new).and_return(client)
 
       @system.save!
     end
@@ -176,38 +167,34 @@ describe System do
 
   describe '#enable_monitoring(before_save)' do
     before do
-      @client = double('client')
-      Cloud.any_instance.stub(:client).and_return(@client)
-      CloudConductor::Client.stub(:new).and_return(@client)
-      @client.stub('create_stack')
-      @client.stub('enable_monitoring')
+      @zabbix_client = double('zabbix_client', register: nil)
+      CloudConductor::ZabbixClient.stub(:new).and_return(@zabbix_client)
     end
 
-    it 'doesn\'t call Client#enable_monitoring when monitoring_host is nil' do
-      @client.should_not_receive(:enable_monitoring)
+    it 'doesn\'t call ZabbixClient#register when monitoring_host is nil' do
+      @zabbix_client.should_not_receive(:register)
 
       @system.monitoring_host = nil
       @system.save!
     end
 
-    it 'call Client#enable_monitoring when monitoring_host isn\'t nil' do
+    it 'call ZabbixClient#register when monitoring_host isn\'t nil' do
       @system.save!
 
       @system.monitoring_host = 'example.com'
 
-      @client.should_receive(:enable_monitoring)
-        .with(@system.name, hash_including(system_id: @system.id, target_host: @system.monitoring_host))
+      @zabbix_client.should_receive(:register).with(@system)
 
       @system.save!
     end
 
-    it 'doesn\'t call Client#enable_monitoring when monitoring_host isn\'t changed' do
+    it 'doesn\'t call ZabbixClient#register when monitoring_host isn\'t changed' do
       @system.save!
 
       @system.monitoring_host = 'example.com'
       @system.save!
 
-      @client.should_not_receive(:enable_monitoring)
+      @zabbix_client.should_not_receive(:register)
       @system.monitoring_host = 'example.com'
       @system.save!
     end
@@ -300,13 +287,9 @@ describe System do
     it 'call get_stack_status on adapter that related active cloud' do
       @system.save!
 
-      CloudConductor::Client.stub(:new) do
-        double('client').tap do |client|
-          expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
-          client.should_receive(:get_stack_status)
-            .with(@system.name, hash_including(expect_arguments)).and_return(:dummy)
-        end
-      end
+      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
+      @client.should_receive(:get_stack_status)
+        .with(@system.name, hash_including(expect_arguments)).and_return(:dummy)
 
       expect(@system.status).to eq(:dummy)
     end
@@ -316,13 +299,9 @@ describe System do
     it 'call get_outputs on adapter that related active cloud' do
       @system.save!
 
-      CloudConductor::Client.stub(:new) do
-        double('client').tap do |client|
-          expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
-          client.should_receive(:get_outputs)
-            .with(@system.name, hash_including(expect_arguments)).and_return(key: 'value')
-        end
-      end
+      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
+      @client.should_receive(:get_outputs)
+        .with(@system.name, hash_including(expect_arguments)).and_return(key: 'value')
 
       expect(@system.outputs).to eq(key: 'value')
     end
@@ -332,9 +311,6 @@ describe System do
     it 'returns systems without monitoring host' do
       count = System.in_progress.count
 
-      client = double('client', create_stack: nil, enable_monitoring: nil)
-      Cloud.any_instance.stub_chain(:client).and_return(client)
-      CloudConductor::Client.stub(:new).and_return(client)
       @system.save!
 
       expect(System.in_progress.count).to eq(count + 1)

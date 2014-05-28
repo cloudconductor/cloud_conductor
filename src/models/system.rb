@@ -97,18 +97,13 @@ class System < ActiveRecord::Base
   end
 
   def enable_monitoring
-    # TODO: Separate zabbix api from client because zabbix api independs cloud_type
-    client = CloudConductor::Client.new :dummy
-
-    parameters = {}
-    parameters[:system_id] = id
-    parameters[:target_host] = monitoring_host
-    client.enable_monitoring name, parameters
+    zabbix_client = CloudConductor::ZabbixClient.new
+    zabbix_client.register self
   end
 
   def update_dns
-    client = CloudConductor::DNSClient.new
-    client.update domain, ip_address
+    dns_client = CloudConductor::DNSClient.new
+    dns_client.update domain, ip_address
   end
 
   def status
