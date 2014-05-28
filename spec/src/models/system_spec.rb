@@ -215,7 +215,7 @@ describe System do
   end
 
   describe '#dup' do
-    it 'duplicate all attributes in system without name' do
+    it 'duplicate all attributes in system without name and ip_address' do
       duplicated_system = @system.dup
       expect(duplicated_system.template_body).to eq(@system.template_body)
       expect(duplicated_system.template_url).to eq(@system.template_url)
@@ -235,6 +235,11 @@ describe System do
     it 'change number suffix that is incremented from original suffix' do
       @system.name = 'test_23'
       expect(@system.dup.name).to eq('test_24')
+    end
+
+    it 'clear ip_address' do
+      @system.ip_address = '192.168.0.1'
+      expect(@system.dup.ip_address).to be_nil
     end
 
     it 'duplicated associated clouds' do

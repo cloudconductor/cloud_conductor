@@ -86,6 +86,7 @@ class System < ActiveRecord::Base
     number = (matches[3] || 0).to_i
 
     system.name = format('%s_%d', base_name, (number + 1))
+    system.ip_address = nil
 
     available_clouds.each do |available_cloud|
       system.add_cloud available_cloud.cloud, available_cloud.priority
