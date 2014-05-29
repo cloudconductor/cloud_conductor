@@ -1,5 +1,3 @@
-#!/bin/env ruby
-
 # -*- coding: utf-8 -*-
 # Copyright 2014 TIS Inc.
 #
@@ -14,6 +12,14 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
+FactoryGirl.define do
+  factory :system, class: System do
+    name 'stack-12345678'
+    template_body '{}'
+    parameters '{}'
 
-CloudConductor::StackObserver.new.update if __FILE__ == $PROGRAM_NAME
+    before(:create) do |system|
+      system.add_cloud create(:cloud_aws), 1
+    end
+  end
+end

@@ -19,9 +19,10 @@ class System < ActiveRecord::Base
   has_many :available_clouds
   has_many :clouds, through: :available_clouds
 
-  before_save :enable_monitoring, if: -> { monitoring_host }
+  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
+  before_save :update_dns, if: -> { ip_address }
 
-  scope :in_progress, -> { where(monitoring_host: nil) }
+  scope :in_progress, -> { where(ip_address: nil) }
 
   validates :name, presence: true
   validates :template_url, format: { with: URI.regexp }, allow_blank: true
@@ -86,6 +87,7 @@ class System < ActiveRecord::Base
     number = (matches[3] || 0).to_i
 
     system.name = format('%s_%d', base_name, (number + 1))
+    system.ip_address = nil
 
     available_clouds.each do |available_cloud|
       system.add_cloud available_cloud.cloud, available_cloud.priority
@@ -95,13 +97,13 @@ class System < ActiveRecord::Base
   end
 
   def enable_monitoring
-    # TODO: Separate zabbix api from client because zabbix api independs cloud_type
-    client = CloudConductor::Client.new :dummy
+    zabbix_client = CloudConductor::ZabbixClient.new
+    zabbix_client.register self
+  end
 
-    parameters = {}
-    parameters[:system_id] = id
-    parameters[:target_host] = monitoring_host
-    client.enable_monitoring name, parameters
+  def update_dns
+    dns_client = CloudConductor::DNSClient.new
+    dns_client.update domain, ip_address
   end
 
   def status

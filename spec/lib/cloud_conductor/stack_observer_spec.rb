@@ -37,7 +37,7 @@ module CloudConductor
 
     describe '#check_stacks' do
       it 'check all stacks without exception' do
-        StackObserver.new.check_stacks
+        StackObserver.new.update
       end
     end
   end

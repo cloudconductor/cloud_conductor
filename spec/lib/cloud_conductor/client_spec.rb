@@ -68,32 +68,5 @@ module CloudConductor
         client.get_outputs name, options
       end
     end
-
-    describe '#enable_monitoring' do
-      before do
-        @zabbix = double('zabbix')
-        ZabbixApi.stub(:connect).and_return(@zabbix)
-
-        @zabbix.stub_chain(:hostgroups, :create_or_update)
-        @zabbix.stub_chain(:templates, :get_id)
-        @zabbix.stub_chain(:hosts, :create_or_update)
-        @zabbix.stub_chain(:client, :api_request)
-      end
-
-      it 'call zabbix api to register action' do
-        zabbix_client = double('zabbix_client')
-        zabbix_client.stub(:api_request)
-        zabbix_client.should_receive(:api_request).with(hash_including(method: 'action.create'))
-
-        @zabbix.stub(:client).and_return(zabbix_client)
-
-        parameters = {}
-        parameters[:target_host] = 'example.com'
-        parameters[:system_id] = 1
-
-        client = Client.new :dummy
-        client.enable_monitoring 'name', parameters
-      end
-    end
   end
 end
