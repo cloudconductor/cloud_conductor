@@ -29,6 +29,6 @@ parser.parse!(ARGV)
 Process.daemon if options[:daemon]
 
 1.upto(options[:count]) do |n|
-  sleep options[:wait] unless n == 0
+  sleep options[:wait] unless n == 1
   CloudConductor::StackObserver.new.update
 end
