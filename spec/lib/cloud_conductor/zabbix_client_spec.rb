@@ -24,6 +24,7 @@ module CloudConductor
         @zabbix.stub_chain(:hosts, :create_or_update)
         @zabbix.stub_chain(:client, :api_request)
 
+        Cloud.any_instance.stub_chain(:client, :create_stack)
         @system = FactoryGirl.create(:system)
       end
 
