@@ -22,12 +22,14 @@ module CloudConductor
       command = "server #{dns_server}\n" \
       "update delete #{domain}\n" \
       "send\n" \
+      "update delete #{ip_address_rev}\n" \
+      "send\n" \
       "update add #{domain} #{ttl} A #{ip_address}\n" \
       "send\n" \
       "update add #{ip_address_rev} #{ttl} IN PTR #{domain}\n" \
       "send\n"
       Log.debug command
-      `sudo echo -e "#{command}" | sudo nsupdate -k #{dns_keyfile}`
+      `sudo echo -e "#{command}" | sudo /usr/bin/nsupdate -k #{dns_keyfile}`
     end
   end
 end
