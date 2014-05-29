@@ -14,6 +14,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'optparse'
 require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
 
-CloudConductor::StackObserver.new.update if __FILE__ == $PROGRAM_NAME
+options = { count: Float::INFINITY, wait: 10, daemon: false }
+
+parser = OptionParser.new
+parser.on('-c count', '--count count')  { |v| options[:count] = v.to_i }
+parser.on('-w second', '--wait second') { |v| options[:wait] = v.to_i }
+parser.on('-d', '--daemon')             { |v| options[:daemon] = true }
+
+parser.parse!(ARGV)
+
+Process.daemon if options[:daemon]
+
+1.upto(options[:count]) do |n|
+  sleep options[:wait] unless n == 0
+  CloudConductor::StackObserver.new.update
+end
