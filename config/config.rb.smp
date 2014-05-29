@@ -15,7 +15,7 @@ end
 
 # cloudconductor server settings
 cloudconductor.url 'http://cc.demo.cloudconductor.jp:9292/systems (Change to CloudConductor REST API endpoint of system)'
-cloudconductor.dns_server '192.168.166.182' (Change to DNS server)
+cloudconductor.dns_server 'ns.demo.cloudconductor.jp' (Change to DNS server)
 cloudconductor.dns_keyfile '/etc/rndc.key' (Change to DNS access key)
 cloudconductor.dns_ttl 3600 (Change to ttl)
 
