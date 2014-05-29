@@ -26,7 +26,7 @@ parser.on('-d', '--daemon')             { |v| options[:daemon] = true }
 
 parser.parse!(ARGV)
 
-Process.daemon if options[:daemon]
+Process.daemon true if options[:daemon]
 
 1.upto(options[:count]) do |n|
   sleep options[:wait] unless n == 1
