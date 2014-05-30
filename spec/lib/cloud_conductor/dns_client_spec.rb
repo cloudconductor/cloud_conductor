@@ -22,15 +22,14 @@ module CloudConductor
 
       it 'update record' do
         dns_client = DNSClient.new
-        dns_client.stub(:`)
-        dns_client.should_receive(:`).with(
-          "sudo echo -e \"" \
-          "server test_dnsserver\n" \
-          "update delete test_domain\n" \
-          "send\n" \
-          "update add test_domain 100 A 10.0.0.1\n" \
-          "send\n" \
-          "\" | sudo /usr/bin/nsupdate -k /etc/testkey"
+        Open3.stub(:capture3).and_return('out1', 'err1', 'nsupdate1')
+        Open3.should_receive(:capture3).with(
+          'sudo /usr/bin/nsupdate -k /etc/testkey',
+          stdin_data: "server test_dnsserver\n" \
+                      "update delete test_domain\n" \
+                      "send\n" \
+                      "update add test_domain 100 A 10.0.0.1\n" \
+                      "send\n"
         )
         dns_client.update 'test_domain', '10.0.0.1'
       end
