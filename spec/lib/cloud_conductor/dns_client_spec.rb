@@ -30,9 +30,7 @@ module CloudConductor
           "send\n" \
           "update add test_domain 100 A 10.0.0.1\n" \
           "send\n" \
-          "update add 1.0.0.10.in-addr.arpa 100 IN PTR test_domain\n" \
-          "send\n" \
-          "\" | sudo nsupdate -k /etc/testkey"
+          "\" | sudo /usr/bin/nsupdate -k /etc/testkey"
         )
         dns_client.update 'test_domain', '10.0.0.1'
       end
