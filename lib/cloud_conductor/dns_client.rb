@@ -31,7 +31,7 @@ module CloudConductor
       out, err, status = Open3.capture3(nsupdate, stdin_data: command)
       Log.debug "out = #{out}"
       Log.debug "err = #{err}"
-      Log.debug "sttus = #{status}"
+      Log.debug "status = #{status}"
     end
   end
 end
