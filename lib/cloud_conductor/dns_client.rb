@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'open3'
+
 module CloudConductor
   class DNSClient
     def update(domain, ip_address)
@@ -24,7 +26,12 @@ module CloudConductor
       "update add #{domain} #{ttl} A #{ip_address}\n" \
       "send\n"
       Log.debug command
-      `sudo echo -e "#{command}" | sudo /usr/bin/nsupdate -k #{dns_keyfile}`
+      nsupdate = "sudo /usr/bin/nsupdate -k #{dns_keyfile}"
+      Log.debug nsupdate
+      out, err, status = Open3.capture3(nsupdate, stdin_data: command)
+      Log.debug "out = #{out}"
+      Log.debug "err = #{err}"
+      Log.debug "sttus = #{status}"
     end
   end
 end
