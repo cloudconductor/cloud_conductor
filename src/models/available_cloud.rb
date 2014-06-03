@@ -18,5 +18,7 @@ class AvailableCloud < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :system
 
-  scope :active, -> { where(active: true).first.cloud }
+  def self.active
+    where(active: true).first.cloud rescue nil
+  end
 end

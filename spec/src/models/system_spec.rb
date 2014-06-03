@@ -275,14 +275,6 @@ describe System do
     end
   end
 
-  describe '#available_clouds.active' do
-    it 'return cloud that has active flag' do
-      @system.save!
-
-      expect(@system.available_clouds.active).to eq(@cloud_openstack)
-    end
-  end
-
   describe '#status' do
     it 'call get_stack_status on adapter that related active cloud' do
       @system.save!
