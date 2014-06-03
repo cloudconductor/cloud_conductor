@@ -21,6 +21,8 @@ module CloudConductor
 
         @zabbix.stub_chain(:hostgroups, :create_or_update)
         @zabbix.stub_chain(:templates, :get_id)
+        hosts = double('hosts', find: { host: 'test' })
+        @zabbix.stub_chain(:hosts, :get).and_return(hosts)
         @zabbix.stub_chain(:hosts, :create_or_update)
         @zabbix.stub_chain(:client, :api_request)
 
