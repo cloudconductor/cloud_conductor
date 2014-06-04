@@ -28,7 +28,6 @@ module CloudConductor
         host_id: host_id,
         cc_api_url: cc_api_url,
         system_id: system.id,
-        system_name: system.name,
         target_host: system.monitoring_host
       )
     end
@@ -114,9 +113,8 @@ module CloudConductor
       host_id = parameters[:host_id]
       cc_api_url = parameters[:cc_api_url]
       system_id = parameters[:system_id]
-      system_name = parameters[:system_name]
       target_host = parameters[:target_host]
-      action_name = "FailOver_#{system_name}_#{target_host}"
+      action_name = "FailOver_#{target_host}"
       action_exists = check_if_action_exists_zabbix zbx, action_name
 
       return if action_exists
