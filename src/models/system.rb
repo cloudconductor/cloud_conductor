@@ -16,7 +16,7 @@ require 'sinatra/activerecord'
 require 'open-uri'
 
 class System < ActiveRecord::Base
-  has_many :available_clouds
+  has_many :available_clouds, dependent: :destroy
   has_many :clouds, through: :available_clouds
 
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }

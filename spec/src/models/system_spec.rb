@@ -313,4 +313,14 @@ describe System do
       expect(System.in_progress.count).to eq(count)
     end
   end
+
+  describe '#destroy' do
+    it 'will delete relation record on AvailableCloud' do
+      count = AvailableCloud.count
+      @system.save!
+      expect(AvailableCloud.count).to_not eq(count)
+      @system.destroy
+      expect(AvailableCloud.count).to eq(count)
+    end
+  end
 end
