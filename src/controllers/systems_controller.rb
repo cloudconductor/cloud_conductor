@@ -48,9 +48,10 @@ class SystemsController < Sinatra::Base
   post '/', clone: true do
     begin
       previous_system = System.find(params[:system_id])
-    rescue
+    rescue => e
+      Log.error e
       status 400
-      return '{ "message": "Template system does not exist" }'
+      return json message: e.message
     end
 
     system = previous_system.dup
@@ -66,9 +67,10 @@ class SystemsController < Sinatra::Base
   put '/:id' do
     begin
       system = System.find(params[:id])
-    rescue
+    rescue => e
+      Log.error e
       status 400
-      return '{ "message": "System does not exist" }'
+      return json message: e.message
     end
 
     system.update_attributes permit_paras

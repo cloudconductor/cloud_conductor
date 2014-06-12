@@ -45,8 +45,19 @@ class Log
     Log.logger = Logger.new(output)
     Log.logger.level = Logger.const_get(level.upcase)
     Log.formatter = proc do |severity, datetime, _progname, msg|
-      "#{datetime.iso8601(3)} #{severity} -- : #{msg}\n"
+      "#{datetime.iso8601(3)} #{severity} -- : #{msg2str(msg)}\n"
     end
     Log.debug('Start logging')
+  end
+
+  def self.msg2str(msg)
+    case msg
+    when ::String
+      msg
+    when ::Exception
+      "#{msg.inspect}\n  #{(msg.backtrace || []).join("\n  ")}"
+    else
+      msg.inspect
+    end
   end
 end
