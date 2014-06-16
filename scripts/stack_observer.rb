@@ -22,7 +22,7 @@ options = { count: Float::INFINITY, wait: 10, daemon: false }
 parser = OptionParser.new
 parser.on('-c count', '--count count')  { |v| options[:count] = v.to_i }
 parser.on('-w second', '--wait second') { |v| options[:wait] = v.to_i }
-parser.on('-d', '--daemon')             { |v| options[:daemon] = true }
+parser.on('-d', '--daemon')             { options[:daemon] = true }
 
 parser.parse!(ARGV)
 

@@ -22,7 +22,7 @@ module CloudConductor
       end
     end
 
-    def update_systems(&block)
+    def update_systems(&_block)
       System.in_progress.each do |system|
         Log.info "Check and update stack with #{system.name}"
         next if system.status != :CREATE_COMPLETE
