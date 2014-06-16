@@ -82,6 +82,17 @@ class SystemsController < Sinatra::Base
     status 200
   end
 
+  delete '/:id' do
+    begin
+      system = System.find(params[:id])
+      system.destroy
+    rescue => e
+      Log.error e
+      status 400
+      return json message: e.message
+    end
+  end
+
   def permit_params
     ActionController::Parameters.new(params)
       .permit(:name, :template_body, :template_url, :parameters, :monitoring_host, :domain)

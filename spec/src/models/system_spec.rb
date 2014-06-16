@@ -315,6 +315,13 @@ describe System do
   end
 
   describe '#destroy' do
+    it 'will delete system record' do
+      count = System.count
+      @system.save!
+      @system.destroy
+      expect(System.count).to eq(count)
+    end
+
     it 'will delete relation record on AvailableCloud' do
       count = AvailableCloud.count
       @system.save!
