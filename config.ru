@@ -18,6 +18,9 @@ use Rack::Parser, :content_types => {
   'application/json'  => Proc.new { |body| JSON.parse(body) }
 }
 
+# Publish static files in public directory
+use Rack::Static, urls: [ '/' ], root: 'public'
+
 # Register route
 map('/systems') { run SystemsController }
 map('/clouds') { run CloudsController }
