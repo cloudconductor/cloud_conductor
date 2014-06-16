@@ -8,3 +8,6 @@
 
 # Ignore setting file for individual environment
 /config/config.rb
+
+# Ignore external javascript libralies
+/public/js/ext
