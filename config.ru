@@ -14,8 +14,8 @@
 # limitations under the License.
 require './src/helpers/loader'
 
-use Rack::Parser, :content_types => {
-  'application/json'  => Proc.new { |body| JSON.parse(body) }
+use Rack::Parser, content_types: {
+  'application/json'  => proc { |body| JSON.parse(body) }
 }
 
 # Publish static files in public directory
