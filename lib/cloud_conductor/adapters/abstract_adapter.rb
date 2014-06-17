@@ -31,6 +31,10 @@ module CloudConductor
       def get_outputs(name, options = {})
         fail 'Unimplement method'
       end
+
+      def destroy_stack(name, options = {})
+        fail 'Unimplement method'
+      end
       # rubocop: enable UnusedMethodArgument
     end
   end

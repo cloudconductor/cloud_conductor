@@ -55,6 +55,17 @@ module CloudConductor
           @adapter.get_stack_status 'stack_name', {}
         end
       end
+
+      describe '#destroy_stack' do
+        it 'execute without exception' do
+          @adapter.destroy_stack 'stack_name', {}
+        end
+
+        it 'output log' do
+          Log.should_receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.destroy_stack')
+          @adapter.destroy_stack 'stack_name', {}
+        end
+      end
     end
   end
 end

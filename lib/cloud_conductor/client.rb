@@ -47,5 +47,9 @@ module CloudConductor
     def get_outputs(name, options)
       @adapter.get_outputs name, options
     end
+
+    def destroy_stack(name, options)
+      @adapter.destroy_stack name, options
+    end
   end
 end

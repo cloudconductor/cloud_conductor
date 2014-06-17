@@ -27,7 +27,7 @@ describe System do
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
 
-    @client = double('client', create_stack: nil)
+    @client = double('client', create_stack: nil, destroy_stack: nil)
     Cloud.any_instance.stub(:client).and_return(@client)
 
     CloudConductor::DNSClient.stub_chain(:new, :update)
@@ -328,6 +328,15 @@ describe System do
       expect(AvailableCloud.count).to_not eq(count)
       @system.destroy
       expect(AvailableCloud.count).to eq(count)
+    end
+
+    it 'will call destroy_stack method on current adapter' do
+      @system.save!
+
+      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
+      @client.should_receive(:destroy_stack).with(@system.name, hash_including(expect_arguments))
+
+      @system.destroy
     end
   end
 end

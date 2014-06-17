@@ -16,6 +16,8 @@ require 'sinatra/activerecord'
 require 'open-uri'
 
 class System < ActiveRecord::Base
+  before_destroy :destroy_stack
+
   has_many :available_clouds, dependent: :destroy
   has_many :clouds, through: :available_clouds
 
@@ -118,5 +120,10 @@ class System < ActiveRecord::Base
     cloud.client.get_outputs name, cloud.attributes
   rescue
     {}
+  end
+
+  def destroy_stack
+    cloud = available_clouds.active
+    cloud.client.destroy_stack name, cloud.attributes
   end
 end

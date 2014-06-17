@@ -132,6 +132,46 @@ module CloudConductor
           expect(results).to eq('key1' => 'value1', 'key2' => 'value2')
         end
       end
+
+      describe '#destroy_stack' do
+        before do
+          AWS::CloudFormation.stub_chain(:new, :stacks, :[], :delete)
+
+          @options = {}
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
+        end
+
+        it 'execute without exception' do
+          @adapter.destroy_stack 'stack_name', {}
+        end
+
+        it 'set credentials for aws-sdk' do
+          @options[:dummy] = 'dummy'
+
+          AWS::CloudFormation.should_receive(:new)
+            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
+
+          @adapter.destroy_stack 'stack_name', @options
+        end
+
+        it 'set region for aws-sdk' do
+          @options[:entry_point] = 'ap-northeast-1'
+          AWS::CloudFormation.should_receive(:new).with(hash_including(region: 'ap-northeast-1'))
+
+          @adapter.destroy_stack 'stack_name', @options
+        end
+
+        it 'call CloudFormation::Stack#delete to delete created stack on aws' do
+          AWS::CloudFormation.stub_chain(:new, :stacks, :[]) do
+            double('stack').tap do |stack|
+              stack.should_receive(:delete)
+            end
+          end
+
+          @adapter.destroy_stack 'stack_name', @options
+        end
+      end
     end
   end
 end

@@ -68,5 +68,18 @@ module CloudConductor
         client.get_outputs name, options
       end
     end
+
+    describe '#destroy_stack' do
+      it 'call adapter#destroy_stack with same arguments' do
+        name = 'stack_name'
+        options = {}
+
+        Adapters::AWSAdapter.any_instance.should_receive(:destroy_stack)
+          .with(kind_of(String), kind_of(Hash))
+
+        client = Client.new :aws
+        client.destroy_stack name, options
+      end
+    end
   end
 end
