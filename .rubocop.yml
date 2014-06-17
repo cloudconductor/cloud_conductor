@@ -1,6 +1,8 @@
 AllCops:
   Exclude:
     - db/schema.rb
+    - node_modules/**/*
+    - public/js/ext/**/*
 
 LineLength:
   Max: 130
