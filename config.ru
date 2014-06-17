@@ -19,7 +19,7 @@ use Rack::Parser, :content_types => {
 }
 
 # Publish static files in public directory
-use Rack::Static, urls: [ '/' ], root: 'public'
+use Rack::Static, urls: [/^\/$/, '/js', '/css'], root: 'public', index: 'index.html'
 
 # Register route
 map('/systems') { run SystemsController }
