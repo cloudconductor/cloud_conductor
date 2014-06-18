@@ -69,6 +69,16 @@ module CloudConductor
 
         outputs
       end
+
+      def destroy_stack(name, options = {})
+        options = options.with_indifferent_access
+        orc = create_orchestration options
+        body = (orc.list_stacks)[:body].with_indifferent_access
+        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
+        puts target_stack
+        stack_id = target_stack[:id].to_sym
+        orc.delete_stack name, stack_id
+      end
     end
   end
 end
