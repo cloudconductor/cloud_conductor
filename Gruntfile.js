@@ -7,6 +7,10 @@ module.exports = function(grunt) {
       js: {
         files: ['**/*.js', '!public/js/template.js'],
         tasks: ['jshint', 'jasmine']
+      },
+      scss: {
+        files: ['public/scss/**/*.scss'],
+        tasks: ['compass', 'concat:css']
       }
     },
 
@@ -21,9 +25,19 @@ module.exports = function(grunt) {
         jshintrc: true,
         force: true
       }
+    },
+
+    compass: {
+      all: {
+        options: {
+          sassDir: 'public/scss',
+          cssDir: 'public/css'
+        }
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-compass');
 };

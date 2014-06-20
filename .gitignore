@@ -2,6 +2,7 @@
 /Gemfile.lock
 /tmp/*
 /log/*
+/.sass-cache
 
 # Ignore database files
 /db/*.sqlite3
