@@ -1,0 +1,53 @@
+<div class="container">
+  <%
+    var breadcrumb = [];
+    breadcrumb.push({ url: "#clouds", label: $.t("cloud.index.cloud_list")});
+    breadcrumb.push({ url: "#clouds/" + id, label: name});
+  %>
+  <%= this.partial('common/menu', { breadcrumb: breadcrumb })%>
+  <!-- テーブル一覧 -->
+  <h2 id="tables-hover-rows" data-i18n="cloud.show.cloud_detail">クラウド詳細</h2>
+  <%= this.partial('common/error') %>
+  <table class="table table-hover">
+    <tbody>
+      <tr>
+        <td data-i18n="cloud.show.id">ID</td>
+        <td><%= id %></td>
+      </tr>
+      <tr>
+        <td data-i18n="cloud.show.name">クラウド名</td>
+        <td><%= name %></td>
+      </tr>
+      <tr>
+        <td data-i18n="cloud.show.cloud_type">種類</td>
+        <td><%= cloud_type %></td>
+      </tr>
+      <tr>
+        <td data-i18n="cloud.show.entry_point">エントリーポイント</td>
+        <td><%= entry_point %></td>
+      </tr>
+      <tr>
+        <td data-i18n="cloud.show.access_key">アクセスキー</td>
+        <td><%- key %></td>
+      </tr>
+      <tr>
+        <td data-i18n="cloud.show.secret_key">シークレットキー</td>
+        <td><% if(secret) {%>********<% } else {} %></td>
+      </tr>
+      <% if(cloud_type === 'OpenStack') { %>
+        <tr>
+          <td data-i18n="cloud.show.tenant_id">テナントID</td>
+          <td><%- tenant_id %></td>
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <!--
+  <p align="right">
+    <a class="btn btn-primary btn-default" href="#cloud_entry_points/<%= id %>/edit" data-i18n="common.button.edit">編集</a>
+    <a id="delete" class="btn btn-danger btn-default" href="javascript:void(0)" data-i18n="common.button.delete">削除</a>
+    <a class="btn btn-default" href="#cloud_entry_points" data-i18n="common.button.back">戻る</a>
+  </p>
+  -->
+  <%= this.partial('common/footer')%>
+</div>

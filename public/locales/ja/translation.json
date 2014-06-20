@@ -1,0 +1,69 @@
+{
+  "common": {
+    "navigation": {
+      "system": "システム",
+      "cloud": "クラウド",
+      "login": "ログイン",
+      "logout": "ログアウト"
+    },
+    "button": {
+      "view": "表示",
+      "new": "新規作成",
+      "edit": "編集",
+      "save": "保存",
+      "cancel": "キャンセル",
+      "back": "戻る"
+    }
+  },
+  "main": {
+    "index": {
+      "title": "Cloud Conductor",
+      "subtitle_1": "CloudConductorはデザイン指向クラウドオーケストレーションソフトウェアです。当ソフトウェアは特定のクラウドサービスやプロダクトに依存するのではなく、どこにでもデプロイできるようなオーケストレーション機能を提供します。これにより、クラウドオーケストレーションにおける指揮者(conductor)として、オーケストレーションをリードします。",
+      "subtitle_2": "CloudConductorがシステムインテグレーションの作業効率化や構築したシステムの品質向上に寄与いたしますように！",
+      "system_list": "システム一覧",
+      "system_description": "システムの参照が可能です",
+      "cloud_list": "クラウド一覧",
+      "cloud_description": "クラウドの参照が可能です"
+    }
+  },
+  "system": {
+    "index": {
+      "system_list": "システム一覧",
+      "id": "ID",
+      "system_name": "システム名",
+      "cloud_name": "クラウド名"
+    },
+    "show": {
+      "system_detail": "システム詳細",
+      "id": "ID",
+      "name": "システム名",
+      "template_url": "テンプレート URL",
+      "template_body": "テンプレート内容",
+      "parameters": "パラメータ",
+      "monitoring_host": "監視",
+      "ip_address": "IPアドレス",
+      "domain": "ドメイン",
+      "clouds": "クラウド",
+      "using": "システムはこのクラウドを使用しています。",
+      "not_using": "このクラウドは使用していません。"
+    }
+  },
+  "cloud": {
+    "index": {
+      "cloud_list": "クラウド一覧",
+      "id": "ID",
+      "name": "クラウド名",
+      "cloud_type": "クラウドタイプ"
+    },
+    "show": {
+      "cloud_detail": "クラウド詳細",
+      "id": "ID",
+      "name": "クラウド名",
+      "cloud_type": "種類",
+      "entry_point": "エントリーポイント",
+      "access_key": "公開鍵",
+      "secret_key": "秘密鍵",
+      "tenant_id": "テナントID"
+    }
+  }
+}

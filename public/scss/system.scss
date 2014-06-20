@@ -1,0 +1,26 @@
+.scrollable {
+  overflow: scroll;
+  max-height: 200px;
+  min-height: 50px;
+  white-space: pre;
+  word-wrap: normal;
+  margin: 0;
+  padding: 0;
+}
+
+.centering {
+  line-height: 20px;
+  height: 25px;
+  display: block;
+  a {
+    margin-left: 15px;
+  }
+}
+.glyphicon-ok-sign:before {
+  position: absolute;
+  margin-top: 2px;
+}
+.glyphicon-minus-sign:before {
+  position: absolute;
+  margin-top: 2px;
+}

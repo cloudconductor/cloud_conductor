@@ -18,11 +18,24 @@
   require.config({
     baseUrl: 'js',
     paths: {
+      jquery: 'ext/jquery/jquery.min',
+      'jquery-cookie': 'ext/jquery.cookie/jquery.cookie',
+      underscore: 'ext/lodash/dist/lodash.min',
+      backbone: 'ext/backbone/backbone',
+      'backbone-paginator': 'ext/backbone.paginator/lib/backbone.paginator',
+      i18n: 'ext/i18next/i18next.amd.withJQuery',
+      jst: 'template',
+      'extended-view': 'lib/extended-view'
     },
     shim: {
+      i18n: {
+        exports: 'i18n'
+      }
     }
   });
 
-  define(['src/main'], function() {
+  define(['i18n', 'app', 'src/main', '../spec/helpers/spec_helper'], function(i18n, App) {
+    window.i18n = i18n;
+    window.App = App;
   });
 })();
