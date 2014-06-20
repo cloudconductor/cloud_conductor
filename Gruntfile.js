@@ -8,6 +8,10 @@ module.exports = function(grunt) {
         files: ['**/*.js', '!public/js/template.js'],
         tasks: ['jshint', 'jasmine']
       },
+      jst: {
+        files: ['public/js/template/**/*.jst'],
+        tasks: ['jst', 'jasmine']
+      },
       scss: {
         files: ['public/scss/**/*.scss'],
         tasks: ['compass', 'concat:css']
@@ -24,6 +28,18 @@ module.exports = function(grunt) {
         },
         jshintrc: true,
         force: true
+      }
+    },
+
+    jst: {
+      all: {
+        files: { 'public/js/template.js': ['public/js/template/**/*.jst'] },
+        options: {
+          amd: true,
+          processName: function(path) {
+            return path.replace(/^public\/js\/template\//, '').replace(/\.jst$/, '');
+          }
+        }
       }
     },
 
@@ -46,6 +62,7 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-concat');
 };

@@ -15,3 +15,6 @@
 
 # Ignore node libraries what are installed by npm
 node_modules
+
+# Ignore auto generated files
+public/js/template.js
