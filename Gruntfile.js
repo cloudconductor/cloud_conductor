@@ -34,10 +34,18 @@ module.exports = function(grunt) {
           cssDir: 'public/css'
         }
       }
+    },
+
+    concat: {
+      css: {
+        src: ['public/css/screen.css', 'public/css/**/*.css', '!public/css/all.css'],
+        dest: 'public/css/all.css'
+      }
     }
   });
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-compass');
+  grunt.loadNpmTasks('grunt-contrib-concat');
 };
