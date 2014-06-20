@@ -3,6 +3,13 @@ module.exports = function(grunt) {
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
+    watch: {
+      js: {
+        files: ['**/*.js', '!public/js/template.js'],
+        tasks: ['jshint', 'jasmine']
+      }
+    },
+
     jshint: {
       all: ['Gruntfile.js', 'public/js/**/*.js', 'spec/js/**/*.js', '!public/js/ext/**/*.js', '!public/js/template.js'],
       options: {
@@ -17,5 +24,6 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
 };
