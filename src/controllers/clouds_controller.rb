@@ -17,7 +17,13 @@ class CloudsController < Sinatra::Base
   end
 
   get '/' do
-    json Cloud.all
+    page = params[:page].to_i
+    per_page = params[:per_page].to_i
+
+    state = {}
+    state[:total_pages] = (Cloud.count / per_page.to_f).ceil
+
+    json [state, Cloud.limit(per_page).offset((page - 1) * per_page)]
   end
 
   get '/:id' do

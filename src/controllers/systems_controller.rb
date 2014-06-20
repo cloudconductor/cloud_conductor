@@ -23,7 +23,13 @@ class SystemsController < Sinatra::Base
   end
 
   get '/' do
-    json System.all
+    page = params[:page].to_i
+    per_page = params[:per_page].to_i
+
+    state = {}
+    state[:total_pages] = (System.count / per_page.to_f).ceil
+
+    json [state, System.limit(per_page).offset((page - 1) * per_page)]
   end
 
   get '/:id' do
