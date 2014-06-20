@@ -11,3 +11,6 @@
 
 # Ignore external javascript libralies
 /public/js/ext
+
+# Ignore node libraries what are installed by npm
+node_modules

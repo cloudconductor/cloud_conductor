@@ -1,0 +1,24 @@
+{
+  "name": "CloudConductor",
+  "version": "0.3.0",
+  "description": "CloudConductor 0.3.0 ====",
+  "main": "none",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@192.168.166.161:cloudconductor/core.git"
+  },
+  "keywords": [
+    "JavaScript",
+    "Cloud",
+    "Orchestration"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.10.0"
+  }
+}
