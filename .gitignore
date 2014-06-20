@@ -20,3 +20,4 @@ node_modules
 # Ignore auto generated files
 public/js/template.js
 public/_SpecRunner.html
+public/css
