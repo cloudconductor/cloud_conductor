@@ -2,6 +2,7 @@
 /Gemfile.lock
 /tmp/*
 /log/*
+/.grunt
 /.sass-cache
 
 # Ignore database files
@@ -18,3 +19,4 @@ node_modules
 
 # Ignore auto generated files
 public/js/template.js
+public/_SpecRunner.html

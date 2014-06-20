@@ -31,6 +31,28 @@ module.exports = function(grunt) {
       }
     },
 
+    jasmine: {
+      all: {
+        src: ['public/js/src/main.js'],
+        options: {
+          display: 'short',
+          vendor: [
+            'public/js/ext/sinonjs/sinon.js'
+          ],
+          keepRunner: true,
+          specs: ['spec/js/**/*.js'],
+          junit: {
+            path: 'tmp/junit_output'
+          },
+          template: require('grunt-template-jasmine-requirejs'),
+          templateOptions: {
+            requireConfigFile: 'public/js/require-config.js'
+          },
+          outfile: 'public/_SpecRunner.html'
+        }
+      }
+    },
+
     jst: {
       all: {
         files: { 'public/js/template.js': ['public/js/template/**/*.jst'] },
@@ -62,6 +84,7 @@ module.exports = function(grunt) {
 
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jst');
   grunt.loadNpmTasks('grunt-contrib-compass');
   grunt.loadNpmTasks('grunt-contrib-concat');
