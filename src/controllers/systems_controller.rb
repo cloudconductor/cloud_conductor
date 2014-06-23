@@ -23,8 +23,8 @@ class SystemsController < Sinatra::Base
   end
 
   get '/' do
-    page = params[:page].to_i
-    per_page = params[:per_page].to_i
+    page = (params[:page] || 1).to_i
+    per_page = (params[:per_page] || 5).to_i
 
     state = {}
     state[:total_pages] = (System.count / per_page.to_f).ceil
