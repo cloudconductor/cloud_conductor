@@ -32,7 +32,7 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new permit_params
-    puts cloud.save
+    cloud.save
     status 201
     json cloud
   end
