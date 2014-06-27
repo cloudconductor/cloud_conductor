@@ -37,6 +37,13 @@ class CloudsController < Sinatra::Base
     json cloud
   end
 
+  put '/:id' do
+    cloud = Cloud.find(params[:id])
+    cloud.update_attributes(permit_params)
+    status 200
+    json cloud
+  end
+
   delete '/:id' do
     Cloud.find(params[:id]).destroy
     status 204
