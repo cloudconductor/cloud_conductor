@@ -15,6 +15,8 @@
 require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
+  before_destroy :raise_error_in_use
+
   validates :name, presence: true
   validates :entry_point, presence: true
   validates :key, presence: true
@@ -30,5 +32,13 @@ class Cloud < ActiveRecord::Base
 
   def client
     CloudConductor::Client.new cloud_type.to_sym
+  end
+
+  def used?
+    AvailableCloud.where(cloud_id: id).count > 0
+  end
+
+  def raise_error_in_use
+    fail 'Can\'t destroy cloud that is used in some systems.' if used?
   end
 end

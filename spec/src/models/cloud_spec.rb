@@ -109,4 +109,24 @@ describe Cloud do
       expect(@cloud.client).to eq(client)
     end
   end
+
+  describe '#destroy' do
+    before do
+      @cloud.save!
+      @system = FactoryGirl.create(:system)
+      @count = Cloud.count
+    end
+
+    it 'raise error and cancel destroy when specified cloud is used in some systems' do
+      @system.add_cloud @cloud, 1
+
+      expect { @cloud.destroy }.to raise_error('Can\'t destroy cloud that is used in some systems.')
+      expect(Cloud.count).to eq(@count)
+    end
+
+    it 'destroy cloud when specified cloud isn\'t used by any systems' do
+      @cloud.destroy
+      expect(Cloud.count).to eq(@count - 1)
+    end
+  end
 end
