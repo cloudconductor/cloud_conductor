@@ -14,7 +14,7 @@
 # limitations under the License.
 module CloudConductor
   module Patches
-    describe AddLaunchConfiguration do
+    describe AddCFNCredentials do
       before do
         @template = JSON.parse <<-EOS
           {
@@ -52,12 +52,12 @@ module CloudConductor
       end
 
       it 'extend Patch class' do
-        expect(AddLaunchConfiguration.superclass).to eq(Patch)
+        expect(AddCFNCredentials.superclass).to eq(Patch)
       end
 
       describe '#apply' do
         before do
-          @patch = AddLaunchConfiguration.new
+          @patch = AddCFNCredentials.new
         end
 
         it 'add files resource' do

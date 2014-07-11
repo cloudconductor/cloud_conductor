@@ -14,7 +14,7 @@
 # limitations under the License.
 module CloudConductor
   module Patches
-    class AddLaunchConfiguration < Patch
+    class AddCFNCredentials < Patch
       def initialize
       end
 
