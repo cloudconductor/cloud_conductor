@@ -21,19 +21,19 @@ module CloudConductor
         it 'return lambda' do
           is_sample = type?('Sample')
           expect(is_sample.class).to eq(Proc)
-          expect(is_sample.lambda?).to be_true
+          expect(is_sample.lambda?).to be_truthy
         end
 
         it 'return true when resource has Sample type' do
           is_sample = type?('Sample')
           resource = { Type: 'Sample' }
-          expect(is_sample.call('Key', resource)).to be_true
+          expect(is_sample.call('Key', resource)).to be_truthy
         end
 
         it 'return false when resource hasn\'t Sample type' do
           is_sample = type?('Sample')
           resource = { Type: 'Test' }
-          expect(is_sample.call('Key', resource)).to be_false
+          expect(is_sample.call('Key', resource)).to be_falsey
         end
       end
 
@@ -126,54 +126,54 @@ module CloudConductor
       describe '#contains_ref' do
         it 'return true when template has Ref entry with specified resource' do
           obj = { Ref: 'Route' }
-          expect(contains_ref(obj, ['Route'])).to be_true
+          expect(contains_ref(obj, ['Route'])).to be_truthy
         end
 
         it 'return true when deep hash has Ref entry' do
           obj = { Dummy: { Ref: 'Route' } }
-          expect(contains_ref(obj, ['Route'])).to be_true
+          expect(contains_ref(obj, ['Route'])).to be_truthy
         end
 
         it 'return true when deep array has Ref entry' do
           obj = { Dummy: [{ Ref: 'Route' }] }
-          expect(contains_ref(obj, ['Route'])).to be_true
+          expect(contains_ref(obj, ['Route'])).to be_truthy
         end
 
         it 'return false when template hasn\'t Ref entry' do
           obj = { Dummy: [{ Hoge: 'Route' }] }
-          expect(contains_ref(obj, ['Route'])).to be_false
+          expect(contains_ref(obj, ['Route'])).to be_falsey
         end
 
         it 'return false when template hasn\'t Ref entry with specified resource' do
           obj = { Dummy: [{ Ref: 'Hoge' }] }
-          expect(contains_ref(obj, ['Route'])).to be_false
+          expect(contains_ref(obj, ['Route'])).to be_falsey
         end
       end
 
       describe '#contains_att' do
         it 'return true when template has GetAtt entry with specified resource' do
           obj = { :'Fn::GetAtt' => %w(Route Dummy) }
-          expect(contains_att(obj, ['Route'])).to be_true
+          expect(contains_att(obj, ['Route'])).to be_truthy
         end
 
         it 'return true when deep hash has GetAtt entry' do
           obj = { Dummy: { :'Fn::GetAtt' => %w(Route Dummy) } }
-          expect(contains_att(obj, ['Route'])).to be_true
+          expect(contains_att(obj, ['Route'])).to be_truthy
         end
 
         it 'return true when deep array has GetAtt entry' do
           obj = { Dummy: [{ :'Fn::GetAtt' => %w(Route Dummy) }] }
-          expect(contains_att(obj, ['Route'])).to be_true
+          expect(contains_att(obj, ['Route'])).to be_truthy
         end
 
         it 'return false when template hasn\'t Ref entry' do
           obj = { Dummy: [{ Dummy: %w(Route Dummy) }] }
-          expect(contains_att(obj, ['Route'])).to be_false
+          expect(contains_att(obj, ['Route'])).to be_falsey
         end
 
         it 'return false when template hasn\'t Ref entry with specified resource' do
           obj = { Dummy: [{ :'Fn::GetAtt' => %w(Hoge Dummy) }] }
-          expect(contains_att(obj, ['Route'])).to be_false
+          expect(contains_att(obj, ['Route'])).to be_falsey
         end
       end
     end

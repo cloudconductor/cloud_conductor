@@ -54,59 +54,59 @@ describe System do
 
   describe '#valid?' do
     it 'returns true when valid model' do
-      expect(@system.valid?).to be_true
+      expect(@system.valid?).to be_truthy
     end
 
     it 'returns false when name is unset' do
       @system.name = nil
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
 
       @system.name = ''
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when unset template_body and template_url both' do
       @system.template_body = nil
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when set template_body and template_url both' do
       @system.template_url = 'http://www.example.com/'
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns true when set template_url only' do
       @system.template_body = nil
       @system.template_url = 'http://www.example.com/'
-      expect(@system.valid?).to be_true
+      expect(@system.valid?).to be_truthy
     end
 
     it 'returns false when template_body is invalid JSON string' do
       @system.template_body = '{'
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when template_url is invalid URL' do
       @system.template_body = nil
       @system.template_url = 'INVALID URL'
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when parameters is invalid JSON string' do
       @system.parameters = '{'
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when clouds is empty' do
       @system.clouds.delete_all
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when clouds collection has duplicate cloud' do
       @system.clouds.delete_all
       @system.clouds << @cloud_aws
       @system.clouds << @cloud_aws
-      expect(@system.valid?).to be_false
+      expect(@system.valid?).to be_falsey
     end
   end
 
@@ -161,7 +161,7 @@ describe System do
 
     it 'update active flag on successful cloud' do
       @system.save!
-      expect(@system.available_clouds.find_by_cloud_id(@cloud_openstack).active).to be_true
+      expect(@system.available_clouds.find_by_cloud_id(@cloud_openstack).active).to be_truthy
     end
   end
 

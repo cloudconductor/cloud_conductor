@@ -28,7 +28,7 @@ module CloudConductor
           @converter.add_patch Patches::RemoveRoute.new
           @converter.add_patch Patches::RemoveMultipleSubnet.new
           expect(@converter.patches.size).to eq(2)
-          expect(@converter.patches.all? { |patch| patch.is_a? Patches::Patch }).to be_true
+          expect(@converter.patches.all? { |patch| patch.is_a? Patches::Patch }).to be_truthy
         end
       end
     end
