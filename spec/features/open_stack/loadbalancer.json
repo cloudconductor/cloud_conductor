@@ -1,0 +1,246 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+
+  "Description" : "Launch instances with autoscaling.",
+
+  "Parameters" : {
+
+    "KeyName": {
+      "Description" : "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+      "Type": "String",
+      "MinLength": "1",
+      "MaxLength": "255",
+      "Default": "takezawa-104-key",
+      "AllowedPattern" : "[\\x20-\\x7E]*",
+      "ConstraintDescription" : "can contain only ASCII characters."
+    },
+
+    "ImageId": {
+      "Description" : "The AMI name that will use in Web/AP Server",
+      "Type": "String",
+      "Default": "ami-3d51063c",
+      "ConstraintDescription": "must be a valid AMI name of the form ami-xxxxxxxx."
+    },
+
+    "InstanceType" : {
+      "Description" : "Web/AP Server EC2 instance type",
+      "Type" : "String",
+      "Default" : "m3.medium",
+      "AllowedValues" : ["m1.medium", "m3.medium"],
+      "ConstraintDescription" : "must be a valid EC2 instance type."
+    },
+
+    "SSHLocation" : {
+      "Description" : "The IP address range that can be used to SSH to the EC2 instances",
+      "Type": "String",
+      "MinLength": "9",
+      "MaxLength": "18",
+      "Default": "0.0.0.0/0",
+      "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+    }
+  },
+
+  "Resources" : {
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : "192.168.0.0/16"
+      }
+    },
+
+    "Subnet1A" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone": "ap-northeast-1a",
+        "VpcId" : { "Ref" : "VPC" },
+        "CidrBlock" : "192.168.0.0/24"
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway",
+      "Properties" : {
+      }
+    },
+
+    "AttachGateway" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "Properties" : {
+         "VpcId" : { "Ref" : "VPC" },
+         "InternetGatewayId" : { "Ref" : "InternetGateway" }
+       }
+    },
+
+    "RouteTable" : {
+      "DependsOn" : [ "Subnet1A" ],
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : {"Ref" : "VPC"}
+      }
+    },
+
+    "SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet1A" },
+        "RouteTableId" : { "Ref" : "RouteTable" }
+      }
+    },
+
+    "SecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" },
+        "GroupDescription" : "Enable SSH access via port 22",
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation"}},
+          { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "NIC" : {
+      "Type" : "AWS::EC2::NetworkInterface",
+      "Properties" : {
+        "GroupSet" : [{ "Ref" : "SecurityGroup" }],
+        "SubnetId" : { "Ref" : "Subnet1A" }
+      }
+    },
+
+    "LaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Metadata" : {
+        "Comment" : "Launch instance from AMI",
+        "AWS::CloudFormation::Init" : {
+          "config" : {
+            "files" : {
+              "/etc/cfn/cfn-credentials" : {
+                "content" : { "Fn::Join" : ["", [
+                  "AWSAccessKeyId=", { "Ref" : "IAMKey" }, "\n",
+                  "AWSSecretKey=", {"Fn::GetAtt": ["IAMKey", "SecretAccessKey"]}, "\n"
+                ]]},
+                "mode"    : "000400",
+                "owner"   : "root",
+                "group"   : "root"
+              },
+              "/tmp/crontab-cfn-push-stats" : {
+                "content" : { "Fn::Join" : ["", [
+                  "* * * * * /usr/bin/cfn-push-stats --cpu-util --watch ", { "Ref": "AlarmToScaleup" }, "\n"
+                ]]},
+                "mode"    : "000600",
+                "owner"   : "root",
+                "group"   : "root"
+              }
+            }
+          }
+        }
+      },
+      "Properties": {
+        "ImageId" : { "Ref": "ImageId" },
+        "InstanceType" : { "Ref" : "InstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "SecurityGroups" : [{ "Ref" : "SecurityGroup" }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/bash\n",
+
+          "CFN_DIR=/opt/aws/bin\n",
+          "if [ \"", { "Fn::Select" : [ 0, { "Fn::GetAZs" : "" } ] }, "\" = \"nova\" ]; then\n",
+          "  CFN_DIR=/usr/bin\n",
+
+          "  # set proxy\n",
+          "  export http_proxy=http://172.26.1.7:8080/\n",
+          "  export https_proxy=http://172.26.1.7:8080/\n",
+          "  export no_proxy=127.0.0.1,localhost,169.254.169.254\n",
+          "fi\n",
+
+          "# Install the simple web page\n",
+          "$CFN_DIR/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r ServerInstance ",
+          "    --region ", { "Ref" : "AWS::Region" }, "\n",
+
+          "if [ \"", { "Fn::Select" : [ 0, { "Fn::GetAZs" : "" } ] }, "\" = \"nova\" ]; then\n",
+          "  # push stats periodically by cron\n",
+          "  crontab /tmp/crontab-cfn-push-stats\n",
+          "fi\n"
+        ]]}}
+      }
+    },
+
+    "AutoScaling": {
+      "DependsOn" : [ "Subnet1A" ],
+      "Type" : "AWS::AutoScaling::AutoScalingGroup",
+      "Properties" : {
+        "LoadBalancerNames" : [{ "Ref" : "LoadBalancer" }],
+        "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "LaunchConfigurationName": { "Ref": "LaunchConfig" },
+        "MaxSize": "4",
+        "MinSize": "2"
+      }
+    },
+
+    "ScaleUp" : {
+      "Type" : "AWS::AutoScaling::ScalingPolicy",
+      "Properties" : {
+        "AdjustmentType" : "ChangeInCapacity",
+        "AutoScalingGroupName" : { "Ref" : "AutoScaling" },
+        "Cooldown": "180",
+        "ScalingAdjustment" : "+1"
+      }
+    },
+
+    "IAMUser": {
+      "Type": "AWS::IAM::User"
+    },
+
+    "IAMKey": {
+      "Type": "AWS::IAM::AccessKey",
+      "Properties": {
+        "UserName" : { "Ref": "IAMUser" }
+      }
+    },
+
+    "AlarmToScaleup": {
+      "Type": "AWS::CloudWatch::Alarm",
+      "Properties": {
+        "AlarmDescription": "Restart the Server if status check fails >= 3 times in 10 minutes",
+        "MetricName": "CPUUtilization",
+        "Namespace": "system/linux",
+        "Dimensions": [
+          {
+            "Name": "AutoScalingGroupName",
+            "Value": { "Ref": "AutoScaling" }
+          }
+        ],
+        "Statistic": "Average",
+        "Period": "60",
+        "EvaluationPeriods": "1",
+        "Threshold": "60",
+        "AlarmActions": [ { "Ref": "ScaleUp" } ],
+        "ComparisonOperator": "GreaterThanThreshold"
+      }
+    },
+
+    "LoadBalancer": {
+      "DependsOn" : [ "Subnet1A" ],
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "AvailabilityZones" : { "Fn::GetAZs" : "" },
+        "Listeners": [
+          {
+            "InstancePort": "80",
+            "LoadBalancerPort": "80",
+            "Protocol": "HTTP"
+          }
+        ]
+      }
+    }
+  },
+
+  "Outputs" : {
+    "URL" : {
+      "Value" : { "Fn::Join" : [ "", ["http://", { "Fn::GetAtt" : ["LoadBalancer", "DNSName"] }]]},
+      "Description" : "Published URL."
+    }
+  }
+}
+
