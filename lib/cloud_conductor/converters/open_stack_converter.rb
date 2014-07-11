@@ -21,7 +21,7 @@ module CloudConductor
         add_patch Patches::RemoveMultipleSubnet.new
         add_patch Patches::AddIAMUser.new
         add_patch Patches::AddIAMAccessKey.new
-        add_patch Patches::AddLaunchConfiguration.new
+        add_patch Patches::AddCFNCredentials.new
       end
     end
   end

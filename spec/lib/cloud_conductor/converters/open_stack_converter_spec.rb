@@ -43,7 +43,7 @@ module CloudConductor
           expect_patches << Patches::RemoveMultipleSubnet
           expect_patches << Patches::AddIAMUser
           expect_patches << Patches::AddIAMAccessKey
-          expect_patches << Patches::AddLaunchConfiguration
+          expect_patches << Patches::AddCFNCredentials
 
           expect_patches.each do |patch_class|
             patch_class.any_instance.should_receive(:apply).and_return(@template)
