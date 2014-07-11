@@ -31,7 +31,7 @@ group :development do
 end
 
 group :test do
-  gem 'rspec'
+  gem 'rspec', '~>2'
   gem 'rspec-mocks'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
