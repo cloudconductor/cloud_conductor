@@ -15,12 +15,24 @@
 module CloudConductor
   module Converters
     class Converter
+      attr_reader :patches
+
       def initialize
-        fail "Can't instantiate abstract adapter"
+        @patches = []
       end
 
-      def convert(_template, _parameters)
-        fail 'Unimplement method'
+      def convert(template, parameters)
+        template = template.deep_dup
+
+        @patches.each do |patch|
+          template = patch.apply(template, parameters)
+        end
+
+        template
+      end
+
+      def add_patch(patch)
+        @patches << patch
       end
     end
   end

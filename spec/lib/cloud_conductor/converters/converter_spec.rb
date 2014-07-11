@@ -15,9 +15,20 @@
 module CloudConductor
   module Converters
     describe Converter do
-      describe '#new' do
-        it 'raise exception when instantiate abstract class' do
-          expect { Converter.new }.to raise_error
+      before do
+        @converter = Converter.new
+      end
+
+      describe '#patches' do
+        it 'return empty array never call add_patch' do
+          expect(@converter.patches).to eq([])
+        end
+
+        it 'return patches that are appended by #add_patch' do
+          @converter.add_patch Patches::RemoveRoute.new
+          @converter.add_patch Patches::RemoveMultipleSubnet.new
+          expect(@converter.patches.size).to eq(2)
+          expect(@converter.patches.all? { |patch| patch.is_a? Patches::Patch }).to be_true
         end
       end
     end
