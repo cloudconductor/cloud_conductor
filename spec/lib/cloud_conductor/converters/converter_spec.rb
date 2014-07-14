@@ -44,6 +44,40 @@ module CloudConductor
           @converter.add_patch patch2
           @converter.convert({}, {})
         end
+
+        it 'call Patch#apply on added patches' do
+          patch1 = Patches::RemoveRoute.new
+          patch2 = Patches::RemoveMultipleSubnet.new
+
+          patch1.should_receive(:apply)
+          patch2.should_receive(:apply)
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.convert({}, {})
+        end
+
+        it 'doesn\'t call Patch#apply if Patch#need? return false' do
+          # rubocop:disable ClassAndModuleChildren
+          class Patches::DummyPatch < Patches::Patch
+            def initialize
+            end
+
+            def need?(_template, _parameters)
+              false
+            end
+          end
+
+          patch1 = Patches::DummyPatch.new
+          patch2 = Patches::RemoveMultipleSubnet.new
+
+          patch1.should_not_receive(:apply)
+          patch2.should_receive(:apply)
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.convert({}, {})
+        end
       end
 
       describe '#ensure_hash' do

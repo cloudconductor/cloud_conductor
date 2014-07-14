@@ -26,6 +26,7 @@ module CloudConductor
         parameters = ensure_hash(parameters)
 
         @patches.each do |patch|
+          next unless patch.need?(template, parameters)
           template = patch.ensure(template, parameters)
           template = patch.apply(template, parameters)
         end
