@@ -66,6 +66,12 @@ module CloudConductor
 
           @adapter.create_stack 'stack_name', '{}', '{}', @options
         end
+
+        it 'call OpenStackConverter to convert template before create stack' do
+          Converters::OpenStackConverter.any_instance.should_receive(:convert).and_return('{}')
+
+          @adapter.create_stack 'stack_name', '{}', '{}', @options
+        end
       end
 
       describe '#get_stack_status' do
