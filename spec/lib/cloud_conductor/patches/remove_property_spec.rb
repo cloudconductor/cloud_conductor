@@ -49,20 +49,20 @@ module CloudConductor
 
       describe '#apply' do
         it 'doesn\'t affect resources outline' do
-          @patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'
+          patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'
 
           expect(@template[:Resources].keys).to match_array(%w(Route Sample1 Sample2))
-          result = @patch.apply @template, {}
+          result = patch.apply @template, {}
           expect(result[:Resources].keys).to match_array(%w(Route Sample1 Sample2))
         end
 
         it 'remove specified property from specified resource' do
-          @patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'
+          patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'
 
           resources = @template[:Resources]
           expect(resources[:Sample1][:Properties].keys).to match_array(%w(VpcId Dummy))
           expect(resources[:Sample2][:Properties].keys).to match_array(%w(Dummy Dummy2))
-          result = @patch.apply @template, {}
+          result = patch.apply @template, {}
 
           resources = result[:Resources]
           expect(resources[:Sample1][:Properties].keys).to match_array(%w(VpcId))
@@ -70,12 +70,12 @@ module CloudConductor
         end
 
         it 'remove multiple properties from specified resource' do
-          @patch = RemoveProperty.new 'AWS::EC2::RouteTable', %w(Dummy Dummy2)
+          patch = RemoveProperty.new 'AWS::EC2::RouteTable', %w(Dummy Dummy2)
 
           resources = @template[:Resources]
           expect(resources[:Sample1][:Properties].keys).to match_array(%w(VpcId Dummy))
           expect(resources[:Sample2][:Properties].keys).to match_array(%w(Dummy Dummy2))
-          result = @patch.apply @template, {}
+          result = patch.apply @template, {}
 
           resources = result[:Resources]
           expect(resources[:Sample1][:Properties].keys).to match_array(%w(VpcId))
