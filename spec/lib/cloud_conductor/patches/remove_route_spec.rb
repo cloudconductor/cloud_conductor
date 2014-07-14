@@ -39,6 +39,14 @@ module CloudConductor
         expect(RemoveRoute.superclass).to eq(Patch)
       end
 
+      describe '#ensure' do
+        it 'append Resources hash if hasn\'t it' do
+          patch = RemoveRoute.new
+          result = patch.ensure({}, {})
+          expect(result.keys).to match_array([:Resources])
+        end
+      end
+
       describe '#apply' do
         before do
           @patch = RemoveRoute.new
