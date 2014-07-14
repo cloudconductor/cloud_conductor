@@ -32,6 +32,20 @@ module CloudConductor
         end
       end
 
+      describe '#convert' do
+        it 'call Patch#ensure on added patches' do
+          patch1 = Patches::RemoveRoute.new
+          patch2 = Patches::RemoveMultipleSubnet.new
+
+          patch1.should_receive(:ensure).and_call_original
+          patch2.should_receive(:ensure).and_call_original
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.convert({}, {})
+        end
+      end
+
       describe '#ensure_hash' do
         it 'doesn\'t affect argument if argument is already hash' do
           template = {}

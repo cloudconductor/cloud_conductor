@@ -19,6 +19,10 @@ module CloudConductor
         fail "Can't instantiate abstract patch"
       end
 
+      def ensure(template, _parameters)
+        template
+      end
+
       def apply(_template, _parameters)
         fail 'Unimplement method'
       end
