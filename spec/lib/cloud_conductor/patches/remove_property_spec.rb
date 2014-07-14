@@ -47,6 +47,14 @@ module CloudConductor
         expect(RemoveProperty.superclass).to eq(Patch)
       end
 
+      describe '#ensure' do
+        it 'append Resources hash if hasn\'t it' do
+          patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'
+          result = patch.ensure({}, {})
+          expect(result.keys).to match_array([:Resources])
+        end
+      end
+
       describe '#apply' do
         it 'doesn\'t affect resources outline' do
           patch = RemoveProperty.new 'AWS::EC2::RouteTable', 'Dummy'

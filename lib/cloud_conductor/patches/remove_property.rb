@@ -22,6 +22,11 @@ module CloudConductor
         @properties = properties
       end
 
+      def ensure(template, _parameters)
+        template[:Resources] ||= {}
+        template
+      end
+
       def apply(template, _parameters)
         template = template.deep_dup
 
