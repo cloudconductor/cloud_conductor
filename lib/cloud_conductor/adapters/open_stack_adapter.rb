@@ -31,7 +31,7 @@ module CloudConductor
 
       def create_stack(name, template, parameters, options = {})
         converter = Converters::OpenStackConverter.new
-        converter.convert(template, parameters)
+        template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
         orc = create_orchestration options
