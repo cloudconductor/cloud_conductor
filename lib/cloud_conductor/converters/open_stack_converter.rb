@@ -15,14 +15,29 @@
 module CloudConductor
   module Converters
     class OpenStackConverter < Converter
+      # rubocop:disable MethodLength
       def initialize
         super
 
+        # Remove unimplemented properties from Instance
+        properties = []
+        properties << :DisableApiTermination
+        properties << :KernelId
+        properties << :Monitoring
+        properties << :PlacementGroupName
+        properties << :PrivateIpAddress
+        properties << :RamDiskId
+        properties << :SourceDestCheck
+        properties << :Tenancy
+        add_patch Patches::RemoveProperty.new 'AWS::EC2::Instance', properties
+
+        # Remove unimplemented properties from LoadBalancer
         properties = []
         properties << :AppCookieStickinessPolicy
         properties << :Subnets
         properties << :SecurityGroups
         add_patch Patches::RemoveProperty.new 'AWS::ElasticLoadBalancing::LoadBalancer', properties
+
         add_patch Patches::RemoveRoute.new
         add_patch Patches::RemoveMultipleSubnet.new
         add_patch Patches::AddIAMUser.new
