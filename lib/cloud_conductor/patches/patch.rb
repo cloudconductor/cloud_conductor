@@ -16,7 +16,7 @@ module CloudConductor
   module Patches
     class Patch
       def initialize
-        fail "Can't instantiate abstract adapter"
+        fail "Can't instantiate abstract patch"
       end
 
       def apply(_template, _parameters)
