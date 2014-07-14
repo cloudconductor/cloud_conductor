@@ -17,6 +17,12 @@ module CloudConductor
     class OpenStackConverter < Converter
       def initialize
         super
+
+        properties = []
+        properties << :AppCookieStickinessPolicy
+        properties << :Subnets
+        properties << :SecurityGroups
+        add_patch Patches::RemoveProperty.new 'AWS::ElasticLoadBalancing::LoadBalancer', properties
         add_patch Patches::RemoveRoute.new
         add_patch Patches::RemoveMultipleSubnet.new
         add_patch Patches::AddIAMUser.new
