@@ -16,6 +16,8 @@ module CloudConductor
   module Patches
     describe AddCFNCredentials do
       before do
+        @patch = AddCFNCredentials.new
+
         @template = JSON.parse <<-EOS
           {
             "Resources": {
@@ -55,11 +57,18 @@ module CloudConductor
         expect(AddCFNCredentials.superclass).to eq(Patch)
       end
 
-      describe '#apply' do
-        before do
-          @patch = AddCFNCredentials.new
+      describe '#ensure' do
+        it 'construct Hashes to files' do
+          result = @patch.ensure({}, {})
+          expect(result[:Resources]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfig]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfig][:Metadata]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init']).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config]).to be_is_a Hash
         end
+      end
 
+      describe '#apply' do
         it 'add files resource' do
           expect(@template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(0)
           result = @patch.apply @template, {}

@@ -18,6 +18,15 @@ module CloudConductor
       def initialize
       end
 
+      def ensure(template, _parameters)
+        template[:Resources] ||= {}
+        template[:Resources][:LaunchConfig] ||= {}
+        template[:Resources][:LaunchConfig][:Metadata] ||= {}
+        template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'] ||= {}
+        template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config] ||= {}
+        template
+      end
+
       def apply(template, _parameters)
         files = JSON.parse <<-'EOS'
           {
