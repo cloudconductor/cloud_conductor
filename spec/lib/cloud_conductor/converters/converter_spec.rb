@@ -31,6 +31,27 @@ module CloudConductor
           expect(@converter.patches.all? { |patch| patch.is_a? Patches::Patch }).to be_truthy
         end
       end
+
+      describe '#ensure_hash' do
+        it 'doesn\'t affect argument if argument is already hash' do
+          template = {}
+          result = @converter.ensure_hash(template)
+
+          expect(result).to be_is_a(Hash)
+        end
+
+        it 'convert template to hash if argument is string' do
+          template = <<-EOS
+            {
+              "dummy": "dummy_value"
+            }
+          EOS
+
+          result = @converter.ensure_hash(template)
+          expect(result).to be_is_a(Hash)
+          expect(result[:dummy]).to eq('dummy_value')
+        end
+      end
     end
   end
 end

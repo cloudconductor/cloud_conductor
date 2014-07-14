@@ -22,7 +22,8 @@ module CloudConductor
       end
 
       def convert(template, parameters)
-        template = template.deep_dup
+        template = ensure_hash(template)
+        parameters = ensure_hash(parameters)
 
         @patches.each do |patch|
           template = patch.apply(template, parameters)
@@ -33,6 +34,12 @@ module CloudConductor
 
       def add_patch(patch)
         @patches << patch
+      end
+
+      def ensure_hash(obj)
+        obj = JSON.parse(obj) if obj.is_a? String
+        obj = obj.with_indifferent_access
+        obj.deep_dup
       end
     end
   end
