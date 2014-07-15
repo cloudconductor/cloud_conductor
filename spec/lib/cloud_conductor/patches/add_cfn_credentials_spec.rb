@@ -27,7 +27,17 @@ module CloudConductor
                   "VpcId": { "Ref": "VPC" }
                 }
               },
-              "LaunchConfig": {
+              "LaunchConfigA": {
+                "Type": "AWS::AutoScaling::LaunchConfiguration",
+                "Metadata" : {
+                  "Comment": "Launch instance from AMI",
+                  "AWS::CloudFormation::Init": {
+                    "config": {
+                    }
+                  }
+                }
+              },
+              "LaunchConfigB": {
                 "Type": "AWS::AutoScaling::LaunchConfiguration",
                 "Metadata" : {
                   "Comment": "Launch instance from AMI",
@@ -63,7 +73,7 @@ module CloudConductor
         end
 
         it 'return false when template hasn\'t LaunchConfiguration Resource' do
-          @template[:Resources].except!(:LaunchConfig)
+          @template[:Resources].except!(:LaunchConfigA, :LaunchConfigB)
           expect(@patch.need?(@template, {})).to be_falsey
         end
 
@@ -74,24 +84,37 @@ module CloudConductor
 
       describe '#ensure' do
         it 'construct Hashes to files' do
-          result = @patch.ensure({}, {})
-          expect(result[:Resources]).to be_is_a Hash
-          expect(result[:Resources][:LaunchConfig]).to be_is_a Hash
-          expect(result[:Resources][:LaunchConfig][:Metadata]).to be_is_a Hash
-          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init']).to be_is_a Hash
-          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config]).to be_is_a Hash
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "LaunchConfigA": {
+                  "Type": "AWS::AutoScaling::LaunchConfiguration"
+                },
+                "LaunchConfigB": {
+                  "Type": "AWS::AutoScaling::LaunchConfiguration"
+                }
+              }
+            }
+          EOS
+          result = @patch.ensure(template.with_indifferent_access, {})
+          expect(result[:Resources][:LaunchConfigA][:Metadata]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init']).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfigB][:Metadata]).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfigB][:Metadata]['AWS::CloudFormation::Init']).to be_is_a Hash
+          expect(result[:Resources][:LaunchConfigB][:Metadata]['AWS::CloudFormation::Init'][:config]).to be_is_a Hash
         end
       end
 
       describe '#apply' do
         it 'add files resource' do
-          expect(@template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(0)
-          expect(@template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).to be_nil
+          expect(@template[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(0)
+          expect(@template[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).to be_nil
           result = @patch.apply @template, {}
-          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
-          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).not_to be_nil
+          expect(result[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
+          expect(result[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).not_to be_nil
           result = @patch.apply result, {}
-          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
+          expect(result[:Resources][:LaunchConfigA][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
         end
 
         it 'doesn\'t affect to other resources' do

@@ -27,10 +27,12 @@ module CloudConductor
 
       def ensure(template, _parameters)
         template[:Resources] ||= {}
-        template[:Resources][:LaunchConfig] ||= {}
-        template[:Resources][:LaunchConfig][:Metadata] ||= {}
-        template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'] ||= {}
-        template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config] ||= {}
+        template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).keys.each do |key|
+          template[:Resources][key] ||= {}
+          template[:Resources][key][:Metadata] ||= {}
+          template[:Resources][key][:Metadata]['AWS::CloudFormation::Init'] ||= {}
+          template[:Resources][key][:Metadata]['AWS::CloudFormation::Init'][:config] ||= {}
+        end
         template
       end
 
@@ -52,8 +54,9 @@ module CloudConductor
         EOS
 
         template = template.deep_dup
-        config = template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config]
-        config.update files
+        template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).keys.each do |key|
+          template[:Resources][key][:Metadata]['AWS::CloudFormation::Init'][:config].update files
+        end
 
         template
       end
