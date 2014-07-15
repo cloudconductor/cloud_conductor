@@ -15,6 +15,10 @@
 module CloudConductor
   module Converters
     describe OpenStackConverter do
+      before do
+        @converter = OpenStackConverter.new
+      end
+
       def load_json(path)
         features_path = File.expand_path('../../../features/', File.dirname(__FILE__))
         json_path = File.expand_path(path, features_path)
@@ -23,21 +27,12 @@ module CloudConductor
         json.with_indifferent_access
       end
 
-      before do
-        @template = load_json 'aws/loadbalancer.json'
-        @answer = load_json 'open_stack/loadbalancer.json'
-      end
-
       it 'extend Patch class' do
         expect(OpenStackConverter.superclass).to eq(Converter)
       end
 
       describe '#convert' do
-        before do
-          @converter = OpenStackConverter.new
-        end
-
-        it 'apply Patches::RemoveRoute patch' do
+        it 'apply patches that belong to OpenStackConverter' do
           expect_patches = []
           expect_patches << Patches::RemoveRoute
           expect_patches << Patches::RemoveMultipleSubnet
@@ -46,10 +41,18 @@ module CloudConductor
           expect_patches << Patches::AddCFNCredentials
 
           expect_patches.each do |patch_class|
-            patch_class.any_instance.should_receive(:apply).and_return(@template)
+            patch_class.any_instance.should_receive(:need?).and_return(true)
+            patch_class.any_instance.should_receive(:apply).and_return({})
           end
 
-          @converter.convert @template, {}
+          @converter.convert({}, {})
+        end
+      end
+
+      describe 'loadbalancer.json' do
+        before do
+          @template = load_json 'aws/loadbalancer.json'
+          @answer = load_json 'open_stack/loadbalancer.json'
         end
 
         it 'convert from AWS template to OpenStack template' do
@@ -58,6 +61,18 @@ module CloudConductor
           # For debug
           # puts _result.to_json
           # expect(_result).to eq(@answer)
+        end
+      end
+
+      describe 'simple_instance.json' do
+        before do
+          @template = load_json 'aws/simple_instance.json'
+          @answer = load_json 'open_stack/simple_instance.json'
+        end
+
+        it 'convert from AWS template to OpenStack template' do
+          _result = @converter.convert(@template, {})
+          # expect(result).to eq(@answer)
         end
       end
     end
