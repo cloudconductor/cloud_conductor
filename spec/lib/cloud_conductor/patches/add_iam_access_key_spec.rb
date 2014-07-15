@@ -26,7 +26,7 @@ module CloudConductor
                 }
               },
               "IAMUser": {
-                 "Type": "AWS::IAM::User"
+                "Type": "AWS::IAM::User"
               }
             }
           }
