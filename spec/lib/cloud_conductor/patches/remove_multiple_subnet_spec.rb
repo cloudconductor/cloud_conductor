@@ -16,6 +16,8 @@ module CloudConductor
   module Patches
     describe RemoveMultipleSubnet do
       before do
+        @patch = RemoveMultipleSubnet.new
+
         @template = JSON.parse <<-EOS
           {
             "Resources": {
@@ -48,6 +50,12 @@ module CloudConductor
                   "VpcId" : { "Ref" : "VPC" },
                   "CidrBlock" : "192.168.2.0/24"
                 }
+              },
+              "LoadBalancer" : {
+                "Type" : "AWS::ElasticLoadBalancing::LoadBalancer",
+                "Properties" : {
+                  "AvailabilityZone": "ap-northeast-1c"
+                }
               }
             }
           }
@@ -60,15 +68,26 @@ module CloudConductor
         expect(RemoveMultipleSubnet.superclass).to eq(Patch)
       end
 
-      describe '#apply' do
-        before do
-          @patch = RemoveMultipleSubnet.new
+      describe '#need?' do
+        it 'return false when template hasn\'t Resources hash' do
+          expect(@patch.need?({}, {})).to be_falsey
         end
 
+        it 'return false when template hasn\'t LoadBalancer Resource' do
+          @template[:Resources].except!(:LoadBalancer)
+          expect(@patch.need?(@template, {})).to be_falsey
+        end
+
+        it 'return true when template has LoadBalancer Resource' do
+          expect(@patch.need?(@template, {})).to be_truthy
+        end
+      end
+
+      describe '#apply' do
         it 'remove AWS::EC2::Route resource' do
-          expect(@template[:Resources].size).to eq(4)
+          expect(@template[:Resources].size).to eq(5)
           result = @patch.apply @template, {}
-          expect(result[:Resources].size).to eq(2)
+          expect(result[:Resources].size).to eq(3)
         end
 
         it 'doesn\'t affect to first subnet' do

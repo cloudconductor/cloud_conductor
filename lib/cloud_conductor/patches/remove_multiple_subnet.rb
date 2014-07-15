@@ -20,6 +20,11 @@ module CloudConductor
       def initialize
       end
 
+      def need?(template, _parameters)
+        return false unless template[:Resources]
+        !template[:Resources].select(&type?('AWS::ElasticLoadBalancing::LoadBalancer')).empty?
+      end
+
       def apply(template, _parameters)
         template = template.deep_dup
 
