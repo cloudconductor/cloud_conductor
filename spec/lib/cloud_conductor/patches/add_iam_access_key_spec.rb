@@ -16,6 +16,8 @@ module CloudConductor
   module Patches
     describe AddIAMAccessKey do
       before do
+        @patch = AddIAMAccessKey.new
+
         @template = JSON.parse <<-EOS
           {
             "Resources": {
@@ -23,6 +25,16 @@ module CloudConductor
                 "Type": "AWS::EC2::RouteTable",
                 "Properties": {
                   "VpcId": { "Ref": "VPC" }
+                }
+              },
+              "LaunchConfig": {
+                "Type": "AWS::AutoScaling::LaunchConfiguration",
+                "Metadata" : {
+                  "Comment": "Launch instance from AMI",
+                  "AWS::CloudFormation::Init": {
+                    "config": {
+                    }
+                  }
                 }
               },
               "IAMUser": {
@@ -39,16 +51,31 @@ module CloudConductor
         expect(AddIAMAccessKey.superclass).to eq(Patch)
       end
 
+      describe '#need?' do
+        it 'return false when template hasn\'t Resources hash' do
+          expect(@patch.need?({}, {})).to be_falsey
+        end
+
+        it 'return false when template hasn\'t LaunchConfiguration Resource' do
+          @template[:Resources].except!(:LaunchConfig)
+          expect(@patch.need?(@template, {})).to be_falsey
+        end
+
+        it 'return true when template has LaunchConfiguration Resource' do
+          expect(@patch.need?(@template, {})).to be_truthy
+        end
+      end
+
       describe '#apply' do
         before do
           @patch = AddIAMAccessKey.new
         end
 
         it 'add AWS::EC2::IAMAccessKey resource' do
-          expect(@template[:Resources].size).to eq(2)
+          expect(@template[:Resources].size).to eq(3)
           expect(@template[:Resources][:IAMKey]).to be_nil
           result = @patch.apply @template, {}
-          expect(result[:Resources].size).to eq(3)
+          expect(result[:Resources].size).to eq(4)
           expect(result[:Resources][:IAMKey]).not_to be_nil
         end
 

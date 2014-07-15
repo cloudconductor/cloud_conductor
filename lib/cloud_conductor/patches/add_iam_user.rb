@@ -15,7 +15,14 @@
 module CloudConductor
   module Patches
     class AddIAMUser < Patch
+      include PatchUtils
+
       def initialize
+      end
+
+      def need?(template, _parameters)
+        return false unless template[:Resources]
+        !template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).empty?
       end
 
       def apply(template, _parameters)

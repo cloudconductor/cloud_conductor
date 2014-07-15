@@ -57,6 +57,21 @@ module CloudConductor
         expect(AddCFNCredentials.superclass).to eq(Patch)
       end
 
+      describe '#need?' do
+        it 'return false when template hasn\'t Resources hash' do
+          expect(@patch.need?({}, {})).to be_falsey
+        end
+
+        it 'return false when template hasn\'t LaunchConfiguration Resource' do
+          @template[:Resources].except!(:LaunchConfig)
+          expect(@patch.need?(@template, {})).to be_falsey
+        end
+
+        it 'return true when template has LaunchConfiguration Resource' do
+          expect(@patch.need?(@template, {})).to be_truthy
+        end
+      end
+
       describe '#ensure' do
         it 'construct Hashes to files' do
           result = @patch.ensure({}, {})
