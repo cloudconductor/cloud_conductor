@@ -46,8 +46,10 @@ module CloudConductor
 
         it 'add AWS::EC2::IAMAccessKey resource' do
           expect(@template[:Resources].size).to eq(2)
+          expect(@template[:Resources][:IAMKey]).to be_nil
           result = @patch.apply @template, {}
           expect(result[:Resources].size).to eq(3)
+          expect(result[:Resources][:IAMKey]).not_to be_nil
         end
 
         it 'doesn\'t affect to other resources' do

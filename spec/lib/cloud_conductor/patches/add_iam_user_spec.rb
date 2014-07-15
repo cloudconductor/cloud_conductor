@@ -43,8 +43,10 @@ module CloudConductor
 
         it 'add AWS::EC2::IAMUser resource' do
           expect(@template[:Resources].size).to eq(1)
+          expect(@template[:Resources][:IAMUser]).to be_nil
           result = @patch.apply @template, {}
           expect(result[:Resources].size).to eq(2)
+          expect(result[:Resources][:IAMUser]).not_to be_nil
         end
 
         it 'doesn\'t affect to other resources' do

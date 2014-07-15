@@ -71,8 +71,10 @@ module CloudConductor
       describe '#apply' do
         it 'add files resource' do
           expect(@template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(0)
+          expect(@template[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).to be_nil
           result = @patch.apply @template, {}
           expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
+          expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config][:files]).not_to be_nil
           result = @patch.apply result, {}
           expect(result[:Resources][:LaunchConfig][:Metadata]['AWS::CloudFormation::Init'][:config].size).to eq(1)
         end
