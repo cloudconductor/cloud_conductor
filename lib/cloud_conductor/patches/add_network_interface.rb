@@ -20,22 +20,34 @@ module CloudConductor
       def initialize
       end
 
+      def ensure(template, _parameters)
+        template[:Resources] ||= {}
+        template
+      end
+
       def apply(template, _parameters)
         template = template.deep_dup
 
         security_group = template[:Resources].select(&type?('AWS::EC2::SecurityGroup'))
+        subnet = template[:Resources].select(&type?('AWS::EC2::Subnet'))
+
+        fail 'Subnet was not found' if subnet.empty?
 
         network_interface = JSON.parse <<-EOS
           {
             "NIC" : {
               "Type" : "AWS::EC2::NetworkInterface",
               "Properties" : {
-              "GroupSet" : [{ "Ref" : "#{security_group.keys[0]}" }],
-                "SubnetId" : { "Ref" : "Subnet1A" }
+                "SubnetId" : { "Ref" : "#{ subnet.keys[0] }" }
               }
             }
           }
         EOS
+        network_interface = network_interface.with_indifferent_access
+
+        unless security_group.empty?
+          network_interface[:NIC][:Properties][:GroupSet] = [{ Ref: security_group.keys[0] }]
+        end
 
         template[:Resources].update network_interface
 
