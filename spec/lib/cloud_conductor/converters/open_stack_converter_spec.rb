@@ -71,8 +71,8 @@ module CloudConductor
         end
 
         it 'convert from AWS template to OpenStack template' do
-          _result = @converter.convert(@template, {})
-          # expect(result).to eq(@answer)
+          result = @converter.convert(@template, {})
+          expect(result).to eq(@answer)
         end
       end
     end
