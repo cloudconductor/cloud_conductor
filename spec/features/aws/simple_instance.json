@@ -14,7 +14,7 @@
       "AllowedPattern" : "[\\x20-\\x7E]*",
       "ConstraintDescription" : "can contain only ASCII characters."
     },
-    
+
     "ImageId": {
       "Description" : "The AMI name that will use in Web/AP Server",
       "Type": "String",
@@ -80,7 +80,7 @@
         "GatewayId" : { "Ref" : "InternetGateway" }
       }
     },
-    
+
     "RouteTable" : {
       "Type" : "AWS::EC2::RouteTable",
       "Properties" : {
@@ -147,33 +147,23 @@
         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
           "#!/bin/bash\n",
 
-          "CFN_DIR=/opt/aws/bin\n",
-          "if [ \"", { "Fn::Select" : [ 0, { "Fn::GetAZs" : "" } ] }, "\" = \"nova\" ]; then\n",
-          "  CFN_DIR=/usr/bin\n",
-
-          "  # set proxy\n",
-          "  export http_proxy=http://172.26.1.7:8080/\n",
-          "  export https_proxy=http://172.26.1.7:8080/\n",
-          "  export no_proxy=127.0.0.1,localhost,169.254.169.254\n",
-          "fi\n",
-
           "# Helper function\n",
           "function error_exit\n",
           "{\n",
-          "  $CFN_DIR/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "ServerWaitHandle" }, "'\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "ServerWaitHandle" }, "'\n",
           "  exit 1\n",
           "}\n",
 
           "# Install the simple web page\n",
-          "$CFN_DIR/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r ServerInstance ",
+          "/opt/aws/bin/cfn-init -s ", { "Ref" : "AWS::StackId" }, " -r ServerInstance ",
           "    --region ", { "Ref" : "AWS::Region" }, " || error_exit 'Failed to run cfn-init'\n",
 
           "# All done so signal success\n",
-          "$CFN_DIR/cfn-signal -e 0 -r \"Web/AP Server setup complete\" '", { "Ref" : "ServerWaitHandle" }, "'\n"
+          "/opt/aws/bin/cfn-signal -e 0 -r \"Web/AP Server setup complete\" '", { "Ref" : "ServerWaitHandle" }, "'\n"
         ]]}}
       }
     },
-    
+
     "ServerWaitHandle" : {
       "Type" : "AWS::CloudFormation::WaitConditionHandle"
     },
