@@ -19,6 +19,10 @@ module CloudConductor
         fail "Can't instantiate abstract patch"
       end
 
+      def dependencies
+        []
+      end
+
       def need?(_template, _parameters)
         true
       end

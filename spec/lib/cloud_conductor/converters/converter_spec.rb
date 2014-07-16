@@ -100,6 +100,83 @@ module CloudConductor
           expect(result[:dummy]).to eq('dummy_value')
         end
       end
+
+      describe '#sort' do
+        def dummy_patch(name, dependencies = [])
+          klass = Class.new(Patches::Patch) do
+            def initialize
+            end
+
+            define_method :dependencies do
+              dependencies
+            end
+          end
+
+          Patches.class_eval do
+            remove_const name if const_defined? name
+          end
+
+          Patches.const_set name, klass
+          Patches.const_get(name).new
+        end
+
+        it 'return patches when all patches are independent' do
+          patch1 = dummy_patch 'Patch1'
+          patch2 = dummy_patch 'Patch2'
+          patch3 = dummy_patch 'Patch3'
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.add_patch patch3
+
+          sorted_patches = @converter.patches.sort
+          expect(sorted_patches).to match_array([patch1, patch2, patch3])
+        end
+
+        it 'sort patches order by dependencies of each patch' do
+          patch1 = dummy_patch 'Patch1', [:Patch2]
+          patch2 = dummy_patch 'Patch2', [:Patch3]
+          patch3 = dummy_patch 'Patch3'
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.add_patch patch3
+
+          sorted_patches = @converter.patches.sort
+          expect(sorted_patches).to match_array([patch3, patch2, patch1])
+        end
+
+        it 'raise error when patches has circular dependencies' do
+          patch1 = dummy_patch 'Patch1', [:Patch2]
+          patch2 = dummy_patch 'Patch2', [:Patch3]
+          patch3 = dummy_patch 'Patch3', [:Patch1]
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.add_patch patch3
+
+          expect { @converter.patches.sort }.to raise_error('Circular dependencies [Patch1, Patch2, Patch3]')
+        end
+
+        it 'sort patches order by complex dependencies of each patch' do
+          patch1 = dummy_patch 'Patch1', [:Patch2, :Patch3, :Patch5]
+          patch2 = dummy_patch 'Patch2', [:Patch3]
+          patch3 = dummy_patch 'Patch3', [:Patch4, :Patch5]
+          patch4 = dummy_patch 'Patch4', [:Patch5]
+          patch5 = dummy_patch 'Patch5'
+
+          @converter.add_patch patch1
+          @converter.add_patch patch2
+          @converter.add_patch patch3
+          @converter.add_patch patch4
+          @converter.add_patch patch5
+
+          expect(@converter.patches).to eq([patch1, patch2, patch3, patch4, patch5])
+          sorted_patches = @converter.patches.sort
+          expect(sorted_patches).to match_array([patch5, patch4, patch3, patch2, patch1])
+          expect(@converter.patches).to eq([patch1, patch2, patch3, patch4, patch5])
+        end
+      end
     end
   end
 end

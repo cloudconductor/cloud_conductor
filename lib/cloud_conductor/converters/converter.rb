@@ -19,13 +19,35 @@ module CloudConductor
 
       def initialize
         @patches = []
+        def @patches.sort
+          original = dup
+          results = []
+          availables = []
+
+          loop do
+            break unless original.reject! do |patch|
+              if patch.dependencies.all? { |dependency| availables.include? dependency }
+                availables << patch.class.class_name.to_sym
+                results << patch
+                true
+              end
+            end
+          end
+
+          unless original.empty?
+            reasons = original.map(&:class).map(&:class_name).join(', ')
+            fail "Circular dependencies [#{reasons}]"
+          end
+
+          results
+        end
       end
 
       def convert(template, parameters)
         template = ensure_hash(template)
         parameters = ensure_hash(parameters)
 
-        @patches.each do |patch|
+        @patches.sort.each do |patch|
           next unless patch.need?(template, parameters)
           template = patch.ensure(template, parameters)
           template = patch.apply(template, parameters)
