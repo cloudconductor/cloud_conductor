@@ -19,18 +19,17 @@ module CloudConductor
 
       def initialize
         @patches = []
+
         def @patches.sort
           original = dup
           results = []
-          availables = []
 
           loop do
             break unless original.reject! do |patch|
-              if patch.dependencies.all? { |dependency| availables.include? dependency }
-                availables << patch.class.class_name.to_sym
-                results << patch
-                true
+              available = patch.dependencies.all? do |dependency|
+                !original.map(&:class).map(&:class_name).map(&:to_sym).include? dependency
               end
+              results << patch if available
             end
           end
 

@@ -117,13 +117,13 @@ module CloudConductor
           end
 
           Patches.const_set name, klass
-          Patches.const_get(name).new
+          Patches.const_get(name)
         end
 
         it 'return patches when all patches are independent' do
-          patch1 = dummy_patch 'Patch1'
-          patch2 = dummy_patch 'Patch2'
-          patch3 = dummy_patch 'Patch3'
+          patch1 = dummy_patch('Patch1').new
+          patch2 = dummy_patch('Patch2').new
+          patch3 = dummy_patch('Patch3').new
 
           @converter.add_patch patch1
           @converter.add_patch patch2
@@ -134,22 +134,22 @@ module CloudConductor
         end
 
         it 'sort patches order by dependencies of each patch' do
-          patch1 = dummy_patch 'Patch1', [:Patch2]
-          patch2 = dummy_patch 'Patch2', [:Patch3]
-          patch3 = dummy_patch 'Patch3'
+          patch1 = dummy_patch('Patch1', [:Patch2]).new
+          patch2 = dummy_patch('Patch2', [:Patch3]).new
+          patch3 = dummy_patch('Patch3').new
 
           @converter.add_patch patch1
           @converter.add_patch patch2
           @converter.add_patch patch3
 
           sorted_patches = @converter.patches.sort
-          expect(sorted_patches).to match_array([patch3, patch2, patch1])
+          expect(sorted_patches).to eq([patch3, patch2, patch1])
         end
 
         it 'raise error when patches has circular dependencies' do
-          patch1 = dummy_patch 'Patch1', [:Patch2]
-          patch2 = dummy_patch 'Patch2', [:Patch3]
-          patch3 = dummy_patch 'Patch3', [:Patch1]
+          patch1 = dummy_patch('Patch1', [:Patch2]).new
+          patch2 = dummy_patch('Patch2', [:Patch3]).new
+          patch3 = dummy_patch('Patch3', [:Patch1]).new
 
           @converter.add_patch patch1
           @converter.add_patch patch2
@@ -159,11 +159,11 @@ module CloudConductor
         end
 
         it 'sort patches order by complex dependencies of each patch' do
-          patch1 = dummy_patch 'Patch1', [:Patch2, :Patch3, :Patch5]
-          patch2 = dummy_patch 'Patch2', [:Patch3]
-          patch3 = dummy_patch 'Patch3', [:Patch4, :Patch5]
-          patch4 = dummy_patch 'Patch4', [:Patch5]
-          patch5 = dummy_patch 'Patch5'
+          patch1 = dummy_patch('Patch1', [:Patch2, :Patch3, :Patch5]).new
+          patch2 = dummy_patch('Patch2', [:Patch3]).new
+          patch3 = dummy_patch('Patch3', [:Patch4, :Patch5]).new
+          patch4 = dummy_patch('Patch4', [:Patch5]).new
+          patch5 = dummy_patch('Patch5').new
 
           @converter.add_patch patch1
           @converter.add_patch patch2
@@ -172,9 +172,27 @@ module CloudConductor
           @converter.add_patch patch5
 
           expect(@converter.patches).to eq([patch1, patch2, patch3, patch4, patch5])
+
           sorted_patches = @converter.patches.sort
-          expect(sorted_patches).to match_array([patch5, patch4, patch3, patch2, patch1])
+          expect(sorted_patches).to eq([patch5, patch4, patch3, patch2, patch1])
+
           expect(@converter.patches).to eq([patch1, patch2, patch3, patch4, patch5])
+        end
+
+        it 'sort patches when patches has multiple same patches that is depended by other patch' do
+          dummy_patch('Patch1')
+          patch1a = Patches::Patch1.new
+          patch2 = dummy_patch('Patch2', [:Patch1]).new
+          patch1b = Patches::Patch1.new
+          patch1c = Patches::Patch1.new
+
+          @converter.add_patch patch1a
+          @converter.add_patch patch2
+          @converter.add_patch patch1b
+          @converter.add_patch patch1c
+
+          sorted_patches = @converter.patches.sort
+          expect(sorted_patches).to eq([patch1a, patch1b, patch1c, patch2])
         end
       end
     end
