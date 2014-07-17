@@ -20,6 +20,10 @@ module CloudConductor
       def initialize
       end
 
+      def dependencies
+        [:AddIAMUser]
+      end
+
       def need?(template, _parameters)
         return false unless template[:Resources]
         !template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).empty?
