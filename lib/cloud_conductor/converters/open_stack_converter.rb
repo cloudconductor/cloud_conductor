@@ -39,6 +39,7 @@ module CloudConductor
       # Remove unimplemented properties from AutoScalingGroup
       def remove_auto_scaling_group_properties
         properties = []
+        properties << :AvailabilityZones
         properties << :HealthCheckGracePeriod
         properties << :HealthCheckType
         add_patch Patches::RemoveProperty.new 'AWS::AutoScaling::AutoScalingGroup', properties
@@ -104,6 +105,14 @@ module CloudConductor
         properties << :Serial
         properties << :Status
         add_patch Patches::RemoveProperty.new 'AWS::IAM::AccessKey', properties
+      end
+
+      # Remove unimplemented properties from User
+      def remove_user_properties
+        properties = []
+        properties << :Groups
+        properties << :Path
+        add_patch Patches::RemoveProperty.new 'AWS::IAM::User', properties
       end
     end
   end
