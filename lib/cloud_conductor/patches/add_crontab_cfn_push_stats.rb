@@ -44,13 +44,21 @@ module CloudConductor
           template[:Resources][key][:Metadata] ||= {}
           template[:Resources][key][:Metadata]['AWS::CloudFormation::Init'] ||= {}
           template[:Resources][key][:Metadata]['AWS::CloudFormation::Init'][:config] ||= {}
+          template[:Resources][key][:Properties][:UserData] ||= {}
+          template[:Resources][key][:Properties][:UserData]['Fn::Base64'] ||= ''
         end
         template
       end
 
       def apply(template, _parameters)
         template = template.deep_dup
+        template = apply_files(template)
+        template = apply_user_data(template)
 
+        template
+      end
+
+      def apply_files(template)
         template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).each do |launch_config, resource|
           auto_scaling_groups = template[:Resources].select(&type?('AWS::AutoScaling::AutoScalingGroup')).select(&dependent?([launch_config]))
 
@@ -64,6 +72,20 @@ module CloudConductor
           crontab_cfn_push_stats['/tmp/crontab-cfn-push-stats']['content']['Fn::Join'] << contents.flatten
 
           resource[:Metadata]['AWS::CloudFormation::Init'][:config].update crontab_cfn_push_stats
+        end
+
+        template
+      end
+
+      def apply_user_data(template)
+        template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).each do |_launch_config, resource|
+          user_data = resource[:Properties][:UserData]['Fn::Base64']
+          target = user_data if user_data.is_a?(String)
+          target = user_data['Fn::Join'][1] if user_data.is_a?(Hash)
+
+          target << "#!/bin/bash\n" if target.empty?
+          target << "# push stats periodically by cron\n"
+          target << "crontab /tmp/crontab-cfn-push-stats\n"
         end
 
         template
