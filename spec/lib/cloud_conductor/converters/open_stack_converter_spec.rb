@@ -34,18 +34,25 @@ module CloudConductor
       describe '#convert' do
         it 'apply patches that belong to OpenStackConverter' do
           expect_patches = []
-          expect_patches << Patches::RemoveRoute
+          expect_patches << Patches::RemoveProperty
+          expect_patches << Patches::RemoveResource
           expect_patches << Patches::RemoveMultipleSubnet
           expect_patches << Patches::AddIAMUser
           expect_patches << Patches::AddIAMAccessKey
           expect_patches << Patches::AddCFNCredentials
 
           expect_patches.each do |patch_class|
-            patch_class.any_instance.should_receive(:need?).and_return(true)
-            patch_class.any_instance.should_receive(:apply).and_return({})
+            double = double(patch_class.class_name)
+            expect(double).to receive(:need?).at_least(1).times.and_return(true)
+            expect(double).to receive(:apply).at_least(1).times.and_return({})
+
+            patch_class.any_instance.stub(:need?) { double.need? }
+            patch_class.any_instance.stub(:apply) { double.apply }
           end
 
-          @converter.convert({}, {})
+          converter = OpenStackConverter.new
+
+          converter.convert({}, {})
         end
       end
 

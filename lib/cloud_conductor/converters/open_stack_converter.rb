@@ -14,6 +14,7 @@
 # limitations under the License.
 module CloudConductor
   module Converters
+    # rubocop:disable ClassLength
     class OpenStackConverter < Converter
       # rubocop:disable MethodLength
       def initialize
@@ -29,7 +30,69 @@ module CloudConductor
         remove_load_balancer_properties
         remove_access_key_properties
 
-        add_patch Patches::RemoveRoute.new
+        add_patch Patches::RemoveResource.new 'AWS::AutoScaling::ScheduledAction'
+        add_patch Patches::RemoveResource.new 'AWS::CloudFormation::Authentication'
+        add_patch Patches::RemoveResource.new 'AWS::CloudFormation::CustomResource'
+        add_patch Patches::RemoveResource.new 'AWS::CloudFormation::Init'
+        add_patch Patches::RemoveResource.new 'AWS::CloudFront::Distribution'
+        add_patch Patches::RemoveResource.new 'AWS::CloudTrail::Trail'
+        add_patch Patches::RemoveResource.new 'AWS::CloudWatch::Alarm'
+        add_patch Patches::RemoveResource.new 'AWS::DynamoDB::Table'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::CustomerGateway'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::DHCPOptions'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::NetworkAcl'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::NetworkAclEntry'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::NetworkInterfaceAttachment'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::Route'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::SecurityGroupEgress'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::SecurityGroupIngress'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::SubnetNetworkAclAssociation'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPCDHCPOptionsAssociation'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPCPeeringConnection'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPNConnection'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPNConnectionRoute'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPNGateway'
+        add_patch Patches::RemoveResource.new 'AWS::EC2::VPNGatewayRoutePropagation'
+        add_patch Patches::RemoveResource.new 'AWS::ElastiCache::CacheCluster'
+        add_patch Patches::RemoveResource.new 'AWS::ElastiCache::ParameterGroup'
+        add_patch Patches::RemoveResource.new 'AWS::ElastiCache::SecurityGroup'
+        add_patch Patches::RemoveResource.new 'AWS::ElastiCache::SecurityGroupIngress'
+        add_patch Patches::RemoveResource.new 'AWS::ElastiCache::SubnetGroup'
+        add_patch Patches::RemoveResource.new 'AWS::ElasticBeanstalk::Application'
+        add_patch Patches::RemoveResource.new 'AWS::ElasticBeanstalk::ApplicationVersion'
+        add_patch Patches::RemoveResource.new 'AWS::ElasticBeanstalk::ConfigurationTemplate'
+        add_patch Patches::RemoveResource.new 'AWS::ElasticBeanstalk::Environment'
+        add_patch Patches::RemoveResource.new 'AWS::IAM::Group'
+        add_patch Patches::RemoveResource.new 'AWS::IAM::InstanceProfile'
+        add_patch Patches::RemoveResource.new 'AWS::IAM::Policy'
+        add_patch Patches::RemoveResource.new 'AWS::IAM::Role'
+        add_patch Patches::RemoveResource.new 'AWS::IAM::UserToGroupAddition'
+        add_patch Patches::RemoveResource.new 'AWS::Kinesis::Stream'
+        add_patch Patches::RemoveResource.new 'AWS::Logs::LogGroup'
+        add_patch Patches::RemoveResource.new 'AWS::Logs::MetricFilter'
+        add_patch Patches::RemoveResource.new 'AWS::OpsWorks::App'
+        add_patch Patches::RemoveResource.new 'AWS::OpsWorks::ElasticLoadBalancerAttachment'
+        add_patch Patches::RemoveResource.new 'AWS::OpsWorks::Instance'
+        add_patch Patches::RemoveResource.new 'AWS::OpsWorks::Layer'
+        add_patch Patches::RemoveResource.new 'AWS::OpsWorks::Stack'
+        add_patch Patches::RemoveResource.new 'AWS::Redshift::Cluster'
+        add_patch Patches::RemoveResource.new 'AWS::Redshift::ClusterParameterGroup'
+        add_patch Patches::RemoveResource.new 'AWS::Redshift::ClusterSecurityGroup'
+        add_patch Patches::RemoveResource.new 'AWS::Redshift::ClusterSecurityGroupIngress'
+        add_patch Patches::RemoveResource.new 'AWS::Redshift::ClusterSubnetGroup'
+        add_patch Patches::RemoveResource.new 'AWS::RDS::DBParameterGroup'
+        add_patch Patches::RemoveResource.new 'AWS::RDS::DBSubnetGroup'
+        add_patch Patches::RemoveResource.new 'AWS::RDS::DBSecurityGroup'
+        add_patch Patches::RemoveResource.new 'AWS::RDS::DBSecurityGroupIngress'
+        add_patch Patches::RemoveResource.new 'AWS::Route53::RecordSet'
+        add_patch Patches::RemoveResource.new 'AWS::Route53::RecordSetGroup'
+        add_patch Patches::RemoveResource.new 'AWS::S3::BucketPolicy'
+        add_patch Patches::RemoveResource.new 'AWS::SDB::Domain'
+        add_patch Patches::RemoveResource.new 'AWS::SNS::Topic'
+        add_patch Patches::RemoveResource.new 'AWS::SNS::TopicPolicy'
+        add_patch Patches::RemoveResource.new 'AWS::SQS::Queue'
+        add_patch Patches::RemoveResource.new 'AWS::SQS::QueuePolicy'
+
         add_patch Patches::RemoveMultipleSubnet.new
         add_patch Patches::AddIAMUser.new
         add_patch Patches::AddIAMAccessKey.new
