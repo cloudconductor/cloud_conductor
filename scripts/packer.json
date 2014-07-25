@@ -11,6 +11,7 @@
   },
   "builders": [
     {
+      "name": "aws-centos",
       "type": "amazon-ebs",
       "access_key": "{{user `aws_access_key`}}",
       "secret_key": "{{user `aws_secret_key`}}",
@@ -21,6 +22,7 @@
       "ami_name": "created by packer {{timestamp}}"
     },
     {
+      "name": "openstack-centos",
       "type": "openstack",
       "username": "{{user `openstack_username`}}",
       "password": "{{user `openstack_password`}}",
