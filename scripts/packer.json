@@ -18,7 +18,7 @@
       "region": "ap-northeast-1",
       "instance_type": "m1.small",
       "ssh_username": "cloud-user",
-      "source_ami": "ami-29dc9228",
+      "source_ami": "ami-25732f24",
       "ami_name": "CentOS-{{user `role`}}-{{uuid}}",
       "tags": {
         "Name": "CentOS-{{user `role`}}"
