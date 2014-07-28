@@ -17,7 +17,7 @@
       "secret_key": "{{user `aws_secret_key`}}",
       "region": "ap-northeast-1",
       "instance_type": "m1.small",
-      "ssh_username": "ec2-user",
+      "ssh_username": "cloud-user",
       "source_ami": "ami-29dc9228",
       "ami_name": "created by packer {{timestamp}}"
     },
