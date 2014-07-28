@@ -19,7 +19,10 @@
       "instance_type": "m1.small",
       "ssh_username": "cloud-user",
       "source_ami": "ami-29dc9228",
-      "ami_name": "created by packer {{timestamp}}"
+      "ami_name": "CentOS-{{user `role`}}-{{uuid}}",
+      "tags": {
+        "Name": "CentOS-{{user `role`}}"
+      }
     },
     {
       "name": "openstack-centos",
@@ -31,7 +34,7 @@
       "region": "RegionOne",
       "flavor": "2",
       "source_image": "587c6587-0c0e-448e-a99c-5f42eea24284",
-      "image_name": "Created by packer {{timestamp}}",
+      "image_name": "CentOS-{{user `role`}}",
       "ssh_username": "cloud-user",
       "use_floating_ip": "true",
       "floating_ip_pool": "public"
