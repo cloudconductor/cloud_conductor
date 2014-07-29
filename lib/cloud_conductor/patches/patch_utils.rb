@@ -25,7 +25,7 @@ module CloudConductor
         template[:Resources].except!(*resource_names)
 
         # remove from array properties
-        remove_from_array(template, resource_names)
+        remove_from_array(nil, template, resource_names)
 
         # remove from DependsOn
         template[:Resources].each do |_key, resource|
@@ -69,20 +69,19 @@ module CloudConductor
         end
       end
 
-      def remove_from_array(obj, names)
-        return nil unless obj.respond_to?(:each)
+      def remove_from_array(parent, obj, names)
+        return unless obj.respond_to?(:each)
 
         if obj.is_a? Hash
-          return obj if names.include?(obj[:Ref])
-          return obj if obj[:'Fn::GetAtt'] && names.include?(obj[:'Fn::GetAtt'].first)
-
+          if names.include?(obj[:Ref]) || obj[:'Fn::GetAtt'] && names.include?(obj[:'Fn::GetAtt'].first)
+            parent.delete obj
+          end
           obj = obj.values
         end
 
         obj.each do |node|
-          obj.delete remove_from_array(node, names)
+          remove_from_array(obj, node, names)
         end
-        nil
       end
     end
   end

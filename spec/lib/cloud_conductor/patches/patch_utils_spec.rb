@@ -62,6 +62,15 @@ module CloudConductor
                   "Type": "Dummy",
                   "Properties": {
                     "Property": { "Fn::Join": ["", [
+                      "Hoge"
+                    ]] },
+                    "Target": { "Ref": "Route"}
+                  }
+                },
+                "ArrayDepend": {
+                  "Type": "Dummy",
+                  "Properties": {
+                    "Property": { "Fn::Join": ["", [
                       "Hoge",
                       { "Ref": "Route" }
                     ]] }
@@ -89,9 +98,9 @@ module CloudConductor
         end
 
         it 'remove target resource and dependency resources' do
-          expect(@template[:Resources].keys).to match_array(%w(Route Sample Sample2 Depend))
+          expect(@template[:Resources].keys).to match_array(%w(Route Sample Sample2 Depend ArrayDepend))
           result = remove_resource @template, 'Route'
-          expect(result[:Resources].keys).to match_array(%w(Sample Sample2))
+          expect(result[:Resources].keys).to match_array(%w(Sample Sample2 ArrayDepend))
         end
 
         it 'doesn\'t affect to other resources' do
@@ -108,6 +117,19 @@ module CloudConductor
           expect(original_template).to eq(@template)
           remove_resource @template, 'Route'
           expect(original_template).to eq(@template)
+        end
+
+        it 'remove reference to dependency resource from array' do
+          values = @template[:Resources][:ArrayDepend][:Properties][:Property][:"Fn::Join"].last
+          expect(values.size).to eq(2)
+          expect(values[0]).to eq('Hoge')
+          expect(values[1]).to eq('Ref' => 'Route')
+
+          result = remove_resource @template, 'Route'
+
+          values = result[:Resources][:ArrayDepend][:Properties][:Property][:"Fn::Join"].last
+          expect(values.size).to eq(1)
+          expect(values[0]).to eq('Hoge')
         end
 
         it 'remove dependsOn condition from dependency resources' do
