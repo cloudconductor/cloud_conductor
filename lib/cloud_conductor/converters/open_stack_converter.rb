@@ -24,7 +24,11 @@ module CloudConductor
         remove_auto_scaling_group_properties
         remove_launch_configuration_properties
         remove_instance_properties
+        remove_internet_gateway_properties
         remove_network_interface_properties
+        remove_route_table_properties
+        remove_security_group_properties
+        remove_subnet_properties
         remove_vpc_properties
         remove_vpc_gateway_attachment_properties
         remove_load_balancer_properties
@@ -131,17 +135,48 @@ module CloudConductor
         add_patch Patches::RemoveProperty.new 'AWS::EC2::Instance', properties
       end
 
+      # Remove unimplemented properties from InternetGateway
+      def remove_internet_gateway_properties
+        properties = []
+        properties << :Tags
+        add_patch Patches::RemoveProperty.new 'AWS::EC2::InternetGateway', properties
+      end
+
       # Remove unimplemented properties from NetworkInterface
       def remove_network_interface_properties
         properties = []
         properties << :SourceDestCheck
+        properties << :Tags
         add_patch Patches::RemoveProperty.new 'AWS::EC2::NetworkInterface', properties
+      end
+
+      # Remove unimplemented properties from RouteTable
+      def remove_route_table_properties
+        properties = []
+        properties << :Tags
+        add_patch Patches::RemoveProperty.new 'AWS::EC2::RouteTable', properties
+      end
+
+      # Remove unimplemented properties from SecurityGroup
+      def remove_security_group_properties
+        properties = []
+        properties << 'SecurityGroupEgress.SourceSecurityGroupOwnerId'
+        properties << 'SecurityGroupIngress.SourceSecurityGroupOwnerId'
+        add_patch Patches::RemoveProperty.new 'AWS::EC2::SecurityGroup', properties
+      end
+
+      # Remove unimplemented properties from Subnet
+      def remove_subnet_properties
+        properties = []
+        properties << :Tags
+        add_patch Patches::RemoveProperty.new 'AWS::EC2::Subnet', properties
       end
 
       # Remove unimplemented properties from VPC
       def remove_vpc_properties
         properties = []
         properties << :InstanceTenancy
+        properties << :Tags
         add_patch Patches::RemoveProperty.new 'AWS::EC2::VPC', properties
       end
 
@@ -157,6 +192,8 @@ module CloudConductor
         properties = []
         properties << :AppCookieStickinessPolicy
         properties << :LBCookieStickinessPolicy
+        properties << 'Listeners.PolicyNames'
+        properties << 'Listeners.SSLCertificateId '
         properties << :SecurityGroups
         properties << :Subnets
         add_patch Patches::RemoveProperty.new 'AWS::ElasticLoadBalancing::LoadBalancer', properties
