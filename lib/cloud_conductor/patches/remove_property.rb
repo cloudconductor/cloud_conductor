@@ -19,7 +19,10 @@ module CloudConductor
 
       def initialize(type, properties)
         @type = type
-        @properties = properties
+        @properties = [properties].flatten.map do |property|
+          next [property] if property.is_a? Symbol
+          property.split('.').map(&:to_sym)
+        end
       end
 
       def ensure(template, _parameters)
@@ -32,10 +35,26 @@ module CloudConductor
 
         resources = template[:Resources].select(&type?(@type))
         resources.values.each do |resource|
-          resource[:Properties].except!(*@properties)
+          @properties.each do |keys|
+            remove_properties resource[:Properties], keys
+          end
+        end
+        template
+      end
+
+      def remove_properties(current, keys)
+        if current.is_a? Array
+          current.each do |node|
+            remove_properties node, keys
+          end
+          return
         end
 
-        template
+        return unless !current.nil? && current.respond_to?(:except)
+
+        current.except! keys.first if keys.size == 1
+
+        remove_properties current[keys.first], keys.slice(1..-1)
       end
     end
   end
