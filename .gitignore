@@ -4,6 +4,7 @@
 /log/*
 /.grunt
 /.sass-cache
+/scripts/tmp/
 
 # Ignore database files
 /db/*.sqlite3
@@ -21,3 +22,4 @@ node_modules
 public/js/template.js
 public/_SpecRunner.html
 public/css
+/scripts/*.pem

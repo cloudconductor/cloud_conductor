@@ -1,0 +1,60 @@
+{
+  "variables": {
+    "aws_access_key": null,
+    "aws_secret_key": null,
+    "openstack_host": null,
+    "openstack_username": null,
+    "openstack_password": null,
+    "openstack_tenant_id": null,
+    "repository_url": null,
+    "role": null
+  },
+  "builders": [
+    {
+      "name": "aws-centos",
+      "type": "amazon-ebs",
+      "access_key": "{{user `aws_access_key`}}",
+      "secret_key": "{{user `aws_secret_key`}}",
+      "region": "ap-northeast-1",
+      "instance_type": "m1.small",
+      "ssh_username": "cloud-user",
+      "source_ami": "ami-25732f24",
+      "ami_name": "CentOS-{{user `role`}}-{{uuid}}",
+      "tags": {
+        "Name": "CentOS-{{user `role`}}"
+      }
+    },
+    {
+      "name": "openstack-centos",
+      "type": "openstack",
+      "username": "{{user `openstack_username`}}",
+      "password": "{{user `openstack_password`}}",
+      "tenant_id": "{{user `openstack_tenant_id`}}",
+      "provider": "http://{{user `openstack_host`}}:5000/v2.0/tokens",
+      "region": "RegionOne",
+      "flavor": "2",
+      "source_image": "587c6587-0c0e-448e-a99c-5f42eea24284",
+      "image_name": "CentOS-{{user `role`}}",
+      "ssh_username": "cloud-user",
+      "use_floating_ip": "true",
+      "floating_ip_pool": "public"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -x",
+      "inline": [
+        "if [ -f /tmp/packer-create-image.sh ]; then",
+        "  sudo /tmp/packer-create-image.sh",
+        "fi",
+
+        "cd /tmp",
+        "git clone {{user `repository_url`}} pattern",
+        "cd /tmp/pattern/resources/chef-repo",
+        "berks vendor cookbooks",
+        "sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/{{user `role`}}.json"
+      ]
+    }
+  ]
+}

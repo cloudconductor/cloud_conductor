@@ -33,71 +33,71 @@ describe Cloud do
 
   describe '#valid?' do
     it 'returns true when valid model' do
-      expect(@cloud.valid?).to be_true
+      expect(@cloud.valid?).to be_truthy
 
       @cloud.cloud_type = 'openstack'
-      expect(@cloud.valid?).to be_true
+      expect(@cloud.valid?).to be_truthy
 
       @cloud.cloud_type = 'aws'
       @cloud.tenant_id = nil
-      expect(@cloud.valid?).to be_true
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns true when cloud_type is dummy' do
       @cloud.cloud_type = 'dummy'
-      expect(@cloud.valid?).to be_true
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns false when name is unset' do
       @cloud.name = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.name = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when entry_point is unset' do
       @cloud.entry_point = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.entry_point = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when key is unset' do
       @cloud.key = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.key = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when secret is unset' do
       @cloud.secret = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.secret = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when cloud_type is neither aws, openstack nor dummy' do
       @cloud.cloud_type = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.cloud_type = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.cloud_type = 'test'
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when cloud_type is openstack and tenant_id is blank' do
       @cloud.cloud_type = 'openstack'
       @cloud.tenant_id = ''
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
 
       @cloud.tenant_id = nil
-      expect(@cloud.valid?).to be_false
+      expect(@cloud.valid?).to be_falsey
     end
   end
 
