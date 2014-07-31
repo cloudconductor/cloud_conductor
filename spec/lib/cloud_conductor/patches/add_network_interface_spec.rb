@@ -309,31 +309,32 @@ module CloudConductor
                   "Type" : "AWS::EC2::SecurityGroup",
                   "Properties" : {
                   }
+                },
+                "NIC": {
+                  "Type": "AWS::EC2::NetworkInterface",
+                  "Properties": {
+                  }
                 }
               }
             }
           EOS
           template = template.with_indifferent_access
 
-          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
-          result = @patch.apply template, {}
-          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
-
           expect(template[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
           expect(template[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
-          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
           result = @patch.apply template, {}
           keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
           expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
           expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
           expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
-          expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
-          expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
-          expect(result[:Resources][keys[0]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
-          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
-          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
-          expect(result[:Resources][keys[0]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
-          expect(result[:Resources][keys[0]][:Properties][:SubnetId]).to eq('Subnet')
+          expect(result[:Resources][keys[1]][:Properties].keys.size).to eq(6)
+          expect(result[:Resources][keys[1]][:Properties][:Description]).to eq('Dummy Description')
+          expect(result[:Resources][keys[1]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
+          expect(result[:Resources][keys[1]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
+          expect(result[:Resources][keys[1]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
+          expect(result[:Resources][keys[1]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
+          expect(result[:Resources][keys[1]][:Properties][:SubnetId]).to eq('Subnet')
         end
       end
     end
