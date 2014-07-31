@@ -101,6 +101,7 @@ module CloudConductor
         add_patch Patches::AddIAMUser.new
         add_patch Patches::AddIAMAccessKey.new
         add_patch Patches::AddCFNCredentials.new
+        add_patch Patches::AddNetworkInterface.new
       end
 
       # Remove unimplemented properties from AutoScalingGroup
