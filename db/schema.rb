@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140520051330) do
+ActiveRecord::Schema.define(version: 20140730071959) do
 
   create_table "available_clouds", id: false, force: true do |t|
     t.integer  "cloud_id"
@@ -29,6 +29,34 @@ ActiveRecord::Schema.define(version: 20140520051330) do
     t.string   "key"
     t.string   "secret"
     t.string   "tenant_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "images", force: true do |t|
+    t.integer  "pattern_id"
+    t.integer  "cloud_id"
+    t.string   "role"
+    t.string   "name"
+    t.string   "status"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "patterns", force: true do |t|
+    t.string   "name"
+    t.string   "description"
+    t.string   "type"
+    t.string   "uri"
+    t.string   "revision"
+    t.integer  "metadata_id"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "patterns_clouds", force: true do |t|
+    t.integer  "pattern_id"
+    t.integer  "cloud_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
