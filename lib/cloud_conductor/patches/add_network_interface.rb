@@ -50,7 +50,7 @@ module CloudConductor
 
             key = SecureRandom.uuid
             template[:Resources].update(key => nic)
-            network_interface.update(NetworkInterfaceId: key)
+            network_interface.update(NetworkInterfaceId: { Ref: key })
           end
         end
 

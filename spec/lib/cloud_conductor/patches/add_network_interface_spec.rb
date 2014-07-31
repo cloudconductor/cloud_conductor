@@ -123,6 +123,7 @@ module CloudConductor
           result = @patch.apply template, {}
           keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
           expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[0])
           expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
           expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
           expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
@@ -187,6 +188,8 @@ module CloudConductor
           result = @patch.apply template, {}
           keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
           expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[0])
+          expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][1][:NetworkInterfaceId][:Ref]).to eq(keys[1])
           expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
           expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
           expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
@@ -257,7 +260,9 @@ module CloudConductor
           result = @patch.apply template, {}
           keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
           expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[0])
           expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[1])
           expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
           expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
           expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
@@ -326,7 +331,9 @@ module CloudConductor
           result = @patch.apply template, {}
           keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
           expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[1])
           expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0][:NetworkInterfaceId][:Ref]).to eq(keys[0])
           expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
           expect(result[:Resources][keys[1]][:Properties].keys.size).to eq(6)
           expect(result[:Resources][keys[1]][:Properties][:Description]).to eq('Dummy Description')
