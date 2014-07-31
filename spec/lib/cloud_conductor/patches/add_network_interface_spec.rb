@@ -15,55 +15,7 @@
 module CloudConductor
   module Patches
     describe AddNetworkInterface do
-      before do
-        @template = JSON.parse <<-EOS
-          {
-            "Resources": {
-              "Sample": {
-                "Type": "AWS::EC2::RouteTable",
-                "Properties": {
-                  "VpcId": { "Ref": "VPC" }
-                }
-              },
-
-              "Subnet" : {
-                "Type" : "AWS::EC2::Subnet",
-                "Properties" : {
-                  "AvailabilityZone": "ap-northeast-1a",
-                  "VpcId" : { "Ref" : "VPC" },
-                  "CidrBlock" : "192.168.0.0/24"
-                }
-              },
-
-              "SecurityGroupA" : {
-                "Type" : "AWS::EC2::SecurityGroup",
-                "Properties" : {
-                  "VpcId" : { "Ref" : "VPC" },
-                  "GroupDescription" : "Enable SSH access via port 22",
-                  "SecurityGroupIngress" : [
-                    { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation"}},
-                    { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
-                  ]
-                }
-              },
-
-              "SecurityGroupB" : {
-                "Type" : "AWS::EC2::SecurityGroup",
-                "Properties" : {
-                  "VpcId" : { "Ref" : "VPC" },
-                  "GroupDescription" : "Enable SSH access via port 22",
-                  "SecurityGroupIngress" : [
-                    { "IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation"}},
-                    { "IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
-                  ]
-                }
-              }
-            }
-          }
-        EOS
-
-        @template = @template.with_indifferent_access
-      end
+      include PatchUtils
 
       it 'extend Patch class' do
         expect(AddNetworkInterface.superclass).to eq(Patch)
@@ -82,66 +34,306 @@ module CloudConductor
           @patch = AddNetworkInterface.new
         end
 
-        it 'add AWS::EC2::NetworkInterface resource' do
-          expect(@template[:Resources].size).to eq(4)
-          expect(@template[:Resources][:NIC]).to be_nil
-          result = @patch.apply @template, {}
-          expect(result[:Resources].size).to eq(5)
-          expect(result[:Resources][:NIC]).not_to be_nil
+        it 'not add AWS::EC2::NetworkInterface resource if NetworkInterface of the property does not exist' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "Instance": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
+
+          result = @patch.apply template, {}
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface'))).to be_empty
         end
 
-        it 'add GroupSet property when template has SecurityGroup' do
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:NIC][:Properties][:GroupSet]).not_to be_nil
+        it 'not add AWS::EC2::NetworkInterface resource if NetworkInterface:NetworkInterfaceId of the property exist' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "Instance": {
+                  "Type": "AWS::EC2::Instance",
+                  "Properties": {
+                    "NetworkInterfaces": [{
+                      "NetworkInterfaceId": {"Ref" : "NIC"},
+                      "DeviceIndex": "0"
+                    }]
+                  }
+                },
+                "NIC": {
+                  "Type": "AWS::EC2::NetworkInterface",
+                  "Properties": {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
+
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
+          result = @patch.apply template, {}
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
         end
 
-        it 'add first SecurityGroup to GroupSet property' do
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:NIC][:Properties][:GroupSet].first[:Ref]).to eq('SecurityGroupA')
+        it 'add AWS::EC2::NetworkInterface resource if NetworkInterface:NetworkInterfaceId property does not exist' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "Instance": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    }]
+                  }
+                },
+                "Subnet" : {
+                  "Type" : "AWS::EC2::Subnet",
+                  "Properties" : {
+                    "AvailabilityZone": "ap-northeast-1a",
+                    "VpcId" : { "Ref" : "VPC" },
+                    "CidrBlock" : "192.168.0.0/24"
+                  }
+                },
+                "SecurityGroup" : {
+                  "Type" : "AWS::EC2::SecurityGroup",
+                  "Properties" : {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
+
+          expect(template[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          result = @patch.apply template, {}
+          keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
+          expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
+          expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
+          expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
+          expect(result[:Resources][keys[0]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
+          expect(result[:Resources][keys[0]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
+          expect(result[:Resources][keys[0]][:Properties][:SubnetId]).to eq('Subnet')
         end
 
-        it 'doesn\'t add GroupSet property when template hasn\'t SecurityGroup' do
-          @template[:Resources].except! :SecurityGroupA, :SecurityGroupB
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:NIC][:Properties][:GroupSet]).to be_nil
+        it 'add multi AWS::EC2::NetworkInterface resource if multi NetworkInterface of the properties existed' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "Instance": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    },
+                    {
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    }]
+                  }
+                },
+                "Subnet" : {
+                  "Type" : "AWS::EC2::Subnet",
+                  "Properties" : {
+                    "AvailabilityZone": "ap-northeast-1a",
+                    "VpcId" : { "Ref" : "VPC" },
+                    "CidrBlock" : "192.168.0.0/24"
+                  }
+                },
+                "SecurityGroup" : {
+                  "Type" : "AWS::EC2::SecurityGroup",
+                  "Properties" : {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
+
+          expect(template[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          result = @patch.apply template, {}
+          keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
+          expect(result[:Resources][:Instance][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
+          expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
+          expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
+          expect(result[:Resources][keys[0]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
+          expect(result[:Resources][keys[0]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
+          expect(result[:Resources][keys[0]][:Properties][:SubnetId]).to eq('Subnet')
         end
 
-        it 'doesn\'t affect to first Subnet' do
-          original = @template[:Resources][:Subnet].deep_dup
+        it 'add multi AWS::EC2::NetworkInterface resource if multi Instance existed' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "InstanceA": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    }]
+                  }
+                },
+                "InstanceB": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    }]
+                  }
+                },
+                "Subnet" : {
+                  "Type" : "AWS::EC2::Subnet",
+                  "Properties" : {
+                    "AvailabilityZone": "ap-northeast-1a",
+                    "VpcId" : { "Ref" : "VPC" },
+                    "CidrBlock" : "192.168.0.0/24"
+                  }
+                },
+                "SecurityGroup" : {
+                  "Type" : "AWS::EC2::SecurityGroup",
+                  "Properties" : {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
 
-          expect(@template[:Resources][:Subnet]).to eq(original)
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:Subnet]).to eq(original)
+          expect(template[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
+          expect(template[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          result = @patch.apply template, {}
+          keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
+          expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
+          expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
+          expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
+          expect(result[:Resources][keys[0]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
+          expect(result[:Resources][keys[0]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
+          expect(result[:Resources][keys[0]][:Properties][:SubnetId]).to eq('Subnet')
         end
 
-        it 'doesn\'t affect to first SecurityGroup' do
-          original = @template[:Resources][:SecurityGroupA].deep_dup
+        it 'add AWS::EC2::NetworkInterface resource that meets condition only' do
+          template = JSON.parse <<-EOS
+            {
+              "Resources": {
+                "InstanceA": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "AssociatePublicIpAddress" : true,
+                      "DeleteOnTermination" : true,
+                      "Description" : "Dummy Description",
+                      "DeviceIndex" : "0",
+                      "GroupSet" : ["SecurityGroup"],
+                      "PrivateIpAddress" : "0.0.0.0",
+                      "PrivateIpAddresses" : ["0.0.0.0"],
+                      "SecondaryPrivateIpAddressCount" : 1,
+                      "SubnetId" : "Subnet"
+                    }]
+                  }
+                },
+                "InstanceB": {
+                  "Type" : "AWS::EC2::Instance",
+                  "Properties" : {
+                    "NetworkInterfaces" : [{
+                      "NetworkInterfaceId": {"Ref" : "NIC"},
+                      "DeviceIndex": "0"
+                    }]
+                  }
+                },
+                "Subnet" : {
+                  "Type" : "AWS::EC2::Subnet",
+                  "Properties" : {
+                    "AvailabilityZone": "ap-northeast-1a",
+                    "VpcId" : { "Ref" : "VPC" },
+                    "CidrBlock" : "192.168.0.0/24"
+                  }
+                },
+                "SecurityGroup" : {
+                  "Type" : "AWS::EC2::SecurityGroup",
+                  "Properties" : {
+                  }
+                }
+              }
+            }
+          EOS
+          template = template.with_indifferent_access
 
-          expect(@template[:Resources][:SecurityGroupA]).to eq(original)
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:SecurityGroupA]).to eq(original)
-        end
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          result = @patch.apply template, {}
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(1)
 
-        it 'doesn\'t affect to other resources' do
-          original = @template[:Resources][:Sample].deep_dup
-
-          expect(@template[:Resources][:Sample]).to eq(original)
-          result = @patch.apply @template, {}
-          expect(result[:Resources][:Sample]).to eq(original)
-        end
-
-        it 'doesn\'t affect to source template' do
-          original_template = @template.deep_dup
-
-          expect(original_template).to eq(@template)
-          @patch.apply @template, {}
-          expect(original_template).to eq(@template)
-        end
-
-        it 'raise error when template hasn\'t subnet' do
-          @template[:Resources].delete(:Subnet)
-
-          expect { @patch.apply @template, {} }.to raise_error('Subnet was not found')
+          expect(template[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(9)
+          expect(template[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(template[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(0)
+          result = @patch.apply template, {}
+          keys = result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys
+          expect(result[:Resources][:InstanceA][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources][:InstanceB][:Properties][:NetworkInterfaces][0].keys.size).to eq(2)
+          expect(result[:Resources].select(&type?('AWS::EC2::NetworkInterface')).keys.size).to eq(2)
+          expect(result[:Resources][keys[0]][:Properties].keys.size).to eq(6)
+          expect(result[:Resources][keys[0]][:Properties][:Description]).to eq('Dummy Description')
+          expect(result[:Resources][keys[0]][:Properties][:GroupSet]).to eq(['SecurityGroup'])
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddress]).to eq('0.0.0.0')
+          expect(result[:Resources][keys[0]][:Properties][:PrivateIpAddresses]).to eq(['0.0.0.0'])
+          expect(result[:Resources][keys[0]][:Properties][:SecondaryPrivateIpAddressCount]).to eq(1)
+          expect(result[:Resources][keys[0]][:Properties][:SubnetId]).to eq('Subnet')
         end
       end
     end
