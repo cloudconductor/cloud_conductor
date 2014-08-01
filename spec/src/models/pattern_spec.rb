@@ -125,13 +125,13 @@ describe Pattern do
 
   describe '#before_save' do
     it 'will clone repository to temporary directory' do
-      command = %r(git clone #{@pattern.uri} tmp/[a-f0-9-]{36})
+      command = %r(git clone #{@pattern.uri} .*tmp/patterns/[a-f0-9-]{36})
       @pattern.should_receive(:system).with(command).and_return(true)
       @pattern.save!
     end
 
     it 'will load metadata.yml in cloned repository' do
-      path = %r(tmp/[a-f0-9-]{36}/metadata.yml)
+      path = %r(tmp/patterns/[a-f0-9-]{36}/metadata.yml)
       YAML.should_receive(:load_file).with(path).and_return({})
       @pattern.save!
     end

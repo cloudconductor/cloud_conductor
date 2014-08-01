@@ -36,7 +36,7 @@ class Pattern < ActiveRecord::Base
   end
 
   before_save do
-    temporary = "tmp/#{SecureRandom.uuid}"
+    temporary = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}", File.dirname(__FILE__))
     clone_command = "git clone #{uri} #{temporary}"
     fail 'An error has occurred while git clone' unless system(clone_command)
 
