@@ -17,6 +17,17 @@ module CloudConductor
     class AddNetworkInterface < Patch
       include PatchUtils
 
+      PORTABLE_PROPERTIES = %w(Description GroupSet PrivateIpAddress PrivateIpAddresses SecondaryPrivateIpAddressCount SubnetId)
+      DELETE_PROPERTIES = PORTABLE_PROPERTIES + %w(AssociatePublicIpAddress DeleteOnTermination)
+
+      NIC_TEMPLATE = <<-EOS
+        {
+          "Type" : "AWS::EC2::NetworkInterface",
+          "Properties" : {
+          }
+        }
+      EOS
+
       def initialize
       end
 
@@ -28,28 +39,20 @@ module CloudConductor
       def apply(template, _parameters)
         template = template.deep_dup
 
-        security_group = template[:Resources].select(&type?('AWS::EC2::SecurityGroup'))
-        subnet = template[:Resources].select(&type?('AWS::EC2::Subnet'))
+        template[:Resources].select(&type?('AWS::EC2::Instance')).map do |_key, instance|
+          next if instance[:Properties].nil? || instance[:Properties][:NetworkInterfaces].nil?
+          instance[:Properties][:NetworkInterfaces].each do |network_interface|
+            next unless network_interface[:NetworkInterfaceId].nil?
 
-        fail 'Subnet was not found' if subnet.empty?
+            nic = JSON.parse(NIC_TEMPLATE).with_indifferent_access
+            nic[:Properties].update network_interface.slice(*PORTABLE_PROPERTIES)
+            network_interface.except!(*DELETE_PROPERTIES)
 
-        network_interface = JSON.parse <<-EOS
-          {
-            "NIC" : {
-              "Type" : "AWS::EC2::NetworkInterface",
-              "Properties" : {
-                "SubnetId" : { "Ref" : "#{ subnet.keys[0] }" }
-              }
-            }
-          }
-        EOS
-        network_interface = network_interface.with_indifferent_access
-
-        unless security_group.empty?
-          network_interface[:NIC][:Properties][:GroupSet] = [{ Ref: security_group.keys[0] }]
+            key = SecureRandom.uuid
+            template[:Resources].update(key => nic)
+            network_interface.update(NetworkInterfaceId: { Ref: key })
+          end
         end
-
-        template[:Resources].update network_interface
 
         template
       end
