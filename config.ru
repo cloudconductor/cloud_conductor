@@ -26,3 +26,4 @@ use ActiveRecord::ConnectionAdapters::ConnectionManagement
 # Register route
 map('/systems') { run SystemsController }
 map('/clouds') { run CloudsController }
+map('/patterns') { run PatternsController }

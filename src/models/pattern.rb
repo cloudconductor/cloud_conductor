@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'sinatra/activerecord'
-require 'open-uri'
+require 'yaml'
 
 class Pattern < ActiveRecord::Base
+  self.inheritance_column = nil
+
   has_many :patterns_clouds, dependent: :destroy
   has_many :clouds, through: :patterns_clouds
   has_many :images, dependent: :destroy
 
-  validates :name, presence: true
   validates :uri, format: { with: URI.regexp }
   validates :clouds, presence: true
 
@@ -32,5 +33,29 @@ class Pattern < ActiveRecord::Base
     return :error if images.any? { |image| image.status == :error }
     return :pending if images.any? { |image| image.status == :pending }
     :created
+  end
+
+  before_save do
+    temporary = "tmp/#{SecureRandom.uuid}"
+    clone_command = "git clone #{uri} #{temporary}"
+    fail 'An error has occurred while git clone' unless system(clone_command)
+
+    unless revision.blank?
+      checkout_command = "cd #{temporary}; git checkout #{revision}"
+      fail 'An error has occurred while git checkout' unless system(checkout_command)
+    end
+
+    metadata_path = File.expand_path('metadata.yml', temporary)
+    metadata = YAML.load_file(metadata_path).with_indifferent_access
+
+    self.name = metadata[:name]
+    self.description = metadata[:description]
+    self.type = metadata[:type]
+
+    branch = revision || ''
+    self.revision = `cd #{temporary}; git log --pretty=format:%H --max-count=1 #{branch}`
+    fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+
+    true
   end
 end
