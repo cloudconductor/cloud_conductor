@@ -36,29 +36,86 @@ class Pattern < ActiveRecord::Base
   end
 
   before_save do
-    temporary = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-    clone_command = "git clone #{uri} #{temporary}"
-    fail 'An error has occurred while git clone' unless system(clone_command)
+    path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
-    Dir.chdir temporary
+    clone_repository path
 
-    unless revision.blank?
-      checkout_command = "git checkout #{revision}"
-      fail 'An error has occurred while git checkout' unless system(checkout_command)
+    metadata = load_metadata path
+    roles = load_roles path
+    update_attributes metadata
+
+    roles.each do |role|
+      create_images metadata[:supports], role
     end
 
-    metadata_path = File.expand_path('metadata.yml', temporary)
-    metadata = YAML.load_file(metadata_path).with_indifferent_access
+    remove_repository path
 
+    true
+  end
+
+  private
+
+  def type?(type)
+    ->(_, resource) { resource[:Type] == type }
+  end
+
+  def clone_repository(path)
+    clone_command = "git clone #{uri} #{path}"
+    fail 'An error has occurred while git clone' unless system(clone_command)
+
+    Dir.chdir path
+
+    return if revision.blank?
+
+    checkout_command = "git checkout #{revision}"
+    fail 'An error has occurred while git checkout' unless system(checkout_command)
+  end
+
+  def load_metadata(path)
+    metadata_path = File.expand_path('metadata.yml', path)
+    YAML.load_file(metadata_path).with_indifferent_access
+  end
+
+  def load_roles(path)
+    template_path = File.expand_path('template.json', path)
+    template = JSON.parse(File.open(template_path).read).with_indifferent_access
+
+    fail 'Resources was not found' if template[:Resources].nil?
+
+    resources = {}
+    resources.update template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration'))
+    resources.update template[:Resources].select(&type?('AWS::EC2::Instance'))
+
+    roles = resources.map do |key, resource|
+      next key if resource[:Metadata].nil?
+      next key if resource[:Metadata][:Role].nil?
+      resource[:Metadata][:Role]
+    end
+    roles.uniq
+  end
+
+  def update_attributes(metadata)
     self.name = metadata[:name]
     self.description = metadata[:description]
     self.type = metadata[:type]
 
-    branch = revision || ''
-    self.revision = `git log --pretty=format:%H --max-count=1 #{branch}`
+    self.revision = `git log --pretty=format:%H --max-count=1`
     fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+  end
 
-    FileUtils.rm_r temporary, force: true
-    true
+  def create_images(oss, role)
+    clouds.each do |cloud|
+      oss.each do |os|
+        image = Image.new
+        image.cloud = cloud
+        image.os = os
+        image.role = role
+        image.save!
+      end
+    end
+  end
+
+  def remove_repository(path)
+    FileUtils.rm_r path, force: true
   end
 end
