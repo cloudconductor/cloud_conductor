@@ -56,6 +56,7 @@ class Pattern < ActiveRecord::Base
     self.revision = `cd #{temporary}; git log --pretty=format:%H --max-count=1 #{branch}`
     fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
 
+    FileUtils.rm_r temporary, force: true
     true
   end
 end
