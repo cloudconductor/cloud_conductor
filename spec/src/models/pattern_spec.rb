@@ -23,6 +23,7 @@ describe Pattern do
     @pattern.clouds << @cloud_openstack
 
     @pattern.stub(:system).and_return(true)
+    Dir.stub(:chdir)
     YAML.stub(:load_file).and_return({})
     @pattern.stub(:`).and_return('')
   end

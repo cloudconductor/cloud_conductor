@@ -36,12 +36,14 @@ class Pattern < ActiveRecord::Base
   end
 
   before_save do
-    temporary = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}", File.dirname(__FILE__))
+    temporary = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
     clone_command = "git clone #{uri} #{temporary}"
     fail 'An error has occurred while git clone' unless system(clone_command)
 
+    Dir.chdir temporary
+
     unless revision.blank?
-      checkout_command = "cd #{temporary}; git checkout #{revision}"
+      checkout_command = "git checkout #{revision}"
       fail 'An error has occurred while git checkout' unless system(checkout_command)
     end
 
@@ -53,7 +55,7 @@ class Pattern < ActiveRecord::Base
     self.type = metadata[:type]
 
     branch = revision || ''
-    self.revision = `cd #{temporary}; git log --pretty=format:%H --max-count=1 #{branch}`
+    self.revision = `git log --pretty=format:%H --max-count=1 #{branch}`
     fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
 
     FileUtils.rm_r temporary, force: true
