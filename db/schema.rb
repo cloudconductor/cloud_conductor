@@ -36,6 +36,7 @@ ActiveRecord::Schema.define(version: 20140730071959) do
   create_table "images", force: true do |t|
     t.integer  "pattern_id"
     t.integer  "cloud_id"
+    t.string   "os"
     t.string   "role"
     t.string   "name"
     t.string   "status"

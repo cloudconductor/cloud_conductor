@@ -3,6 +3,7 @@ class CreateImages < ActiveRecord::Migration
     create_table :images do |t|
       t.references :pattern
       t.references :cloud
+      t.string :os
       t.string :role
       t.string :name
       t.string :status
