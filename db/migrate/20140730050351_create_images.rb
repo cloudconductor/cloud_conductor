@@ -5,7 +5,8 @@ class CreateImages < ActiveRecord::Migration
       t.references :cloud
       t.string :os
       t.string :role
-      t.string :name
+      t.string :image
+      t.string :message
       t.string :status
       t.timestamps
     end

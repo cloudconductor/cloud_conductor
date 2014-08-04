@@ -16,6 +16,5 @@ FactoryGirl.define do
   factory :image do
     role 'role'
     status :processing
-    name nil
   end
 end
