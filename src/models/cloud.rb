@@ -17,7 +17,7 @@ require 'sinatra/activerecord'
 class Cloud < ActiveRecord::Base
   before_destroy :raise_error_in_use
 
-  validates :name, presence: true
+  validates :name, presence: true, format: /\A[^\-]+\Z/
   validates :entry_point, presence: true
   validates :key, presence: true
   validates :secret, presence: true

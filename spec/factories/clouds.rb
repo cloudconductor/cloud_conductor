@@ -14,7 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :cloud_aws, class: Cloud do
-    name 'cloud-aws-12345678'
+    name 'cloud_aws_12345678'
     cloud_type 'aws'
     entry_point 'ap-northeast-1'
     key '1234567890abcdef'
@@ -23,7 +23,7 @@ FactoryGirl.define do
   end
 
   factory :cloud_openstack, class: Cloud do
-    name 'cloud-openstack-12345678'
+    name 'cloud_openstack_12345678'
     cloud_type 'openstack'
     entry_point 'http://example.com/'
     key '1234567890abcdef'

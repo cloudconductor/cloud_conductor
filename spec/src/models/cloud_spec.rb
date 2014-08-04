@@ -56,6 +56,11 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
     end
 
+    it 'returns false when name contains hyphen character' do
+      @cloud.name = 'sample-name'
+      expect(@cloud.valid?).to be_falsey
+    end
+
     it 'returns false when entry_point is unset' do
       @cloud.entry_point = nil
       expect(@cloud.valid?).to be_falsey
