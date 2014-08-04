@@ -21,6 +21,8 @@ gem 'aws-sdk'
 gem 'fog'
 gem 'zabbixapi'
 
+gem 'systemu'
+
 group :development do
   gem 'guard'
   gem 'byebug'
