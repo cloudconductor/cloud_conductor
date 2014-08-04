@@ -1,0 +1,10 @@
+1407119082,,ui,say,aws-centos output will be in this color.
+1407119082,,ui,say,
+1407119082,,ui,say,==> aws-centos: Inspecting the source AMI...
+1407119082,,ui,error,==> aws-centos: Error querying AMI: Invalid id: "ami-25732f24-" (InvalidAMIID.Malformed)
+1407119082,,ui,error,Build 'aws-centos' errored: Error querying AMI: Invalid id: "ami-25732f24-" (InvalidAMIID.Malformed)
+1407119082,,error-count,1
+1407119082,,ui,error,\n==> Some builds didn't complete successfully and had errors:
+1407119082,aws-centos,error,Error querying AMI: Invalid id: "ami-25732f24-" (InvalidAMIID.Malformed)
+1407119082,,ui,error,--> aws-centos: Error querying AMI: Invalid id: "ami-25732f24-" (InvalidAMIID.Malformed)
+1407119082,,ui,say,\n==> Builds finished but no artifacts were created.
