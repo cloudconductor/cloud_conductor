@@ -277,6 +277,10 @@ describe Pattern do
     end
 
     describe '#create_images' do
+      before do
+        PackerClient.any_instance.stub(:build)
+      end
+
       it 'create image each cloud, os and role' do
         count = Image.count
 
