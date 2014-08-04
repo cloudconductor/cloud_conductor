@@ -289,6 +289,46 @@ describe Pattern do
 
         expect(Image.count).to eq(count + @pattern.clouds.size * oss.size * 1)
       end
+
+      it 'will call PackerClient#build with uri, revision, name of clouds, os\'s and role' do
+        oss = [:centos, :ubuntu]
+
+        args = []
+        args << @pattern.uri
+        args << @pattern.revision
+        args << @pattern.clouds.map(&:name)
+        args << oss
+        args << 'nginx'
+        PackerClient.any_instance.should_receive(:build).with(*args)
+
+        @pattern.send(:create_images, oss, 'nginx')
+      end
+
+      it 'update status of all images when call block' do
+        results = {
+          "#{@cloud_aws.name}-centos" => {
+            status: :success,
+            image: 'ami-12345678'
+          },
+          "#{@cloud_openstack.name}-centos" => {
+            status: :error,
+            message: 'dummy_message'
+          }
+        }
+        PackerClient.any_instance.stub(:build).and_yield(results)
+        oss = [:centos]
+        @pattern.send(:create_images, oss, 'nginx')
+
+        aws = Image.where(cloud: @cloud_aws, os: oss.first, role: 'nginx').first
+        expect(aws.status).to eq(:created)
+        expect(aws.image).to eq('ami-12345678')
+        expect(aws.message).to be_nil
+
+        openstack = Image.where(cloud: @cloud_openstack, os: oss.first, role: 'nginx').first
+        expect(openstack.status).to eq(:error)
+        expect(openstack.image).to be_nil
+        expect(openstack.message).to eq('dummy_message')
+      end
     end
 
     describe '#remove_repository' do

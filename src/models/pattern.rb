@@ -113,6 +113,18 @@ class Pattern < ActiveRecord::Base
         image.save!
       end
     end
+
+    PackerClient.new.build uri, revision, clouds.map(&:name), oss, role do |results|
+      results.each do |key, result|
+        cloud_name, os = key.split('-')
+        cloud = Cloud.where(name: cloud_name).first
+        image = Image.where(cloud: cloud, os: os, role: role).first
+        image.status = result[:status] == :success ? :created : :error
+        image.image = result[:image]
+        image.message = result[:message]
+        image.save!
+      end
+    end
   end
 
   def remove_repository(path)
