@@ -84,13 +84,13 @@ describe Pattern do
     end
 
     it 'return status that integrated status over all images' do
-      expect(@pattern.status).to eq(:pending)
+      expect(@pattern.status).to eq(:processing)
     end
 
-    it 'return pending when least one image has pending status' do
+    it 'return processing when least one image has processing status' do
       @pattern.images[0].status = :created
 
-      expect(@pattern.status).to eq(:pending)
+      expect(@pattern.status).to eq(:processing)
     end
 
     it 'return created when all images have created status' do
@@ -103,7 +103,7 @@ describe Pattern do
 
     it 'return error when least one image has error status' do
       @pattern.images[0].status = :created
-      @pattern.images[1].status = :pending
+      @pattern.images[1].status = :processing
       @pattern.images[2].status = :error
 
       expect(@pattern.status).to eq(:error)

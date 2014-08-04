@@ -14,10 +14,14 @@
 # limitations under the License.
 describe Image do
   before do
-    @image = FactoryGirl.create(:image)
+    @image = Image.new
   end
 
   describe '#status' do
+    it 'returns :processing status when initialized' do
+      expect(@image.status).to eq(:processing)
+    end
+
     it 'returns image status as symbol' do
       @image.status = 'sample'
       expect(@image.status).to eq(:sample)

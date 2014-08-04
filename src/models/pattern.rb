@@ -31,7 +31,7 @@ class Pattern < ActiveRecord::Base
 
   def status
     return :error if images.any? { |image| image.status == :error }
-    return :pending if images.any? { |image| image.status == :pending }
+    return :processing if images.any? { |image| image.status == :processing }
     :created
   end
 

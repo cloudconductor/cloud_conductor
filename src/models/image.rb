@@ -18,6 +18,11 @@ class Image < ActiveRecord::Base
   belongs_to :pattern
   belongs_to :cloud
 
+  def initialize
+    super
+    self.status = :processing
+  end
+
   def status
     super.to_sym
   end
