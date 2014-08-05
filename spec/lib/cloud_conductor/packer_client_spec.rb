@@ -99,7 +99,8 @@ module CloudConductor
 
       it 'return success status and image of all builders when success all builders' do
         csv = load_csv 'success.csv'
-        result = @client.send(:parse, csv)
+        only = 'aws-centos,openstack-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(aws-centos openstack-centos))
 
         aws = result['aws-centos']
@@ -113,7 +114,8 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when source image does not exists while build on aws' do
         csv = load_csv 'error_aws_image_not_found.csv'
-        result = @client.send(:parse, csv)
+        only = 'aws-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
@@ -124,7 +126,8 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when SSH connecetion failed while build on aws' do
         csv = load_csv 'error_aws_ssh_faild.csv'
-        result = @client.send(:parse, csv)
+        only = 'aws-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
@@ -135,7 +138,8 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when an error has occurred while provisioning' do
         csv = load_csv 'error_aws_provisioners_faild.csv'
-        result = @client.send(:parse, csv)
+        only = 'aws-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
@@ -146,18 +150,20 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when source image does not exists while build on openstack' do
         csv = load_csv 'error_openstack_image_not_found.csv'
-        result = @client.send(:parse, csv)
+        only = 'openstack-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
         expect(openstack[:status]).to eq(:error)
         expect(openstack[:image]).to be_nil
-        expect(openstack[:message]).to match(%r{Error launching source server: Expected HTTP response code \[202\] when accessing URL\(http://[0-9\.]+:8774/v2/[0-9a-f]+/servers\); got 400 instead with the following body:\\n==> openstack-centos: \{"badRequest": \{"message": "Invalid imageRef provided.", "code": 400\}\}})
+        expect(openstack[:message]).to match(%r{Error launching source server: Expected HTTP response code \[202\] when accessing URL\(http://[0-9\.]+:8774/v2/[0-9a-f]+/servers\); got 400 instead with the following body:\\n\{"badRequest": \{"message": "Can not find requested image", "code": 400\}\}})
       end
 
       it 'return error status and error message about openstack builder when SSH connecetion failed while build on openstack' do
         csv = load_csv 'error_openstack_ssh_faild.csv'
-        result = @client.send(:parse, csv)
+        only = 'openstack-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
@@ -168,7 +174,8 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when an error has occurred while provisioning' do
         csv = load_csv 'error_openstack_provisioners_faild.csv'
-        result = @client.send(:parse, csv)
+        only = 'openstack-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
@@ -179,7 +186,8 @@ module CloudConductor
 
       it 'return error status and error message about all builders when multiple builders failed' do
         csv = load_csv 'error_concurrency.csv'
-        result = @client.send(:parse, csv)
+        only = 'aws-centos,openstack-centos'
+        result = @client.send(:parse, csv, only)
         expect(result.keys).to match_array(%w(aws-centos openstack-centos))
 
         aws = result['aws-centos']

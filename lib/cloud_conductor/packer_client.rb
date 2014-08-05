@@ -12,6 +12,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'csv'
+
 module CloudConductor
   class PackerClient
     def initialize(options)
@@ -25,86 +27,65 @@ module CloudConductor
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      command = "#{@packer_path} build #{vars_text} -var 'role=#{role}' -only=#{only} #{@packer_json_path}"
-      status, stdout, stderr = systemu(command)
+      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{@packer_json_path}"
+      _status, stdout, _stderr = systemu(command)
 
-      yield status, stdout, stderr if block_given?
+      yield parse(stdout, only) if block_given?
     end
 
     private
 
-    def parse(stdout)
-      # success
-      # {
-      #   'aws-centos' => {
-      #     status: :success,
-      #     image: 'ami-e18bd5e0'
-      #   },
-      #   'openstack-centos' => {
-      #     status: :success,
-      #     image: '78dd03a1-c9c2-4376-bae9-b84c7b0ca6e1'
-      #   }
-      # }
+    # rubocop:disable MethodLength
+    def parse(stdout, only)
+      results = {}
+      rows = CSV.parse(stdout, quote_char: "\0")
 
-      # error_aws_image_not_found
-      # {
-      #   'aws-centos' => {
-      #     status: :error,
-      #     message: "Error querying AMI: The image id '[ami-29dc9229]' does not exist (InvalidAMIID.NotFound)"
-      #   }
-      # }
+      only.split(',').each do |key|
+        results[key] = {}
 
-      # error_aws_ssh_faild
-      # {
-      #   'aws-centos' => {
-      #     status: :error,
-      #     message: 'Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain'
-      #   }
-      # }
+        if (row = rows.find(&success?(key)))
+          results[key][:status] = :success
+          results[key][:image] = row[5].split(':').last
+          next
+        end
 
-      # error_aws_provisioners_faild
-      # {
-      #   'aws-centos' => {
-      #     status: :error,
-      #     message: 'Script exited with non-zero exit status: 1'
-      #   }
-      # }
+        results[key][:status] = :error
+        if (row = rows.find(&error1?(key)))
+          results[key][:message] = row[3].gsub('%!(PACKER_COMMA)', ',')
+          next
+        end
 
-      # error_openstack_image_not_found
-      # {
-      #   'openstack-centos' => {
-      #     status: :error,
-      #     message: 'Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n==> openstack-centos: {"badRequest": {"message": "Invalid imageRef provided.", "code": 400}}'
-      #   }
-      # }
+        if (row = rows.find(&error2?(key)))
+          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("==> #{key}: ", '')
+          next
+        end
 
-      # error_openstack_ssh_faild
-      # {
-      #   'openstack-centos' => {
-      #     status: :error,
-      #     message: 'Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain'
-      #   }
-      # }
+        if (row = rows.find(&error3?(key)))
+          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("--> #{key}: ", '')
+          next
+        end
 
-      # error_openstack_provisioners_faild
-      # {
-      #   'openstack-centos' => {
-      #     status: :error,
-      #     message: 'Script exited with non-zero exit status: 1'
-      #   }
-      # }
+        results[key][:message] = 'Unknown error has occurred'
+      end
 
-      # error_concurrency
-      # {
-      #   'aws-centos' => {
-      #     status: :error,
-      #     message: 'Script exited with non-zero exit status: 1'
-      #   },
-      #   'openstack-centos' => {
-      #     status: :error,
-      #     message: 'Script exited with non-zero exit status: 1'
-      #   }
-      # }
+      results.with_indifferent_access
+    end
+
+    # rubocop:disable ParameterLists
+    def success?(key)
+      proc { |_timestamp, target, type, _index, subtype, _data| target == key && type == 'artifact' && subtype == 'id' }
+    end
+
+    def error1?(key)
+      proc { |_timestamp, target, type, _data| target == key && type == 'error' }
+    end
+
+    def error2?(key)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{key}/ }
+    end
+
+    def error3?(key)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{key}/ }
     end
   end
 end
