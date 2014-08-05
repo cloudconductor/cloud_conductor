@@ -278,7 +278,7 @@ describe Pattern do
 
     describe '#create_images' do
       before do
-        PackerClient.any_instance.stub(:build)
+        CloudConductor::PackerClient.any_instance.stub(:build)
       end
 
       it 'create image each cloud, os and role' do
@@ -299,7 +299,7 @@ describe Pattern do
         args << @pattern.clouds.map(&:name)
         args << oss
         args << 'nginx'
-        PackerClient.any_instance.should_receive(:build).with(*args)
+        CloudConductor::PackerClient.any_instance.should_receive(:build).with(*args)
 
         @pattern.send(:create_images, oss, 'nginx')
       end
@@ -315,7 +315,7 @@ describe Pattern do
             message: 'dummy_message'
           }
         }
-        PackerClient.any_instance.stub(:build).and_yield(results)
+        CloudConductor::PackerClient.any_instance.stub(:build).and_yield(results)
         oss = [:centos]
         @pattern.send(:create_images, oss, 'nginx')
 

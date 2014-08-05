@@ -114,7 +114,7 @@ class Pattern < ActiveRecord::Base
       end
     end
 
-    PackerClient.new.build uri, revision, clouds.map(&:name), oss, role do |results|
+    CloudConductor::PackerClient.new.build uri, revision, clouds.map(&:name), oss, role do |results|
       results.each do |key, result|
         cloud_name, os = key.split('-')
         cloud = Cloud.where(name: cloud_name).first
