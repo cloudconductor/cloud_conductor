@@ -16,7 +16,13 @@ require 'csv'
 
 module CloudConductor
   class PackerClient
-    def initialize(options)
+    DEFAULT_OPTIONS = {
+      packer_path: '/opt/packer/packer',
+      packer_json_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__))
+    }
+
+    def initialize(options = {})
+      options.reverse_merge! DEFAULT_OPTIONS
       @packer_path = options[:packer_path]
       @packer_json_path = options[:packer_json_path]
       @vars = options.except(:packer_path, :packer_json_path)

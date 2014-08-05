@@ -28,6 +28,22 @@ module CloudConductor
       @client = PackerClient.new options
     end
 
+    describe '#initialize' do
+      it 'set default option when initialized without options' do
+        packer_json_path = File.expand_path('../../../config/packer.json', File.dirname(__FILE__))
+
+        client = PackerClient.new
+        expect(client.instance_variable_get(:@packer_path)).to eq('/opt/packer/packer')
+        expect(client.instance_variable_get(:@packer_json_path)).to eq(packer_json_path)
+      end
+
+      it 'update options with specified option when initialized with some options' do
+        client = PackerClient.new packer_path: 'dummy_path', packer_json_path: 'dummy_json_path'
+        expect(client.instance_variable_get(:@packer_path)).to eq('dummy_path')
+        expect(client.instance_variable_get(:@packer_json_path)).to eq('dummy_json_path')
+      end
+    end
+
     describe '#build' do
       before do
         @clouds = %w(aws openstack)
