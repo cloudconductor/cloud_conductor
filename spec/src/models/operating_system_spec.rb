@@ -12,9 +12,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
-
-class OperationSystem < ActiveRecord::Base
-  def initialize
-  end
+describe OperatingSystem do
 end

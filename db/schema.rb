@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140805054831) do
+ActiveRecord::Schema.define(version: 20140805065230) do
 
   create_table "available_clouds", id: false, force: true do |t|
     t.integer  "cloud_id"
@@ -43,6 +43,10 @@ ActiveRecord::Schema.define(version: 20140805054831) do
     t.string   "status"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "operating_systems", force: true do |t|
+    t.string "name"
   end
 
   create_table "operation_systems", force: true do |t|
