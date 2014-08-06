@@ -84,7 +84,7 @@ ActiveRecord::Schema.define(version: 20140805065230) do
     t.integer "cloud_id"
     t.integer "operating_system_id"
     t.string  "source_image"
-    t.string  "ssh_user_name"
+    t.string  "ssh_username"
   end
 
 end

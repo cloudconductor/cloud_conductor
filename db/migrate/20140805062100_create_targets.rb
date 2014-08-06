@@ -4,7 +4,7 @@ class CreateTargets < ActiveRecord::Migration
       t.references :cloud
       t.references :operating_system
       t.string :source_image
-      t.string :ssh_user_name
+      t.string :ssh_username
     end
   end
 end
