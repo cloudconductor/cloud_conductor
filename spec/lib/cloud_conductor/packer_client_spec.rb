@@ -249,13 +249,21 @@ module CloudConductor
         @targets.each do |target|
           target.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
         end
+
+        @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
+        Dir.stub(:exists?).with(@directory).and_return true
+        File.stub_chain(:open, :write)
+      end
+
+      it 'create directory to store packer.json if directory does not exist' do
+        Dir.stub(:exists?).with(@directory).and_return false
+        FileUtils.should_receive(:mkdir_p).with(@directory)
       end
 
       it 'return json path that is created by #create_json in tmp directory' do
         directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
         path = @client.send(:create_json, @cloud)
         expect(path).to match(%r{#{directory}/[0-9a-z\-]{36}.json})
-        expect(File.exists path).to be_truthy
       end
 
       it 'read json template from @packer_json_path' do
