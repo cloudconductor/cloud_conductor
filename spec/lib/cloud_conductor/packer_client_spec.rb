@@ -49,10 +49,12 @@ module CloudConductor
         @clouds = %w(aws openstack)
         @oss = %w(centos ubuntu)
         @role = 'nginx'
+
+        @threads = Thread.list
       end
 
       after do
-        (Thread.list - [Thread.current]).each do |thread|
+        (Thread.list - @threads).each do |thread|
           thread.join
         end
       end
