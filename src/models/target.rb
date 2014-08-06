@@ -18,11 +18,23 @@ class Target < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :operating_system
 
+  ALLOW_RECEIVERS = %w(target cloud operating_system)
+
   def name
     "#{cloud.name}-#{operating_system.name}"
   end
 
   def to_json
     template = cloud.template
+    template.gsub(/\{\{(\w+)\s*`(\w+)`\}\}/) do
+      receiver_name = Regexp.last_match[1]
+      method_name = Regexp.last_match[2]
+      next Regexp.last_match[0] unless ALLOW_RECEIVERS.include? receiver_name
+      send(receiver_name).send(method_name)
+    end
+  end
+
+  def target
+    self
   end
 end
