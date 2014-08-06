@@ -19,6 +19,7 @@ class Target < ActiveRecord::Base
   belongs_to :operating_system
 
   def name
+    "#{cloud.name}-#{operating_system.name}"
   end
 
   def to_json
