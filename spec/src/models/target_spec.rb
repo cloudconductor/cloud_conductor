@@ -20,6 +20,7 @@ describe Target do
     @target = Target.new
     @target.cloud = @cloud
     @target.operating_system = @os
+    @target.source_image = 'dummy_image'
   end
 
   describe '#name' do
