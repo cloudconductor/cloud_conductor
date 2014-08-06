@@ -34,9 +34,10 @@ module CloudConductor
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
       command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{@packer_json_path}"
-      _status, stdout, _stderr = systemu(command)
-
-      yield parse(stdout, only) if block_given?
+      Thread.new do
+        _status, stdout, _stderr = systemu(command)
+        yield parse(stdout, only) if block_given?
+      end
     end
 
     private

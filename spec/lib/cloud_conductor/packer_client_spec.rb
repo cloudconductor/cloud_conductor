@@ -51,6 +51,12 @@ module CloudConductor
         @role = 'nginx'
       end
 
+      after do
+        (Thread.list - [Thread.current]).each do |thread|
+          thread.join
+        end
+      end
+
       it 'will execute packer that specified with repository_url and revision option' do
         vars = []
         vars << "-var 'repository_url=http://example.com'"
