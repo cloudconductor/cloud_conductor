@@ -80,4 +80,11 @@ ActiveRecord::Schema.define(version: 20140805065230) do
     t.datetime "updated_at"
   end
 
+  create_table "targets", force: true do |t|
+    t.integer "cloud_id"
+    t.integer "operating_system_id"
+    t.string  "source_image"
+    t.string  "ssh_user_name"
+  end
+
 end
