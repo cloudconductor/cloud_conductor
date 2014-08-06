@@ -15,6 +15,4 @@
 require 'sinatra/activerecord'
 
 class OperatingSystem < ActiveRecord::Base
-  def initialize
-  end
 end
