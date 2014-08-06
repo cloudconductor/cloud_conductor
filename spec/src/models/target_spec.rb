@@ -55,5 +55,22 @@ describe Target do
       expect(result[:os_name]).to eq(@os.name)
       expect(result[:source_image]).to eq(@target.source_image)
     end
+
+    it 'doesn\'t affect variables that has unrelated receiver' do
+      @target.cloud.template = <<-EOS
+        {
+          "dummy1": "{{user `name`}}",
+          "dummy2": "{{env `PATH`}}",
+          "dummy3": "{{isotime}}",
+          "dummy4": "{{ .Name }}"
+        }
+      EOS
+
+      result = JSON.parse(@target.to_json).with_indifferent_access
+      expect(result[:dummy1]).to eq('{{user `name`}}')
+      expect(result[:dummy2]).to eq('{{env `PATH`}}')
+      expect(result[:dummy3]).to eq('{{isotime}}')
+      expect(result[:dummy4]).to eq('{{ .Name }}')
+    end
   end
 end
