@@ -76,6 +76,7 @@ module CloudConductor
 
       results.with_indifferent_access
     end
+    # rubocop:enable MethodLength
 
     # rubocop:disable ParameterLists
     def success?(key)
@@ -92,6 +93,30 @@ module CloudConductor
 
     def error3?(key)
       proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{key}/ }
+    end
+    # rubocop:enable ParameterLists
+
+    def create_json(clouds)
+      # it return json path that is created by #create_json in tmp directory
+      '/var/www/develop/takezawa/core/tmp/packer/12345678-1234-1234-1234-123456789abc.json'
+
+
+      # it write valid json to tempoarary packer.json
+      File.open('hoge') do |f|
+        f.write <<-EOS
+          {
+            "variables": {},
+            "builders": [
+              {
+                name: "cloud_aws_4"
+              },
+              {
+                name: "cloud_openstack_4"
+              }
+            ]
+          }
+        EOS
+      end
     end
   end
 end

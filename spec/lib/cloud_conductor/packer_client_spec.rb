@@ -103,6 +103,12 @@ module CloudConductor
         @client.should_receive(:systemu).with(pattern)
         @client.build('http://example.com', 'dummy_revision', @clouds, @oss, @role)
       end
+
+      it 'will call #create_json to create json file' do
+        @client.should_receive(:create_json).with(@clouds)
+        @client.stub(:systemu)
+        @client.build('http://example.com', 'dummy_revision', @clouds, @oss, @role)
+      end
     end
 
     describe '#parse' do
@@ -215,6 +221,58 @@ module CloudConductor
         expect(openstack[:status]).to eq(:error)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
+      end
+    end
+
+    describe '#create_json' do
+      before do
+        cloud_aws = FactoryGirl.create(:cloud_aws)
+        cloud_openstack = FactoryGirl.create(:cloud_openstack)
+        os = FactoryGirl.create(:operating_system)
+
+        target = cloud_aws.targets.build(operating_system: os)
+        target.source_image = 'dummy_image_aws'
+
+        target = cloud_openstack.targets.build(operating_system: os)
+        target.source_image = 'dummy_image_openstack'
+
+        @clouds = [cloud_aws, cloud_openstack]
+        @client.stub(:open).and_return('{}')
+
+        @targets = @clouds.map(&:targets).flatten
+        @targets.each do |target|
+          target.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
+        end
+      end
+
+      it 'return json path that is created by #create_json in tmp directory' do
+        directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
+        path = @client.send(:create_json, @cloud)
+        expect(path).to match(%r{#{directory}/[0-9a-z\-]{36}.json})
+        expect(File.exists path).to be_truthy
+      end
+
+      it 'read json template from @packer_json_path' do
+        @client.should_receive(:open).with('/tmp/packer.json').and_return('{}')
+      end
+
+      it 'will generate json by Target#to_json' do
+        @targets.each do |target|
+          target.should_receive(:to_json)
+        end
+      end
+
+      it 'write valid json to temporary packer.json' do
+        File.stub_chain(:open, :write) do |content|
+          json = JSON.load(content).with_indifferent_access
+          expect(json[:builders].size).to eq(@clouds.size)
+
+          @targets.each_with_index do |target, index|
+            expect(json[:builders][index][:name]).to eq(target.name)
+          end
+        end
+
+        @client.send(:create_json, @cloud)
       end
     end
   end
