@@ -51,8 +51,8 @@ describe Target do
       EOS
 
       result = JSON.parse(@target.to_json).with_indifferent_access
-      expect(result[:cloud_name]).to eq(@target.cloud.name)
-      expect(result[:os_name]).to eq(@target.operating_system.name)
+      expect(result[:cloud_name]).to eq(@cloud.name)
+      expect(result[:os_name]).to eq(@os.name)
       expect(result[:source_image]).to eq(@target.source_image)
     end
   end
