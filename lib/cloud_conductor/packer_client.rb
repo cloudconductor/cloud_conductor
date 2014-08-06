@@ -18,22 +18,24 @@ module CloudConductor
   class PackerClient
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
-      packer_json_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__))
+      template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__))
     }
 
     def initialize(options = {})
       options.reverse_merge! DEFAULT_OPTIONS
       @packer_path = options[:packer_path]
-      @packer_json_path = options[:packer_json_path]
-      @vars = options.except(:packer_path, :packer_json_path)
+      @template_path = options[:template_path]
+      @vars = options.except(:packer_path, :template_path)
     end
 
     def build(repository_url, revision, clouds, oss, role)
+      create_json clouds
+
       only = (clouds.product oss).map { |cloud, os| "#{cloud}-#{os}" }.join(',')
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{@packer_json_path}"
+      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{@template_path}"
       Thread.new do
         _status, stdout, _stderr = systemu(command)
         yield parse(stdout, only) if block_given?
