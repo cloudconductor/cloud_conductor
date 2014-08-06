@@ -49,10 +49,6 @@ ActiveRecord::Schema.define(version: 20140805065230) do
     t.string "name"
   end
 
-  create_table "operation_systems", force: true do |t|
-    t.string "name"
-  end
-
   create_table "patterns", force: true do |t|
     t.string   "name"
     t.string   "description"
