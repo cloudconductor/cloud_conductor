@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+os = OperatingSystem.new
+os.name = 'centos'
+os.save!
+
 cloud_aws = Cloud.new
 cloud_aws.name = 'cloud_aws'
 cloud_aws.cloud_type = 'aws'
@@ -20,22 +24,57 @@ cloud_aws.entry_point = 'ap-northeast-1'
 cloud_aws.key = '1234567890abcdef'
 cloud_aws.secret = '1234567890abcdef'
 cloud_aws.tenant_id = nil
+cloud_aws.template = <<-EOS
+  {
+    "name": "{{target `name`}}",
+    "type": "amazon-ebs",
+    "access_key": "{{cloud `key`}}",
+    "secret_key": "{{cloud `secret`}}",
+    "region": "ap-northeast-1",
+    "instance_type": "m1.small",
+    "ssh_username": "{{target `ssh_username`}}",
+    "source_ami": "{{target `source_image`}}",
+    "ami_name": "{{os `name`}}-{{user `role`}}-{{uuid}}",
+    "tags": {
+      "Name": "{{os `name`}}-{{user `role`}}"
+    }
+  }
+EOS
+cloud_aws.targets.build(operating_system: os, source_image: 'ami-12345678', ssh_username: 'ec2-user')
 cloud_aws.save!
 
 cloud_openstack = Cloud.new
 cloud_openstack.name = 'cloud_openstack'
 cloud_openstack.cloud_type = 'openstack'
-cloud_openstack.entry_point = 'http://192.168.166.100:5000/'
+cloud_openstack.entry_point = 'http://127.0.0.1:5000/'
 cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
 cloud_openstack.tenant_id = '1234567890abcdef'
+cloud_openstack.template = <<-EOS
+  {
+    "name": "{{target `name`}}",
+    "type": "openstack",
+    "username": "{{cloud `key`}}",
+    "password": "{{cloud `secret`}}",
+    "tenant_id": "{{cloud `tenant_id`}}",
+    "provider": "{{cloud `entry_point`}}v2.0/tokens",
+    "region": "RegionOne",
+    "flavor": "2",
+    "source_image": "{{target `source_image`}}",
+    "image_name": "{{os `name`}}-{{user `role`}}",
+    "ssh_username": "{{target `ssh_username`}}",
+    "use_floating_ip": "true",
+    "floating_ip_pool": "public"
+  }
+EOS
+cloud_openstack.targets.build(operating_system: os, source_image: '12345678-1234-1234-1234-1234567890ab', ssh_username: 'ec2-user')
 cloud_openstack.save!
 
-cloud_dummy = Cloud.new
-cloud_dummy.name = 'cloud_dummy'
-cloud_dummy.cloud_type = 'dummy'
-cloud_dummy.entry_point = 'http://192.168.166.100:5000/'
-cloud_dummy.key = '1234567890abcdef'
-cloud_dummy.secret = '1234567890abcdef'
-cloud_dummy.tenant_id = '1234567890abcdef'
-cloud_dummy.save!
+# cloud_dummy = Cloud.new
+# cloud_dummy.name = 'cloud_dummy'
+# cloud_dummy.cloud_type = 'dummy'
+# cloud_dummy.entry_point = 'http://127.0.0.1:5000/'
+# cloud_dummy.key = '1234567890abcdef'
+# cloud_dummy.secret = '1234567890abcdef'
+# cloud_dummy.tenant_id = '1234567890abcdef'
+# cloud_dummy.save!
