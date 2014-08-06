@@ -29,6 +29,7 @@ ActiveRecord::Schema.define(version: 20140805065230) do
     t.string   "key"
     t.string   "secret"
     t.string   "tenant_id"
+    t.text     "template"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
