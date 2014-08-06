@@ -51,6 +51,8 @@ module CloudConductor
         @role = 'nginx'
 
         @threads = Thread.list
+
+        @client.stub(:create_json)
       end
 
       after do
@@ -238,14 +240,20 @@ module CloudConductor
         cloud_openstack = FactoryGirl.create(:cloud_openstack)
         os = FactoryGirl.create(:operating_system)
 
-        target = cloud_aws.targets.build(operating_system: os)
-        target.source_image = 'dummy_image_aws'
-
-        target = cloud_openstack.targets.build(operating_system: os)
-        target.source_image = 'dummy_image_openstack'
+        cloud_aws.targets.build(operating_system: os, source_image: 'dummy_image_aws')
+        cloud_openstack.targets.build(operating_system: os, source_image: 'dummy_image_openstack')
 
         @clouds = [cloud_aws, cloud_openstack]
-        @client.stub(:open).and_return('{}')
+        @client.stub(:open).and_return <<-EOS
+          {
+            "variables": {
+            },
+            "builders": [
+            ],
+            "provisioners": [
+            ]
+          }
+        EOS
 
         @targets = @clouds.map(&:targets).flatten
         @targets.each do |target|
@@ -254,7 +262,7 @@ module CloudConductor
 
         @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
         Dir.stub(:exist?).with(@directory).and_return true
-        File.stub_chain(:open, :write)
+        File.stub(:open).and_yield double('file', write: nil)
       end
 
       it 'create directory to store packer.json if directory does not exist' do
@@ -282,14 +290,16 @@ module CloudConductor
       end
 
       it 'write valid json to temporary packer.json' do
-        File.stub_chain(:open, :write) do |content|
+        doubled_file = double('file')
+        doubled_file.stub(:write) do |content|
           json = JSON.load(content).with_indifferent_access
           expect(json[:builders].size).to eq(@clouds.size)
 
-          @targets.each_with_index do |target, index|
-            expect(json[:builders][index][:name]).to eq(target.name)
+          json[:builders].each do |builder|
+            expect(builder).to eq('dummy' => 'dummy_value')
           end
         end
+        File.stub(:open).and_yield doubled_file
 
         @client.send(:create_json, @clouds)
       end

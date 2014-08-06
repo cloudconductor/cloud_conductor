@@ -100,26 +100,21 @@ module CloudConductor
     # rubocop:enable ParameterLists
 
     def create_json(clouds)
-      # it return json path that is created by #create_json in tmp directory
-      '/var/www/develop/takezawa/core/tmp/packer/12345678-1234-1234-1234-123456789abc.json'
+      temporary = File.expand_path('../../tmp/packer/', File.dirname(__FILE__))
+      FileUtils.mkdir_p temporary unless Dir.exist? temporary
 
+      json_path = File.expand_path("#{SecureRandom.uuid}.json", temporary)
+      template_json = JSON.load(open(@template_path)).with_indifferent_access
 
-      # it write valid json to tempoarary packer.json
-      File.open('hoge') do |f|
-        f.write <<-EOS
-          {
-            "variables": {},
-            "builders": [
-              {
-                name: "cloud_aws_4"
-              },
-              {
-                name: "cloud_openstack_4"
-              }
-            ]
-          }
-        EOS
+      File.open(json_path, 'w') do |f|
+        clouds.map(&:targets).flatten.each do |target|
+          template_json[:builders].push JSON.parse(target.to_json)
+        end
+
+        f.write template_json.to_json
       end
+
+      json_path
     end
   end
 end
