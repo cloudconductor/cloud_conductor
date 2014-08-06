@@ -1,6 +1,7 @@
 AllCops:
   Exclude:
     - db/schema.rb
+    - db/seeds.rb
     - node_modules/**/*
     - public/js/ext/**/*
 
