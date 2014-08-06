@@ -15,6 +15,9 @@
 require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
+  has_many :targets, dependent: :destroy
+  has_many :operating_systems, through: :targets
+
   before_destroy :raise_error_in_use
 
   validates :name, presence: true, format: /\A[^\-]+\Z/
