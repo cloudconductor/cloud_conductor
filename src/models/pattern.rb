@@ -67,6 +67,7 @@ class Pattern < ActiveRecord::Base
     clone_command = "git clone #{uri} #{path}"
     fail 'An error has occurred while git clone' unless system(clone_command)
 
+    @root_directory = Dir.pwd
     Dir.chdir path
 
     return if revision.blank?
@@ -132,6 +133,7 @@ class Pattern < ActiveRecord::Base
   end
 
   def remove_repository(path)
+    Dir.chdir @root_directory
     FileUtils.rm_r path, force: true
   end
 end
