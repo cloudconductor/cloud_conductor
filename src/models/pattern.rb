@@ -111,11 +111,7 @@ class Pattern < ActiveRecord::Base
   def create_images(oss, role)
     clouds.each do |cloud|
       oss.each do |os|
-        image = Image.new
-        image.cloud = cloud
-        image.os = os
-        image.role = role
-        image.save!
+        images.build(cloud: cloud, os: os, role: role)
       end
     end
 

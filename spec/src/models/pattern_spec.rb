@@ -286,6 +286,7 @@ describe Pattern do
 
         oss = [:centos, :ubuntu]
         @pattern.send(:create_images, oss, 'nginx')
+        @pattern.save!
 
         expect(Image.count).to eq(count + @pattern.clouds.size * oss.size * 1)
       end
@@ -315,7 +316,9 @@ describe Pattern do
             message: 'dummy_message'
           }
         }
-        CloudConductor::PackerClient.any_instance.stub(:build).and_yield(results)
+        CloudConductor::PackerClient.any_instance.stub(:build).and_yield(results) do
+          @pattern.save!
+        end
         oss = [:centos]
         @pattern.send(:create_images, oss, 'nginx')
 
