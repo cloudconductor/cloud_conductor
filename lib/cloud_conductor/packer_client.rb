@@ -99,7 +99,9 @@ module CloudConductor
     end
     # rubocop:enable ParameterLists
 
-    def create_json(clouds)
+    def create_json(cloud_names)
+      clouds = Cloud.where(name: cloud_names)
+
       temporary = File.expand_path('../../tmp/packer/', File.dirname(__FILE__))
       FileUtils.mkdir_p temporary unless Dir.exist? temporary
 

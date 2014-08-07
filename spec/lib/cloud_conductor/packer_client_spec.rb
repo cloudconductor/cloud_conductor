@@ -244,6 +244,7 @@ module CloudConductor
         cloud_openstack.targets.build(operating_system: os, source_image: 'dummy_image_openstack')
 
         @clouds = [cloud_aws, cloud_openstack]
+        @cloud_names = @clouds.map(&:name)
         @client.stub(:open).and_return <<-EOS
           {
             "variables": {
@@ -259,6 +260,7 @@ module CloudConductor
         @targets.each do |target|
           target.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
         end
+        Cloud.stub_chain(:where, :map, :flatten).and_return @targets
 
         @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
         Dir.stub(:exist?).with(@directory).and_return true
@@ -268,25 +270,25 @@ module CloudConductor
       it 'create directory to store packer.json if directory does not exist' do
         Dir.stub(:exist?).with(@directory).and_return false
         FileUtils.should_receive(:mkdir_p).with(@directory)
-        @client.send(:create_json, @clouds)
+        @client.send(:create_json, @cloud_names)
       end
 
       it 'return json path that is created by #create_json in tmp directory' do
         directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
-        path = @client.send(:create_json, @clouds)
+        path = @client.send(:create_json, @cloud_names)
         expect(path).to match(%r{#{directory}/[0-9a-z\-]{36}.json})
       end
 
       it 'read json template from @template_path' do
         @client.should_receive(:open).with('/tmp/packer.json')
-        @client.send(:create_json, @clouds)
+        @client.send(:create_json, @cloud_names)
       end
 
       it 'will generate json by Target#to_json' do
         @targets.each do |target|
           target.should_receive(:to_json)
         end
-        @client.send(:create_json, @clouds)
+        @client.send(:create_json, @cloud_names)
       end
 
       it 'write valid json to temporary packer.json' do
@@ -301,7 +303,7 @@ module CloudConductor
         end
         File.stub(:open).and_yield doubled_file
 
-        @client.send(:create_json, @clouds)
+        @client.send(:create_json, @cloud_names)
       end
     end
   end
