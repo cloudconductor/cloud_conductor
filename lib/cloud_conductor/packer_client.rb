@@ -39,6 +39,7 @@ module CloudConductor
       Thread.new do
         _status, stdout, _stderr = systemu(command)
         yield parse(stdout, only) if block_given?
+        Log.info("Packer finished in #{Thread.current}")
       end
     end
 
