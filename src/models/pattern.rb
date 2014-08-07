@@ -35,6 +35,10 @@ class Pattern < ActiveRecord::Base
     :created
   end
 
+  def to_json(options = {})
+    super options.merge(methods: :status)
+  end
+
   before_save do
     path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
