@@ -52,7 +52,7 @@ module CloudConductor
 
         @threads = Thread.list
 
-        @client.stub(:create_json)
+        @client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
       end
 
       after do
@@ -108,7 +108,7 @@ module CloudConductor
       end
 
       it 'will execute packer that specified with packer_path and packer_json_path option' do
-        pattern = %r{^/opt/packer/packer.*/tmp/packer.json$}
+        pattern = %r{^/opt/packer/packer.*/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json$}
 
         @client.should_receive(:systemu).with(pattern)
         @client.build('http://example.com', 'dummy_revision', @clouds, @oss, @role)

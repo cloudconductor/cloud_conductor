@@ -29,13 +29,13 @@ module CloudConductor
     end
 
     def build(repository_url, revision, clouds, oss, role)
-      create_json clouds
+      packer_json_path = create_json clouds
 
       only = (clouds.product oss).map { |cloud, os| "#{cloud}-#{os}" }.join(',')
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{@template_path}"
+      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{packer_json_path}"
       Thread.new do
         _status, stdout, _stderr = systemu(command)
         yield parse(stdout, only) if block_given?
