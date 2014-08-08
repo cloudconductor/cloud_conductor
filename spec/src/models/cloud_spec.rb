@@ -134,4 +134,10 @@ describe Cloud do
       expect(Cloud.count).to eq(@count - 1)
     end
   end
+
+  describe '#type' do
+    it 'return type as symbol' do
+      expect(@cloud.type).to eq(:aws)
+    end
+  end
 end

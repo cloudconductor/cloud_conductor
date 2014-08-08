@@ -27,16 +27,20 @@ class Cloud < ActiveRecord::Base
   validates :key, presence: true
   validates :secret, presence: true
   validate do
-    unless %w(aws openstack dummy).include? type
+    unless %i(aws openstack dummy).include? type
       errors.add(:type, ' must be "aws", "openstack" or "dummy"')
     end
-    if type == 'openstack' && tenant_id.blank?
+    if type == :openstack && tenant_id.blank?
       errors.add(:tenant_id, 'must not be blank in case that type is "openstack".')
     end
   end
 
+  def type
+    super && super.to_sym
+  end
+
   def client
-    CloudConductor::Client.new type.to_sym
+    CloudConductor::Client.new type
   end
 
   def used?
