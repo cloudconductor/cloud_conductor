@@ -25,9 +25,8 @@ ActiveRecord::Base.establish_connection environment.to_sym
 
 desc 'Launch console wih database connection'
 task :console do
-  require 'irb'
   ARGV.clear
-  IRB.start
+  Pry.start
 end
 
 # load rspec tasks
