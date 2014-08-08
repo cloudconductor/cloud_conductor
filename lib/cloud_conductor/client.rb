@@ -18,8 +18,9 @@ module CloudConductor
   class Client
     attr_reader :type, :adapter
 
-    def initialize(type)
-      @type = type
+    def initialize(cloud)
+      @cloud = cloud
+      @type = cloud.type
 
       # load adapters
       if Adapters.constants.empty?
@@ -30,7 +31,7 @@ module CloudConductor
 
       adapter_name = Adapters.constants.find do |klass_name|
         klass = Adapters.const_get(klass_name)
-        klass.const_get(:TYPE) == type if klass.constants.include? :TYPE
+        klass.const_get(:TYPE) == @type if klass.constants.include? :TYPE
       end
 
       @adapter = Adapters.const_get(adapter_name).new

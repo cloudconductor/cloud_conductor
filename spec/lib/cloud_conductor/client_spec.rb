@@ -16,13 +16,15 @@ module CloudConductor
   describe Client do
     describe '#new' do
       it 'returns initialized client with aws adapter' do
-        client = Client.new :aws
+        cloud_aws = FactoryGirl.create(:cloud_aws)
+        client = Client.new cloud_aws
         expect(client.type).to eq(:aws)
         expect(client.adapter.class).to eq(Adapters::AWSAdapter)
       end
 
       it 'returns initialized client with openstack adapter' do
-        client = Client.new :openstack
+        cloud_openstack = FactoryGirl.create(:cloud_openstack)
+        client = Client.new cloud_openstack
         expect(client.type).to eq(:openstack)
         expect(client.adapter.class).to eq(Adapters::OpenStackAdapter)
       end
@@ -38,7 +40,7 @@ module CloudConductor
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
           .with(kind_of(String), kind_of(String), kind_of(String), kind_of(Hash))
 
-        client = Client.new :aws
+        client = Client.new FactoryGirl.create(:cloud_aws)
         client.create_stack name, template, parameters, options
       end
     end
@@ -51,7 +53,7 @@ module CloudConductor
         Adapters::AWSAdapter.any_instance.should_receive(:get_stack_status)
           .with(kind_of(String), kind_of(Hash))
 
-        client = Client.new :aws
+        client = Client.new FactoryGirl.create(:cloud_aws)
         client.get_stack_status name, options
       end
     end
@@ -64,7 +66,7 @@ module CloudConductor
         Adapters::AWSAdapter.any_instance.should_receive(:get_outputs)
           .with(kind_of(String), kind_of(Hash))
 
-        client = Client.new :aws
+        client = Client.new FactoryGirl.create(:cloud_aws)
         client.get_outputs name, options
       end
     end
@@ -77,7 +79,7 @@ module CloudConductor
         Adapters::AWSAdapter.any_instance.should_receive(:destroy_stack)
           .with(kind_of(String), kind_of(Hash))
 
-        client = Client.new :aws
+        client = Client.new FactoryGirl.create(:cloud_aws)
         client.destroy_stack name, options
       end
     end

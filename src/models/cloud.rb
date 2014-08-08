@@ -40,7 +40,7 @@ class Cloud < ActiveRecord::Base
   end
 
   def client
-    CloudConductor::Client.new type
+    CloudConductor::Client.new self
   end
 
   def used?
