@@ -18,7 +18,11 @@ FactoryGirl.define do
     uri 'http://example.com/'
 
     after(:build) do
-      Pattern.reset_callbacks :save
+      Pattern.skip_callback :save, :before, :execute_packer
+    end
+
+    after(:create) do
+      Pattern.set_callback :save, :before, :execute_packer
     end
 
     before(:create) do |pattern|

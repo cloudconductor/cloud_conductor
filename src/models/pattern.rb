@@ -16,6 +16,7 @@ require 'sinatra/activerecord'
 require 'yaml'
 
 class Pattern < ActiveRecord::Base
+  before_save :execute_packer
   self.inheritance_column = nil
 
   has_many :patterns_clouds, dependent: :destroy
@@ -39,7 +40,7 @@ class Pattern < ActiveRecord::Base
     super options.merge(methods: :status)
   end
 
-  before_save do
+  def execute_packer
     path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
     clone_repository path
