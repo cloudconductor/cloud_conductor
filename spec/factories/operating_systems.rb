@@ -16,4 +16,12 @@ FactoryGirl.define do
   factory :operating_system do
     name 'os_name'
   end
+
+  factory :centos, class: OperatingSystem do
+    sequence(:name) { |n| "centos_#{n}" }
+  end
+
+  factory :ubuntu, class: OperatingSystem do
+    sequence(:name) { |n| "ubuntu_#{n}" }
+  end
 end

@@ -138,7 +138,7 @@ describe Pattern do
       @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
       @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
       @pattern.should_receive(:update_attributes).with({})
-      @pattern.should_receive(:create_images).with(nil, 'dummy')
+      @pattern.should_receive(:create_images).with(anything, 'dummy')
       @pattern.should_receive(:remove_repository).with(path_pattern)
       @pattern.save!
     end
@@ -279,55 +279,53 @@ describe Pattern do
     describe '#create_images' do
       before do
         CloudConductor::PackerClient.any_instance.stub(:build)
+        @operating_systems = [FactoryGirl.create(:centos), FactoryGirl.create(:ubuntu)]
       end
 
-      it 'create image each cloud, os and role' do
+      it 'create image each cloud, operating_system and role' do
         count = Image.count
 
-        oss = [:centos, :ubuntu]
-        @pattern.send(:create_images, oss, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx')
         @pattern.save!
 
-        expect(Image.count).to eq(count + @pattern.clouds.size * oss.size * 1)
+        expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
       end
 
-      it 'will call PackerClient#build with uri, revision, name of clouds, os\'s and role' do
-        oss = [:centos, :ubuntu]
-
+      it 'will call PackerClient#build with uri, revision, name of clouds, operating_systems and role' do
         args = []
         args << @pattern.uri
         args << @pattern.revision
         args << @pattern.clouds.map(&:name)
-        args << oss
+        args << @operating_systems.map(&:name)
         args << 'nginx'
         CloudConductor::PackerClient.any_instance.should_receive(:build).with(*args)
 
-        @pattern.send(:create_images, oss, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx')
       end
 
       it 'update status of all images when call block' do
         results = {
-          "#{@cloud_aws.name}-centos" => {
+          "#{@cloud_aws.name}-#{@operating_systems.first.name}" => {
             status: :success,
             image: 'ami-12345678'
           },
-          "#{@cloud_openstack.name}-centos" => {
+          "#{@cloud_openstack.name}-#{@operating_systems.first.name}" => {
             status: :error,
             message: 'dummy_message'
           }
         }
-        CloudConductor::PackerClient.any_instance.stub(:build).and_yield(results) do
+        CloudConductor::PackerClient.stub_chain(:new, :build) do |*_, &block|
           @pattern.save!
+          block.call results
         end
-        oss = [:centos]
-        @pattern.send(:create_images, oss, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx')
 
-        aws = Image.where(cloud: @cloud_aws, os: oss.first, role: 'nginx').first
+        aws = Image.where(cloud: @cloud_aws, operating_system: @operating_systems.first, role: 'nginx').first
         expect(aws.status).to eq(:created)
         expect(aws.image).to eq('ami-12345678')
         expect(aws.message).to be_nil
 
-        openstack = Image.where(cloud: @cloud_openstack, os: oss.first, role: 'nginx').first
+        openstack = Image.where(cloud: @cloud_openstack, operating_system: @operating_systems.first, role: 'nginx').first
         expect(openstack.status).to eq(:error)
         expect(openstack.image).to be_nil
         expect(openstack.message).to eq('dummy_message')

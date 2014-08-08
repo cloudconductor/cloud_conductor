@@ -37,7 +37,7 @@ ActiveRecord::Schema.define(version: 20140805065230) do
   create_table "images", force: true do |t|
     t.integer  "pattern_id"
     t.integer  "cloud_id"
-    t.string   "os"
+    t.integer  "operating_system_id"
     t.string   "role"
     t.string   "image"
     t.string   "message"

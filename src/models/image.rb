@@ -17,6 +17,7 @@ require 'sinatra/activerecord'
 class Image < ActiveRecord::Base
   belongs_to :pattern
   belongs_to :cloud
+  belongs_to :operating_system
 
   after_initialize do
     self.status ||= :processing

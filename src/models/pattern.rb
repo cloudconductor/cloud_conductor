@@ -48,8 +48,9 @@ class Pattern < ActiveRecord::Base
     roles = load_roles path
     update_attributes metadata
 
+    operating_systems = OperatingSystem.where(name: metadata[:supports])
     roles.each do |role|
-      create_images metadata[:supports], role
+      create_images operating_systems, role
     end
 
     remove_repository path
@@ -108,18 +109,21 @@ class Pattern < ActiveRecord::Base
     fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
   end
 
-  def create_images(oss, role)
+  def create_images(operating_systems, role)
     clouds.each do |cloud|
-      oss.each do |os|
-        images.build(cloud: cloud, os: os, role: role)
+      operating_systems.each do |operating_system|
+        images.build(cloud: cloud, operating_system: operating_system, role: role)
       end
     end
 
-    CloudConductor::PackerClient.new.build uri, revision, clouds.map(&:name), oss, role do |results|
+    cloud_names = clouds.map(&:name)
+    operating_system_names = operating_systems.map(&:name)
+    CloudConductor::PackerClient.new.build uri, revision, cloud_names, operating_system_names, role do |results|
       results.each do |key, result|
-        cloud_name, os = key.split('-')
+        cloud_name, os_name = key.split('-')
         cloud = Cloud.where(name: cloud_name).first
-        image = Image.where(cloud: cloud, os: os, role: role).first
+        operating_system = OperatingSystem.where(name: os_name).first
+        image = images.where(cloud: cloud, operating_system: operating_system, role: role).first
         image.status = result[:status] == :success ? :created : :error
         image.image = result[:image]
         image.message = result[:message]
