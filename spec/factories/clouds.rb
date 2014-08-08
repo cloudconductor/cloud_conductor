@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :cloud_aws, class: Cloud do
     sequence(:name) { |n| "cloud_aws_#{n}" }
-    cloud_type 'aws'
+    type 'aws'
     entry_point 'ap-northeast-1'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
@@ -24,7 +24,7 @@ FactoryGirl.define do
 
   factory :cloud_openstack, class: Cloud do
     sequence(:name) { |n| "cloud_openstack_#{n}" }
-    cloud_type 'openstack'
+    type 'openstack'
     entry_point 'http://example.com/'
     key '1234567890abcdef'
     secret 'fedcba9876543210'

@@ -15,6 +15,8 @@
 require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
+  self.inheritance_column = nil
+
   has_many :targets, dependent: :destroy
   has_many :operating_systems, through: :targets
 
@@ -25,16 +27,16 @@ class Cloud < ActiveRecord::Base
   validates :key, presence: true
   validates :secret, presence: true
   validate do
-    unless %w(aws openstack dummy).include? cloud_type
-      errors.add(:cloud_type, ' must be "aws", "openstack" or "dummy"')
+    unless %w(aws openstack dummy).include? type
+      errors.add(:type, ' must be "aws", "openstack" or "dummy"')
     end
-    if cloud_type == 'openstack' && tenant_id.blank?
-      errors.add(:tenant_id, 'must not be blank in case that cloud_type is "openstack".')
+    if type == 'openstack' && tenant_id.blank?
+      errors.add(:tenant_id, 'must not be blank in case that type is "openstack".')
     end
   end
 
   def client
-    CloudConductor::Client.new cloud_type.to_sym
+    CloudConductor::Client.new type.to_sym
   end
 
   def used?

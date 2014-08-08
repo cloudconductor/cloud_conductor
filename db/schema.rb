@@ -24,7 +24,7 @@ ActiveRecord::Schema.define(version: 20140805065230) do
 
   create_table "clouds", force: true do |t|
     t.string   "name"
-    t.string   "cloud_type"
+    t.string   "type"
     t.string   "entry_point"
     t.string   "key"
     t.string   "secret"
