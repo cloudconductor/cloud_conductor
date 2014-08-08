@@ -19,7 +19,7 @@ os.save!
 
 cloud_aws = Cloud.new
 cloud_aws.name = 'cloud_aws'
-cloud_aws.cloud_type = 'aws'
+cloud_aws.type = 'aws'
 cloud_aws.entry_point = 'ap-northeast-1'
 cloud_aws.key = '1234567890abcdef'
 cloud_aws.secret = '1234567890abcdef'
@@ -45,7 +45,7 @@ cloud_aws.save!
 
 cloud_openstack = Cloud.new
 cloud_openstack.name = 'cloud_openstack'
-cloud_openstack.cloud_type = 'openstack'
+cloud_openstack.type = 'openstack'
 cloud_openstack.entry_point = 'http://127.0.0.1:5000/'
 cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
@@ -72,7 +72,7 @@ cloud_openstack.save!
 
 # cloud_dummy = Cloud.new
 # cloud_dummy.name = 'cloud_dummy'
-# cloud_dummy.cloud_type = 'dummy'
+# cloud_dummy.type = 'dummy'
 # cloud_dummy.entry_point = 'http://127.0.0.1:5000/'
 # cloud_dummy.key = '1234567890abcdef'
 # cloud_dummy.secret = '1234567890abcdef'
