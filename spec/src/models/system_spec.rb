@@ -111,6 +111,10 @@ describe System do
   end
 
   describe '#before_create' do
+    before do
+      @parameters = JSON.parse @system.parameters
+    end
+
     it 'just use template_body without download when already set template_body' do
       @system.should_not_receive(:open)
       @system.save!
@@ -143,18 +147,18 @@ describe System do
 
     it 'call create_stack on cloud that has highest priority' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes)
+        .with(@system.name, @system.template_body, @parameters, @cloud_openstack.attributes)
 
       @system.save!
     end
 
     it 'call create_stack on clouds with priority order' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @system.parameters, @cloud_openstack.attributes).ordered
+        .with(@system.name, @system.template_body, @parameters, @cloud_openstack.attributes).ordered
         .and_raise('Dummy exception')
 
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @system.parameters, @cloud_aws.attributes).ordered
+        .with(@system.name, @system.template_body, @parameters, @cloud_aws.attributes).ordered
 
       @system.save!
     end

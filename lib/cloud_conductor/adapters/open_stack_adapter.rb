@@ -37,7 +37,7 @@ module CloudConductor
         orc = create_orchestration options
         stack_params = {
           template: template,
-          parameters: JSON.parse(parameters)
+          parameters: parameters
         }
         orc.create_stack name, stack_params
       end

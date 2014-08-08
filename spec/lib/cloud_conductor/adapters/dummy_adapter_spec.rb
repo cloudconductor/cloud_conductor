@@ -36,12 +36,12 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.create_stack 'stack_name', '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', {}, {}
         end
 
         it 'output log' do
           Log.should_receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.create_stack')
-          @adapter.create_stack 'stack_name', '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', {}, {}
         end
       end
 

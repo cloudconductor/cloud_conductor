@@ -37,7 +37,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.create_stack 'stack_name', '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', {}, {}
         end
 
         it 'set credentials for aws-sdk' do
@@ -46,14 +46,14 @@ module CloudConductor
           AWS::CloudFormation.should_receive(:new)
             .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'set region for aws-sdk' do
           @options[:entry_point] = 'ap-northeast-1'
           AWS::CloudFormation.should_receive(:new).with(hash_including(region: 'ap-northeast-1'))
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'call CloudFormation#create to create stack on aws' do
@@ -63,7 +63,7 @@ module CloudConductor
             end
           end
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
       end
 

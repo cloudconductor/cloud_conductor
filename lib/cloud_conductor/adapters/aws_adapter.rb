@@ -29,7 +29,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks.create name, template, parameters: JSON.parse(parameters)
+        cf.stacks.create name, template, parameters: parameters
       end
 
       def get_stack_status(name, options = {})
