@@ -17,9 +17,11 @@ describe AvailableCloud do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
+    @pattern = FactoryGirl.create(:pattern)
+
     @system = System.new
     @system.name = 'Test'
-    @system.template_body = '{}'
+    @system.pattern = @pattern
     @system.parameters = '{}'
     @system.monitoring_host = nil
     @system.domain = 'example.com'

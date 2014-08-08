@@ -69,9 +69,8 @@ ActiveRecord::Schema.define(version: 20140805065230) do
   end
 
   create_table "systems", force: true do |t|
+    t.integer  "pattern_id"
     t.string   "name"
-    t.text     "template_body"
-    t.string   "template_url"
     t.text     "parameters"
     t.string   "monitoring_host"
     t.string   "ip_address"

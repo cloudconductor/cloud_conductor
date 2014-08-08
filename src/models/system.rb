@@ -21,25 +21,18 @@ class System < ActiveRecord::Base
   has_many :available_clouds, dependent: :destroy
   has_many :clouds, through: :available_clouds
 
+  belongs_to :pattern
+
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
   scope :in_progress, -> { where(ip_address: nil) }
 
   validates :name, presence: true
-  validates :template_url, format: { with: URI.regexp }, allow_blank: true
+  validates :pattern, presence: true
   validates :clouds, presence: true
 
-  validate do
-    if template_body.blank? && template_url.blank?
-      errors.add(:template_body, ' or template_url must be required')
-    end
-    if !template_body.blank? && !template_url.blank?
-      errors.add(:template_body, 'can\'t set with template_url')
-    end
-  end
-
-  validates_each :template_body, :parameters do |record, attr, value|
+  validates_each :parameters do |record, attr, value|
     begin
       JSON.parse(value) unless value.nil?
     rescue JSON::ParserError
@@ -52,13 +45,10 @@ class System < ActiveRecord::Base
   end
 
   before_create do
-    self.template_body = open(template_url).read if template_body.nil?
-    self.template_url = nil
-
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
-        cloud.client.create_stack name, template_body, JSON.parse(parameters), cloud.attributes
+        cloud.client.create_stack name, pattern, JSON.parse(parameters), cloud.attributes
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)

@@ -17,9 +17,11 @@ describe System do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
+    @pattern = FactoryGirl.create(:pattern)
+
     @system = System.new
     @system.name = 'Test'
-    @system.template_body = '{}'
+    @system.pattern = @pattern
     @system.parameters = '{}'
     @system.monitoring_host = nil
     @system.domain = 'example.com'
@@ -65,33 +67,6 @@ describe System do
       expect(@system.valid?).to be_falsey
     end
 
-    it 'returns false when unset template_body and template_url both' do
-      @system.template_body = nil
-      expect(@system.valid?).to be_falsey
-    end
-
-    it 'returns false when set template_body and template_url both' do
-      @system.template_url = 'http://www.example.com/'
-      expect(@system.valid?).to be_falsey
-    end
-
-    it 'returns true when set template_url only' do
-      @system.template_body = nil
-      @system.template_url = 'http://www.example.com/'
-      expect(@system.valid?).to be_truthy
-    end
-
-    it 'returns false when template_body is invalid JSON string' do
-      @system.template_body = '{'
-      expect(@system.valid?).to be_falsey
-    end
-
-    it 'returns false when template_url is invalid URL' do
-      @system.template_body = nil
-      @system.template_url = 'INVALID URL'
-      expect(@system.valid?).to be_falsey
-    end
-
     it 'returns false when parameters is invalid JSON string' do
       @system.parameters = '{'
       expect(@system.valid?).to be_falsey
@@ -115,50 +90,20 @@ describe System do
       @parameters = JSON.parse @system.parameters
     end
 
-    it 'just use template_body without download when already set template_body' do
-      @system.should_not_receive(:open)
-      @system.save!
-    end
-
-    it 'download json from url that is specified by template_url' do
-      @system.template_body = nil
-      @system.template_url = 'http://example.com/'
-
-      @system.should_receive(:open).with(@system.template_url) do
-        double(:file).tap do |proxy|
-          proxy.stub(:read).and_return('{}')
-        end
-      end
-
-      @system.save!
-    end
-
-    it 'set template_body with downloaded json' do
-      @system.template_body = nil
-      @system.template_url = 'http://example.com/'
-
-      dummy_json = '{ "dummy" : "data"}'
-      @system.stub_chain(:open, :read).and_return(dummy_json)
-      @system.save!
-
-      expect(@system.template_body).to eq(dummy_json)
-      expect(@system.template_url).to be_nil
-    end
-
     it 'call create_stack on cloud that has highest priority' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @parameters, @cloud_openstack.attributes)
+        .with(@system.name, @system.pattern, @parameters, @cloud_openstack.attributes)
 
       @system.save!
     end
 
     it 'call create_stack on clouds with priority order' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @parameters, @cloud_openstack.attributes).ordered
+        .with(@system.name, @system.pattern, @parameters, @cloud_openstack.attributes).ordered
         .and_raise('Dummy exception')
 
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.template_body, @parameters, @cloud_aws.attributes).ordered
+        .with(@system.name, @system.pattern, @parameters, @cloud_aws.attributes).ordered
 
       @system.save!
     end
@@ -243,8 +188,6 @@ describe System do
   describe '#dup' do
     it 'duplicate all attributes in system without name and ip_address' do
       duplicated_system = @system.dup
-      expect(duplicated_system.template_body).to eq(@system.template_body)
-      expect(duplicated_system.template_url).to eq(@system.template_url)
       expect(duplicated_system.parameters).to eq(@system.parameters)
     end
 

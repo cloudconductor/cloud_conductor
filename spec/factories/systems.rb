@@ -15,8 +15,8 @@
 FactoryGirl.define do
   factory :system, class: System do
     name 'stack-12345678'
-    template_body '{}'
     parameters '{}'
+    pattern { create(:pattern) }
 
     before(:create) do |system|
       system.add_cloud create(:cloud_aws), 1
