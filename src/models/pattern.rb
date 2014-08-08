@@ -59,12 +59,6 @@ class Pattern < ActiveRecord::Base
     true
   end
 
-  private
-
-  def type?(type)
-    ->(_, resource) { resource[:Type] == type }
-  end
-
   def clone_repository(path)
     clone_command = "git clone #{uri} #{path}"
     fail 'An error has occurred while git clone' unless system(clone_command)
@@ -76,6 +70,17 @@ class Pattern < ActiveRecord::Base
 
     checkout_command = "git checkout #{revision}"
     fail 'An error has occurred while git checkout' unless system(checkout_command)
+  end
+
+  def remove_repository(path)
+    Dir.chdir @root_directory
+    FileUtils.rm_r path, force: true
+  end
+
+  private
+
+  def type?(type)
+    ->(_, resource) { resource[:Type] == type }
   end
 
   def load_metadata(path)
@@ -131,10 +136,5 @@ class Pattern < ActiveRecord::Base
         image.save!
       end
     end
-  end
-
-  def remove_repository(path)
-    Dir.chdir @root_directory
-    FileUtils.rm_r path, force: true
   end
 end

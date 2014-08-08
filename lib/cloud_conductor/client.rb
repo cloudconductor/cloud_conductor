@@ -37,7 +37,24 @@ module CloudConductor
       @adapter = Adapters.const_get(adapter_name).new
     end
 
-    def create_stack(name, template, parameters, options)
+    def create_stack(name, pattern, parameters, options)
+      # call Pattern#clone_repository to clone pattern repository
+
+      # read teplate.json in repository
+
+      # call Pattern#remove_repository to remove repository
+
+
+      #------------
+
+      # inject ImageId to parameters
+      # pattern: local variable pattern
+      # cloud : instance variable @cloud
+      # operating_system: instance variable parameters[:operating_system]
+      # roles: pattern.images where ( cloud, os )
+      #
+      # parameters['nginxImageId'] = image.image
+
       @adapter.create_stack name, template, parameters, options
     end
 

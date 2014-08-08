@@ -30,18 +30,53 @@ module CloudConductor
       end
     end
 
-    describe '#create_stack' do
-      it 'call adapter#create_stack with same arguments' do
-        name = 'stack_name'
-        template = '{}'
-        parameters = {}
-        options = {}
+    describe '#create_stack', focus: true do
+      before do
+        @name = 'stack_name'
+        @pattern = FactoryGirl.create(:pattern)
+        @parameters = {}
+        @options = {}
 
+        @client = Client.new FactoryGirl.create(:cloud_aws)
+
+        @pattern.stub(:clone_repository)
+        @pattern.stub(:remove_repository)
+
+        @template_content = '{ "dummy": "dummy_value" }'
+        @client.stub_chain(:open, :read).and_return(@template_content)
+      end
+
+      it 'call adapter#create_stack with same arguments without pattern' do
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
-          .with(kind_of(String), kind_of(String), kind_of(Hash), kind_of(Hash))
+          .with(kind_of(String), anything, kind_of(Hash), kind_of(Hash))
 
-        client = Client.new FactoryGirl.create(:cloud_aws)
-        client.create_stack name, template, parameters, options
+        @client.create_stack @name, @pattern, @parameters, @options
+      end
+
+      it 'will clone and remove repository' do
+        path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
+        @pattern.should_receive(:clone_repository).with(path_pattern)
+        @pattern.should_receive(:remove_repository).with(path_pattern)
+
+        @client.create_stack @name, @pattern, @parameters, @options
+      end
+
+      it 'will load template.json in repository' do
+        path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}/template\.json}
+        @client.should_receive(:open).with(path_pattern) do
+          double('file').tap do |stub|
+            stub.should_receive(:read).and_return('{}')
+          end
+        end
+
+        @client.create_stack @name, @pattern, @parameters, @options
+      end
+
+      it 'will call create_stack with content of template.json' do
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
+          .with(anything, @template_content, anything, anything)
+
+        @client.create_stack @name, @pattern, @parameters, @options
       end
     end
 

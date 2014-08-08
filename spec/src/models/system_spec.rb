@@ -83,6 +83,11 @@ describe System do
       @system.clouds << @cloud_aws
       expect(@system.valid?).to be_falsey
     end
+
+    it 'returns false when pattern status isn\'t created' do
+      @pattern.images.first.status = :processing
+      expect(@system.valid?).to be_falsey
+    end
   end
 
   describe '#before_create' do
