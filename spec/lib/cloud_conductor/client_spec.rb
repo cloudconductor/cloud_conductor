@@ -34,11 +34,11 @@ module CloudConductor
       it 'call adapter#create_stack with same arguments' do
         name = 'stack_name'
         template = '{}'
-        parameters = '{}'
+        parameters = {}
         options = {}
 
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
-          .with(kind_of(String), kind_of(String), kind_of(String), kind_of(Hash))
+          .with(kind_of(String), kind_of(String), kind_of(Hash), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
         client.create_stack name, template, parameters, options

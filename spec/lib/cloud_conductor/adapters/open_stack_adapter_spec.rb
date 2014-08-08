@@ -41,7 +41,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.create_stack 'stack_name', '{}', '{}', {}
+          @adapter.create_stack 'stack_name', '{}', {}, {}
         end
 
         it 'instantiate' do
@@ -56,7 +56,7 @@ module CloudConductor
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'call Fog::Orchestration#create_stack to create stack on openstack' do
@@ -66,7 +66,7 @@ module CloudConductor
             end
           end
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'call OpenStackConverter to convert template before create stack' do
@@ -74,7 +74,7 @@ module CloudConductor
           converter_stub.should_receive(:convert).and_return('{}')
           Converters::OpenStackConverter.stub(:new).and_return(converter_stub)
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'use converted template to create stack' do
@@ -85,7 +85,7 @@ module CloudConductor
           orc_stub.should_receive(:create_stack).with('stack_name', hash_including(template: converted_template, parameters: {}))
           ::Fog::Orchestration.stub(:new).and_return(orc_stub)
 
-          @adapter.create_stack 'stack_name', '{}', '{}', @options
+          @adapter.create_stack 'stack_name', '{}', {}, @options
         end
       end
 

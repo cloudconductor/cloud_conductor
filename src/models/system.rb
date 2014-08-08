@@ -58,7 +58,7 @@ class System < ActiveRecord::Base
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
-        cloud.client.create_stack name, template_body, parameters, cloud.attributes
+        cloud.client.create_stack name, template_body, JSON.parse(parameters), cloud.attributes
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
