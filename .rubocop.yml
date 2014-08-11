@@ -4,6 +4,7 @@ AllCops:
     - db/seeds.rb
     - node_modules/**/*
     - public/js/ext/**/*
+    - vendor/bundle/**/*
 
 LineLength:
   Max: 130
