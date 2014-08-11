@@ -14,12 +14,12 @@ when :test
 end
 
 # cloudconductor server settings
-cloudconductor.url 'http://cc.demo.cloudconductor.jp:9292/systems (Change to CloudConductor REST API endpoint of system)'
-cloudconductor.dns_server 'ns.demo.cloudconductor.jp' (Change to DNS server)
-cloudconductor.dns_keyfile '/etc/rndc.key' (Change to DNS access key)
-cloudconductor.dns_ttl 3600 (Change to ttl)
+cloudconductor.url 'http://your-cloudconductor-server.example.com/systems'
+cloudconductor.dns_server 'your-dns-server.example.com'
+cloudconductor.dns_keyfile '/etc/rndc.key'
+cloudconductor.dns_ttl 3600
 
 # zabbix server settings
-zabbix.url 'http://zabbix.demo.cloudconductor.jp/zabbix/api_jsonrpc.php (Change to Zabbix API endpoint)'
-zabbix.user 'admin (Change to Zabbix user)'
-zabbix.password 'zabbix (Change to Zabbix password)'
+zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
+zabbix.user 'Admin'
+zabbix.password 'zabbix'
