@@ -30,12 +30,11 @@ module CloudConductor
       end
     end
 
-    describe '#create_stack', focus: true do
+    describe '#create_stack' do
       before do
         @name = 'stack_name'
         @pattern = FactoryGirl.create(:pattern)
         @parameters = {}
-        @options = {}
 
         @client = Client.new FactoryGirl.create(:cloud_aws)
 
@@ -50,7 +49,7 @@ module CloudConductor
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
           .with(kind_of(String), anything, kind_of(Hash), kind_of(Hash))
 
-        @client.create_stack @name, @pattern, @parameters, @options
+        @client.create_stack @name, @pattern, @parameters
       end
 
       it 'will clone and remove repository' do
@@ -58,7 +57,7 @@ module CloudConductor
         @pattern.should_receive(:clone_repository).with(path_pattern)
         @pattern.should_receive(:remove_repository).with(path_pattern)
 
-        @client.create_stack @name, @pattern, @parameters, @options
+        @client.create_stack @name, @pattern, @parameters
       end
 
       it 'will load template.json in repository' do
@@ -69,53 +68,50 @@ module CloudConductor
           end
         end
 
-        @client.create_stack @name, @pattern, @parameters, @options
+        @client.create_stack @name, @pattern, @parameters
       end
 
       it 'will call create_stack with content of template.json' do
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
           .with(anything, @template_content, anything, anything)
 
-        @client.create_stack @name, @pattern, @parameters, @options
+        @client.create_stack @name, @pattern, @parameters
       end
     end
 
     describe '#get_stack_status' do
       it 'call adapter#get_stack_status with same arguments' do
         name = 'stack_name'
-        options = {}
 
         Adapters::AWSAdapter.any_instance.should_receive(:get_stack_status)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
-        client.get_stack_status name, options
+        client.get_stack_status name
       end
     end
 
     describe '#get_outputs' do
       it 'call adapter#get_outputs with same arguments' do
         name = 'stack_name'
-        options = {}
 
         Adapters::AWSAdapter.any_instance.should_receive(:get_outputs)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
-        client.get_outputs name, options
+        client.get_outputs name
       end
     end
 
     describe '#destroy_stack' do
       it 'call adapter#destroy_stack with same arguments' do
         name = 'stack_name'
-        options = {}
 
         Adapters::AWSAdapter.any_instance.should_receive(:destroy_stack)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
-        client.destroy_stack name, options
+        client.destroy_stack name
       end
     end
   end

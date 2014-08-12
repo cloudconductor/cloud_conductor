@@ -37,7 +37,7 @@ module CloudConductor
       @adapter = Adapters.const_get(adapter_name).new
     end
 
-    def create_stack(name, pattern, parameters, options)
+    def create_stack(name, pattern, parameters)
       # call Pattern#clone_repository to clone pattern repository
 
       # read teplate.json in repository
@@ -55,19 +55,19 @@ module CloudConductor
       #
       # parameters['nginxImageId'] = image.image
 
-      @adapter.create_stack name, template, parameters, options
+      @adapter.create_stack name, template, parameters, @cloud.attributes
     end
 
-    def get_stack_status(name, options)
-      @adapter.get_stack_status name, options
+    def get_stack_status(name)
+      @adapter.get_stack_status name, @cloud.attributes
     end
 
-    def get_outputs(name, options)
-      @adapter.get_outputs name, options
+    def get_outputs(name)
+      @adapter.get_outputs name, @cloud.attributes
     end
 
-    def destroy_stack(name, options)
-      @adapter.destroy_stack name, options
+    def destroy_stack(name)
+      @adapter.destroy_stack name, @cloud.attributes
     end
   end
 end
