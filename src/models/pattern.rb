@@ -41,40 +41,32 @@ class Pattern < ActiveRecord::Base
   end
 
   def execute_packer
-    path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
+    clone_repository do |path|
+      metadata = load_metadata path
+      roles = load_roles path
+      update_attributes metadata
 
-    clone_repository path
-
-    metadata = load_metadata path
-    roles = load_roles path
-    update_attributes metadata
-
-    operating_systems = OperatingSystem.where(name: metadata[:supports])
-    roles.each do |role|
-      create_images operating_systems, role
+      operating_systems = OperatingSystem.where(name: metadata[:supports])
+      roles.each do |role|
+        create_images operating_systems, role
+      end
     end
-
-    remove_repository path
 
     true
   end
 
-  def clone_repository(path)
-    clone_command = "git clone #{uri} #{path}"
-    fail 'An error has occurred while git clone' unless system(clone_command)
+  def clone_repository
+    path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
-    @root_directory = Dir.pwd
-    Dir.chdir path
+    fail 'An error has occurred while git clone' unless system("git clone #{uri} #{path}")
 
-    return if revision.blank?
+    unless revision.blank?
+      fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+    end
 
-    checkout_command = "git checkout #{revision}"
-    fail 'An error has occurred while git checkout' unless system(checkout_command)
-  end
+    yield path
 
-  def remove_repository(path)
-    Dir.chdir @root_directory
-    FileUtils.rm_r path, force: true
+    system("rm -rf #{path}")
   end
 
   private

@@ -28,7 +28,6 @@ describe Pattern do
     File.stub(:open).and_call_original
     double = double('File', read: '{ "Resources" : {} }')
     File.stub(:open).with(/template.json/).and_return double
-    @pattern.stub(:`).and_return('')
   end
 
   it 'create with valid parameters' do
@@ -134,12 +133,11 @@ describe Pattern do
 
     it 'will call sub-routine' do
       path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
-      @pattern.should_receive(:clone_repository).with(path_pattern)
+      @pattern.should_receive(:clone_repository).and_yield(path_pattern)
       @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
       @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
       @pattern.should_receive(:update_attributes).with({})
       @pattern.should_receive(:create_images).with(anything, 'dummy')
-      @pattern.should_receive(:remove_repository).with(path_pattern)
       @pattern.save!
     end
 
@@ -147,7 +145,7 @@ describe Pattern do
       it 'will clone repository to temporary directory' do
         command = %r(git clone #{@pattern.uri} .*tmp/patterns/[a-f0-9-]{36})
         @pattern.should_receive(:system).with(command).and_return(true)
-        @pattern.send(:clone_repository, @path)
+        @pattern.send(:clone_repository) { |_| }
       end
 
       it 'will change branch to specified revision when revision has specified' do
@@ -155,14 +153,14 @@ describe Pattern do
         @pattern.should_receive(:system).with(command).and_return(true)
 
         @pattern.revision = 'dummy'
-        @pattern.send(:clone_repository, @path)
+        @pattern.send(:clone_repository) { |_| }
       end
 
       it 'won\'t change branch when revision is nil' do
         command = /git checkout/
         @pattern.should_not_receive(:system).with(command)
 
-        @pattern.send(:clone_repository, @path)
+        @pattern.send(:clone_repository) { |_| }
       end
     end
 
@@ -329,13 +327,6 @@ describe Pattern do
         expect(openstack.status).to eq(:error)
         expect(openstack.image).to be_nil
         expect(openstack.message).to eq('dummy_message')
-      end
-    end
-
-    describe '#remove_repository' do
-      it 'will delete directory' do
-        FileUtils.should_receive(:rm_r).with(@path, force: true)
-        @pattern.send(:remove_repository, @path)
       end
     end
   end
