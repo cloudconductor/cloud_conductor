@@ -18,6 +18,9 @@ describe System do
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
     @pattern = FactoryGirl.create(:pattern)
+    @image = FactoryGirl.create(:image)
+    @image.status = :created
+    @pattern.images.push(@image)
 
     @system = System.new
     @system.name = 'Test'
@@ -85,7 +88,7 @@ describe System do
     end
 
     it 'returns false when pattern status isn\'t created' do
-      @pattern.images.first.status = :processing
+      @image.status = :processing
       expect(@system.valid?).to be_falsey
     end
   end

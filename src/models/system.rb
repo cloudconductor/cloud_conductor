@@ -42,6 +42,7 @@ class System < ActiveRecord::Base
 
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
+    errors.add(:pattern, 'pattern can\'t contain image if image has been created other than') unless pattern.status == :created
   end
 
   before_create do
