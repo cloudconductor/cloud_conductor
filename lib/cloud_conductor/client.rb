@@ -38,22 +38,26 @@ module CloudConductor
     end
 
     def create_stack(name, pattern, parameters)
-      # call Pattern#clone_repository to clone pattern repository
+      template = ''
+      pattern.clone_repository do |path|
+        template = open(File.expand_path('template.json', path)).read
+      end
 
-      # read teplate.json in repository
+      os = parameters[:operating_system]
 
-      # call Pattern#remove_repository to remove repository
+      images = pattern.images.map do |image|
+        image = nil unless image.cloud_id == @cloud.id && image.operating_system_id == os[:id]
+        image
+      end.compact
 
-
-      #------------
-
-      # inject ImageId to parameters
-      # pattern: local variable pattern
-      # cloud : instance variable @cloud
-      # operating_system: instance variable parameters[:operating_system]
-      # roles: pattern.images where ( cloud, os )
-      #
-      # parameters['nginxImageId'] = image.image
+      images.each do |image|
+        image_id_key = "#{image.role}ImageId"
+        parameters[image_id_key] = {}
+        parameters[image_id_key][:Description] = ''
+        parameters[image_id_key][:Type] = 'String'
+        parameters[image_id_key][:Default] = "#{image.image}"
+        parameters[image_id_key][:ConstraintDescription] = ''
+      end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes
     end

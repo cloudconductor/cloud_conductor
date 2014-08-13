@@ -34,15 +34,19 @@ module CloudConductor
       before do
         @name = 'stack_name'
         @pattern = FactoryGirl.create(:pattern)
-        @parameters = {}
+        @parameters = { operating_system: { id: 1 } }
 
-        @client = Client.new FactoryGirl.create(:cloud_aws)
+        @cloud = FactoryGirl.create(:cloud_aws)
+        @client = Client.new @cloud
 
-        @pattern.stub(:clone_repository)
-        @pattern.stub(:remove_repository)
+        path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
+        @pattern.stub(:clone_repository).and_yield(path)
+        @pattern.images << FactoryGirl.create(:image)
 
         @template_content = '{ "dummy": "dummy_value" }'
         @client.stub_chain(:open, :read).and_return(@template_content)
+
+        Adapters::AWSAdapter.any_instance.stub(:create_stack)
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
@@ -52,16 +56,16 @@ module CloudConductor
         @client.create_stack @name, @pattern, @parameters
       end
 
-      it 'will clone and remove repository' do
-        path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
-        @pattern.should_receive(:clone_repository).with(path_pattern)
-        @pattern.should_receive(:remove_repository).with(path_pattern)
+      it 'will clone repository' do
+        path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
+        @pattern.should_receive(:clone_repository).and_yield(path)
 
         @client.create_stack @name, @pattern, @parameters
       end
 
       it 'will load template.json in repository' do
         path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}/template\.json}
+
         @client.should_receive(:open).with(path_pattern) do
           double('file').tap do |stub|
             stub.should_receive(:read).and_return('{}')
@@ -69,6 +73,43 @@ module CloudConductor
         end
 
         @client.create_stack @name, @pattern, @parameters
+      end
+
+      it 'will get images to suit conditions that has been registered in pattern' do
+        @pattern.images.each do |image|
+          image.cloud_id = @cloud.id
+          image.operating_system_id = 1
+        end
+
+        @client.create_stack @name, @pattern, @parameters
+        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
+        expect(result.size).to eq(1)
+      end
+
+      it 'add ImageId in parameter-hash only the number of images' do
+        @pattern.images << FactoryGirl.create(:image)
+        @pattern.images.each do |image|
+          image.cloud_id = @cloud.id
+          image.operating_system_id = 1
+        end
+
+        @client.create_stack @name, @pattern, @parameters
+        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
+        expect(result.size).to eq(2)
+      end
+
+      it 'add Image data in parameter-hash' do
+        @pattern.images.each do |image|
+          image.cloud_id = @cloud.id
+          image.operating_system_id = 1
+        end
+
+        @client.create_stack @name, @pattern, @parameters
+        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }.values[0]
+        expect(result[:Description]).to eq('')
+        expect(result[:Type]).to eq('String')
+        expect(result[:Default]).to eq(@pattern.images.first.image)
+        expect(result[:ConstraintDescription]).to eq('')
       end
 
       it 'will call create_stack with content of template.json' do
