@@ -21,9 +21,9 @@
         "cd /tmp/pattern",
         "git checkout {{user `revision`}}",
 
-        "cd /tmp/pattern/resources/chef-repo",
-        "berks vendor cookbooks",
-        "sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/{{user `role`}}.json"
+        "if [ -f /tmp/pattern/events/init/user-setup ]; then",
+        "  sudo ruby /tmp/pattern/events/init/user-setup",
+        "fi",
       ]
     }
   ]
