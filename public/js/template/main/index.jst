@@ -1,0 +1,25 @@
+<div class="container">
+  <%= this.partial('common/menu', { breadcrumb: null })%>
+  <%= this.partial('common/error') %>
+
+  <div class="row">
+    <div class="jumbotron main-title">
+      <h2 class="text-left" data-i18n="main.index.title">Template Maker</h2>
+      <p class="text-left" >
+        <span data-i18n="main.index.subtitle_1"></span>
+        <br>
+        <span data-i18n="main.index.subtitle_2"></span>
+      </p>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6">
+      <h3 data-i18n="main.index.template_list">Templates</h3>
+      <p data-i18n="main.index.template_description">Template一覧の表示／詳細表示</p>
+      <p><a class="btn btn-primary" href="#templates" data-i18n="common.button.view">View details &raquo;</a></p>
+    </div>
+  </div>
+  <%= this.partial('common/footer') %>
+
+</div>

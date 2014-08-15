@@ -1,0 +1,22 @@
+AllCops:
+  Exclude:
+    - db/schema.rb
+    - db/seeds.rb
+    - node_modules/**/*
+    - public/js/ext/**/*
+    - vendor/bundle/**/*
+
+LineLength:
+  Max: 130
+
+MethodLength:
+  Max: 20
+
+AsciiComments:
+  Enabled: false
+
+Documentation:
+  Enabled: false
+
+Style/RegexpLiteral:
+  MaxSlashes: 0

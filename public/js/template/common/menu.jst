@@ -1,0 +1,53 @@
+<div class="navbar navbar-fixed-top">
+  <%
+    var systemClass = "";
+    //if(breadcrumb && breadcrumb[0].url === '#templates') {
+    if(breadcrumb && breadcrumb[0].url === '#systems') {
+      systemClass = "active";
+    }
+    var cloudClass = "";
+    if(breadcrumb && breadcrumb[0].url === '#clouds') {
+      cloudClass = "active";
+    }
+  %>
+  <div class="navbar-header navbar-inverse navbar-logo">
+    <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-top">
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+    </button>
+    <a class="logo" href="#main"><img src="./img/logo.png"></a>
+  </div>
+
+  <div class="navbar-top navbar-inverse navbar-collapse collapse">
+    <ul class="nav navbar-nav">
+      <!--
+      <li class="<%- systemClass %>"><a href="#templates" data-i18n="common.navigation.template">Template</a></li>
+      -->
+      <li class="<%- systemClass %>"><a href="#systems" data-i18n="common.navigation.system">System</a></li>
+      <li class="<%- cloudClass %>"><a href="#clouds" data-i18n="common.navigation.cloud">Cloud</a></li>
+    </ul>
+
+  </div>
+
+  <% if(breadcrumb) { %>
+  <div class="navbar-bottom">
+    <ol class="breadcrumb">
+      <% for(var i = 0; i < breadcrumb.length; i++) { %>
+      <li class="<%= i === breadcrumb.length - 1 ? 'active' : '' %>">
+        <% if(i === breadcrumb.length - 1) { %>
+          <%- breadcrumb[i].label %>
+        <% } else { %>
+          <a href="<%- breadcrumb[i].url %>"><%- breadcrumb[i].label %></a>
+        <% } %>
+      </li>
+      <% } %>
+    </ol>
+  </div>
+  <% } %>
+</div>
+<script type="text/javascript">
+  <% /* var title = breadcrumb ? _.last(breadcrumb).label : 'Template Maker' */ %>
+  <% var title = breadcrumb ? _.last(breadcrumb).label : 'Cloud Conductor' %>
+  document.title = "<%- title %>";
+</script>

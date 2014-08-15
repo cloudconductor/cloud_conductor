@@ -1,0 +1,69 @@
+{
+  "common": {
+    "navigation": {
+      "system": "System",
+      "cloud": "Cloud",
+      "login": "Login",
+      "logout": "Logout"
+    },
+    "button": {
+      "view": "View",
+      "new": "New",
+      "edit": "Edit",
+      "save": "Save",
+      "cancel": "cancel",
+      "back": "Back"
+    }
+  },
+  "main": {
+    "index": {
+      "title": "Cloud Conductor",
+      "subtitle_1": "Cloud conductor is design-oriented cloud orchestrator.",
+      "subtitle_2": "",
+      "system_list": "System List",
+      "system_description": "",
+      "cloud_list": "Cloud List",
+      "cloud_description": ""
+    }
+  },
+  "system": {
+    "index": {
+      "system_list": "Display system list",
+      "id": "ID",
+      "system_name": "System Name",
+      "cloud_name": "Cloud Name"
+    },
+    "show": {
+      "system_detail": "System Detail",
+      "id": "ID",
+      "name": "Name",
+      "template_url": "Template URL",
+      "template_body": "Template Body",
+      "parameters": "Parameters",
+      "monitoring_host": "Monitoring host",
+      "ip_address": "IP address",
+      "domain": "Domain",
+      "clouds": "Clouds",
+      "using": "System is using this cloud.",
+      "not_using": "Not using this cloud."
+    }
+  },
+  "cloud": {
+    "index": {
+      "cloud_list": "Display cloud list",
+      "id": "ID",
+      "name": "Cloud Name",
+      "cloud_type": "Cloud Type"
+    },
+    "show": {
+      "cloud_detail": "Cloud Detail",
+      "id": "ID",
+      "name": "Name",
+      "cloud_type": "Cloud Type",
+      "entry_point": "Entry Point",
+      "access_key": "Access Key",
+      "secret_key": "Secret Key",
+      "tenant_id": "Tenant ID"
+    }
+  }
+}

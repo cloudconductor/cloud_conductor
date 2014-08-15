@@ -1,0 +1,30 @@
+{
+  "variables": {
+    "repository_url": null,
+    "revision": null,
+    "role": null
+  },
+  "builders": [
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -x",
+      "inline": [
+        "if [ -f /tmp/packer-create-image.sh ]; then",
+        "  sudo /tmp/packer-create-image.sh",
+        "fi",
+
+        "cd /tmp",
+        "git clone {{user `repository_url`}} pattern",
+
+        "cd /tmp/pattern",
+        "git checkout {{user `revision`}}",
+
+        "if [ -f /tmp/pattern/events/init/user-setup ]; then",
+        "  sudo ruby /tmp/pattern/events/init/user-setup",
+        "fi",
+      ]
+    }
+  ]
+}

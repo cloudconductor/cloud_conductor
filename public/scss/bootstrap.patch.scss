@@ -1,0 +1,38 @@
+/* bootstrap.cssの中で全称セレクタに対してbox-sizingを指定しているがResizableなjQuery UI Dialogと競合するので修正 */
+.ui-dialog, .ui-dialog * {
+  -webkit-box-sizing: content-box;
+     -moz-box-sizing: content-box;
+          box-sizing: content-box;
+}
+
+/* bootstrap.cssの中では「\1f4ce」のように文字コードを指定しているがChromeで表示できないため */
+.glyphicon-bell:before {
+  content: "\d83d\dd14";
+}
+.glyphicon-bookmark:before {
+  content: "\d83d\dd16";
+}
+.glyphicon-briefcase:before {
+  content: "\d83d\dcbc";
+}
+.glyphicon-calendar:before {
+  content: "\d83d\dcc5";
+}
+.glyphicon-camera:before {
+  content: "\d83d\dcf7";
+}
+.glyphicon-fire:before {
+  content: "\d83d\dd25";
+}
+.glyphicon-lock:before {
+  content: "\d83d\dd12";
+}
+.glyphicon-paperclip:before {
+  content: "\d83d\dcce";
+}
+.glyphicon-pushpin:before {
+  content: "\d83d\dccc";
+}
+.glyphicon-wrench:before {
+  content: "\d83d\dd27";
+}

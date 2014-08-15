@@ -1,0 +1,28 @@
+{
+  "name": "CloudConductor",
+  "version": "0.3",
+  "authors": [],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "public/js/ext"
+  ],
+  "dependencies": {
+    "requirejs": "2.1.14",
+    "jquery": "2.0.3",
+    "lodash": "2.2.1",
+    "backbone": "1.1.2",
+    "bootstrap": "v3.0.2",
+    "joint": "v0.7.0",
+    "i18next": "1.7.3",
+    "moment": "2.5.0",
+    "backbone.paginator": "v2.0.0",
+    "backbone-validation": "v0.8.2",
+    "jquery-ui": "1.10.3",
+    "jquery.cookie": "v1.4.0",
+    "jquery.iframe-transport": "e85469d76d6c8708d868928442edd66f4c86c2ce",
+    "activity-indicator": "cloudconductor/jquery-plugins",
+    "jquery.xml2json": "http://jquery-xml2json-plugin.googlecode.com/svn/trunk/xml-to-json.zip",
+    "sinonjs": "~1.10.2"
+  }
+}

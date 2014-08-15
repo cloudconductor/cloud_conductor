@@ -1,0 +1,55 @@
+<div class="container">
+  <%
+    var breadcrumb = [];
+    breadcrumb.push({ url: "#clouds", label: $.t("cloud.index.cloud_list")});
+  %>
+  <%= this.partial('common/menu', { breadcrumb: breadcrumb })%>
+  <h2 data-i18n="cloud.index.cloud_list">クラウド一覧</h2>
+  <%= this.partial('common/error') %>
+  <div class="responsive">
+    <table class="table table-hover table-bordered index-table" id="cloud_items">
+      <thead>
+        <tr>
+          <th class="item-id" data-i18n="cloud.index.id">ID</th>
+          <th class="item-id" data-i18n="cloud.index.name">Name</th>
+          <th class="item-id" data-i18n="cloud.index.cloud_type">Cloud Type</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+  </div>
+  <div align="center">
+    <ul class="pagination">
+      <% if(state.currentPage > state.firstPage) { %>
+        <li><a class="prevPage" href="#">&laquo;</a></li>
+      <% } else { %>
+        <li class="disabled"><a>&laquo;</a></li>
+      <% } %>
+      <%
+        var first = Math.max(Math.min(state.currentPage - 2, state.totalPages - 4), 1);
+        var last = Math.min(first + 4, state.totalPages);
+
+        for(var i = first; i <= last; i++) {
+          var cls = (i == state.currentPage) ? "active" : "";
+      %>
+      <li class="<%= cls %>"><a class="goTo" href="#"><%= i %></a></li>
+      <%
+        }
+      %>
+      <% if(state.currentPage < state.totalPages) { %>
+        <li><a class="nextPage" href="#">&raquo;</a></li>
+      <% } else { %>
+        <li class="disabled"><a>&raquo;</a></li>
+      <% } %>
+    </ul>
+  </div>
+  <!--
+  <div class="row">
+    <p align="right">
+      <a class="btn btn-primary" href="#templates/new" data-i18n="common.button.new">新規作成</a>
+    </p>
+  </div>
+  -->
+  <%= this.partial('common/footer')%>
+</div>

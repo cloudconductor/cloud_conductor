@@ -1,0 +1,69 @@
+<div class="container">
+  <%
+    var breadcrumb = [];
+    breadcrumb.push({ url: "#systems", label: $.t("system.index.system_list")});
+    breadcrumb.push({ url: "#systems/" + id, label: name});
+  %>
+  <%= this.partial('common/menu', { breadcrumb: breadcrumb })%>
+  <!-- テーブル一覧 -->
+  <h2 id="tables-hover-rows" data-i18n="system.show.system_detail">システム詳細</h2>
+  <%= this.partial('common/error') %>
+  <table class="table table-hover">
+    <tbody>
+      <tr>
+        <td data-i18n="system.show.id">ID</td>
+        <td><%= id %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.name">システム名</td>
+        <td><%= name %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.template_url">テンプレート URL</td>
+        <td><%= template_url %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.template_body">テンプレート</td>
+        <td><pre class="scrollable"><%= template_body %></pre></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.parameters">パラメータ</td>
+        <td><pre class="scrollable"><%= parameters %></pre></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.monitoring_host">監視</td>
+        <td><%= monitoring_host %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.ip_address">IPアドレス</td>
+        <td><%= ip_address %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.domain">ドメイン</td>
+        <td><%= domain %></td>
+      </tr>
+      <tr>
+        <td data-i18n="system.show.clouds">クラウド</td>
+        <td>
+          <ul>
+          <% for(var i = 0; i < [].length; i++) { %>
+            <% if(clouds[i].name == cloud_name) { %>
+            <li class="centering glyphicon glyphicon-ok-sign" data-i18n="[title]system.show.using"><a href="#clouds/<%= clouds[i].id %>"><%= clouds[i].name %></a></li>
+            <% } else { %>
+            <li class="centering glyphicon glyphicon-minus-sign" data-i18n="[title]system.show.not_using"><a href="#clouds/<%= clouds[i].id %>"><%= clouds[i].name %></a></li>
+            <% } %>
+          <% } %>
+          </ul>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+  <!--
+  <p align="right">
+    <a class="btn btn-primary btn-default" href="#cloud_entry_points/<%= id %>/edit" data-i18n="common.button.edit">編集</a>
+    <a id="delete" class="btn btn-danger btn-default" href="javascript:void(0)" data-i18n="common.button.delete">削除</a>
+    <a class="btn btn-default" href="#cloud_entry_points" data-i18n="common.button.back">戻る</a>
+  </p>
+  -->
+  <%= this.partial('common/footer')%>
+</div>

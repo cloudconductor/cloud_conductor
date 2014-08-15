@@ -1,0 +1,90 @@
+body {
+  padding-top: 80px;
+}
+
+.navbar-logo {
+  height: 50px;
+}
+
+.navbar-top {
+  height: 50px;
+  box-sizing: content-box;
+  .top-button {
+    margin: 8px 8px 8px 0px;
+  }
+}
+
+.navbar-bottom {
+  height: 30px;
+  ol {
+    line-height: 30px;
+    padding: 0px 15px;
+    margin: 0px;
+    height: 30px;
+    overflow: hidden;
+  }
+}
+
+.navbar-login-text {
+  float: left;
+  color: white;
+  padding: 12px;
+}
+
+.navbar-login-avatar {
+  float: left;
+  width: 32px;
+  height: 32px;
+  position: relative;
+  top: 8px;
+}
+
+.main-title {
+  padding-right: 15px !important;
+  padding-left: 15px !important;
+  font-size: 18px;
+}
+
+table {
+  table-layout:fixed;
+}
+
+.item-id {
+  width: 50px;
+}
+
+.item-checkbox {
+  width: 50px;
+}
+
+.item-name {
+  width: 20%;
+}
+
+.item-owner {
+  width: 20%;
+}
+
+.item-description {
+  width: 60%;
+}
+
+.table-inner-btn {
+  width: 120px !important;
+  a {
+    margin-top: 2px;
+  }
+}
+
+.text-over {
+  width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+}
+
+/* Marginの重複が発生するため微調整 */
+ul.pagination {
+  margin-top: 0px;
+}

@@ -1,0 +1,22 @@
+<%
+if(this.errors) {
+  _.each(this.errors, function(error) {
+    if(_.isUndefined(error.type)) {
+      error.type = "info";
+    }
+%>
+<div class="alert alert-<%- error.type %> alert-dismissable">
+  <%
+    if(error.title) {
+  %>
+    <strong><%- error.title %>: </strong>
+  <%
+    }
+  %>
+  <span><%- error.message %></span>
+  <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+</div>
+<%
+  });
+}
+%>
