@@ -174,17 +174,8 @@ describe Pattern do
         @pattern.send(:clone_repository) {}
       end
 
-      it 'will yield given block' do
-        block = double('block')
-        block.should_receive(:dummy)
-
-        @pattern.send(:clone_repository) { block.dummy }
-      end
-
       it 'will yield given block with path of cloned repository' do
-        @pattern.send(:clone_repository) do |path|
-          expect(path).to match(%r{/tmp/patterns/[a-f0-9-]{36}})
-        end
+        expect { |b| @pattern.send(:clone_repository, &b) }.to yield_with_args(%r{/tmp/patterns/[a-f0-9-]{36}})
       end
 
       it 'will remove cloned repository after yield block' do
