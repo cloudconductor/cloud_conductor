@@ -142,10 +142,21 @@ describe Pattern do
     end
 
     describe '#clone_repository' do
+      it 'will raise error when block does not given' do
+        expect { @pattern.send(:clone_repository) }.to raise_error('Pattern#clone_repository needs block')
+      end
+
       it 'will clone repository to temporary directory' do
         command = %r(git clone #{@pattern.uri} .*tmp/patterns/[a-f0-9-]{36})
         @pattern.should_receive(:system).with(command).and_return(true)
-        @pattern.send(:clone_repository) { |_| }
+        @pattern.send(:clone_repository) {}
+      end
+
+      it 'will change current directory to cloned repoitory and restore current directory after exit' do
+        original = Dir.pwd
+        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).ordered
+        Dir.should_receive(:chdir).with(original).ordered
+        @pattern.send(:clone_repository) {}
       end
 
       it 'will change branch to specified revision when revision has specified' do
@@ -153,14 +164,32 @@ describe Pattern do
         @pattern.should_receive(:system).with(command).and_return(true)
 
         @pattern.revision = 'dummy'
-        @pattern.send(:clone_repository) { |_| }
+        @pattern.send(:clone_repository) {}
       end
 
       it 'won\'t change branch when revision is nil' do
         command = /git checkout/
         @pattern.should_not_receive(:system).with(command)
 
-        @pattern.send(:clone_repository) { |_| }
+        @pattern.send(:clone_repository) {}
+      end
+
+      it 'will yield given block' do
+        block = double('block')
+        block.should_receive(:dummy)
+
+        @pattern.send(:clone_repository) { block.dummy }
+      end
+
+      it 'will yield given block with path of cloned repository' do
+        @pattern.send(:clone_repository) do |path|
+          expect(path).to match(%r{/tmp/patterns/[a-f0-9-]{36}})
+        end
+      end
+
+      it 'will remove cloned repository after yield block' do
+        FileUtils.should_receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
+        @pattern.send(:clone_repository) {}
       end
     end
 

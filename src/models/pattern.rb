@@ -56,9 +56,14 @@ class Pattern < ActiveRecord::Base
   end
 
   def clone_repository
+    fail 'Pattern#clone_repository needs block' unless block_given?
+
     path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
     fail 'An error has occurred while git clone' unless system("git clone #{uri} #{path}")
+
+    @root_directory = Dir.pwd
+    Dir.chdir path
 
     unless revision.blank?
       fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
@@ -66,7 +71,8 @@ class Pattern < ActiveRecord::Base
 
     yield path
 
-    system("rm -rf #{path}")
+    Dir.chdir @root_directory
+    FileUtils.rm_r path, force: true
   end
 
   private
