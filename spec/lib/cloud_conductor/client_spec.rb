@@ -33,15 +33,16 @@ module CloudConductor
     describe '#create_stack' do
       before do
         @name = 'stack_name'
-        @pattern = FactoryGirl.create(:pattern)
-        @parameters = { operating_system: { id: 1 } }
-
         @cloud = FactoryGirl.create(:cloud_aws)
+        @operating_system = FactoryGirl.create(:operating_system)
+        @pattern = FactoryGirl.create(:pattern)
+
+        @parameters = { operating_system: @operating_system }
         @client = Client.new @cloud
 
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
         @pattern.stub(:clone_repository).and_yield(path)
-        @pattern.images << FactoryGirl.create(:image)
+        @pattern.images << FactoryGirl.create(:image, cloud: @cloud, operating_system: @operating_system)
 
         @template_content = '{ "dummy": "dummy_value" }'
         @client.stub_chain(:open, :read).and_return(@template_content)
@@ -76,40 +77,25 @@ module CloudConductor
       end
 
       it 'will get images to suit conditions that has been registered in pattern' do
-        @pattern.images.each do |image|
-          image.cloud_id = @cloud.id
-          image.operating_system_id = 1
-        end
-
         @client.create_stack @name, @pattern, @parameters
         result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
         expect(result.size).to eq(1)
       end
 
-      it 'add ImageId in parameter-hash only the number of images' do
-        @pattern.images << FactoryGirl.create(:image)
-        @pattern.images.each do |image|
-          image.cloud_id = @cloud.id
-          image.operating_system_id = 1
+      it 'add ImageId/Image pair to parameter-hash' do
+        @pattern.images << FactoryGirl.create(:image, cloud: @cloud, operating_system: @operating_system)
+
+        expected_parameters = satisfy do |parameters|
+          @pattern.images.all? do |image|
+            parameters["#{image.role}ImageId"] == image.image
+          end
         end
 
-        @client.create_stack @name, @pattern, @parameters
-        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
-        expect(result.size).to eq(2)
-      end
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, expected_parameters, anything)
 
-      it 'add Image data in parameter-hash' do
-        @pattern.images.each do |image|
-          image.cloud_id = @cloud.id
-          image.operating_system_id = 1
-        end
-
-        @client.create_stack @name, @pattern, @parameters
-        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }.values[0]
-        expect(result[:Description]).to eq('')
-        expect(result[:Type]).to eq('String')
-        expect(result[:Default]).to eq(@pattern.images.first.image)
-        expect(result[:ConstraintDescription]).to eq('')
+        client = Client.new @cloud
+        client.stub_chain(:open, :read).and_return(@template_content)
+        client.create_stack @name, @pattern, @parameters
       end
 
       it 'will call create_stack with content of template.json' do
