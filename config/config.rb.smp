@@ -15,9 +15,15 @@ end
 
 # cloudconductor server settings
 cloudconductor.url 'http://your-cloudconductor-server.example.com/systems'
-cloudconductor.dns_server 'your-dns-server.example.com'
-cloudconductor.dns_keyfile '/etc/rndc.key'
-cloudconductor.dns_ttl 3600
+
+# dns settings
+dns.service 'route53'
+dns.access_key 'your_access_key'
+dns.secret_key 'your_secret_key'
+dns.ttl 60
+# dns.service 'bind9'
+# dns.server 'your-dns-server.example.com'
+# dns.key_file '/etc/rndc.key'
 
 # zabbix server settings
 zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
