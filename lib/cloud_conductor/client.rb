@@ -43,20 +43,11 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      os = parameters[:operating_system]
+      operating_system = parameters[:operating_system]
 
-      images = pattern.images.map do |image|
-        image = nil unless image.cloud_id == @cloud.id && image.operating_system_id == os[:id]
-        image
-      end.compact
-
+      images = pattern.images.where(cloud: @cloud, operating_system: operating_system)
       images.each do |image|
-        image_id_key = "#{image.role}ImageId"
-        parameters[image_id_key] = {}
-        parameters[image_id_key][:Description] = ''
-        parameters[image_id_key][:Type] = 'String'
-        parameters[image_id_key][:Default] = "#{image.image}"
-        parameters[image_id_key][:ConstraintDescription] = ''
+        parameters["#{image.role}ImageId"] = image.image
       end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes
