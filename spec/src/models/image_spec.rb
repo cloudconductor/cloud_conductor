@@ -15,6 +15,40 @@
 describe Image do
   before do
     @image = Image.new
+    @image.role = 'dummy'
+  end
+
+  it 'create with valid parameters' do
+    count = Image.count
+
+    @image.save!
+
+    expect(Image.count).to eq(count + 1)
+  end
+
+  describe '#valid?' do
+    it 'returns true when valid model' do
+      expect(@image.valid?).to be_truthy
+
+      @image.role = 'test'
+      expect(@image.valid?).to be_truthy
+    end
+
+    it 'returns false when role is unset' do
+      @image.role = nil
+      expect(@image.valid?).to be_falsey
+
+      @image.role = ''
+      expect(@image.valid?).to be_falsey
+    end
+
+    it 'returns false when role contains hyphen or underscore character' do
+      @image.role = 'dummy-role'
+      expect(@image.valid?).to be_falsey
+
+      @image.role = 'dummy_role'
+      expect(@image.valid?).to be_falsey
+    end
   end
 
   describe '#status' do
