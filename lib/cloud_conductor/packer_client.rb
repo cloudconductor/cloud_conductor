@@ -37,7 +37,15 @@ module CloudConductor
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
       command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{packer_json_path}"
       Thread.new do
-        _status, stdout, _stderr = systemu(command)
+        status, stdout, stderr = systemu(command)
+        unless status.success?
+          Log.error('Packer failed')
+          Log.info('--------------stdout------------')
+          Log.info(stdout)
+          Log.error('-------------stderr------------')
+          Log.error(stderr)
+        end
+
         yield parse(stdout, only) if block_given?
         Log.info("Packer finished in #{Thread.current}")
       end

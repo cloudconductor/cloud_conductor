@@ -53,6 +53,7 @@ module CloudConductor
         @threads = Thread.list
 
         @client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        @client.stub(:systemu).and_return(double('status', 'success?' => true))
       end
 
       after do
@@ -116,7 +117,7 @@ module CloudConductor
 
       it 'will call #create_json to create json file' do
         @client.should_receive(:create_json).with(@clouds)
-        @client.stub(:systemu)
+        @client.stub(:systemu).and_return(double('status', 'success?' => true))
         @client.build('http://example.com', 'dummy_revision', @clouds, @oss, @role)
       end
     end
