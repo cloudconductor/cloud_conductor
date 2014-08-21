@@ -30,8 +30,9 @@ class Cloud < ActiveRecord::Base
     unless %i(aws openstack dummy).include? type
       errors.add(:type, ' must be "aws", "openstack" or "dummy"')
     end
-    if type == :openstack && tenant_id.blank?
-      errors.add(:tenant_id, 'must not be blank in case that type is "openstack".')
+    if type == :openstack
+      errors.add(:tenant_id, 'must not be blank in case that type is "openstack".') if tenant_id.blank?
+      errors.add(:tenant_name, 'must not be blank in case that type is "openstack".') if tenant_name.blank?
     end
   end
 

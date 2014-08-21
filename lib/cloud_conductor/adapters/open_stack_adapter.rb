@@ -25,7 +25,7 @@ module CloudConductor
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
           openstack_api_key: options[:secret],
           openstack_username: options[:key],
-          openstack_tenant: options[:tenant_id]
+          openstack_tenant: options[:tenant_name]
         )
       end
 

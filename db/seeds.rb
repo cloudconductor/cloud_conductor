@@ -24,6 +24,7 @@ cloud_aws.entry_point = 'ap-northeast-1'
 cloud_aws.key = '1234567890abcdef'
 cloud_aws.secret = '1234567890abcdef'
 cloud_aws.tenant_id = nil
+cloud_aws.tenant_name = nil
 cloud_aws.template = <<-EOS
   {
     "name": "{{target `name`}}",
@@ -50,6 +51,7 @@ cloud_openstack.entry_point = 'http://127.0.0.1:5000/'
 cloud_openstack.key = '1234567890abcdef'
 cloud_openstack.secret = '1234567890abcdef'
 cloud_openstack.tenant_id = '1234567890abcdef'
+cloud_openstack.tenant_name = '1234567890abcdef'
 cloud_openstack.template = <<-EOS
   {
     "name": "{{target `name`}}",

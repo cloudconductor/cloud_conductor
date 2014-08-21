@@ -20,7 +20,8 @@ describe Cloud do
     @cloud.entry_point = 'ap-northeast-1'
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
-    @cloud.tenant_id = 'TestTenant'
+    @cloud.tenant_id = '1234567890'
+    @cloud.tenant_name = 'TestTenant'
   end
 
   it 'create with valid parameters' do
@@ -102,6 +103,15 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
 
       @cloud.tenant_id = nil
+      expect(@cloud.valid?).to be_falsey
+    end
+
+    it 'returns false when type is openstack and tenant_name is blank' do
+      @cloud.type = 'openstack'
+      @cloud.tenant_name = ''
+      expect(@cloud.valid?).to be_falsey
+
+      @cloud.tenant_name = nil
       expect(@cloud.valid?).to be_falsey
     end
   end
