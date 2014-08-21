@@ -49,7 +49,7 @@ class System < ActiveRecord::Base
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
-        cloud.client.create_stack name, pattern, JSON.parse(parameters), cloud.attributes
+        cloud.client.create_stack name, pattern, JSON.parse(parameters).with_indifferent_access
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
