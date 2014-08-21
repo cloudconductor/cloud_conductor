@@ -15,7 +15,8 @@
         "  sudo mkdir -p /opt/cloudconductor/patterns",
         "fi",
 
-        "sudo git clone {{user `repository_url`}} /opt/cloudconductor/patterns",
+        "cd /opt/cloudconductor/patterns",
+        "sudo git clone {{user `repository_url`}}",
 
         "cd /opt/cloudconductor/patterns/*",
         "git checkout {{user `revision`}}",
