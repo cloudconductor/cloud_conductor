@@ -21,7 +21,7 @@
         "git checkout {{user `revision`}}",
 
         "if [ -f ./events/init/user-setup ]; then",
-        "  sudo /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
+        "  sudo SERF_TAG_ROLE={{user `role`}} /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
         "fi"
       ]
     }
