@@ -62,16 +62,14 @@ class Pattern < ActiveRecord::Base
 
     fail 'An error has occurred while git clone' unless system("git clone #{uri} #{path}")
 
-    @root_directory = Dir.pwd
-    Dir.chdir path
-
-    unless revision.blank?
-      fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+    Dir.chdir path do
+      unless revision.blank?
+        fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+      end
     end
 
     yield path
 
-    Dir.chdir @root_directory
     FileUtils.rm_r path, force: true
   end
 

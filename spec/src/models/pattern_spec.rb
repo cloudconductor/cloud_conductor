@@ -23,7 +23,7 @@ describe Pattern do
     @pattern.clouds << @cloud_openstack
 
     @pattern.stub(:system).and_return(true)
-    Dir.stub(:chdir)
+    Dir.stub(:chdir).and_yield
     YAML.stub(:load_file).and_return({})
     File.stub(:open).and_call_original
     double = double('File', read: '{ "Resources" : {} }')
@@ -153,9 +153,7 @@ describe Pattern do
       end
 
       it 'will change current directory to cloned repoitory and restore current directory after exit' do
-        original = Dir.pwd
-        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).ordered
-        Dir.should_receive(:chdir).with(original).ordered
+        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).and_yield
         @pattern.send(:clone_repository) {}
       end
 
