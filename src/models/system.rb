@@ -43,7 +43,10 @@ class System < ActiveRecord::Base
 
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
-    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
+
+    if pattern
+      errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
+    end
   end
 
   def create_stack
