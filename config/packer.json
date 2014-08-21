@@ -11,19 +11,18 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -x",
       "inline": [
-        "if [ -f /tmp/packer-create-image.sh ]; then",
-        "  sudo /tmp/packer-create-image.sh",
+        "if [ ! -d /opt/cloudconductor/patterns ]; then",
+        "  sudo mkdir -p /opt/cloudconductor/patterns",
         "fi",
 
-        "cd /tmp",
-        "git clone {{user `repository_url`}} pattern",
+        "sudo git clone {{user `repository_url`}} /opt/cloudconductor/patterns",
 
-        "cd /tmp/pattern",
+        "cd /opt/cloudconductor/patterns/*",
         "git checkout {{user `revision`}}",
 
-        "if [ -f /tmp/pattern/events/init/user-setup ]; then",
-        "  sudo ruby /tmp/pattern/events/init/user-setup",
-        "fi",
+        "if [ -f ./events/init/user-setup ]; then",
+        "  sudo ruby ./events/init/user-setup",
+        "fi"
       ]
     }
   ]
