@@ -19,7 +19,7 @@
         "sudo git clone {{user `repository_url`}}",
 
         "cd /opt/cloudconductor/patterns/*",
-        "git checkout {{user `revision`}}",
+        "sudo git checkout {{user `revision`}}",
 
         "if [ -f ./events/init/user-setup ]; then",
         "  sudo SERF_TAG_ROLE={{user `role`}} /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
