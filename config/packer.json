@@ -21,7 +21,7 @@
         "git checkout {{user `revision`}}",
 
         "if [ -f ./events/init/user-setup ]; then",
-        "  sudo ruby ./events/init/user-setup",
+        "  sudo /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
         "fi"
       ]
     }
