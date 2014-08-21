@@ -5,6 +5,7 @@ AllCops:
     - node_modules/**/*
     - public/js/ext/**/*
     - vendor/bundle/**/*
+    - tmp/**/*
 
 LineLength:
   Max: 130
