@@ -23,6 +23,7 @@ class System < ActiveRecord::Base
 
   belongs_to :pattern
 
+  before_save :create_stack
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
@@ -45,7 +46,7 @@ class System < ActiveRecord::Base
     errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
   end
 
-  before_create do
+  def create_stack
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
