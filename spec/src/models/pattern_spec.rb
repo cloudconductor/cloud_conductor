@@ -136,7 +136,7 @@ describe Pattern do
       @pattern.should_receive(:clone_repository).and_yield(path_pattern)
       @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
       @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
-      @pattern.should_receive(:update_attributes).with({})
+      @pattern.should_receive(:update_attributes).with(path_pattern, {})
       @pattern.should_receive(:create_images).with(anything, 'dummy')
       @pattern.save!
     end
@@ -238,23 +238,27 @@ describe Pattern do
     end
 
     describe '#update_attributes' do
+      before do
+        Dir.stub(:chdir).and_yield
+      end
+
       it 'update name attribute with name in metadata' do
         metadata = { name: 'name' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_attributes, @path, metadata)
 
         expect(@pattern.name).to eq('name')
       end
 
       it 'update description attribute with description in metadata' do
         metadata = { description: 'description' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_attributes, @path, metadata)
 
         expect(@pattern.description).to eq('description')
       end
 
       it 'update type attribute with type in metadata' do
         metadata = { type: 'Platform' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_attributes, @path, metadata)
 
         expect(@pattern.type).to eq('Platform')
       end
@@ -264,7 +268,7 @@ describe Pattern do
         command = /git log --pretty=format:%H --max-count=1$/
         @pattern.should_receive(:`).with(command).and_return(hash)
 
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_attributes, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end
@@ -275,7 +279,7 @@ describe Pattern do
         @pattern.should_receive(:`).with(command).and_return(hash)
 
         @pattern.revision = 'dummy'
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_attributes, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end
@@ -286,7 +290,7 @@ describe Pattern do
         @pattern.should_receive(:`).with(command).and_return(hash)
 
         @pattern.revision = hash
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_attributes, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end

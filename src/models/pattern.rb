@@ -44,7 +44,7 @@ class Pattern < ActiveRecord::Base
     clone_repository do |path|
       metadata = load_metadata path
       roles = load_roles path
-      update_attributes metadata
+      update_attributes path, metadata
 
       operating_systems = OperatingSystem.where(name: metadata[:supports])
       roles.each do |role|
@@ -102,13 +102,15 @@ class Pattern < ActiveRecord::Base
     roles.uniq
   end
 
-  def update_attributes(metadata)
+  def update_attributes(path, metadata)
     self.name = metadata[:name]
     self.description = metadata[:description]
     self.type = metadata[:type]
 
-    self.revision = `git log --pretty=format:%H --max-count=1`
-    fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+    Dir.chdir path do
+      self.revision = `git log --pretty=format:%H --max-count=1`
+      fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+    end
   end
 
   def create_images(operating_systems, role)
