@@ -28,6 +28,11 @@ describe OperatingSystem do
         @ubuntu1404 = FactoryGirl.create(:operating_system, name: 'ubuntu', version: '14.04')
       end
 
+      it 'return empty when arguments is nil' do
+        result = OperatingSystem.candidates(nil)
+        expect(result).to be_empty
+      end
+
       it 'return empty when arguments is empty' do
         result = OperatingSystem.candidates([])
         expect(result).to be_empty
