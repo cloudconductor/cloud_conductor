@@ -19,9 +19,11 @@ FactoryGirl.define do
 
   factory :centos, class: OperatingSystem do
     sequence(:name) { |n| "centos_#{n}" }
+    version '6.5'
   end
 
   factory :ubuntu, class: OperatingSystem do
     sequence(:name) { |n| "ubuntu_#{n}" }
+    version '14.04'
   end
 end
