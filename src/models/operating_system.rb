@@ -15,4 +15,11 @@
 require 'sinatra/activerecord'
 
 class OperatingSystem < ActiveRecord::Base
+  def self.candidates(supports)
+    supports.map do |support|
+      fail "version supports only '= 1.2' format currently" unless support[:version] =~ /^=\s*([\d.]+)$/
+      version = Regexp.last_match[1]
+      OperatingSystem.where(name: support[:name], version: version)
+    end.flatten
+  end
 end
