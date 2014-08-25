@@ -12,8 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 class SystemsController < Sinatra::Base
+  register Sinatra::Namespace
   configure :development do
     register Sinatra::Reloader
+  end
+
+  namespace '/:system_id/applications' do
+    register ApplicationsController
   end
 
   set(:clone) do |is_clone|
