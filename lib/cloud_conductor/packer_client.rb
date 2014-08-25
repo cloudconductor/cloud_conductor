@@ -46,7 +46,9 @@ module CloudConductor
           Log.error(stderr)
         end
 
-        yield parse(stdout, only) if block_given?
+        ActiveRecord::Base.connection_pool.with_connection do
+          yield parse(stdout, only) if block_given?
+        end
         Log.info("Packer finished in #{Thread.current}")
       end
     end
