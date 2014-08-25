@@ -61,8 +61,6 @@ module CloudConductor
   end
 
   class Route53Client
-    attr_accessor :client
-
     def initialize(config)
       if config[:access_key].nil? || config[:secret_key].nil?
         fail ArgumentError, 'Need access_key and secret_key to access AWS Route53'
