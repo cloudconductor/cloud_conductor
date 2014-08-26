@@ -23,7 +23,7 @@ class System < ActiveRecord::Base
 
   belongs_to :pattern
 
-  before_save :create_stack
+  before_save :create_stack, if: -> { status == :NOT_CREATED }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
@@ -105,6 +105,7 @@ class System < ActiveRecord::Base
 
   def status
     cloud = available_clouds.active
+    return :NOT_CREATED if cloud.nil?
     cloud.client.get_stack_status name, cloud.attributes
   rescue
     :ERROR
