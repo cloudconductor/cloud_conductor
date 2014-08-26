@@ -30,13 +30,12 @@ module CloudConductor
         Log.debug '  Status is CREATE_COMPLETE'
 
         outputs = system.outputs
-        next if outputs['EIP'].nil?
+        next if outputs['FrontendAddress'].nil?
 
-        ip_address = outputs['EIP']
-        Log.debug "  Outputs has EIP(#{ip_address})"
+        ip_address = outputs['FrontendAddress']
+        Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-        `curl http://#{ip_address}/`
-
+        Log.debug `serf info -rpc-addr=#{ip_address}:7373 -format=json`
         next if $CHILD_STATUS.exitstatus != 0
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
