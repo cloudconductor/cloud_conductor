@@ -106,20 +106,20 @@ class System < ActiveRecord::Base
   def status
     cloud = available_clouds.active
     return :NOT_CREATED if cloud.nil?
-    cloud.client.get_stack_status name, cloud.attributes
+    cloud.client.get_stack_status name
   rescue
     :ERROR
   end
 
   def outputs
     cloud = available_clouds.active
-    cloud.client.get_outputs name, cloud.attributes
+    cloud.client.get_outputs name
   rescue
     {}
   end
 
   def destroy_stack
     cloud = available_clouds.active
-    cloud.client.destroy_stack name, cloud.attributes
+    cloud.client.destroy_stack name
   end
 end

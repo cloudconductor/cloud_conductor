@@ -32,7 +32,7 @@ describe System do
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
 
-    @client = double('client', create_stack: nil, destroy_stack: nil)
+    @client = double('client', create_stack: nil, get_stack_status: :NOT_CREATED, destroy_stack: nil)
     Cloud.any_instance.stub(:client).and_return(@client)
 
     CloudConductor::DNSClient.stub_chain(:new, :update)
@@ -234,9 +234,7 @@ describe System do
     it 'call get_stack_status on adapter that related active cloud' do
       @system.save!
 
-      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
-      @client.should_receive(:get_stack_status)
-        .with(@system.name, hash_including(expect_arguments)).and_return(:dummy)
+      @client.should_receive(:get_stack_status).with(@system.name).and_return(:dummy)
 
       expect(@system.status).to eq(:dummy)
     end
@@ -246,9 +244,7 @@ describe System do
     it 'call get_outputs on adapter that related active cloud' do
       @system.save!
 
-      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
-      @client.should_receive(:get_outputs)
-        .with(@system.name, hash_including(expect_arguments)).and_return(key: 'value')
+      @client.should_receive(:get_outputs).with(@system.name).and_return(key: 'value')
 
       expect(@system.outputs).to eq(key: 'value')
     end
@@ -288,8 +284,7 @@ describe System do
     it 'will call destroy_stack method on current adapter' do
       @system.save!
 
-      expect_arguments = @cloud_openstack.attributes.except('created_at', 'updated_at')
-      @client.should_receive(:destroy_stack).with(@system.name, hash_including(expect_arguments))
+      @client.should_receive(:destroy_stack).with(@system.name)
 
       @system.destroy
     end
