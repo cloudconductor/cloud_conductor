@@ -15,7 +15,7 @@
 describe OperatingSystem do
   describe '.candidates' do
     it 'return empty when OperatingSystem table is empty' do
-      result = OperatingSystem.candidates([{ name: 'centos', version: '= 6.5' }])
+      result = OperatingSystem.candidates([{ os: 'centos', version: '= 6.5' }])
       expect(result).to be_empty
     end
 
@@ -39,21 +39,21 @@ describe OperatingSystem do
       end
 
       it 'raise error when version format is invalid' do
-        expect { OperatingSystem.candidates([{ name: 'centos', version: '> 6.5' }]) }.to raise_error
+        expect { OperatingSystem.candidates([{ os: 'centos', version: '> 6.5' }]) }.to raise_error
       end
 
       it 'return candidate os when specified single os' do
-        result = OperatingSystem.candidates([{ name: 'centos', version: '= 6.5' }])
+        result = OperatingSystem.candidates([{ os: 'centos', version: '= 6.5' }])
         expect(result).to match_array([@centos65])
       end
 
       it 'return candidates os when specified multiple os' do
-        result = OperatingSystem.candidates([{ name: 'centos', version: '= 6.5' }, { name: 'ubuntu', version: '= 14.03' }])
+        result = OperatingSystem.candidates([{ os: 'centos', version: '= 6.5' }, { os: 'ubuntu', version: '= 14.03' }])
         expect(result).to match_array([@centos65, @ubuntu1403])
       end
 
       it 'ignore part of argument that contains unsupported os' do
-        result = OperatingSystem.candidates([{ name: 'centos', version: '= 6.5' }, { name: 'windows', version: '= 8.1' }])
+        result = OperatingSystem.candidates([{ os: 'centos', version: '= 6.5' }, { os: 'windows', version: '= 8.1' }])
         expect(result).to match_array([@centos65])
       end
     end
