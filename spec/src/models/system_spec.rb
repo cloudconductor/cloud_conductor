@@ -289,4 +289,16 @@ describe System do
       @system.destroy
     end
   end
+
+  describe '#serf' do
+    it 'will fail when ip_address does not specified' do
+      @system.ip_address = nil
+      expect { @system.serf }.to raise_error('ip_address does not specified')
+    end
+
+    it 'return serf client when ip_address already specified' do
+      @system.ip_address = '127.0.0.1'
+      expect(@system.serf).to be_is_a Serf::Client
+    end
+  end
 end

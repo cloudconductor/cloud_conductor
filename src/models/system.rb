@@ -122,4 +122,10 @@ class System < ActiveRecord::Base
     cloud = available_clouds.active
     cloud.client.destroy_stack name
   end
+
+  def serf
+    fail 'ip_address does not specified' unless ip_address
+
+    Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
+  end
 end
