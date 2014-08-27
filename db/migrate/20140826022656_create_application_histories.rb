@@ -4,7 +4,7 @@ class CreateApplicationHistories < ActiveRecord::Migration
       t.references :application
       t.integer :version
       t.string :uri
-      t.string :user_parameters
+      t.string :parameters
       t.timestamps
     end
   end
