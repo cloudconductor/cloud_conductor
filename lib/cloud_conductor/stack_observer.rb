@@ -35,8 +35,9 @@ module CloudConductor
         ip_address = outputs['FrontendAddress']
         Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-        Log.debug `serf info -rpc-addr=#{ip_address}:7373 -format=json`
-        next if $CHILD_STATUS.exitstatus != 0
+        serf = Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
+        status, _results = serf.call('info')
+        next unless status.success?
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
         yield system, ip_address
