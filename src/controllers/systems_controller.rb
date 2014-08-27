@@ -19,6 +19,7 @@ class SystemsController < Sinatra::Base
 
   namespace '/:system_id/applications' do
     register ApplicationsController
+    include ApplicationsController
   end
 
   set(:clone) do |is_clone|

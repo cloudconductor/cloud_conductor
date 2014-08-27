@@ -12,14 +12,72 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module ApplicationsController
+  # rubocop:disable MethodLength
   def self.registered(base)
     base.get do
-      json 'applications list'
+      page = (params[:page] || 1).to_i
+      per_page = (params[:per_page] || 5).to_i
+
+      state = {}
+      state[:total_pages] = (Application.count / per_page.to_f).ceil
+
+      json [state, Application.limit(per_page).offset((page - 1) * per_page)]
     end
 
     base.get '/:id' do
-      p params
-      json 'single application'
+      json Application.find(params[:id])
     end
+
+    base.get '/:id/:version' do
+      json ApplicationHistory.where(application_id: params[:id], version: params[:version])
+    end
+
+    base.post do
+      application = Application.new application_permit_params
+      application.histories.build history_permit_params
+      application.save
+      status 201
+      json application
+    end
+
+    base.put '/:id' do
+      begin
+        application = Application.find(params[:id])
+      rescue => e
+        Log.error e
+        status 400
+        return json message: e.message
+      end
+
+      application.update_attributes application_permit_params
+      application.histories.build history_permit_params
+      unless application.save
+        status 400
+        return json application.errors
+      end
+
+      status 200
+      json application
+    end
+
+    base.delete '/:id' do
+      begin
+        Application.find(params[:id]).destroy
+      rescue => e
+        Log.error e
+        status 400
+        return json message: e.message
+      end
+
+      status 204
+    end
+  end
+
+  def application_permit_params
+    ActionController::Parameters.new(params).permit(:system_id, :name)
+  end
+
+  def history_permit_params
+    ActionController::Parameters.new(params).permit(:uri, :parameters)
   end
 end
