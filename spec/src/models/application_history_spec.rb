@@ -30,6 +30,23 @@ describe ApplicationHistory do
 
       expect(ApplicationHistory.count).to eq(count + 1)
     end
+
+    it 'assign version on first history automatically when version does not specified' do
+      @history.version = nil
+      @history.save!
+
+      expect(@history.version).to eq(1)
+    end
+
+    it 'assign version on second or later history automatically when version does not specified' do
+      FactoryGirl.create(:application_history, application: @application)
+      FactoryGirl.create(:application_history, application: @application)
+
+      @history.version = nil
+      @history.save!
+
+      expect(@history.version).to eq(3)
+    end
   end
 
   describe '#valid?' do
