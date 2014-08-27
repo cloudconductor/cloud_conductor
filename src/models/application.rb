@@ -16,5 +16,5 @@ require 'sinatra/activerecord'
 
 class Application < ActiveRecord::Base
   belongs_to :system
-  has_many :application_history
+  has_many :histories, class_name: :ApplicationHistory
 end
