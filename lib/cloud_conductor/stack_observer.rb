@@ -19,6 +19,8 @@ module CloudConductor
         system.ip_address = ip_address
         system.monitoring_host = system.domain
         system.save!
+
+        system.serf.call('event', 'configure', system.parameters)
       end
     end
 
