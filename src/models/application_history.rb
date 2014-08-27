@@ -15,6 +15,7 @@
 require 'sinatra/activerecord'
 
 class ApplicationHistory < ActiveRecord::Base
+  before_save :allocate_version
   belongs_to :application
 
   validates :application, presence: true
@@ -26,5 +27,9 @@ class ApplicationHistory < ActiveRecord::Base
     rescue JSON::ParserError
       record.errors.add(attr, 'is malformed or invalid json string')
     end
+  end
+
+  def allocate_version
+    self.version = application.histories.count + 1
   end
 end

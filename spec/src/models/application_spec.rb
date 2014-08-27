@@ -20,7 +20,10 @@ describe Application do
     @application.name = 'dummy'
     @application.system = @system
 
-    @application.histories << ApplicationHistory.new
+    history = ApplicationHistory.new
+    history.application = @application
+    history.uri = 'http://example.com/'
+    @application.histories << history
   end
 
   describe '#save' do
