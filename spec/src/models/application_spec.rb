@@ -33,6 +33,16 @@ describe Application do
     end
   end
 
+  describe '#delete' do
+    it 'delete all relational history' do
+      @application.save!
+
+      count = ApplicationHistory.count
+      @application.destroy
+      expect(ApplicationHistory.count).to eq(count - 1)
+    end
+  end
+
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@application.valid?).to be_truthy

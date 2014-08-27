@@ -16,7 +16,7 @@ require 'sinatra/activerecord'
 
 class Application < ActiveRecord::Base
   belongs_to :system
-  has_many :histories, class_name: :ApplicationHistory
+  has_many :histories, class_name: :ApplicationHistory, dependent: :destroy
 
   validates :name, presence: true
   validates :system, presence: true
