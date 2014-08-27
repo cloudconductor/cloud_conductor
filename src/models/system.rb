@@ -20,6 +20,7 @@ class System < ActiveRecord::Base
 
   has_many :available_clouds, dependent: :destroy
   has_many :clouds, through: :available_clouds
+  has_many :applications
 
   belongs_to :pattern
 
