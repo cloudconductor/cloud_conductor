@@ -20,4 +20,16 @@ class Application < ActiveRecord::Base
 
   validates :name, presence: true
   validates :system, presence: true
+
+  def latest
+    histories.last
+  end
+
+  def latest_version
+    histories.last.version
+  end
+
+  def to_json(options = {})
+    super options.merge(methods: [:latest, :latest_version])
+  end
 end

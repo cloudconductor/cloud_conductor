@@ -19,11 +19,7 @@ describe Application do
     @application = Application.new
     @application.name = 'dummy'
     @application.system = @system
-
-    history = ApplicationHistory.new
-    history.application = @application
-    history.uri = 'http://example.com/'
-    @application.histories << history
+    @application.histories << FactoryGirl.build(:application_history)
   end
 
   describe '#save' do
@@ -62,6 +58,27 @@ describe Application do
     it 'returns false when system is unset' do
       @application.system = nil
       expect(@application.valid?).to be_falsey
+    end
+  end
+
+  describe '#latest' do
+    it 'return latest ApplicationHistory' do
+      @application.save!
+      @application.histories << FactoryGirl.build(:application_history)
+      latest = FactoryGirl.build(:application_history)
+      @application.histories << latest
+
+      expect(@application.latest).to eq(latest)
+    end
+  end
+
+  describe '#latest_version' do
+    it 'return latest ApplicationHistory version' do
+      @application.save!
+      @application.histories << FactoryGirl.build(:application_history)
+      @application.histories << FactoryGirl.build(:application_history)
+
+      expect(@application.latest_version).to eq(3)
     end
   end
 end
