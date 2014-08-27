@@ -14,12 +14,12 @@
 module ApplicationsController
   def self.registered(base)
     base.get do
-      json "applications list"
+      json 'applications list'
     end
 
     base.get '/:id' do
       p params
-      json "single application"
+      json 'single application'
     end
   end
 end
