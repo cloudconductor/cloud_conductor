@@ -16,4 +16,15 @@ require 'sinatra/activerecord'
 
 class ApplicationHistory < ActiveRecord::Base
   belongs_to :application
+
+  validates :application, presence: true
+  validates :uri, presence: true, format: { with: URI.regexp }
+
+  validates_each :parameters do |record, attr, value|
+    begin
+      JSON.parse(value) unless value.nil?
+    rescue JSON::ParserError
+      record.errors.add(attr, 'is malformed or invalid json string')
+    end
+  end
 end

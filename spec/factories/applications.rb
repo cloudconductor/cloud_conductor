@@ -12,12 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'sinatra/activerecord'
-
-class Application < ActiveRecord::Base
-  belongs_to :system
-  has_many :histories, class_name: :ApplicationHistory
-
-  validates :name, presence: true
-  validates :system, presence: true
+FactoryGirl.define do
+  factory :application, class: Application do
+    sequence(:name) { |n| "application_#{n}" }
+    system { create(:system) }
+  end
 end
