@@ -32,7 +32,7 @@ describe ApplicationHistory do
     end
   end
 
-  describe '#valid?', focus: true do
+  describe '#valid?' do
     it 'returns true when valid model' do
       expect(@history.valid?).to be_truthy
     end
