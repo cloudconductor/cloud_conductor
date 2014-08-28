@@ -18,7 +18,7 @@ describe ApplicationHistory do
 
     @history = ApplicationHistory.new
     @history.application = @application
-    @history.uri = 'http://example.com/'
+    @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
     @serf_client = double('serf_client', call: nil)
@@ -80,16 +80,16 @@ describe ApplicationHistory do
       expect(@history.valid?).to be_falsey
     end
 
-    it 'returns false when uri is unset' do
-      @history.uri = nil
+    it 'returns false when url is unset' do
+      @history.url = nil
       expect(@history.valid?).to be_falsey
 
-      @history.uri = ''
+      @history.url = ''
       expect(@history.valid?).to be_falsey
     end
 
-    it 'returns false when uri is invalid URI' do
-      @history.uri = 'dummy'
+    it 'returns false when url is invalid URL' do
+      @history.url = 'dummy'
       expect(@history.valid?).to be_falsey
     end
 

@@ -23,7 +23,7 @@ class Pattern < ActiveRecord::Base
   has_many :clouds, through: :patterns_clouds
   has_many :images, dependent: :destroy
 
-  validates :uri, format: { with: URI.regexp }
+  validates :url, format: { with: URI.regexp }
   validates :clouds, presence: true
 
   validate do
@@ -60,7 +60,7 @@ class Pattern < ActiveRecord::Base
 
     path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
-    fail 'An error has occurred while git clone' unless system("git clone #{uri} #{path}")
+    fail 'An error has occurred while git clone' unless system("git clone #{url} #{path}")
 
     Dir.chdir path do
       unless revision.blank?
@@ -122,7 +122,7 @@ class Pattern < ActiveRecord::Base
 
     cloud_names = clouds.map(&:name)
     operating_system_names = operating_systems.map(&:name)
-    CloudConductor::PackerClient.new.build uri, revision, cloud_names, operating_system_names, role do |results|
+    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role do |results|
       results.each do |key, result|
         cloud_name, os_name = key.split('-')
         cloud = Cloud.where(name: cloud_name).first

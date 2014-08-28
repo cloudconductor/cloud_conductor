@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :pattern do
     sequence(:name) { |n| "pattern_#{n}" }
-    uri 'http://example.com/'
+    url 'http://example.com/'
 
     after(:build) do
       Pattern.skip_callback :save, :before, :execute_packer

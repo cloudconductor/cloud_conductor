@@ -4,7 +4,7 @@ class CreatePatterns < ActiveRecord::Migration
       t.string :name
       t.string :description
       t.string :type
-      t.string :uri
+      t.string :url
       t.string :revision
       t.references :metadata
       t.timestamps
