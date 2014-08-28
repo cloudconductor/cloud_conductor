@@ -25,6 +25,7 @@ describe System do
     @system = System.new
     @system.name = 'Test'
     @system.pattern = @pattern
+    @system.template_parameters = '{}'
     @system.parameters = '{}'
     @system.monitoring_host = nil
     @system.domain = 'example.com'
@@ -70,6 +71,11 @@ describe System do
       expect(@system.valid?).to be_falsey
     end
 
+    it 'returns false when template_parameters is invalid JSON string' do
+      @system.template_parameters = '{'
+      expect(@system.valid?).to be_falsey
+    end
+
     it 'returns false when parameters is invalid JSON string' do
       @system.parameters = '{'
       expect(@system.valid?).to be_falsey
@@ -95,23 +101,23 @@ describe System do
 
   describe '#before_create' do
     before do
-      @parameters = JSON.parse @system.parameters
+      @template_parameters = JSON.parse @system.template_parameters
     end
 
     it 'call create_stack on cloud that has highest priority' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters)
+        .with(@system.name, @system.pattern, @template_parameters)
 
       @system.save!
     end
 
     it 'call create_stack on clouds with priority order' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters).ordered
+        .with(@system.name, @system.pattern, @template_parameters).ordered
         .and_raise('Dummy exception')
 
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters).ordered
+        .with(@system.name, @system.pattern, @template_parameters).ordered
 
       @system.save!
     end
@@ -196,6 +202,7 @@ describe System do
   describe '#dup' do
     it 'duplicate all attributes in system without name and ip_address' do
       duplicated_system = @system.dup
+      expect(duplicated_system.template_parameters).to eq(@system.template_parameters)
       expect(duplicated_system.parameters).to eq(@system.parameters)
     end
 

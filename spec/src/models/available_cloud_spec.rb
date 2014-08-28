@@ -22,6 +22,7 @@ describe AvailableCloud do
     @system = System.new
     @system.name = 'Test'
     @system.pattern = @pattern
+    @system.template_parameters = '{}'
     @system.parameters = '{}'
     @system.monitoring_host = nil
     @system.domain = 'example.com'

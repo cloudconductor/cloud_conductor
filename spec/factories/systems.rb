@@ -15,6 +15,7 @@
 FactoryGirl.define do
   factory :system, class: System do
     name 'stack-12345678'
+    template_parameters '{}'
     parameters '{}'
     pattern { create(:pattern) }
 

@@ -33,7 +33,7 @@ class System < ActiveRecord::Base
   validates :pattern, presence: true
   validates :clouds, presence: true
 
-  validates_each :parameters do |record, attr, value|
+  validates_each :template_parameters, :parameters do |record, attr, value|
     begin
       JSON.parse(value) unless value.nil?
     rescue JSON::ParserError
@@ -53,7 +53,7 @@ class System < ActiveRecord::Base
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
-        cloud.client.create_stack name, pattern, JSON.parse(parameters).with_indifferent_access
+        cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
