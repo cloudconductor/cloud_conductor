@@ -26,17 +26,13 @@ module CloudConductor
       options.reverse_merge! DEFAULT_OPTIONS
       @packer_path = options[:packer_path]
       @template_path = options[:template_path]
-      @vars = options.except(:packer_path, :template_path)
+      @patterns_root = options[:patterns_root]
+
+      @vars = options[:variables]
     end
 
     def build(repository_url, revision, clouds, oss, role)
-      packer_json_path = create_json clouds
-
-      only = (clouds.product oss).map { |cloud, os| "#{cloud}-#{os}" }.join(',')
-      @vars.update(repository_url: repository_url)
-      @vars.update(revision: revision)
-      vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{packer_json_path}"
+      command = build_command repository_url, revision, clouds, oss, role
       Thread.new do
         status, stdout, stderr = systemu(command)
         unless status.success?
@@ -55,6 +51,20 @@ module CloudConductor
     end
 
     private
+
+    def build_command(repository_url, revision, clouds, oss, role)
+      @vars.update(repository_url: repository_url)
+      @vars.update(revision: revision)
+      vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
+      vars_text << " -var 'role=#{role}'"
+      vars_text << " -var 'patterns_root=#{@patterns_root}'"
+
+      only = (clouds.product oss).map { |cloud, os| "#{cloud}-#{os}" }.join(',')
+
+      packer_json_path = create_json clouds
+
+      "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
+    end
 
     # rubocop:disable MethodLength
     def parse(stdout, only)
