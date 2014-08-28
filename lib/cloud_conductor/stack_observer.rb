@@ -20,7 +20,9 @@ module CloudConductor
         system.monitoring_host = system.domain
         system.save!
 
-        system.serf.call('event', 'configure', system.parameters)
+        payload = {}
+        payload[:parameters] = JSON.parse(system.parameters)
+        system.serf.call('event', 'configure', payload)
       end
     end
 

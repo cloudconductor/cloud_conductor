@@ -24,7 +24,7 @@ module CloudConductor
       @system.name = 'Test'
       @system.pattern = @pattern
       @system.template_parameters = '{}'
-      @system.parameters = '{}'
+      @system.parameters = '{ "dummy": "value" }'
       @system.monitoring_host = nil
       @system.domain = 'example.com'
 
@@ -36,11 +36,29 @@ module CloudConductor
 
       System.any_instance.stub(:status)
       System.any_instance.stub(:outputs)
+
+      @serf_client = double(:serf_client, call: nil)
+      @system.stub(:serf).and_return(@serf_client)
     end
 
-    describe '#check_stacks' do
+    describe '#update' do
+      before do
+        @observer = StackObserver.new
+      end
+
       it 'check all stacks without exception' do
-        StackObserver.new.update
+        @observer.update
+      end
+
+      it 'will request to serf with payload when block yield' do
+        System.skip_callback :save, :before, :enable_monitoring
+        expected_payload = {}
+        expected_payload[:parameters] = { 'dummy' => 'value' }
+        @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
+
+        @observer.stub(:update_systems).and_yield(@system, '127.0.0.1')
+        @observer.update
+        System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
       end
     end
   end
