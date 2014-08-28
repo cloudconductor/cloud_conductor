@@ -16,6 +16,8 @@ require 'sinatra/activerecord'
 
 class ApplicationHistory < ActiveRecord::Base
   before_save :allocate_version
+  before_save :serf_request, if: -> { new_record? }
+
   belongs_to :application
 
   validates :application, presence: true
@@ -31,5 +33,14 @@ class ApplicationHistory < ActiveRecord::Base
 
   def allocate_version
     self.version = application.histories.count + 1
+  end
+
+  def serf_request
+    payload = {}
+    payload[:url] = uri
+    payload[:revision] = revision
+    payload[:parameters] = JSON.parse(parameters)
+
+    application.system.serf.call('event', 'deploy', payload)
   end
 end

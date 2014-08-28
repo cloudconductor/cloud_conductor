@@ -20,6 +20,9 @@ describe ApplicationHistory do
     @history.application = @application
     @history.uri = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
+
+    @serf_client = double('serf_client', call: nil)
+    @application.system.stub(:serf).and_return(@serf_client)
   end
 
   describe '#save' do
@@ -46,6 +49,24 @@ describe ApplicationHistory do
       @history.save!
 
       expect(@history.version).to eq(3)
+    end
+
+    describe 'before_save' do
+      before do
+        @serf_client = double('serf_client')
+        @history.application.system.stub(:serf).and_return(@serf_client)
+      end
+
+      it 'will call serf request with payload if revison does not specified' do
+        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :parameters))
+        @history.save!
+      end
+
+      it 'will call serf request with payload if revison specified' do
+        @history.revision = 'develop'
+        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :revision, :parameters))
+        @history.save!
+      end
     end
   end
 
