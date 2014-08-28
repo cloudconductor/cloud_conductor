@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.integer  "application_id"
     t.integer  "version"
     t.string   "uri"
+    t.string   "revision"
     t.string   "parameters"
     t.datetime "created_at"
     t.datetime "updated_at"
