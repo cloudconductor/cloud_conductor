@@ -23,7 +23,8 @@ module CloudConductor
         openstack_password: 'dummy_password',
         openstack_tenant_id: 'dummy_tenant_id',
         packer_path: '/opt/packer/packer',
-        template_path: '/tmp/packer.json'
+        template_path: '/tmp/packer.json',
+        patterns_root: '/opt/cloudconductor/patterns'
       }
       @client = PackerClient.new options
     end
@@ -66,6 +67,14 @@ module CloudConductor
         vars = []
         vars << "-var 'repository_url=http://example.com'"
         vars << "-var 'revision=dummy_revision'"
+
+        @client.should_receive(:systemu).with(include(*vars))
+        @client.build('http://example.com', 'dummy_revision', @clouds, @oss, 'nginx')
+      end
+
+      it 'will execute packer that specified with patterns_root' do
+        vars = []
+        vars << "-var 'patterns_root=/opt/cloudconductor/patterns'"
 
         @client.should_receive(:systemu).with(include(*vars))
         @client.build('http://example.com', 'dummy_revision', @clouds, @oss, 'nginx')

@@ -1,5 +1,6 @@
 {
   "variables": {
+    "patterns_root": null,
     "repository_url": null,
     "revision": null,
     "role": null
@@ -11,14 +12,14 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -x",
       "inline": [
-        "if [ ! -d /opt/cloudconductor/patterns ]; then",
-        "  sudo mkdir -p /opt/cloudconductor/patterns",
+        "if [ ! -d {{user `patterns_root`}} ]; then",
+        "  sudo mkdir -p {{user `patterns_root`}}",
         "fi",
 
-        "cd /opt/cloudconductor/patterns",
+        "cd {{user `patterns_root`}}",
         "sudo git clone {{user `repository_url`}}",
 
-        "cd /opt/cloudconductor/patterns/*",
+        "cd {{user `patterns_root`}}/*",
         "sudo git checkout {{user `revision`}}",
 
         "if [ -f ./events/init/user-setup ]; then",
