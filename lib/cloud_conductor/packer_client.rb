@@ -14,6 +14,7 @@
 # limitations under the License.
 require 'csv'
 
+# rubocop:disable ClassLength
 module CloudConductor
   class PackerClient
     DEFAULT_OPTIONS = {
