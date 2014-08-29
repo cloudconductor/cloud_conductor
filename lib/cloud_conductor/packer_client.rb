@@ -19,7 +19,8 @@ module CloudConductor
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
-      patterns_root: '/opt/cloudconductor/patterns'
+      patterns_root: '/opt/cloudconductor/patterns',
+      variables: {}
     }
 
     def initialize(options = {})

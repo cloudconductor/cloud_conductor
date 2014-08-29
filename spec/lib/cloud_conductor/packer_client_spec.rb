@@ -122,6 +122,14 @@ module CloudConductor
         @client.should_receive(:create_json).with(@clouds)
         @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
       end
+
+      it 'doesn\'t occur any error when does NOT specified variables option' do
+        client = PackerClient.new
+        client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        client.stub(:systemu).and_return(double('status', 'success?' => true))
+
+        client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
+      end
     end
 
     describe '#parse' do
