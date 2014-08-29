@@ -34,8 +34,9 @@ module CloudConductor
       CloudConductor::Client.stub_chain(:new, :create_stack)
       @system.save!
 
-      System.any_instance.stub(:status)
-      System.any_instance.stub(:outputs)
+      System.any_instance.stub(:status).and_return(:CREATE_COMPLETE)
+      System.any_instance.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+      Serf::Client.any_instance.stub(:call).and_return(double('status', 'success?' => true))
 
       @serf_client = double(:serf_client, call: nil)
       @system.stub(:serf).and_return(@serf_client)
@@ -44,21 +45,61 @@ module CloudConductor
     describe '#update' do
       before do
         @observer = StackObserver.new
+        @observer.stub(:update_system)
       end
 
       it 'check all stacks without exception' do
         @observer.update
       end
 
+      it 'will check stack status' do
+        mock = double('status')
+        mock.should_receive(:dummy).at_least(1)
+        System.any_instance.stub(:status) do
+          mock.dummy
+        end
+        @observer.update
+      end
+
+      it 'will retrieve stack outputs' do
+        mock = double('outputs')
+        mock.should_receive(:dummy).at_least(1)
+        System.any_instance.stub(:outputs) do
+          mock.dummy
+          { 'FrontendAddress' => '127.0.0.1' }
+        end
+        @observer.update
+      end
+
+      it 'will call serf request to check serf availability' do
+        mock = double('client')
+        mock.should_receive(:dummy).at_least(1)
+        Serf::Client.any_instance.stub(:call) do
+          mock.dummy
+          double('status', 'success?' => true)
+        end
+        @observer.update
+      end
+
+      it 'will call update_system' do
+        @observer.should_receive(:update_system).with(@system, '127.0.0.1')
+        @observer.update
+      end
+    end
+
+    describe '#update_system' do
       it 'will request to serf with payload when block yield' do
         System.skip_callback :save, :before, :enable_monitoring
+        System.skip_callback :save, :before, :update_dns
+
         expected_payload = {}
         expected_payload[:parameters] = { 'dummy' => 'value' }
         @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
 
-        @observer.stub(:update_systems).and_yield(@system, '127.0.0.1')
-        @observer.update
+        StackObserver.new.send(:update_system, @system, '127.0.0.1')
+
         System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
+        System.set_callback :save, :before, :update_dns, if: -> { ip_address }
       end
     end
   end
