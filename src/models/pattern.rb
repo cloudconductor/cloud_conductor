@@ -44,7 +44,7 @@ class Pattern < ActiveRecord::Base
     clone_repository do |path|
       metadata = load_metadata path
       roles = load_roles path
-      update_attributes path, metadata
+      update_metadata path, metadata
 
       operating_systems = OperatingSystem.where(name: metadata[:supports])
       roles.each do |role|
@@ -102,7 +102,7 @@ class Pattern < ActiveRecord::Base
     roles.uniq
   end
 
-  def update_attributes(path, metadata)
+  def update_metadata(path, metadata)
     self.name = metadata[:name]
     self.description = metadata[:description]
     self.type = metadata[:type]
