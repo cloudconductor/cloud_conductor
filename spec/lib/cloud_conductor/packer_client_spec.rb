@@ -47,14 +47,35 @@ module CloudConductor
       end
     end
 
-    describe '#build_command' do
+    describe '#build' do
       before do
         @clouds = %w(aws openstack)
-        @operating_systems = %w(centos ubuntu)
-        @role = 'nginx'
-
         @client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
-        @client.stub(:systemu).and_return(double('status', 'success?' => true))
+        @client.stub(:systemu).and_return([double('status', 'success?' => true), '', ''])
+      end
+
+      it 'will call #create_json to create json file' do
+        @client.should_receive(:create_json).with(@clouds)
+        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx')
+      end
+
+      it 'will yield block' do
+        threads = Thread.list
+
+        expect do |b|
+          @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', &b)
+          (Thread.list - threads).each do |thread|
+            thread.join
+          end
+        end.to yield_control
+      end
+    end
+
+    describe '#build_command' do
+      before do
+        @only = 'aws-centos,aws-ubuntu,openstack-centos,openstack-ubuntu'
+        @packer_json_path = '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json'
+        @role = 'nginx'
       end
 
       it 'return command with repository_url and revision' do
@@ -62,7 +83,7 @@ module CloudConductor
         vars << "-var 'repository_url=http://example.com'"
         vars << "-var 'revision=dummy_revision'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx')
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -70,16 +91,15 @@ module CloudConductor
         vars = []
         vars << "-var 'patterns_root=/opt/cloudconductor/patterns'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx')
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', @packer_json_path)
         expect(command).to include(*vars)
       end
 
       it 'return command with cloud and OS option' do
-        only = (@clouds.product @operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
         vars = []
-        vars << "-only=#{only}"
+        vars << "-only=#{@only}"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx')
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -87,7 +107,7 @@ module CloudConductor
         vars = []
         vars << "-var 'role=nginx'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx')
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -96,7 +116,7 @@ module CloudConductor
         vars << "-var 'aws_access_key=dummy_access_key'"
         vars << "-var 'aws_secret_key=dummy_secret_key'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -107,28 +127,20 @@ module CloudConductor
         vars << "-var 'openstack_password=dummy_password'"
         vars << "-var 'openstack_tenant_id=dummy_tenant_id'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, @packer_json_path)
         expect(command).to include(*vars)
       end
 
       it 'return command with packer_path and packer_json_path option' do
         pattern = %r{^/opt/packer/packer.*/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json$}
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, @packer_json_path)
         expect(command).to match(pattern)
-      end
-
-      it 'will call #create_json to create json file' do
-        @client.should_receive(:create_json).with(@clouds)
-        @client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
       end
 
       it 'doesn\'t occur any error when does NOT specified variables option' do
         client = PackerClient.new
-        client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
-        client.stub(:systemu).and_return(double('status', 'success?' => true))
-
-        client.send(:build_command, 'http://example.com', 'dummy_revision', @clouds, @operating_systems, @role)
+        client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, @packer_json_path)
       end
     end
 

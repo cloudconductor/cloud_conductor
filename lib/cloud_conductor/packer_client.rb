@@ -32,37 +32,42 @@ module CloudConductor
       @vars = options[:variables]
     end
 
+    # rubocop:disable MethodLength
     def build(repository_url, revision, clouds, operating_systems, role)
-      command = build_command repository_url, revision, clouds, operating_systems, role
+      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
+      packer_json_path = create_json clouds
+
+      command = build_command repository_url, revision, only, role, packer_json_path
       Thread.new do
         status, stdout, stderr = systemu(command)
         unless status.success?
           Log.error('Packer failed')
-          Log.info('--------------stdout------------')
-          Log.info(stdout)
+          Log.error('--------------stdout------------')
+          Log.error(stdout)
           Log.error('-------------stderr------------')
           Log.error(stderr)
         end
 
-        ActiveRecord::Base.connection_pool.with_connection do
-          yield parse(stdout, only) if block_given?
-        end
         Log.info("Packer finished in #{Thread.current}")
+        begin
+          ActiveRecord::Base.connection_pool.with_connection do
+            yield parse(stdout, only) if block_given?
+          end
+        rescue => e
+          Log.error(e)
+        end
       end
     end
+    # rubocop:enable MethodLength
 
     private
 
-    def build_command(repository_url, revision, clouds, operating_systems, role)
+    def build_command(repository_url, revision, only, role, packer_json_path)
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
       vars_text << " -var 'role=#{role}'"
       vars_text << " -var 'patterns_root=#{@patterns_root}'"
-
-      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
-
-      packer_json_path = create_json clouds
 
       "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
     end
