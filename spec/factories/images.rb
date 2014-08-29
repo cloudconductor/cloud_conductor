@@ -14,7 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :image, class: Image do
-    sequence(:role) { |n| "role_#{n}" }
+    sequence(:role) { |n| "role#{n}" }
     status :processing
     image 'dummy_image'
   end

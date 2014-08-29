@@ -15,4 +15,5 @@
 require 'sinatra/activerecord'
 
 class OperatingSystem < ActiveRecord::Base
+  validates :name, presence: true, format: /\A[^\-]+\Z/
 end
