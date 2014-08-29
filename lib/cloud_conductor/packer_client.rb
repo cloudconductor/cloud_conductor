@@ -72,32 +72,36 @@ module CloudConductor
       results = {}
       rows = CSV.parse(stdout, quote_char: "\0")
 
-      only.split(',').each do |key|
-        results[key] = {}
+      only.split(',').each do |target|
+        results[target] = {}
 
-        if (row = rows.find(&success?(key)))
-          results[key][:status] = :success
-          results[key][:image] = row[5].split(':').last
+        if (row = rows.find(&success?(target)))
+          data = row[5]
+          results[target][:status] = :success
+          results[target][:image] = data.split(':').last
           next
         end
 
-        results[key][:status] = :error
-        if (row = rows.find(&error1?(key)))
-          results[key][:message] = row[3].gsub('%!(PACKER_COMMA)', ',')
+        results[target][:status] = :error
+        if (row = rows.find(&error1?(target)))
+          data = row[3]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',')
           next
         end
 
-        if (row = rows.find(&error2?(key)))
-          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("==> #{key}: ", '')
+        if (row = rows.find(&error2?(target)))
+          data = row[4]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',').gsub("==> #{target}: ", '')
           next
         end
 
-        if (row = rows.find(&error3?(key)))
-          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("--> #{key}: ", '')
+        if (row = rows.find(&error3?(target)))
+          data = row[4]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',').gsub("--> #{target}: ", '')
           next
         end
 
-        results[key][:message] = 'Unknown error has occurred'
+        results[target][:message] = 'Unknown error has occurred'
       end
 
       results.with_indifferent_access
@@ -105,20 +109,20 @@ module CloudConductor
     # rubocop:enable MethodLength
 
     # rubocop:disable ParameterLists
-    def success?(key)
-      proc { |_timestamp, target, type, _index, subtype, _data| target == key && type == 'artifact' && subtype == 'id' }
+    def success?(search_target)
+      proc { |_timestamp, target, type, _index, subtype, _data| target == search_target && type == 'artifact' && subtype == 'id' }
     end
 
-    def error1?(key)
-      proc { |_timestamp, target, type, _data| target == key && type == 'error' }
+    def error1?(search_target)
+      proc { |_timestamp, target, type, _data| target == search_target && type == 'error' }
     end
 
-    def error2?(key)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{key}/ }
+    def error2?(search_target)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{search_target}/ }
     end
 
-    def error3?(key)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{key}/ }
+    def error3?(search_target)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{search_target}/ }
     end
     # rubocop:enable ParameterLists
 
