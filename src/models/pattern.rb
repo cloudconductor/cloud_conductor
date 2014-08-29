@@ -46,7 +46,7 @@ class Pattern < ActiveRecord::Base
       roles = load_roles path
       update_attributes metadata
 
-      operating_systems = OperatingSystem.where(name: metadata[:supports])
+      operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
         create_images operating_systems, role
       end

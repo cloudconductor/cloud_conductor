@@ -48,6 +48,7 @@ ActiveRecord::Schema.define(version: 20140805065230) do
 
   create_table "operating_systems", force: true do |t|
     t.string "name"
+    t.string "version"
   end
 
   create_table "patterns", force: true do |t|

@@ -15,6 +15,7 @@
 
 os = OperatingSystem.new
 os.name = 'centos'
+os.version = '6.5'
 os.save!
 
 cloud_aws = Cloud.new
