@@ -18,6 +18,14 @@ FactoryGirl.define do
     parameters '{}'
     pattern { create(:pattern) }
 
+    after(:build) do
+      System.skip_callback :save, :before, :create_stack
+    end
+
+    after(:create) do
+      System.set_callback :save, :before, :create_stack
+    end
+
     before(:create) do |system|
       system.add_cloud create(:cloud_aws), 1
     end

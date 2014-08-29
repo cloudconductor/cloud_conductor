@@ -100,18 +100,18 @@ describe System do
 
     it 'call create_stack on cloud that has highest priority' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters, @cloud_openstack.attributes)
+        .with(@system.name, @system.pattern, @parameters)
 
       @system.save!
     end
 
     it 'call create_stack on clouds with priority order' do
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters, @cloud_openstack.attributes).ordered
+        .with(@system.name, @system.pattern, @parameters).ordered
         .and_raise('Dummy exception')
 
       @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @parameters, @cloud_aws.attributes).ordered
+        .with(@system.name, @system.pattern, @parameters).ordered
 
       @system.save!
     end

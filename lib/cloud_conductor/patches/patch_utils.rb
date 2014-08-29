@@ -29,7 +29,7 @@ module CloudConductor
 
         # remove from DependsOn
         template[:Resources].each do |_key, resource|
-          resource[:DependsOn] -= resource_names if resource[:DependsOn]
+          resource[:DependsOn] = [resource[:DependsOn]].flatten - resource_names if resource[:DependsOn]
         end
 
         # remove output with deleted resource

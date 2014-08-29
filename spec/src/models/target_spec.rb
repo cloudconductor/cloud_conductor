@@ -15,17 +15,17 @@
 describe Target do
   before do
     @cloud = FactoryGirl.create(:cloud_aws)
-    @os = FactoryGirl.create(:operating_system)
+    @operating_system = FactoryGirl.create(:operating_system)
 
     @target = Target.new
     @target.cloud = @cloud
-    @target.operating_system = @os
+    @target.operating_system = @operating_system
     @target.source_image = 'dummy_image'
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and os name with hyphen' do
-      expect(@target.name).to eq("#{@cloud.name}-#{@os.name}")
+    it 'return string that joined cloud name and operating_system name with hyphen' do
+      expect(@target.name).to eq("#{@cloud.name}-#{@operating_system.name}")
     end
   end
 
@@ -46,14 +46,14 @@ describe Target do
       @target.cloud.template = <<-EOS
         {
           "cloud_name": "{{cloud `name`}}",
-          "os_name": "{{operating_system `name`}}",
+          "operating_system_name": "{{operating_system `name`}}",
           "source_image": "{{target `source_image`}}"
         }
       EOS
 
       result = JSON.parse(@target.to_json).with_indifferent_access
       expect(result[:cloud_name]).to eq(@cloud.name)
-      expect(result[:os_name]).to eq(@os.name)
+      expect(result[:operating_system_name]).to eq(@operating_system.name)
       expect(result[:source_image]).to eq(@target.source_image)
     end
 

@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-os = OperatingSystem.new
-os.name = 'centos'
-os.version = '6.5'
-os.save!
+operating_system = OperatingSystem.new
+operating_system.name = 'centos'
+operating_system.version = '6.5'
+operating_system.save!
 
 cloud_aws = Cloud.new
 cloud_aws.name = 'cloud_aws'
@@ -42,7 +42,7 @@ cloud_aws.template = <<-EOS
     }
   }
 EOS
-cloud_aws.targets.build(operating_system: os, source_image: 'ami-12345678', ssh_username: 'ec2-user')
+cloud_aws.targets.build(operating_system: operating_system, source_image: 'ami-12345678', ssh_username: 'ec2-user')
 cloud_aws.save!
 
 cloud_openstack = Cloud.new
@@ -70,7 +70,7 @@ cloud_openstack.template = <<-EOS
     "floating_ip_pool": "public"
   }
 EOS
-cloud_openstack.targets.build(operating_system: os, source_image: '12345678-1234-1234-1234-1234567890ab', ssh_username: 'ec2-user')
+cloud_openstack.targets.build(operating_system: operating_system, source_image: '12345678-1234-1234-1234-1234567890ab', ssh_username: 'ec2-user')
 cloud_openstack.save!
 
 # cloud_dummy = Cloud.new

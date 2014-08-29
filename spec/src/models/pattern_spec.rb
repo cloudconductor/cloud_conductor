@@ -23,7 +23,7 @@ describe Pattern do
     @pattern.clouds << @cloud_openstack
 
     @pattern.stub(:system).and_return(true)
-    Dir.stub(:chdir)
+    Dir.stub(:chdir).and_yield
     YAML.stub(:load_file).and_return({})
     File.stub(:open).and_call_original
     double = double('File', read: '{ "Resources" : {} }')
@@ -136,7 +136,7 @@ describe Pattern do
       @pattern.should_receive(:clone_repository).and_yield(path_pattern)
       @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
       @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
-      @pattern.should_receive(:update_attributes).with({})
+      @pattern.should_receive(:update_metadata).with(path_pattern, {})
       @pattern.should_receive(:create_images).with(anything, 'dummy')
       @pattern.save!
     end
@@ -153,9 +153,7 @@ describe Pattern do
       end
 
       it 'will change current directory to cloned repoitory and restore current directory after exit' do
-        original = Dir.pwd
-        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).ordered
-        Dir.should_receive(:chdir).with(original).ordered
+        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).and_yield
         @pattern.send(:clone_repository) {}
       end
 
@@ -239,24 +237,28 @@ describe Pattern do
       end
     end
 
-    describe '#update_attributes' do
+    describe '#update_metadata' do
+      before do
+        Dir.stub(:chdir).and_yield
+      end
+
       it 'update name attribute with name in metadata' do
         metadata = { name: 'name' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_metadata, @path, metadata)
 
         expect(@pattern.name).to eq('name')
       end
 
       it 'update description attribute with description in metadata' do
         metadata = { description: 'description' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_metadata, @path, metadata)
 
         expect(@pattern.description).to eq('description')
       end
 
       it 'update type attribute with type in metadata' do
         metadata = { type: 'Platform' }
-        @pattern.send(:update_attributes, metadata)
+        @pattern.send(:update_metadata, @path, metadata)
 
         expect(@pattern.type).to eq('Platform')
       end
@@ -266,7 +268,7 @@ describe Pattern do
         command = /git log --pretty=format:%H --max-count=1$/
         @pattern.should_receive(:`).with(command).and_return(hash)
 
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_metadata, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end
@@ -277,7 +279,7 @@ describe Pattern do
         @pattern.should_receive(:`).with(command).and_return(hash)
 
         @pattern.revision = 'dummy'
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_metadata, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end
@@ -288,7 +290,7 @@ describe Pattern do
         @pattern.should_receive(:`).with(command).and_return(hash)
 
         @pattern.revision = hash
-        @pattern.send(:update_attributes, {})
+        @pattern.send(:update_metadata, @path, {})
 
         expect(@pattern.revision).to eq(hash)
       end

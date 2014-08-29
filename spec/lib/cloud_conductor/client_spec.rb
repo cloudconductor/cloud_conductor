@@ -37,7 +37,7 @@ module CloudConductor
         @operating_system = FactoryGirl.create(:operating_system)
         @pattern = FactoryGirl.create(:pattern)
 
-        @parameters = { operating_system: @operating_system }
+        @parameters = { operating_system: @operating_system.name }
         @client = Client.new @cloud
 
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
@@ -80,6 +80,14 @@ module CloudConductor
         @client.create_stack @name, @pattern, @parameters
         result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
         expect(result.size).to eq(1)
+      end
+
+      it 'remove operating_system from parameter-hash' do
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, hash_excluding(:operating_system), anything)
+
+        client = Client.new @cloud
+        client.stub_chain(:open, :read).and_return(@template_content)
+        client.create_stack @name, @pattern, @parameters
       end
 
       it 'add ImageId/Image pair to parameter-hash' do

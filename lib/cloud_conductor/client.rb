@@ -43,9 +43,11 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      operating_system = parameters[:operating_system]
+      operating_system = OperatingSystem.where(name: parameters.delete(:operating_system))
 
       images = pattern.images.where(cloud: @cloud, operating_system: operating_system)
+      fail 'Appropriate image does not exist' if images.empty?
+
       images.each do |image|
         parameters["#{image.role}ImageId"] = image.image
       end

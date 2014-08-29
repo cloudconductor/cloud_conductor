@@ -14,68 +14,100 @@
 # limitations under the License.
 require 'csv'
 
+# rubocop:disable ClassLength
 module CloudConductor
   class PackerClient
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
-      template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__))
+      template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
+      patterns_root: '/opt/cloudconductor/patterns',
+      variables: {}
     }
 
     def initialize(options = {})
       options.reverse_merge! DEFAULT_OPTIONS
       @packer_path = options[:packer_path]
       @template_path = options[:template_path]
-      @vars = options.except(:packer_path, :template_path)
+      @patterns_root = options[:patterns_root]
+
+      @vars = options[:variables]
     end
 
-    def build(repository_url, revision, clouds, oss, role)
+    # rubocop:disable MethodLength
+    def build(repository_url, revision, clouds, operating_systems, role)
+      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
       packer_json_path = create_json clouds
 
-      only = (clouds.product oss).map { |cloud, os| "#{cloud}-#{os}" }.join(',')
+      command = build_command repository_url, revision, only, role, packer_json_path
+      Thread.new do
+        status, stdout, stderr = systemu(command)
+        unless status.success?
+          Log.error('Packer failed')
+          Log.error('--------------stdout------------')
+          Log.error(stdout)
+          Log.error('-------------stderr------------')
+          Log.error(stderr)
+        end
+
+        Log.info("Packer finished in #{Thread.current}")
+        begin
+          ActiveRecord::Base.connection_pool.with_connection do
+            yield parse(stdout, only) if block_given?
+          end
+        rescue => e
+          Log.error(e)
+        end
+      end
+    end
+    # rubocop:enable MethodLength
+
+    private
+
+    def build_command(repository_url, revision, only, role, packer_json_path)
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      command = "#{@packer_path} build -machine-readable #{vars_text} -var 'role=#{role}' -only=#{only} #{packer_json_path}"
-      Thread.new do
-        _status, stdout, _stderr = systemu(command)
-        yield parse(stdout, only) if block_given?
-        Log.info("Packer finished in #{Thread.current}")
-      end
-    end
+      vars_text << " -var 'role=#{role}'"
+      vars_text << " -var 'patterns_root=#{@patterns_root}'"
 
-    private
+      "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
+    end
 
     # rubocop:disable MethodLength
     def parse(stdout, only)
       results = {}
       rows = CSV.parse(stdout, quote_char: "\0")
 
-      only.split(',').each do |key|
-        results[key] = {}
+      only.split(',').each do |target|
+        results[target] = {}
 
-        if (row = rows.find(&success?(key)))
-          results[key][:status] = :success
-          results[key][:image] = row[5].split(':').last
+        if (row = rows.find(&success?(target)))
+          data = row[5]
+          results[target][:status] = :success
+          results[target][:image] = data.split(':').last
           next
         end
 
-        results[key][:status] = :error
-        if (row = rows.find(&error1?(key)))
-          results[key][:message] = row[3].gsub('%!(PACKER_COMMA)', ',')
+        results[target][:status] = :error
+        if (row = rows.find(&error1?(target)))
+          data = row[3]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',')
           next
         end
 
-        if (row = rows.find(&error2?(key)))
-          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("==> #{key}: ", '')
+        if (row = rows.find(&error2?(target)))
+          data = row[4]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',').gsub("==> #{target}: ", '')
           next
         end
 
-        if (row = rows.find(&error3?(key)))
-          results[key][:message] = row[4].gsub('%!(PACKER_COMMA)', ',').gsub("--> #{key}: ", '')
+        if (row = rows.find(&error3?(target)))
+          data = row[4]
+          results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',').gsub("--> #{target}: ", '')
           next
         end
 
-        results[key][:message] = 'Unknown error has occurred'
+        results[target][:message] = 'Unknown error has occurred'
       end
 
       results.with_indifferent_access
@@ -83,20 +115,20 @@ module CloudConductor
     # rubocop:enable MethodLength
 
     # rubocop:disable ParameterLists
-    def success?(key)
-      proc { |_timestamp, target, type, _index, subtype, _data| target == key && type == 'artifact' && subtype == 'id' }
+    def success?(search_target)
+      proc { |_timestamp, target, type, _index, subtype, _data| target == search_target && type == 'artifact' && subtype == 'id' }
     end
 
-    def error1?(key)
-      proc { |_timestamp, target, type, _data| target == key && type == 'error' }
+    def error1?(search_target)
+      proc { |_timestamp, target, type, _data| target == search_target && type == 'error' }
     end
 
-    def error2?(key)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{key}/ }
+    def error2?(search_target)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{search_target}/ }
     end
 
-    def error3?(key)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{key}/ }
+    def error3?(search_target)
+      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{search_target}/ }
     end
     # rubocop:enable ParameterLists
 

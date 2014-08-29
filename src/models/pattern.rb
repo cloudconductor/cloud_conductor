@@ -44,7 +44,7 @@ class Pattern < ActiveRecord::Base
     clone_repository do |path|
       metadata = load_metadata path
       roles = load_roles path
-      update_attributes metadata
+      update_metadata path, metadata
 
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
@@ -62,16 +62,14 @@ class Pattern < ActiveRecord::Base
 
     fail 'An error has occurred while git clone' unless system("git clone #{uri} #{path}")
 
-    @root_directory = Dir.pwd
-    Dir.chdir path
-
-    unless revision.blank?
-      fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+    Dir.chdir path do
+      unless revision.blank?
+        fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+      end
     end
 
     yield path
 
-    Dir.chdir @root_directory
     FileUtils.rm_r path, force: true
   end
 
@@ -104,13 +102,15 @@ class Pattern < ActiveRecord::Base
     roles.uniq
   end
 
-  def update_attributes(metadata)
+  def update_metadata(path, metadata)
     self.name = metadata[:name]
     self.description = metadata[:description]
     self.type = metadata[:type]
 
-    self.revision = `git log --pretty=format:%H --max-count=1`
-    fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+    Dir.chdir path do
+      self.revision = `git log --pretty=format:%H --max-count=1`
+      fail 'An error has occurred whild git log' if $CHILD_STATUS && $CHILD_STATUS.exitstatus != 0
+    end
   end
 
   def create_images(operating_systems, role)

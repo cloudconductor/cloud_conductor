@@ -1,5 +1,6 @@
 {
   "variables": {
+    "patterns_root": null,
     "repository_url": null,
     "revision": null,
     "role": null
@@ -11,19 +12,19 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -x",
       "inline": [
-        "if [ -f /tmp/packer-create-image.sh ]; then",
-        "  sudo /tmp/packer-create-image.sh",
+        "if [ ! -d {{user `patterns_root`}} ]; then",
+        "  sudo mkdir -p {{user `patterns_root`}}",
         "fi",
 
-        "cd /tmp",
-        "git clone {{user `repository_url`}} pattern",
+        "cd {{user `patterns_root`}}",
+        "sudo git clone {{user `repository_url`}}",
 
-        "cd /tmp/pattern",
-        "git checkout {{user `revision`}}",
+        "cd {{user `patterns_root`}}/*",
+        "sudo git checkout {{user `revision`}}",
 
-        "if [ -f /tmp/pattern/events/init/user-setup ]; then",
-        "  sudo ruby /tmp/pattern/events/init/user-setup",
-        "fi",
+        "if [ -f ./events/init/user-setup ]; then",
+        "  sudo SERF_TAG_ROLE={{user `role`}} /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
+        "fi"
       ]
     }
   ]
