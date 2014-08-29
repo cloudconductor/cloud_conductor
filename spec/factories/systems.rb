@@ -15,6 +15,7 @@
 FactoryGirl.define do
   factory :system, class: System do
     name 'stack-12345678'
+    template_parameters '{}'
     parameters '{}'
     pattern { create(:pattern) }
 
@@ -23,7 +24,7 @@ FactoryGirl.define do
     end
 
     after(:create) do
-      System.set_callback :save, :before, :create_stack
+      System.set_callback :save, :before, :create_stack, if: -> { status == :NOT_CREATED }
     end
 
     before(:create) do |system|

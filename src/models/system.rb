@@ -23,7 +23,7 @@ class System < ActiveRecord::Base
 
   belongs_to :pattern
 
-  before_save :create_stack
+  before_save :create_stack, if: -> { status == :NOT_CREATED }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
@@ -33,7 +33,7 @@ class System < ActiveRecord::Base
   validates :pattern, presence: true
   validates :clouds, presence: true
 
-  validates_each :parameters do |record, attr, value|
+  validates_each :template_parameters, :parameters do |record, attr, value|
     begin
       JSON.parse(value) unless value.nil?
     rescue JSON::ParserError
@@ -53,7 +53,7 @@ class System < ActiveRecord::Base
     available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
       cloud = available_cloud.cloud
       begin
-        cloud.client.create_stack name, pattern, JSON.parse(parameters).with_indifferent_access
+        cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
@@ -105,20 +105,27 @@ class System < ActiveRecord::Base
 
   def status
     cloud = available_clouds.active
-    cloud.client.get_stack_status name, cloud.attributes
+    return :NOT_CREATED if cloud.nil?
+    cloud.client.get_stack_status name
   rescue
     :ERROR
   end
 
   def outputs
     cloud = available_clouds.active
-    cloud.client.get_outputs name, cloud.attributes
+    cloud.client.get_outputs name
   rescue
     {}
   end
 
   def destroy_stack
     cloud = available_clouds.active
-    cloud.client.destroy_stack name, cloud.attributes
+    cloud.client.destroy_stack name
+  end
+
+  def serf
+    fail 'ip_address does not specified' unless ip_address
+
+    Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
   end
 end

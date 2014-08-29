@@ -15,14 +15,6 @@
 module CloudConductor
   class StackObserver
     def update
-      update_systems do |system, ip_address|
-        system.ip_address = ip_address
-        system.monitoring_host = system.domain
-        system.save!
-      end
-    end
-
-    def update_systems(&_block)
       System.in_progress.each do |system|
         Log.info "Check and update stack with #{system.name}"
         next if system.status != :CREATE_COMPLETE
@@ -30,18 +22,30 @@ module CloudConductor
         Log.debug '  Status is CREATE_COMPLETE'
 
         outputs = system.outputs
-        next if outputs['EIP'].nil?
+        next if outputs['FrontendAddress'].nil?
 
-        ip_address = outputs['EIP']
-        Log.debug "  Outputs has EIP(#{ip_address})"
+        ip_address = outputs['FrontendAddress']
+        Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-        `curl http://#{ip_address}/`
-
-        next if $CHILD_STATUS.exitstatus != 0
+        serf = Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
+        status, _results = serf.call('info')
+        next unless status.success?
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
-        yield system, ip_address
+        update_system system, ip_address
       end
+    end
+
+    private
+
+    def update_system(system, ip_address)
+      system.ip_address = ip_address
+      system.monitoring_host = system.domain
+      system.save!
+
+      payload = {}
+      payload[:parameters] = JSON.parse(system.parameters)
+      system.serf.call('event', 'configure', payload)
     end
   end
 end
