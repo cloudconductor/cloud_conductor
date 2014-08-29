@@ -20,6 +20,7 @@ FactoryGirl.define do
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id nil
+    tenant_name nil
   end
 
   factory :cloud_openstack, class: Cloud do
@@ -29,5 +30,6 @@ FactoryGirl.define do
     key '1234567890abcdef'
     secret 'fedcba9876543210'
     tenant_id '1'
+    tenant_name 'dummy_tenant'
   end
 end

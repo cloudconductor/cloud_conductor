@@ -35,7 +35,7 @@ module CloudConductor
           @options[:entry_point] = 'http://127.0.0.1:5000/'
           @options[:key] = 'test_user'
           @options[:secret] = 'test_secret'
-          @options[:tenant_id] = 'test_tenant'
+          @options[:tenant_name] = 'test_tenant'
 
           Converters::OpenStackConverter.stub_chain(:new, :convert).and_return('{}')
         end
@@ -95,7 +95,7 @@ module CloudConductor
           @options[:entry_point] = 'http://127.0.0.1:5000/'
           @options[:key] = 'test_user'
           @options[:secret] = 'test_secret'
-          @options[:tenant_id] = 'test_tenant'
+          @options[:tenant_name] = 'test_tenant'
 
           @stacks = {
             body: {
@@ -147,7 +147,7 @@ module CloudConductor
           @options[:entry_point] = 'http://127.0.0.1:5000/'
           @options[:key] = 'test_user'
           @options[:secret] = 'test_secret'
-          @options[:tenant_id] = 'test_tenant'
+          @options[:tenant_name] = 'test_tenant'
 
           @stacks = double(
             'stacks', :[] => double(
