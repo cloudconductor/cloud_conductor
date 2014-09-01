@@ -15,32 +15,44 @@
 module Serf
   describe Client do
     describe '#initialize' do
-      it 'update options with specified option when initialized with some options' do
-        client = Client.new format: 'text'
-        client.should_receive(:systemu).with(include('-format=text')).and_return([double('status', 'success?' => true), '{}'])
-        client.call('info')
+      it 'initialized client without error when specified host option' do
+        Client.new host: 'localhost'
+      end
+
+      it 'raise error when host does not specified' do
+        expect { Client.new }.to raise_error 'Serf::Client require host option'
       end
     end
 
     describe '#call' do
       before do
-        @client = Client.new
+        options = { format: 'text' }
+        @client = Client.new host: 'localhost', options: options
         @client.stub(:systemu).and_return([double('status', 'success?' => true), '{}'])
+
+        @kv_stub = double('KV', put: nil)
+        Consul::Client.stub_chain(:connect, :kv).and_return @kv_stub
       end
 
-      it 'will execute serf with specified command' do
+      it 'will execute serf with specified options' do
+        @client.should_receive(:systemu).with(include('-format=text'))
+        @client.call('info')
+      end
+
+      it 'will execute serf with specified main command' do
         @client.should_receive(:systemu).with(include('info'))
         @client.call('info')
       end
 
-      it 'will execute serf with specified argument as String' do
+      it 'will execute serf with specified sub command' do
         @client.should_receive(:systemu).with(include('dummy'))
         @client.call('info', 'dummy')
       end
 
-      it 'will execute serf with specified argument as Hash' do
-        @client.should_receive(:systemu).with(include(%q('{"key":"value"}')))
-        @client.call('info', key: 'value')
+      it 'will call Consul::Client::KV#put with specified payload' do
+        payload = { key: 'value' }
+        @kv_stub.should_receive(:put).with('cloudconductor/parameters', payload)
+        @client.call('info', nil, payload)
       end
     end
   end
