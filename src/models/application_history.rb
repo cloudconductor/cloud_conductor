@@ -15,8 +15,8 @@
 require 'sinatra/activerecord'
 
 class ApplicationHistory < ActiveRecord::Base
-  before_save :allocate_version
-  before_save :serf_request, if: -> { new_record? }
+  before_create :allocate_version
+  before_create :serf_request
 
   belongs_to :application
 
