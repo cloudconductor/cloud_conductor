@@ -35,7 +35,11 @@ module ApplicationsController
     base.post do
       application = Application.new application_permit_params
       application.histories.build history_permit_params
-      application.save
+      unless application.save
+        status 400
+        return json application.errors
+      end
+
       status 201
       json application
     end
