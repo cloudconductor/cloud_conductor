@@ -33,7 +33,7 @@ cloud_aws.template = <<-EOS
     "access_key": "{{cloud `key`}}",
     "secret_key": "{{cloud `secret`}}",
     "region": "ap-northeast-1",
-    "instance_type": "m1.small",
+    "instance_type": "c3.large",
     "ssh_username": "{{target `ssh_username`}}",
     "source_ami": "{{target `source_image`}}",
     "ami_name": "{{operating_system `name`}}-{{user `role`}}-{{uuid}}",
