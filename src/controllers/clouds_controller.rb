@@ -32,20 +32,43 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new permit_params
-    cloud.save
+    unless cloud.save
+      status 400
+      return json cloud.errors
+    end
+
     status 201
     json cloud
   end
 
   put '/:id' do
-    cloud = Cloud.find(params[:id])
-    cloud.update_attributes(permit_params)
+    begin
+      cloud = Cloud.find(params[:id])
+    rescue => e
+      Log.error e
+      status 400
+      return json message: e.message
+    end
+
+    unless cloud.update_attributes permit_params
+      status 400
+      return json cloud.errors
+    end
+
     status 200
     json cloud
   end
 
   delete '/:id' do
-    Cloud.find(params[:id]).destroy
+    begin
+      cloud = Cloud.find(params[:id])
+      cloud.destroy
+    rescue => e
+      Log.error e
+      status 400
+      return json message: e.message
+    end
+
     status 204
   end
 
