@@ -23,6 +23,8 @@ gem 'zabbixapi'
 
 gem 'systemu'
 
+gem 'faraday'
+
 group :development do
   gem 'guard'
   gem 'byebug'
