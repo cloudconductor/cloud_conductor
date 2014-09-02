@@ -33,7 +33,7 @@ module Serf
     end
 
     def call(main, sub = nil, payload = {})
-      consul = Consul::Client.connect host: @host, port: @port
+      consul = Consul::Client.connect host: @host
       consul.kv.put PAYLOAD_KEY, payload
 
       options_text = @options.map { |key, value| "-#{key}=#{value}" }.join(' ')
