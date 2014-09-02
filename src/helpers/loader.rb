@@ -28,6 +28,8 @@ end
 require 'sinatra'
 require 'sinatra/json'
 require 'sinatra/reloader'
+require 'sinatra/namespace'
+
 require 'action_controller'
 
 # Load config

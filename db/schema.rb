@@ -11,7 +11,24 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140805065230) do
+ActiveRecord::Schema.define(version: 20140826022656) do
+
+  create_table "application_histories", force: true do |t|
+    t.integer  "application_id"
+    t.integer  "version"
+    t.string   "uri"
+    t.string   "revision"
+    t.string   "parameters"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "applications", force: true do |t|
+    t.integer  "system_id"
+    t.string   "name"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
 
   create_table "available_clouds", id: false, force: true do |t|
     t.integer  "cloud_id"
