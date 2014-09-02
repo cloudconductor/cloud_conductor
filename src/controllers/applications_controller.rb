@@ -82,6 +82,6 @@ module ApplicationsController
   end
 
   def history_permit_params
-    ActionController::Parameters.new(params).permit(:uri, :parameters)
+    ActionController::Parameters.new(params).permit(:url, :parameters)
   end
 end

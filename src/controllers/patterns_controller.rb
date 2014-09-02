@@ -58,6 +58,6 @@ class PatternsController < Sinatra::Base
 
   def permit_params
     ActionController::Parameters.new(params)
-      .permit(:uri, :revision, :parameters)
+      .permit(:url, :revision, :parameters)
   end
 end

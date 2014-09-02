@@ -21,7 +21,7 @@ class ApplicationHistory < ActiveRecord::Base
   belongs_to :application
 
   validates :application, presence: true
-  validates :uri, presence: true, format: { with: URI.regexp }
+  validates :url, presence: true, format: { with: URI.regexp }
 
   validates_each :parameters do |record, attr, value|
     begin
@@ -37,7 +37,7 @@ class ApplicationHistory < ActiveRecord::Base
 
   def serf_request
     payload = {}
-    payload[:url] = uri
+    payload[:url] = url
     payload[:revision] = revision
     payload[:parameters] = JSON.parse(parameters)
 

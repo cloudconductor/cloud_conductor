@@ -16,7 +16,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
     t.integer  "version"
-    t.string   "uri"
+    t.string   "url"
     t.string   "revision"
     t.string   "parameters"
     t.datetime "created_at"
@@ -73,7 +73,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.string   "name"
     t.string   "description"
     t.string   "type"
-    t.string   "uri"
+    t.string   "url"
     t.string   "revision"
     t.integer  "metadata_id"
     t.datetime "created_at"

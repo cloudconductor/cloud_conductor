@@ -14,7 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :application_history, class: ApplicationHistory do
-    uri 'http://example.com/'
+    url 'http://example.com/'
     parameters '{ "dummy": "value" }'
   end
 end

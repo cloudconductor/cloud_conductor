@@ -18,7 +18,7 @@ describe Pattern do
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
     @pattern = Pattern.new
-    @pattern.uri = 'http://example.com/pattern.git'
+    @pattern.url = 'http://example.com/pattern.git'
     @pattern.clouds << @cloud_aws
     @pattern.clouds << @cloud_openstack
 
@@ -52,13 +52,13 @@ describe Pattern do
       expect(@pattern.valid?).to be_truthy
     end
 
-    it 'returns false when uri is unset' do
-      @pattern.uri = nil
+    it 'returns false when url is unset' do
+      @pattern.url = nil
       expect(@pattern.valid?).to be_falsey
     end
 
-    it 'returns false when uri is invalid URL' do
-      @pattern.uri = 'invalid url'
+    it 'returns false when url is invalid URL' do
+      @pattern.url = 'invalid url'
       expect(@pattern.valid?).to be_falsey
     end
 
@@ -147,7 +147,7 @@ describe Pattern do
       end
 
       it 'will clone repository to temporary directory' do
-        command = %r(git clone #{@pattern.uri} .*tmp/patterns/[a-f0-9-]{36})
+        command = %r(git clone #{@pattern.url} .*tmp/patterns/[a-f0-9-]{36})
         @pattern.should_receive(:system).with(command).and_return(true)
         @pattern.send(:clone_repository) {}
       end
@@ -311,9 +311,9 @@ describe Pattern do
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
       end
 
-      it 'will call PackerClient#build with uri, revision, name of clouds, operating_systems and role' do
+      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems and role' do
         args = []
-        args << @pattern.uri
+        args << @pattern.url
         args << @pattern.revision
         args << @pattern.clouds.map(&:name)
         args << @operating_systems.map(&:name)
