@@ -85,8 +85,7 @@ class SystemsController < Sinatra::Base
       return json message: e.message
     end
 
-    system.update_attributes permit_paras
-    unless system.save
+    unless system.update_attributes permit_paras
       status 400
       return json system.errors
     end
