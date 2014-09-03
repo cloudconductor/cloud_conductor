@@ -53,11 +53,15 @@ module ApplicationsController
         return json message: e.message
       end
 
-      application.update_attributes application_permit_params
-      application.histories.build history_permit_params
-      unless application.save
+      begin
+        application.transaction do
+          application.update_attributes! application_permit_params
+          application.histories.build history_permit_params
+          application.save!
+        end
+      rescue => e
         status 400
-        return json application.errors
+        return json message: e.message
       end
 
       status 200
