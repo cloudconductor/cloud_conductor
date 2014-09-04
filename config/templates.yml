@@ -1,0 +1,28 @@
+aws:
+  name: "{{target `name`}}"
+  type: "amazon-ebs"
+  access_key: "{{cloud `key`}}"
+  secret_key: "{{cloud `secret`}}"
+  region: "ap-northeast-1"
+  instance_type: "c3.large"
+  ssh_username: "{{target `ssh_username`}}"
+  source_ami: "{{target `source_image`}}"
+  ami_name: "{{operating_system `name`}}-{{user `role`}}-{{uuid}}"
+  tags: {
+    Name: "{{operating_system `name`}}-{{user `role`}}"
+  }
+
+openstack:
+  name: "{{target `name`}}"
+  type: "openstack"
+  username: "{{cloud `key`}}"
+  password: "{{cloud `secret`}}"
+  tenant_id: "{{cloud `tenant_id`}}"
+  provider: "{{cloud `entry_point`}}v2.0/tokens"
+  region: "RegionOne"
+  flavor: "2"
+  source_image: "{{target `source_image`}}"
+  image_name: "{{operating_system `name`}}-{{user `role`}}"
+  ssh_username: "{{target `ssh_username`}}"
+  use_floating_ip: "true"
+  floating_ip_pool: "public"
