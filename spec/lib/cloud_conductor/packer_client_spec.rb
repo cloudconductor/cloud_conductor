@@ -111,6 +111,14 @@ module CloudConductor
         expect(command).to include(*vars)
       end
 
+      it 'return command with image_name option' do
+        vars = []
+        vars << "-var 'image_name=nginx-dummy'"
+
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx, dummy', @packer_json_path)
+        expect(command).to include(*vars)
+      end
+
       it 'return command with aws_access_key and aws_secret_key option' do
         vars = []
         vars << "-var 'aws_access_key=dummy_access_key'"

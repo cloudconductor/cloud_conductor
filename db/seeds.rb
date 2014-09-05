@@ -36,9 +36,9 @@ cloud_aws.template = <<-EOS
     "instance_type": "c3.large",
     "ssh_username": "{{target `ssh_username`}}",
     "source_ami": "{{target `source_image`}}",
-    "ami_name": "{{operating_system `name`}}-{{user `role`}}-{{uuid}}",
+    "ami_name": "{{operating_system `name`}}-{{user `image_name`}}-{{uuid}}",
     "tags": {
-      "Name": "{{operating_system `name`}}-{{user `role`}}"
+      "Name": "{{operating_system `name`}}-{{user `image_name`}}"
     }
   }
 EOS
@@ -64,7 +64,7 @@ cloud_openstack.template = <<-EOS
     "region": "RegionOne",
     "flavor": "2",
     "source_image": "{{target `source_image`}}",
-    "image_name": "{{operating_system `name`}}-{{user `role`}}",
+    "image_name": "{{operating_system `name`}}-{{user `image_name`}}-{{uuid}}",
     "ssh_username": "{{target `ssh_username`}}",
     "use_floating_ip": "true",
     "floating_ip_pool": "public"

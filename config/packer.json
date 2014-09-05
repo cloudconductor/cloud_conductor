@@ -3,7 +3,8 @@
     "patterns_root": null,
     "repository_url": null,
     "revision": null,
-    "role": null
+    "role": null,
+    "image_name": null
   },
   "builders": [
   ],

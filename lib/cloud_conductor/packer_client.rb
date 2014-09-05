@@ -68,6 +68,7 @@ module CloudConductor
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
       vars_text << " -var 'role=#{role}'"
+      vars_text << " -var 'image_name=#{role.gsub(/,\s*/, '-')}'"
       vars_text << " -var 'patterns_root=#{@patterns_root}'"
 
       "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
