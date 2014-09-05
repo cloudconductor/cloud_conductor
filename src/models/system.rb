@@ -127,6 +127,6 @@ class System < ActiveRecord::Base
   def serf
     fail 'ip_address does not specified' unless ip_address
 
-    Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
+    Serf::Client.new host: ip_address
   end
 end

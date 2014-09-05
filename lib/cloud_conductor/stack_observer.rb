@@ -27,7 +27,7 @@ module CloudConductor
         ip_address = outputs['FrontendAddress']
         Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-        serf = Serf::Client.new 'rpc-addr' => "#{ip_address}:7373"
+        serf = Serf::Client.new host: ip_address
         status, _results = serf.call('info')
         next unless status.success?
 

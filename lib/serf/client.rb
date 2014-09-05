@@ -12,26 +12,32 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 module Serf
   class Client
     SERF_PATH = 'serf'
 
     DEFAULT_OPTIONS = {
+      port: 7373,
+      options: {}
     }
 
+    PAYLOAD_KEY = 'cloudconductor/parameters'
+
     def initialize(options = {})
-      @options = DEFAULT_OPTIONS.merge(options)
+      fail 'Serf::Client require host option' unless options[:host]
+
+      options.reverse_merge! DEFAULT_OPTIONS
+      @host = options[:host]
+      @port = options[:port]
+      @options = options[:options]
     end
 
-    def call(serf_command, *args)
-      options_text = @options.map { |key, value| "-#{key}=#{value}" }.join(' ')
-      args_text = args.map do |arg|
-        next "'#{arg}'" if arg.is_a? String
-        "'#{arg.to_json}'"
-      end.join(' ')
+    def call(main, sub = nil, payload = {})
+      consul = Consul::Client.connect host: @host
+      consul.kv.put PAYLOAD_KEY, payload
 
-      command = "#{SERF_PATH} #{serf_command} #{options_text} #{args_text}"
+      options_text = @options.map { |key, value| "-#{key}=#{value}" }.join(' ')
+      command = "#{SERF_PATH} #{main} -rpc-addr=#{@host}:#{@port} #{options_text} #{sub}"
       Log.debug("Execute serf command: #{command}")
       status, stdout, stderr = systemu(command)
 
