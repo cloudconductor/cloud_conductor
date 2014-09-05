@@ -18,6 +18,9 @@ describe ApplicationHistory do
 
     @history = ApplicationHistory.new
     @history.application = @application
+    @history.domain = 'example.com'
+    @history.type = 'static'
+    @history.protocol = 'http'
     @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
@@ -73,6 +76,35 @@ describe ApplicationHistory do
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@history.valid?).to be_truthy
+    end
+
+    it 'returns false when domain is unset' do
+      @history.domain = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.domain = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when type is unset' do
+      @history.type = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.type = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when protocol is unset' do
+      @history.protocol = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.protocol = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when protocol is invalid' do
+      @history.protocol = 'dummy'
+      expect(@history.valid?).to be_falsey
     end
 
     it 'returns false when application is unset' do

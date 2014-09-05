@@ -15,12 +15,17 @@
 require 'sinatra/activerecord'
 
 class ApplicationHistory < ActiveRecord::Base
+  self.inheritance_column = nil
+
   before_create :allocate_version
   before_create :serf_request
 
   belongs_to :application
 
   validates :application, presence: true
+  validates :domain, presence: true
+  validates :type, presence: true
+  validates :protocol, presence: true, inclusion: { in: %w(http https git) }
   validates :url, presence: true, format: { with: URI.regexp }
 
   validates_each :parameters do |record, attr, value|
