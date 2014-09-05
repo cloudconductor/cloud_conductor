@@ -49,7 +49,7 @@ module CloudConductor
       fail 'Appropriate image does not exist' if images.empty?
 
       images.each do |image|
-        parameters["#{image.role}ImageId"] = image.image
+        parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image
       end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes

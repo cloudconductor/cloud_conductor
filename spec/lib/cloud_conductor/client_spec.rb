@@ -106,6 +106,19 @@ module CloudConductor
         client.create_stack @name, @pattern, @parameters
       end
 
+      it 'use key of ImageId that remove special characters from image.role' do
+        image = @pattern.images.first
+        image.role = 'web, ap, db'
+        image.save!
+
+        expected_parameters = hash_including('webapdbImageId' => image.image)
+        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, expected_parameters, anything)
+
+        client = Client.new @cloud
+        client.stub_chain(:open, :read).and_return(@template_content)
+        client.create_stack @name, @pattern, @parameters
+      end
+
       it 'will call create_stack with content of template.json' do
         Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
           .with(anything, @template_content, anything, anything)
