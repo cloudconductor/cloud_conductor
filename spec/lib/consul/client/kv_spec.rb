@@ -16,10 +16,11 @@ module Consul
   module Client
     describe KV do
       before do
+        @stubs  = Faraday::Adapter::Test::Stubs.new
+
         original_method = Faraday.method(:new)
         Faraday.stub(:new) do |*args, &block|
-          @stubs  = Faraday::Adapter::Test::Stubs.new
-          @test = original_method.call(*args) do |builder|
+          original_method.call(*args) do |builder|
             builder.adapter :test, @stubs
             yield block if block
           end
