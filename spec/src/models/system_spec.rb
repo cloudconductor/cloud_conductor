@@ -38,6 +38,11 @@ describe System do
 
     CloudConductor::DNSClient.stub_chain(:new, :update)
     CloudConductor::ZabbixClient.stub_chain(:new, :register)
+
+    @system.applications << FactoryGirl.create(:application)
+    @system.applications << FactoryGirl.create(:application)
+    @system.applications.first.histories << FactoryGirl.build(:application_history)
+    @system.applications.first.histories << FactoryGirl.build(:application_history)
   end
 
   it 'create with valid parameters' do
@@ -234,6 +239,18 @@ describe System do
       duplicated_clouds = duplicated_system.available_clouds
       expect(duplicated_clouds.map(&:cloud)).to match_array(original_clouds.map(&:cloud))
       expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
+    end
+
+    it 'duplicate application without save' do
+      applications = @system.dup.applications
+      expect(applications.size).to eq(@system.applications.size)
+      expect(applications).to be_all(&:new_record?)
+    end
+
+    it 'duplicate application_history without save' do
+      histories = @system.dup.applications.first.histories
+      expect(histories.size).to eq(@system.applications.first.histories.size)
+      expect(histories).to be_all(&:new_record?)
     end
   end
 

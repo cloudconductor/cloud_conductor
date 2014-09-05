@@ -91,6 +91,12 @@ class System < ActiveRecord::Base
       system.add_cloud available_cloud.cloud, available_cloud.priority
     end
 
+    system.applications = applications.map do |application|
+      duplicated_application = application.dup
+      duplicated_application.histories = application.histories.map(&:dup)
+      duplicated_application
+    end
+
     system
   end
 
