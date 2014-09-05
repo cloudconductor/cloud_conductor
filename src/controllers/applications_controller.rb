@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module ApplicationsController
-  # rubocop:disable MethodLength
+  # rubocop:disable MethodLength, CyclomaticComplexity
   def self.registered(base)
     base.get do
       page = (params[:page] || 1).to_i
