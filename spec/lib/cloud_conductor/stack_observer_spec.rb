@@ -92,8 +92,7 @@ module CloudConductor
         System.skip_callback :save, :before, :enable_monitoring
         System.skip_callback :save, :before, :update_dns
 
-        expected_payload = {}
-        expected_payload[:parameters] = { 'dummy' => 'value' }
+        expected_payload = { 'dummy' => 'value' }
         @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
 
         StackObserver.new.send(:update_system, @system, '127.0.0.1')
