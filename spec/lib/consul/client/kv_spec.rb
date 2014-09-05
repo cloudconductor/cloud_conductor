@@ -31,7 +31,7 @@ module Consul
       describe '#get' do
         def add_stub(path, value)
           encoded_value = Base64.encode64(value).chomp
-          body = %Q([{"CreateIndex":5158,"ModifyIndex":5158,"LockIndex":0,"Key":"hoge","Flags":0,"Value":"#{encoded_value}"}])
+          body = %([{"CreateIndex":5158,"ModifyIndex":5158,"LockIndex":0,"Key":"hoge","Flags":0,"Value":"#{encoded_value}"}])
           @stubs.get(path) { [200, {}, body] }
         end
 
