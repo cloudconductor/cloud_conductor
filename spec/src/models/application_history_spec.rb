@@ -18,6 +18,9 @@ describe ApplicationHistory do
 
     @history = ApplicationHistory.new
     @history.application = @application
+    @history.domain = 'example.com'
+    @history.type = 'static'
+    @history.protocol = 'http'
     @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
@@ -52,19 +55,57 @@ describe ApplicationHistory do
     end
 
     describe 'before_save' do
-      before do
-        @serf_client = double('serf_client')
-        @history.application.system.stub(:serf).and_return(@serf_client)
-      end
-
-      it 'will call serf request with payload if revison does not specified' do
-        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :parameters))
+      it 'will call serf_request if system already created' do
+        @history.should_receive(:serf_request)
         @history.save!
       end
 
-      it 'will call serf request with payload if revison specified' do
-        @history.revision = 'develop'
-        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :revision, :parameters))
+      it 'will not call serf_request if system hasn\'t created' do
+        @history.application.system.ip_address = nil
+
+        @history.should_not_receive(:serf_request)
+        @history.save!
+      end
+    end
+
+    describe '#serf_request' do
+      it 'contains domain, type, version, protocol, url and parameters in payload when request to serf' do
+        @history.application.name = 'dummy'
+
+        payload = {
+          cloudconductor: {
+            applications: {
+              'dummy' => {
+                domain: 'example.com',
+                type: 'static',
+                version: 1,
+                protocol: 'http',
+                url: 'http://example.com/',
+                parameters: { dummy: 'value' }
+              }
+            }
+          }
+        }
+
+        @serf_client.should_receive(:call).with('event', 'deploy', payload)
+        @history.save!
+      end
+
+      it 'contains revision, pre_deploy and post_deploy in payload if these value has been set' do
+        @history.revision = 'master'
+        @history.pre_deploy = 'yum install dummy'
+        @history.post_deploy = 'service dummy restart'
+
+        expected_payload = satisfy do |payload|
+          target = payload[:cloudconductor][:applications][@history.application.name]
+          expect(target).to include(
+            revision: 'master',
+            pre_deploy: 'yum install dummy',
+            post_deploy: 'service dummy restart'
+          )
+        end
+
+        @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
         @history.save!
       end
     end
@@ -73,6 +114,35 @@ describe ApplicationHistory do
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@history.valid?).to be_truthy
+    end
+
+    it 'returns false when domain is unset' do
+      @history.domain = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.domain = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when type is unset' do
+      @history.type = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.type = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when protocol is unset' do
+      @history.protocol = nil
+      expect(@history.valid?).to be_falsey
+
+      @history.protocol = ''
+      expect(@history.valid?).to be_falsey
+    end
+
+    it 'returns false when protocol is invalid' do
+      @history.protocol = 'dummy'
+      expect(@history.valid?).to be_falsey
     end
 
     it 'returns false when application is unset' do

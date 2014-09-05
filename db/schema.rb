@@ -15,9 +15,14 @@ ActiveRecord::Schema.define(version: 20140826022656) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
+    t.string   "domain"
+    t.string   "type"
     t.integer  "version"
+    t.string   "protocol"
     t.string   "url"
     t.string   "revision"
+    t.string   "pre_deploy"
+    t.string   "post_deploy"
     t.string   "parameters"
     t.datetime "created_at"
     t.datetime "updated_at"

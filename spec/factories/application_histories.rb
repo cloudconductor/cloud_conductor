@@ -14,7 +14,18 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :application_history, class: ApplicationHistory do
+    domain 'example.com'
+    type 'static'
+    protocol 'http'
     url 'http://example.com/'
     parameters '{ "dummy": "value" }'
+  end
+
+  after(:build) do
+    ApplicationHistory.skip_callback :create, :before, :serf_request
+  end
+
+  after(:create) do
+    ApplicationHistory.set_callback :create, :before, :serf_request, if: -> { application.system.ip_address }
   end
 end

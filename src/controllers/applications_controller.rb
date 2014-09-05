@@ -85,7 +85,8 @@ module ApplicationsController
     ActionController::Parameters.new(params).permit(:system_id, :name)
   end
 
+  # rubocop:disable LineLength
   def history_permit_params
-    ActionController::Parameters.new(params).permit(:url, :parameters)
+    ActionController::Parameters.new(params).permit(:domain, :type, :protocol, :url, :revision, :pre_deploy, :post_deploy, :parameters)
   end
 end
