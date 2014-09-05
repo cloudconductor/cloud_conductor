@@ -28,6 +28,12 @@ describe ApplicationHistory do
     @application.system.stub(:serf).and_return(@serf_client)
   end
 
+  describe '#initialize' do
+    it 'set status to :not_yet' do
+      expect(@history.status).to eq(:not_yet)
+    end
+  end
+
   describe '#save' do
     it 'create with valid parameters' do
       count = ApplicationHistory.count
@@ -69,6 +75,14 @@ describe ApplicationHistory do
     end
 
     describe '#serf_request' do
+      it 'change status when call serf_request' do
+        expect(@history.status).to eq(:not_yet)
+
+        @history.save!
+
+        expect(@history.status).to eq(:deployed)
+      end
+
       it 'contains domain, type, version, protocol, url and parameters in payload when request to serf' do
         @history.application.name = 'dummy'
 

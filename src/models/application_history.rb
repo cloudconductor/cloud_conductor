@@ -36,6 +36,10 @@ class ApplicationHistory < ActiveRecord::Base
     end
   end
 
+  after_initialize do
+    self.status ||= :not_yet
+  end
+
   def allocate_version
     self.version = application.histories.count + 1
   end
@@ -63,5 +67,7 @@ class ApplicationHistory < ActiveRecord::Base
     payload[:cloudconductor][:applications][application.name] = application_payload
 
     application.system.serf.call('event', 'deploy', payload)
+
+    self.status = :deployed
   end
 end
