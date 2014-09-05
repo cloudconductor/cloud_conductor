@@ -69,14 +69,43 @@ describe ApplicationHistory do
     end
 
     describe '#serf_request' do
-      it 'will call serf request with payload if revison does not specified' do
-        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :parameters))
+      it 'contains domain, type, version, protocol, url and parameters in payload when request to serf' do
+        @history.application.name = 'dummy'
+
+        payload = {
+          cloudconductor: {
+            applications: {
+              'dummy' => {
+                domain: 'example.com',
+                type: 'static',
+                version: 1,
+                protocol: 'http',
+                url: 'http://example.com/',
+                parameters: { dummy: 'value' }
+              }
+            }
+          }
+        }
+
+        @serf_client.should_receive(:call).with('event', 'deploy', payload)
         @history.save!
       end
 
-      it 'will call serf request with payload if revison specified' do
-        @history.revision = 'develop'
-        @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :revision, :parameters))
+      it 'contains revision, pre_deploy and post_deploy in payload if these value has been set' do
+        @history.revision = 'master'
+        @history.pre_deploy = 'yum install dummy'
+        @history.post_deploy = 'service dummy restart'
+
+        expected_payload = satisfy do |payload|
+          target = payload[:cloudconductor][:applications][@history.application.name]
+          expect(target).to include(
+            revision: 'master',
+            pre_deploy: 'yum install dummy',
+            post_deploy: 'service dummy restart'
+          )
+        end
+
+        @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
         @history.save!
       end
     end
