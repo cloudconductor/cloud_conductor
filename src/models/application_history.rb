@@ -18,7 +18,7 @@ class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
 
   before_create :allocate_version
-  before_create :serf_request
+  before_create :serf_request, if: -> { application.system.ip_address }
 
   belongs_to :application
 

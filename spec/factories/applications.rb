@@ -15,6 +15,6 @@
 FactoryGirl.define do
   factory :application, class: Application do
     sequence(:name) { |n| "application_#{n}" }
-    system { create(:system) }
+    system { create(:system, ip_address: '127.0.0.1') }
   end
 end

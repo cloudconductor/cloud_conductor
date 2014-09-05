@@ -55,9 +55,16 @@ describe ApplicationHistory do
     end
 
     describe 'before_save' do
-      before do
-        @serf_client = double('serf_client')
-        @history.application.system.stub(:serf).and_return(@serf_client)
+      it 'will call serf_request if system already created' do
+        @history.should_receive(:serf_request)
+        @history.save!
+      end
+
+      it 'will not call serf_request if system hasn\'t created' do
+        @history.application.system.ip_address = nil
+
+        @history.should_not_receive(:serf_request)
+        @history.save!
       end
 
       it 'will call serf request with payload if revison does not specified' do
