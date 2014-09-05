@@ -55,6 +55,7 @@ module CloudConductor
       end
 
       it 'will call #create_json to create json file' do
+        Thread.stub(:new)
         @client.should_receive(:create_json).with(@clouds)
         @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx')
       end
