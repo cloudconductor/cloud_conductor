@@ -33,6 +33,16 @@ module Consul
       def kv
         Consul::Client::KV.new @options
       end
+
+      def running?
+        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/')
+        @faraday = Faraday.new url
+
+        response = @faraday.get('/')
+        response.success?
+      rescue
+        false
+      end
     end
   end
 end

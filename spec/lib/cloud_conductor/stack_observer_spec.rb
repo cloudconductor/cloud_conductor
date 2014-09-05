@@ -37,6 +37,7 @@ module CloudConductor
       System.any_instance.stub(:status).and_return(:CREATE_COMPLETE)
       System.any_instance.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
       Serf::Client.any_instance.stub(:call).and_return(double('status', 'success?' => true))
+      Consul::Client::Client.any_instance.stub(:running?).and_return(true)
 
       @serf_client = double(:serf_client, call: nil)
       @system.stub(:serf).and_return(@serf_client)
@@ -77,6 +78,16 @@ module CloudConductor
         Serf::Client.any_instance.stub(:call) do
           mock.dummy
           double('status', 'success?' => true)
+        end
+        @observer.update
+      end
+
+      it 'will call consul request to check consul availability' do
+        mock = double('client')
+        mock.should_receive(:dummy).at_least(1)
+        Consul::Client::Client.any_instance.stub(:running?) do
+          mock.dummy
+          true
         end
         @observer.update
       end

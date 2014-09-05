@@ -15,6 +15,18 @@
 require 'consul/client'
 module Consul
   describe Client do
+    before do
+      @stubs  = Faraday::Adapter::Test::Stubs.new
+
+      original_method = Faraday.method(:new)
+      Faraday.stub(:new) do |*args, &block|
+        original_method.call(*args) do |builder|
+          builder.adapter :test, @stubs
+          yield block if block
+        end
+      end
+    end
+
     describe '.connect' do
       it 'will return instance of Consul::Client::Client' do
         result = Consul::Client.connect(host: 'localhost')
@@ -41,6 +53,32 @@ module Consul
       describe '#kv' do
         it 'return KV instance' do
           expect(@client.kv).to be_is_a Consul::Client::KV
+        end
+      end
+
+      describe '#running?' do
+        let(:should_yield) do
+          (-> {}).tap { |proc| proc.should_receive(:call) }
+        end
+
+        it 'will request http://host:8500/ ' do
+          @stubs.get('/', &should_yield)
+          @client.running?
+        end
+
+        it 'return true when API return 200 status code' do
+          @stubs.get('/') { [200, {}, 'Consul Agent'] }
+          expect(@client.running?).to be_truthy
+        end
+
+        it 'return false when API return 500 status code' do
+          @stubs.get('/') { [500, {}, ''] }
+          expect(@client.running?).to be_falsey
+        end
+
+        it 'return false when some error occurred while request' do
+          @stubs.get('/') { fail Faraday::ConnectionFailed, '' }
+          expect(@client.running?).to be_falsey
         end
       end
     end
