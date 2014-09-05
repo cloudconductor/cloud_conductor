@@ -211,19 +211,10 @@ describe System do
       expect(duplicated_system.parameters).to eq(@system.parameters)
     end
 
-    it 're-numbering name attribute to avoid unique constraint' do
+    it 'duplicate name with uuid to avoid unique constraint' do
       duplicated_system = @system.dup
       expect(duplicated_system.name).not_to eq(@system.name)
-    end
-
-    it 'add \'_1\' suffix to original name' do
-      @system.name = 'test'
-      expect(@system.dup.name).to eq('test_1')
-    end
-
-    it 'change number suffix that is incremented from original suffix' do
-      @system.name = 'test_23'
-      expect(@system.dup.name).to eq('test_24')
+      expect(duplicated_system.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
     end
 
     it 'clear ip_address' do
