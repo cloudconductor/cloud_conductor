@@ -66,7 +66,9 @@ describe ApplicationHistory do
         @history.should_not_receive(:serf_request)
         @history.save!
       end
+    end
 
+    describe '#serf_request' do
       it 'will call serf request with payload if revison does not specified' do
         @serf_client.should_receive(:call).with('event', 'deploy', hash_including(:url, :parameters))
         @history.save!
