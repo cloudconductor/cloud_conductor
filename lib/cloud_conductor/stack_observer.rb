@@ -48,6 +48,11 @@ module CloudConductor
 
       payload = JSON.parse(system.parameters)
       system.serf.call('event', 'configure', payload)
+
+      system.applications.map(&:latest).reject(&:deployed?).each do |application|
+        sleep 3
+        application.serf_request
+      end
     end
   end
 end
