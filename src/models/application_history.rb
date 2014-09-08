@@ -74,4 +74,10 @@ class ApplicationHistory < ActiveRecord::Base
   def deployed?
     status == :deployed
   end
+
+  def dup
+    history = super
+    history.status = :not_yet
+    history
+  end
 end

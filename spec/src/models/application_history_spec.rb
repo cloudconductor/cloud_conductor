@@ -189,4 +189,12 @@ describe ApplicationHistory do
       expect(@history.valid?).to be_falsey
     end
   end
+
+  describe '#dup' do
+    it 'copy attributes without status' do
+      @history.status = :deployed
+      result = @history.dup
+      expect(result.status).to eq(:not_yet)
+    end
+  end
 end
