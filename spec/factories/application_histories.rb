@@ -22,10 +22,10 @@ FactoryGirl.define do
   end
 
   after(:build) do
-    ApplicationHistory.skip_callback :create, :before, :serf_request
+    ApplicationHistory.skip_callback :save, :before, :serf_request
   end
 
   after(:create) do
-    ApplicationHistory.set_callback :create, :before, :serf_request, if: -> { application.system.ip_address }
+    ApplicationHistory.set_callback :save, :before, :serf_request, if: -> { !deployed? && application.system.ip_address }
   end
 end

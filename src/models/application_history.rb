@@ -17,8 +17,8 @@ require 'sinatra/activerecord'
 class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
 
-  before_create :allocate_version
-  before_create :serf_request, if: -> { application.system.ip_address }
+  before_save :allocate_version, unless: -> { version }
+  before_save :serf_request, if: -> { !deployed? && application.system.ip_address }
 
   belongs_to :application
 
@@ -69,5 +69,9 @@ class ApplicationHistory < ActiveRecord::Base
     application.system.serf.call('event', 'deploy', payload)
 
     self.status = :deployed
+  end
+
+  def deployed?
+    status == :deployed
   end
 end

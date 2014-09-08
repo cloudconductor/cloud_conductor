@@ -72,6 +72,13 @@ describe ApplicationHistory do
         @history.should_not_receive(:serf_request)
         @history.save!
       end
+
+      it 'will not call serf_request if already deployed' do
+        @history.status = :deployed
+
+        @history.should_not_receive(:serf_request)
+        @history.save!
+      end
     end
 
     describe '#serf_request' do
