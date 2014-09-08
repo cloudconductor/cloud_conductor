@@ -53,6 +53,9 @@ module CloudConductor
         sleep 3
         application.serf_request
       end
+
+      sleep 3
+      system.serf.call('event', 'restore', {})
     end
   end
 end

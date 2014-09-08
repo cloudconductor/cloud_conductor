@@ -144,6 +144,12 @@ module CloudConductor
 
         @observer.send(:update_system, @system, '127.0.0.1')
       end
+
+      it 'will request restore event to serf' do
+        @serf_client.should_receive(:call).with('event', 'restore', {})
+
+        @observer.send(:update_system, @system, '127.0.0.1')
+      end
     end
   end
 end
