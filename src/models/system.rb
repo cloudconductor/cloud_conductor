@@ -30,7 +30,7 @@ class System < ActiveRecord::Base
 
   scope :in_progress, -> { where(ip_address: nil) }
 
-  validates :name, presence: true
+  validates :name, presence: true, uniqueness: true
   validates :pattern, presence: true
   validates :clouds, presence: true
 

@@ -18,7 +18,7 @@ class Application < ActiveRecord::Base
   belongs_to :system
   has_many :histories, class_name: :ApplicationHistory, dependent: :destroy
 
-  validates :name, presence: true
+  validates :name, presence: true, uniqueness: true
   validates :system, presence: true
 
   def latest
