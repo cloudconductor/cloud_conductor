@@ -3,7 +3,7 @@ aws:
   type: "amazon-ebs"
   access_key: "{{cloud `key`}}"
   secret_key: "{{cloud `secret`}}"
-  region: "ap-northeast-1"
+  region: "{{cloud `entry_point`}}"
   instance_type: "c3.large"
   ssh_username: "{{target `ssh_username`}}"
   source_ami: "{{target `source_image`}}"
