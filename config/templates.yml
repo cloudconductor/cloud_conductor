@@ -11,6 +11,9 @@ aws:
   tags: {
     Name: "{{operating_system `name`}}-{{user `image_name`}}"
   }
+  launch_block_device_mappings:
+    - device_name: "/dev/sda"
+      delete_on_termination: true
 
 openstack:
   name: "{{target `name`}}"
