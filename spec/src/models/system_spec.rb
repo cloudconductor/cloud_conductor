@@ -316,4 +316,73 @@ describe System do
       expect(@system.serf).to be_is_a Serf::Client
     end
   end
+
+  describe '#deploy_applications' do
+    before do
+      @serf_client = double(:serf_client)
+      @system.stub(:serf).and_return(@serf_client)
+      @system.applications.clear
+    end
+
+    it 'will request deploy event to serf with payload' do
+      application = FactoryGirl.create(:application, name: 'dummy', system: @system)
+      application.histories << FactoryGirl.create(:application_history, application: application)
+      @system.applications << application
+
+      expected_payload = {
+        cloudconductor: {
+          applications: {
+            'dummy' => {
+              domain: 'example.com',
+              type: 'static',
+              version: 1,
+              protocol: 'http',
+              url: 'http://example.com/',
+              parameters: { dummy: 'value' }
+            }
+          }
+        }
+      }
+
+      @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+
+      @system.deploy_applications
+    end
+
+    it 'will request deploy event to serf with payload belongs to multiple applications' do
+      application1 = FactoryGirl.create(:application, name: 'dummy1', system: @system)
+      application2 = FactoryGirl.create(:application, name: 'dummy2', system: @system)
+      application1.histories << FactoryGirl.create(:application_history, application: application1)
+      application2.histories << FactoryGirl.create(:application_history, application: application2)
+      @system.applications << application1
+      @system.applications << application2
+
+      expected_payload = {
+        cloudconductor: {
+          applications: {
+            'dummy1' => {
+              domain: 'example.com',
+              type: 'static',
+              version: 1,
+              protocol: 'http',
+              url: 'http://example.com/',
+              parameters: { dummy: 'value' }
+            },
+            'dummy2' => {
+              domain: 'example.com',
+              type: 'static',
+              version: 1,
+              protocol: 'http',
+              url: 'http://example.com/',
+              parameters: { dummy: 'value' }
+            }
+          }
+        }
+      }
+
+      @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+
+      @system.deploy_applications
+    end
+  end
 end

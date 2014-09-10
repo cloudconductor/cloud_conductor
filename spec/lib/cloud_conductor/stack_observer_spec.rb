@@ -106,6 +106,8 @@ module CloudConductor
 
         @observer = StackObserver.new
         @observer.stub(:sleep)
+
+        @system.stub(:deploy_applications)
       end
 
       after do
@@ -120,28 +122,8 @@ module CloudConductor
         @observer.send(:update_system, @system, '127.0.0.1')
       end
 
-      it 'will request deploy event to serf with payload' do
-        application = FactoryGirl.create(:application, name: 'dummy', system: @system)
-        application.histories << FactoryGirl.create(:application_history, application: application)
-        @system.applications << application
-
-        expected_payload = {
-          cloudconductor: {
-            applications: {
-              'dummy' => {
-                domain: 'example.com',
-                type: 'static',
-                version: 1,
-                protocol: 'http',
-                url: 'http://example.com/',
-                parameters: { dummy: 'value' }
-              }
-            }
-          }
-        }
-
-        @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
-
+      it 'will call System#deploy_applications' do
+        @system.should_receive(:deploy_applications)
         @observer.send(:update_system, @system, '127.0.0.1')
       end
 

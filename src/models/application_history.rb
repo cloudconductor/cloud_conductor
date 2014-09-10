@@ -44,19 +44,23 @@ class ApplicationHistory < ActiveRecord::Base
     self.version = application.histories.count + 1
   end
 
+  def application_payload
+    payload = {}
+    payload[:domain] = domain
+    payload[:type] = type
+    payload[:version] = version
+    payload[:protocol] = protocol
+    payload[:url] = url
+    payload[:revision] = revision if revision
+    payload[:pre_deploy] = pre_deploy if pre_deploy
+    payload[:post_deploy] = post_deploy if post_deploy
+
+    payload[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
+
+    payload
+  end
+
   def serf_request
-    application_payload = {}
-    application_payload[:domain] = domain
-    application_payload[:type] = type
-    application_payload[:version] = version
-    application_payload[:protocol] = protocol
-    application_payload[:url] = url
-    application_payload[:revision] = revision if revision
-    application_payload[:pre_deploy] = pre_deploy if pre_deploy
-    application_payload[:post_deploy] = post_deploy if post_deploy
-
-    application_payload[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
-
     payload = {
       cloudconductor: {
         applications: {

@@ -15,6 +15,7 @@
 require 'sinatra/activerecord'
 require 'open-uri'
 
+# rubocop:disable ClassLength
 class System < ActiveRecord::Base
   before_destroy :destroy_stack
 
@@ -131,5 +132,25 @@ class System < ActiveRecord::Base
     fail 'ip_address does not specified' unless ip_address
 
     Serf::Client.new host: ip_address
+  end
+
+  def deploy_applications
+    payload = {
+      cloudconductor: {
+        applications: {
+        }
+      }
+    }
+
+    applications.map(&:latest).compact.reject(&:deployed?).each do |history|
+      payload[:cloudconductor][:applications][history.application.name] = history.application_payload
+    end
+
+    serf.call('event', 'deploy', payload)
+
+    applications.map(&:latest).compact.reject(&:deployed?).each do |history|
+      history.status = :deployed
+      history.save!
+    end
   end
 end
