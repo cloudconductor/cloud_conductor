@@ -50,11 +50,11 @@ module CloudConductor
       system.serf.call('event', 'configure', payload)
 
       system.applications.map(&:latest).reject(&:deployed?).each do |application|
-        sleep 3
+        sleep 10
         application.serf_request
       end
 
-      sleep 3
+      sleep 10
       system.serf.call('event', 'restore', {})
     end
   end
