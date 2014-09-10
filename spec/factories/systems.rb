@@ -14,7 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :system, class: System do
-    name 'stack-12345678'
+    sequence(:name) { |n| "stack-#{n}" }
     template_parameters '{}'
     parameters '{}'
     pattern { create(:pattern) }
