@@ -32,4 +32,10 @@ class Application < ActiveRecord::Base
   def to_json(options = {})
     super options.merge(methods: [:latest, :latest_version])
   end
+
+  def dup
+    application = super
+    application.system = nil
+    application
+  end
 end

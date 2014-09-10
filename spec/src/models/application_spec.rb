@@ -82,4 +82,12 @@ describe Application do
       expect(@application.latest_version).to eq(3)
     end
   end
+
+  describe '#dup' do
+    it 'return duplicated application without system attributes' do
+      application = @application.dup
+      expect(application.name).to eq(@application.name)
+      expect(application.system).to be_nil
+    end
+  end
 end
