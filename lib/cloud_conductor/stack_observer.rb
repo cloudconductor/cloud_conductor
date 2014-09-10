@@ -27,12 +27,12 @@ module CloudConductor
         ip_address = outputs['FrontendAddress']
         Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
+        consul = Consul::Client.connect host: ip_address
+        next unless consul.running?
+
         serf = Serf::Client.new host: ip_address
         status, _results = serf.call('info')
         next unless status.success?
-
-        consul = Consul::Client.connect host: ip_address
-        next unless consul.running?
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
         update_system system, ip_address
