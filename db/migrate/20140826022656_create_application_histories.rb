@@ -2,6 +2,7 @@ class CreateApplicationHistories < ActiveRecord::Migration
   def change
     create_table :application_histories do |t|
       t.references :application
+      t.string :status
       t.string :domain
       t.string :type
       t.integer :version

@@ -38,6 +38,11 @@ describe System do
 
     CloudConductor::DNSClient.stub_chain(:new, :update)
     CloudConductor::ZabbixClient.stub_chain(:new, :register)
+
+    @system.applications << FactoryGirl.create(:application)
+    @system.applications << FactoryGirl.create(:application)
+    @system.applications.first.histories << FactoryGirl.build(:application_history)
+    @system.applications.first.histories << FactoryGirl.build(:application_history)
   end
 
   it 'create with valid parameters' do
@@ -206,19 +211,10 @@ describe System do
       expect(duplicated_system.parameters).to eq(@system.parameters)
     end
 
-    it 're-numbering name attribute to avoid unique constraint' do
+    it 'duplicate name with uuid to avoid unique constraint' do
       duplicated_system = @system.dup
       expect(duplicated_system.name).not_to eq(@system.name)
-    end
-
-    it 'add \'_1\' suffix to original name' do
-      @system.name = 'test'
-      expect(@system.dup.name).to eq('test_1')
-    end
-
-    it 'change number suffix that is incremented from original suffix' do
-      @system.name = 'test_23'
-      expect(@system.dup.name).to eq('test_24')
+      expect(duplicated_system.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
     end
 
     it 'clear ip_address' do
@@ -234,6 +230,18 @@ describe System do
       duplicated_clouds = duplicated_system.available_clouds
       expect(duplicated_clouds.map(&:cloud)).to match_array(original_clouds.map(&:cloud))
       expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
+    end
+
+    it 'duplicate application without save' do
+      applications = @system.dup.applications
+      expect(applications.size).to eq(@system.applications.size)
+      expect(applications).to be_all(&:new_record?)
+    end
+
+    it 'duplicate application_history without save' do
+      histories = @system.dup.applications.first.histories
+      expect(histories.size).to eq(@system.applications.first.histories.size)
+      expect(histories).to be_all(&:new_record?)
     end
   end
 

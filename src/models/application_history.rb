@@ -17,8 +17,8 @@ require 'sinatra/activerecord'
 class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
 
-  before_create :allocate_version
-  before_create :serf_request, if: -> { application.system.ip_address }
+  before_save :allocate_version, unless: -> { version }
+  before_save :serf_request, if: -> { !deployed? && application.system.ip_address }
 
   belongs_to :application
 
@@ -34,6 +34,10 @@ class ApplicationHistory < ActiveRecord::Base
     rescue JSON::ParserError
       record.errors.add(attr, 'is malformed or invalid json string')
     end
+  end
+
+  after_initialize do
+    self.status ||= :not_yet
   end
 
   def allocate_version
@@ -63,5 +67,17 @@ class ApplicationHistory < ActiveRecord::Base
     payload[:cloudconductor][:applications][application.name] = application_payload
 
     application.system.serf.call('event', 'deploy', payload)
+
+    self.status = :deployed
+  end
+
+  def deployed?
+    status == :deployed
+  end
+
+  def dup
+    history = super
+    history.status = :not_yet
+    history
   end
 end

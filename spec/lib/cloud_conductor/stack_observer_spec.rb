@@ -39,7 +39,8 @@ module CloudConductor
       Serf::Client.any_instance.stub(:call).and_return(double('status', 'success?' => true))
       Consul::Client::Client.any_instance.stub(:running?).and_return(true)
 
-      @serf_client = double(:serf_client, call: nil)
+      @serf_client = double(:serf_client)
+      @serf_client.stub(:call).with(any_args)
       @system.stub(:serf).and_return(@serf_client)
     end
 
@@ -99,17 +100,55 @@ module CloudConductor
     end
 
     describe '#update_system' do
-      it 'will request to serf with payload when block yield' do
+      before do
         System.skip_callback :save, :before, :enable_monitoring
         System.skip_callback :save, :before, :update_dns
 
+        @observer = StackObserver.new
+        @observer.stub(:sleep)
+      end
+
+      after do
+        System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
+        System.set_callback :save, :before, :update_dns, if: -> { ip_address }
+      end
+
+      it 'will request configure event to serf with payload' do
         expected_payload = { 'dummy' => 'value' }
         @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
 
-        StackObserver.new.send(:update_system, @system, '127.0.0.1')
+        @observer.send(:update_system, @system, '127.0.0.1')
+      end
 
-        System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
-        System.set_callback :save, :before, :update_dns, if: -> { ip_address }
+      it 'will request deploy event to serf with payload' do
+        application = FactoryGirl.create(:application, name: 'dummy', system: @system)
+        application.histories << FactoryGirl.create(:application_history, application: application)
+        @system.applications << application
+
+        expected_payload = {
+          cloudconductor: {
+            applications: {
+              'dummy' => {
+                domain: 'example.com',
+                type: 'static',
+                version: 1,
+                protocol: 'http',
+                url: 'http://example.com/',
+                parameters: { dummy: 'value' }
+              }
+            }
+          }
+        }
+
+        @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+
+        @observer.send(:update_system, @system, '127.0.0.1')
+      end
+
+      it 'will request restore event to serf' do
+        @serf_client.should_receive(:call).with('event', 'restore', {})
+
+        @observer.send(:update_system, @system, '127.0.0.1')
       end
     end
   end

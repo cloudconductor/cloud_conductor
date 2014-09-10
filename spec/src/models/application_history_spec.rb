@@ -28,6 +28,12 @@ describe ApplicationHistory do
     @application.system.stub(:serf).and_return(@serf_client)
   end
 
+  describe '#initialize' do
+    it 'set status to :not_yet' do
+      expect(@history.status).to eq(:not_yet)
+    end
+  end
+
   describe '#save' do
     it 'create with valid parameters' do
       count = ApplicationHistory.count
@@ -66,9 +72,24 @@ describe ApplicationHistory do
         @history.should_not_receive(:serf_request)
         @history.save!
       end
+
+      it 'will not call serf_request if already deployed' do
+        @history.status = :deployed
+
+        @history.should_not_receive(:serf_request)
+        @history.save!
+      end
     end
 
     describe '#serf_request' do
+      it 'change status when call serf_request' do
+        expect(@history.status).to eq(:not_yet)
+
+        @history.save!
+
+        expect(@history.status).to eq(:deployed)
+      end
+
       it 'contains domain, type, version, protocol, url and parameters in payload when request to serf' do
         @history.application.name = 'dummy'
 
@@ -166,6 +187,14 @@ describe ApplicationHistory do
     it 'returns false when parameters is invalid JSON' do
       @history.parameters = 'dummy'
       expect(@history.valid?).to be_falsey
+    end
+  end
+
+  describe '#dup' do
+    it 'copy attributes without status' do
+      @history.status = :deployed
+      result = @history.dup
+      expect(result.status).to eq(:not_yet)
     end
   end
 end
