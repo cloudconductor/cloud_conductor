@@ -40,6 +40,7 @@ module CloudConductor
 
       command = build_command repository_url, revision, only, role, packer_json_path
       Thread.new do
+        start = Time.now
         status, stdout, stderr = systemu(command)
 
         Log.debug('--------------stdout------------')
@@ -48,7 +49,7 @@ module CloudConductor
         Log.debug(stderr)
 
         Log.error('Packer failed') unless status.success?
-        Log.info("Packer finished in #{Thread.current}")
+        Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
 
         begin
           ActiveRecord::Base.connection_pool.with_connection do
