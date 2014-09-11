@@ -49,10 +49,10 @@ module CloudConductor
       payload = JSON.parse(system.parameters)
       system.serf.call('event', 'configure', payload)
 
-      sleep 10
+      sleep 30
       system.deploy_applications
 
-      sleep 10
+      sleep 30
       system.serf.call('event', 'restore', {})
     end
   end
