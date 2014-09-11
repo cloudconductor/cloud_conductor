@@ -303,6 +303,18 @@ describe System do
 
       @system.destroy
     end
+
+    it 'destroy all applications in target system' do
+      @system.save!
+
+      application_count = Application.count
+      history_count = ApplicationHistory.count
+
+      @system.destroy
+
+      expect(Application.count).to eq(application_count - 2)
+      expect(ApplicationHistory.count).to eq(history_count - 2)
+    end
   end
 
   describe '#serf' do
