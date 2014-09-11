@@ -21,10 +21,14 @@ FactoryGirl.define do
 
     after(:build) do
       System.skip_callback :save, :before, :create_stack
+      System.skip_callback :save, :before, :enable_monitoring
+      System.skip_callback :save, :before, :update_dns
     end
 
     after(:create) do
       System.set_callback :save, :before, :create_stack, if: -> { status == :NOT_CREATED }
+      System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
+      System.set_callback :save, :before, :update_dns, if: -> { ip_address }
     end
 
     before(:create) do |system|
