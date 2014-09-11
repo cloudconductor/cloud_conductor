@@ -78,7 +78,10 @@ module CloudConductor
         orc = create_orchestration options
         body = (orc.list_stacks)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        puts target_stack
+        if target_stack.nil?
+          Log.warn("Target stack was already deleted( stack_name = #{name})")
+          return
+        end
         stack_id = target_stack[:id].to_sym
         orc.delete_stack name, stack_id
       end

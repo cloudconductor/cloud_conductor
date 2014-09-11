@@ -232,6 +232,10 @@ module CloudConductor
           @orc.should_receive(:delete_stack).with('stack_name', :stack_id)
           @adapter.destroy_stack 'stack_name'
         end
+
+        it 'doesn\'t raise any error when target stack was already deleted' do
+          @adapter.destroy_stack 'already_deleted_stack'
+        end
       end
     end
   end
