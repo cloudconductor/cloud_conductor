@@ -213,6 +213,26 @@ module CloudConductor
           expect(outputs[:testkey]).to eq('testvalue')
         end
       end
+
+      describe '#destroy_stack' do
+        before do
+          @stacks = {
+            stacks: [
+              {
+                stack_name: 'stack_name',
+                id: 'stack_id'
+              }
+            ]
+          }
+          @orc = double(:orc, list_stacks: { body: @stacks }, delete_stack: nil)
+          @adapter.stub(:create_orchestration).and_return(@orc)
+        end
+
+        it 'will request delete_stack API' do
+          @orc.should_receive(:delete_stack).with('stack_name', :stack_id)
+          @adapter.destroy_stack 'stack_name'
+        end
+      end
     end
   end
 end
