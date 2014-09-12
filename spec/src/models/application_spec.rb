@@ -79,7 +79,7 @@ describe Application do
       @application.histories << FactoryGirl.build(:application_history)
       @application.histories << FactoryGirl.build(:application_history)
 
-      expect(@application.latest_version).to eq(3)
+      expect(@application.latest_version).to match(/\d{8}-\d{3}/)
     end
   end
 

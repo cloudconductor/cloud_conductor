@@ -5,7 +5,7 @@ class CreateApplicationHistories < ActiveRecord::Migration
       t.string :status
       t.string :domain
       t.string :type
-      t.integer :version
+      t.string :version
       t.string :protocol
       t.string :url
       t.string :revision

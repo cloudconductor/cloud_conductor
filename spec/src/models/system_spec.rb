@@ -334,6 +334,7 @@ describe System do
       @serf_client = double(:serf_client)
       @system.stub(:serf).and_return(@serf_client)
       @system.applications.clear
+      @time = Time.now.strftime('%Y%m%d')
     end
 
     it 'will request deploy event to serf with payload' do
@@ -347,7 +348,7 @@ describe System do
             'dummy' => {
               domain: 'example.com',
               type: 'static',
-              version: 1,
+              version: "#{@time}-001",
               protocol: 'http',
               url: 'http://example.com/',
               parameters: { dummy: 'value' }
@@ -375,7 +376,7 @@ describe System do
             'dummy1' => {
               domain: 'example.com',
               type: 'static',
-              version: 1,
+              version: "#{@time}-001",
               protocol: 'http',
               url: 'http://example.com/',
               parameters: { dummy: 'value' }
@@ -383,7 +384,7 @@ describe System do
             'dummy2' => {
               domain: 'example.com',
               type: 'static',
-              version: 1,
+              version: "#{@time}-001",
               protocol: 'http',
               url: 'http://example.com/',
               parameters: { dummy: 'value' }
