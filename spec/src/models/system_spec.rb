@@ -336,6 +336,11 @@ describe System do
       @system.applications.clear
     end
 
+    it 'will NOT request deploy event to serf when applications are empty' do
+      @serf_client.should_not_receive(:call)
+      @system.deploy_applications
+    end
+
     it 'will request deploy event to serf with payload' do
       application = FactoryGirl.create(:application, name: 'dummy', system: @system)
       application.histories << FactoryGirl.create(:application_history, application: application)

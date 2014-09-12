@@ -135,6 +135,8 @@ class System < ActiveRecord::Base
   end
 
   def deploy_applications
+    return if applications.empty?
+
     payload = {
       cloudconductor: {
         applications: {
