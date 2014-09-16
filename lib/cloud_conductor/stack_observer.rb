@@ -50,10 +50,10 @@ module CloudConductor
       system.serf.call('event', 'configure', payload)
 
       sleep 30
-      system.deploy_applications
+      system.serf.call('event', 'restore', {})
 
       sleep 30
-      system.serf.call('event', 'restore', {})
+      system.deploy_applications
     end
   end
 end
