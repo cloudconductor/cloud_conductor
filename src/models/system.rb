@@ -125,7 +125,7 @@ class System < ActiveRecord::Base
 
   def destroy_stack
     cloud = available_clouds.active
-    cloud.client.destroy_stack name
+    cloud.client.destroy_stack name if cloud
   end
 
   def serf
