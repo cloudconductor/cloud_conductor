@@ -41,13 +41,13 @@ class ApplicationHistory < ActiveRecord::Base
   end
 
   def allocate_version
-    time = Time.now.strftime('%Y%m%d')
+    today = Date.today.strftime('%Y%m%d')
 
-    if /#{time}-(\d+)/.match application.latest_version
+    if /#{today}-(\d+)/.match application.latest_version
       version_num = (Regexp.last_match[1].to_i + 1).to_s.rjust(3, '0')
-      self.version = "#{time}-#{version_num}"
+      self.version = "#{today}-#{version_num}"
     else
-      self.version = "#{time}-001"
+      self.version = "#{today}-001"
     end
   end
 
