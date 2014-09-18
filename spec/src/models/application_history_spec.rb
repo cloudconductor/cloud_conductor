@@ -26,6 +26,7 @@ describe ApplicationHistory do
 
     @serf_client = double('serf_client', call: nil)
     @application.system.stub(:serf).and_return(@serf_client)
+    @today = Date.today.strftime('%Y%m%d')
   end
 
   describe '#initialize' do
@@ -44,20 +45,26 @@ describe ApplicationHistory do
     end
 
     it 'assign version on first history automatically when version does not specified' do
-      @history.version = nil
       @history.save!
 
-      expect(@history.version).to eq(1)
+      expect(@history.version).to eq(@today + '-001')
     end
 
     it 'assign version on second or later history automatically when version does not specified' do
-      FactoryGirl.create(:application_history, application: @application)
-      FactoryGirl.create(:application_history, application: @application)
+      @application.histories << FactoryGirl.build(:application_history, application: @application)
+      @application.histories << FactoryGirl.build(:application_history, application: @application)
 
-      @history.version = nil
       @history.save!
 
-      expect(@history.version).to eq(3)
+      expect(@history.version).to eq(@today + '-003')
+    end
+
+    it 'assign version that is based on the current date when version does not specified' do
+      @application.histories << FactoryGirl.build(:application_history, application: @application, version: '20001122-5')
+
+      @history.save!
+
+      expect(@history.version).to eq(@today + '-001')
     end
 
     describe 'before_save' do
@@ -99,7 +106,7 @@ describe ApplicationHistory do
               'dummy' => {
                 domain: 'example.com',
                 type: 'static',
-                version: 1,
+                version: "#{@today}-001",
                 protocol: 'http',
                 url: 'http://example.com/',
                 parameters: { dummy: 'value' }

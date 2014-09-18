@@ -26,7 +26,7 @@ class Application < ActiveRecord::Base
   end
 
   def latest_version
-    histories.last.version
+    latest.version if latest
   end
 
   def to_json(options = {})
