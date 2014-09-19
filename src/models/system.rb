@@ -134,7 +134,7 @@ class System < ActiveRecord::Base
     Serf::Client.new host: ip_address
   end
 
-  def deploy_applications
+  def send_application_payload
     return if applications.empty?
 
     payload = {
@@ -148,7 +148,14 @@ class System < ActiveRecord::Base
       payload[:cloudconductor][:applications][history.application.name] = history.application_payload
     end
 
-    serf.call('event', 'deploy', payload)
+    consul = Consul::Client.connect host: ip_address
+    consul.kv.merge Serf::Client::PAYLOAD_KEY, payload
+  end
+
+  def deploy_applications
+    return if applications.empty?
+
+    serf.call('event', 'deploy')
 
     applications.map(&:latest).compact.reject(&:deployed?).each do |history|
       history.status = :deployed

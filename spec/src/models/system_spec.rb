@@ -329,20 +329,16 @@ describe System do
     end
   end
 
-  describe '#deploy_applications' do
+  describe '#send_application_payload' do
     before do
-      @serf_client = double(:serf_client)
-      @system.stub(:serf).and_return(@serf_client)
       @system.applications.clear
       @time = Time.now.strftime('%Y%m%d')
+
+      @consul_client = double(:consul_client)
+      Consul::Client.stub_chain(:connect, :kv).and_return @consul_client
     end
 
-    it 'will NOT request deploy event to serf when applications are empty' do
-      @serf_client.should_not_receive(:call)
-      @system.deploy_applications
-    end
-
-    it 'will request deploy event to serf with payload' do
+    it 'will send payload to consul' do
       application = FactoryGirl.create(:application, name: 'dummy', system: @system)
       application.histories << FactoryGirl.create(:application_history, application: application)
       @system.applications << application
@@ -362,12 +358,12 @@ describe System do
         }
       }
 
-      @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+      @consul_client.should_receive(:merge).with(anything, expected_payload)
 
-      @system.deploy_applications
+      @system.send_application_payload
     end
 
-    it 'will request deploy event to serf with payload belongs to multiple applications' do
+    it 'will send payload belongs to multiple applications to consul' do
       application1 = FactoryGirl.create(:application, name: 'dummy1', system: @system)
       application2 = FactoryGirl.create(:application, name: 'dummy2', system: @system)
       application1.histories << FactoryGirl.create(:application_history, application: application1)
@@ -398,7 +394,30 @@ describe System do
         }
       }
 
-      @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+      @consul_client.should_receive(:merge).with(anything, expected_payload)
+
+      @system.send_application_payload
+    end
+  end
+
+  describe '#deploy_applications' do
+    before do
+      @serf_client = double(:serf_client)
+      @system.stub(:serf).and_return(@serf_client)
+      @system.applications.clear
+    end
+
+    it 'will NOT request deploy event to serf when applications are empty' do
+      @serf_client.should_not_receive(:call)
+      @system.deploy_applications
+    end
+
+    it 'will request deploy event to serf' do
+      application = FactoryGirl.create(:application, name: 'dummy', system: @system)
+      application.histories << FactoryGirl.create(:application_history, application: application)
+      @system.applications << application
+
+      @serf_client.should_receive(:call).with('event', 'deploy')
 
       @system.deploy_applications
     end
