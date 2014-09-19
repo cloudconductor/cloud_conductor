@@ -147,4 +147,16 @@ describe Cloud do
       expect(@cloud.template).to eq('{"key":"value"}')
     end
   end
+
+  describe '#to_json' do
+    it 'mask secret column' do
+      result = JSON.parse(@cloud.to_json, symbolize_names: true)
+      expect(result[:name]).to eq('Test')
+      expect(result[:type]).to eq('aws')
+      expect(result[:entry_point]).to eq('ap-northeast-1')
+      expect(result[:key]).to eq('TestKey')
+      expect(result[:secret]).to eq('********')
+      expect(result[:tenant_name]).to eq('TestTenant')
+    end
+  end
 end

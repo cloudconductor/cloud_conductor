@@ -57,4 +57,12 @@ class Cloud < ActiveRecord::Base
     templates = YAML.load_file(TEMPLATE_PATH).symbolize_keys
     templates[type].to_json
   end
+
+  def to_json
+    original_secret = secret
+    self.secret = '********'
+    json = super
+    self.secret = original_secret
+    json
+  end
 end
