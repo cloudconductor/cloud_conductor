@@ -87,7 +87,7 @@ class CloudsController < Sinatra::Base
   end
 
   def cloud_permit_params
-    ActionController::Parameters.new(params).permit(:name, :type, :entry_point, :key, :secret, :tenant_id, :tenant_name)
+    ActionController::Parameters.new(params).permit(:name, :type, :entry_point, :key, :secret, :tenant_name)
   end
 
   def target_permit_params(target_params)

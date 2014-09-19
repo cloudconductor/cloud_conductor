@@ -19,7 +19,6 @@ FactoryGirl.define do
     entry_point 'ap-northeast-1'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
-    tenant_id nil
     tenant_name nil
   end
 
@@ -29,7 +28,6 @@ FactoryGirl.define do
     entry_point 'http://example.com/'
     key '1234567890abcdef'
     secret 'fedcba9876543210'
-    tenant_id '1'
     tenant_name 'dummy_tenant'
   end
 end

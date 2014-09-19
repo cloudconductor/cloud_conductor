@@ -51,7 +51,6 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.string   "entry_point"
     t.string   "key"
     t.string   "secret"
-    t.string   "tenant_id"
     t.string   "tenant_name"
     t.text     "template"
     t.datetime "created_at"

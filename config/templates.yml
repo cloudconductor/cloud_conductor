@@ -20,7 +20,7 @@ openstack:
   type: "openstack"
   username: "{{cloud `key`}}"
   password: "{{cloud `secret`}}"
-  tenant_id: "{{cloud `tenant_id`}}"
+  project: "{{cloud `tenant_name`}}"
   provider: "{{cloud `entry_point`}}v2.0/tokens"
   region: "RegionOne"
   flavor: "2"

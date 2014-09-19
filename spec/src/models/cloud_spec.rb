@@ -20,7 +20,6 @@ describe Cloud do
     @cloud.entry_point = 'ap-northeast-1'
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
-    @cloud.tenant_id = '1234567890'
     @cloud.tenant_name = 'TestTenant'
   end
 
@@ -40,7 +39,7 @@ describe Cloud do
       expect(@cloud.valid?).to be_truthy
 
       @cloud.type = 'aws'
-      @cloud.tenant_id = nil
+      @cloud.tenant_name = nil
       expect(@cloud.valid?).to be_truthy
     end
 
@@ -94,15 +93,6 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
 
       @cloud.type = 'test'
-      expect(@cloud.valid?).to be_falsey
-    end
-
-    it 'returns false when type is openstack and tenant_id is blank' do
-      @cloud.type = 'openstack'
-      @cloud.tenant_id = ''
-      expect(@cloud.valid?).to be_falsey
-
-      @cloud.tenant_id = nil
       expect(@cloud.valid?).to be_falsey
     end
 
