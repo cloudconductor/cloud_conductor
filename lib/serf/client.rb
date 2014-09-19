@@ -34,7 +34,7 @@ module Serf
 
     def call(main, sub = nil, payload = {})
       consul = Consul::Client.connect host: @host
-      consul.kv.put PAYLOAD_KEY, payload
+      consul.kv.merge PAYLOAD_KEY, payload
 
       options_text = @options.map { |key, value| "-#{key}=#{value}" }.join(' ')
       command = "#{SERF_PATH} #{main} -rpc-addr=#{@host}:#{@port} #{options_text} #{sub}"
