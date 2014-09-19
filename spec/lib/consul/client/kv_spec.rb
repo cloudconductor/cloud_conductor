@@ -86,6 +86,40 @@ module Consul
           @client.put 'dummy', key: 'value'
         end
       end
+
+      describe '#merge' do
+        before do
+          @client.stub(:get)
+          @client.stub(:put)
+        end
+
+        it 'will get value' do
+          @client.should_receive(:get).with('dummy')
+
+          @client.merge 'dummy', key: 'value'
+        end
+
+        it 'overwrite value if previous value isn\'t hash' do
+          @client.stub(:get).and_return('value')
+          @client.should_receive(:put).with('dummy', key: 'value')
+
+          @client.merge 'dummy', key: 'value'
+        end
+
+        it 'merge both hashes if previous value is hash' do
+          @client.stub(:get).and_return(key: 'previous', key2: 'previous2')
+          @client.should_receive(:put).with('dummy', key: 'value', key2: 'previous2')
+
+          @client.merge 'dummy', key: 'value'
+        end
+
+        it 'merge deep hashes if previous value has hierarchy hash' do
+          @client.stub(:get).and_return(key: 'previous', key2: { subkey: 'previous2' })
+          @client.should_receive(:put).with('dummy', key: 'value', key2: { subkey: 'previous2', subkey2: 'value' })
+
+          @client.merge 'dummy', key: 'value', key2: { subkey2: 'value' }
+        end
+      end
     end
   end
 end
