@@ -58,10 +58,10 @@ class Cloud < ActiveRecord::Base
     templates[type].to_json
   end
 
-  def to_json
+  def to_json(options = {})
     original_secret = secret
     self.secret = '********'
-    json = super
+    json = super options
     self.secret = original_secret
     json
   end
