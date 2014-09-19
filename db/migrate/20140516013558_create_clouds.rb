@@ -7,7 +7,6 @@ class CreateClouds < ActiveRecord::Migration
       t.string :key
       t.string :secret
       t.string :tenant_name
-      t.text :template
       t.timestamps
     end
   end

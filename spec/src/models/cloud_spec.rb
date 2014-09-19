@@ -140,4 +140,11 @@ describe Cloud do
       expect(@cloud.type).to eq(:aws)
     end
   end
+
+  describe '#template' do
+    it 'load templates.yml and return JSON string' do
+      YAML.should_receive(:load_file).and_return('aws' => { 'key' => 'value' })
+      expect(@cloud.template).to eq('{"key":"value"}')
+    end
+  end
 end

@@ -31,7 +31,7 @@ describe Target do
 
   describe '#to_json' do
     it 'return valid JSON that is generated from Cloud#template' do
-      @target.cloud.template = <<-EOS
+      @target.cloud.stub(:template).and_return <<-EOS
         {
           "dummy1": "dummy_value1",
           "dummy2": "dummy_value2"
@@ -43,7 +43,7 @@ describe Target do
     end
 
     it 'update variables in template' do
-      @target.cloud.template = <<-EOS
+      @target.cloud.stub(:template).and_return <<-EOS
         {
           "cloud_name": "{{cloud `name`}}",
           "operating_system_name": "{{operating_system `name`}}",
@@ -58,7 +58,7 @@ describe Target do
     end
 
     it 'doesn\'t affect variables that has unrelated receiver' do
-      @target.cloud.template = <<-EOS
+      @target.cloud.stub(:template).and_return <<-EOS
         {
           "dummy1": "{{user `name`}}",
           "dummy2": "{{env `PATH`}}",

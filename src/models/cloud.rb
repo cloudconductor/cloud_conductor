@@ -15,6 +15,8 @@
 require 'sinatra/activerecord'
 
 class Cloud < ActiveRecord::Base
+  TEMPLATE_PATH = File.expand_path('../../config/templates.yml', File.dirname(__FILE__))
+
   self.inheritance_column = nil
 
   has_many :targets, dependent: :destroy
@@ -49,5 +51,10 @@ class Cloud < ActiveRecord::Base
 
   def raise_error_in_use
     fail 'Can\'t destroy cloud that is used in some systems.' if used?
+  end
+
+  def template
+    templates = YAML.load_file(TEMPLATE_PATH).symbolize_keys
+    templates[type].to_json
   end
 end

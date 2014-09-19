@@ -14,8 +14,6 @@
 require 'yaml'
 
 class CloudsController < Sinatra::Base
-  TEMPLATE_PATH = File.expand_path('../../config/templates.yml', File.dirname(__FILE__))
-
   configure :development do
     register Sinatra::Reloader
   end
@@ -41,8 +39,6 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new cloud_permit_params
-    templates = YAML.load_file(TEMPLATE_PATH).symbolize_keys
-    cloud.template = templates[cloud.type].to_json
     params[:targets].each do |target_params|
       cloud.targets.build target_permit_params(target_params)
     end
