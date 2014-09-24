@@ -30,7 +30,7 @@ module Serf
         @client = Client.new host: 'localhost', options: options
         @client.stub(:systemu).and_return([double('status', 'success?' => true), '{}'])
 
-        @kv_stub = double('KV', put: nil)
+        @kv_stub = double('KV', merge: nil)
         Consul::Client.stub_chain(:connect, :kv).and_return @kv_stub
       end
 
@@ -49,9 +49,9 @@ module Serf
         @client.call('info', 'dummy')
       end
 
-      it 'will call Consul::Client::KV#put with specified payload' do
+      it 'will call Consul::Client::KV#merge with specified payload' do
         payload = { key: 'value' }
-        @kv_stub.should_receive(:put).with('cloudconductor/parameters', payload)
+        @kv_stub.should_receive(:merge).with('cloudconductor/parameters', payload)
         @client.call('info', nil, payload)
       end
     end

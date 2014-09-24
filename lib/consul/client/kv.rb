@@ -37,6 +37,12 @@ module Consul
         value = value.to_json if value.is_a? Hash
         @faraday.put(key, value)
       end
+
+      def merge(key, value)
+        previous = get(key)
+        value = previous.deep_merge value if previous.is_a? Hash
+        put(key, value)
+      end
     end
   end
 end
