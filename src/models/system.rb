@@ -84,6 +84,7 @@ class System < ActiveRecord::Base
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     system.name = "#{basename}-#{SecureRandom.uuid}"
     system.ip_address = nil
+    system.monitoring_host = nil
 
     available_clouds.each do |available_cloud|
       system.add_cloud available_cloud.cloud, available_cloud.priority

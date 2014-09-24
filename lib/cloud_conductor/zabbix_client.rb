@@ -15,22 +15,37 @@
 module CloudConductor
   # rubocop: disable ClassLength
   class ZabbixClient
+    # rubocop: disable MethodLength
     def register(system)
       cc_api_url = CloudConductor::Config.cloudconductor.url
       zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
 
-      hostgroup_id = zbx.hostgroups.create_or_update name: system.name
+      host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+      hostgroup_id = zbx.hostgroups.create_or_update name: host_name
       template_id = zbx.templates.get_id host: 'Template App HTTP Service'
+      action_name = "FailOver_#{system.monitoring_host}"
+      action_id = get_action_zabbix(zbx: zbx, action_name: action_name)
 
-      host_id = add_host_zabbix zbx, system.monitoring_host, hostgroup_id, template_id
-      add_action_zabbix(
-        zbx: zbx,
-        host_id: host_id,
-        cc_api_url: cc_api_url,
-        system_id: system.id,
-        target_host: system.monitoring_host
-      )
+      if action_id.nil?
+        host_id = add_host_zabbix zbx, system.monitoring_host, hostgroup_id, template_id
+        add_action_zabbix(
+          zbx: zbx,
+          host_id: host_id,
+          cc_api_url: cc_api_url,
+          system_id: system.id,
+          action_name: action_name
+        )
+      else
+        update_action(
+          zbx: zbx,
+          cc_api_url: cc_api_url,
+          system_id: system.id,
+          action_name: action_name,
+          action_id: action_id
+        )
+      end
     end
+    # rubocop: enable MethodLength
 
     private
 
@@ -93,16 +108,6 @@ module CloudConductor
       zbx.hosts.create_or_update params
     end
 
-    def check_if_action_exists_zabbix(zbx, action_name)
-      params = {
-        method: 'action.exists',
-        params: {
-          name: action_name
-        }
-      }
-      zbx.client.api_request(params)
-    end
-
     def create_action_command_zabbix(cc_api_url, system_id)
       "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{cc_api_url}"
     end
@@ -113,11 +118,7 @@ module CloudConductor
       host_id = parameters[:host_id]
       cc_api_url = parameters[:cc_api_url]
       system_id = parameters[:system_id]
-      target_host = parameters[:target_host]
-      action_name = "FailOver_#{target_host}"
-      action_exists = check_if_action_exists_zabbix zbx, action_name
-
-      return if action_exists
+      action_name = parameters[:action_name]
 
       params = {
         method: 'action.create',
@@ -141,6 +142,56 @@ module CloudConductor
               value: 1
             }
           ],
+          operations: [
+            {
+              operationtype: 1,
+              opcommand_hst: {
+                hostid: 0
+              },
+              opcommand: {
+                type: 0,
+                command: create_action_command_zabbix(cc_api_url, system_id),
+                execute_on: '1'
+              }
+            }
+          ]
+        }
+      }
+      zbx.client.api_request params
+    end
+    # rubocop: enable MethodLength
+
+    def get_action_zabbix(parameters)
+      zbx = parameters[:zbx]
+      action_name = parameters[:action_name]
+
+      params = {
+        method: 'action.get',
+        id: 1,
+        params: {
+          filter: {
+            name: action_name
+          }
+        }
+      }
+      result = zbx.client.api_request(params).first
+      result['actionid'] if result
+    end
+
+    # rubocop: disable MethodLength
+    def update_action(parameters)
+      zbx = parameters[:zbx]
+      cc_api_url = parameters[:cc_api_url]
+      system_id = parameters[:system_id]
+      action_name = parameters[:action_name]
+      action_id = parameters[:action_id]
+
+      params = {
+        method: 'action.update',
+        id: 1,
+        params: {
+          name: action_name,
+          actionid: action_id,
           operations: [
             {
               operationtype: 1,

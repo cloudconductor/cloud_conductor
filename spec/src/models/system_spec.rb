@@ -205,7 +205,7 @@ describe System do
   end
 
   describe '#dup' do
-    it 'duplicate all attributes in system without name and ip_address' do
+    it 'duplicate all attributes in system without name, ip_address and monitoring_host' do
       duplicated_system = @system.dup
       expect(duplicated_system.template_parameters).to eq(@system.template_parameters)
       expect(duplicated_system.parameters).to eq(@system.parameters)
@@ -220,6 +220,11 @@ describe System do
     it 'clear ip_address' do
       @system.ip_address = '192.168.0.1'
       expect(@system.dup.ip_address).to be_nil
+    end
+
+    it 'clear monitoring_host' do
+      @system.monitoring_host = 'example.com'
+      expect(@system.dup.monitoring_host).to be_nil
     end
 
     it 'duplicated associated clouds' do

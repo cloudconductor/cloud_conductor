@@ -14,35 +14,261 @@
 # limitations under the License.
 module CloudConductor
   describe ZabbixClient do
+    before do
+      @zabbix_client = double('zabbix')
+
+      @zabbix = double('zabbix')
+      @zabbix.stub(:client).and_return(@zabbix_client)
+
+      @client = ZabbixClient.new
+
+      @system = FactoryGirl.create(:system)
+      @system.name = 'example'
+      @system.monitoring_host = 'example.com'
+    end
+
     describe '#register' do
       before do
-        @zabbix = double('zabbix')
+        CloudConductor::Config.stub_chain(:cloudconductor, :url).and_return('http://example.com/zabbix')
         ZabbixApi.stub(:connect).and_return(@zabbix)
-
-        @zabbix.stub_chain(:hostgroups, :create_or_update)
-        @zabbix.stub_chain(:templates, :get_id)
-        hosts = double('hosts', find: { host: 'test' })
-        @zabbix.stub_chain(:hosts, :get).and_return(hosts)
-        @zabbix.stub_chain(:hosts, :create_or_update)
-        @zabbix.stub_chain(:client, :api_request)
-
-        Cloud.any_instance.stub_chain(:client, :create_stack)
-        @system = FactoryGirl.create(:system)
+        @zabbix.stub_chain(:hostgroups, :create_or_update).and_return(1)
+        @zabbix.stub_chain(:templates, :get_id).and_return(2)
+        @client.stub(:get_action_zabbix)
+        @client.stub(:add_host_zabbix).and_return(3)
+        @client.stub(:add_action_zabbix)
+        @client.stub(:update_action)
       end
 
-      it 'call zabbix api to register action' do
-        zabbix_client = double('zabbix_client')
-        zabbix_client.stub(:api_request)
-        zabbix_client.should_receive(:api_request).with(hash_including(method: 'action.create'))
+      it 'call Hostgroups#create_or_update with name of system' do
+        hostgroups = double('ZabbixApi::Hostgroups')
+        @zabbix.stub(:hostgroups).and_return(hostgroups)
 
-        @zabbix.stub(:client).and_return(zabbix_client)
+        hostgroups.should_receive(:create_or_update).with(name: 'example')
+        @client.register(@system)
+      end
 
-        parameters = {}
-        parameters[:target_host] = 'example.com'
-        parameters[:system_id] = 1
+      it 'call Hostgroups#create_or_update without uuid' do
+        hostgroups = double('ZabbixApi::Hostgroups')
+        @zabbix.stub(:hostgroups).and_return(hostgroups)
 
-        zabbix_client = ZabbixClient.new
-        zabbix_client.register @system
+        @system.name = 'example-8d6cbaf0-ee69-4a7c-b1da-6d14ea241dce'
+        hostgroups.should_receive(:create_or_update).with(name: 'example')
+        @client.register(@system)
+      end
+
+      it 'call Templates#get_id with fixed name of template' do
+        templates = double('ZabbixApi::Templates')
+        @zabbix.stub(:templates).and_return(templates)
+
+        templates.should_receive(:get_id).with(host: 'Template App HTTP Service')
+        @client.register(@system)
+      end
+
+      it 'call get_action_zabbix with action_name' do
+        @client.should_receive(:get_action_zabbix).with(zbx: @zabbix, action_name: 'FailOver_example.com')
+        @client.register(@system)
+      end
+
+      it 'call add_host_zabbix when target action does not exist' do
+        @client.stub(:get_action_zabbix).and_return(nil)
+        @client.should_receive(:add_host_zabbix).with(@zabbix, 'example.com', 1, 2)
+        @client.register(@system)
+      end
+
+      it 'call add_action_zabbix  when target action does not exist' do
+        @client.stub(:get_action_zabbix).and_return(nil)
+
+        expected_parameters = {
+          zbx: @zabbix,
+          host_id: 3,
+          cc_api_url: 'http://example.com/zabbix',
+          system_id: @system.id,
+          action_name: 'FailOver_example.com'
+        }
+        @client.should_receive(:add_action_zabbix).with(expected_parameters)
+        @client.register(@system)
+      end
+
+      it 'does not call update_action when target action does not exist' do
+        @client.stub(:get_action_zabbix).and_return(nil)
+        @client.should_not_receive(:update_action)
+        @client.register(@system)
+      end
+
+      it 'call update_action when target action already exist' do
+        @client.stub(:get_action_zabbix).and_return('4')
+        expected_parameters = {
+          zbx: @zabbix,
+          cc_api_url: 'http://example.com/zabbix',
+          system_id: @system.id,
+          action_name: 'FailOver_example.com',
+          action_id: '4'
+        }
+        @client.should_receive(:update_action).with(expected_parameters)
+        @client.register(@system)
+      end
+
+      it 'does not call add_host_zabbix and add_action_zabbix when target action already exist' do
+        @client.stub(:get_action_zabbix).and_return('4')
+        @client.should_not_receive(:add_host_zabbix)
+        @client.should_not_receive(:add_action_zabbix)
+      end
+    end
+
+    describe '#get_hostgroups_host_belongs_to_zabbix with parameters' do
+      it 'request zabbix api with host.get method' do
+        expected_parameters = {
+          method: 'host.get',
+          params: hash_including(
+            filter: hash_including(
+              hostid: [1]
+            )
+          )
+        }
+
+        response = [
+          {
+            hostid: 1,
+            groups: {
+              key: 'dummy'
+            }
+          }
+        ]
+
+        @zabbix_client.should_receive(:api_request).with(hash_including(expected_parameters)).and_return response
+        result = @client.send(:get_hostgroups_host_belongs_to_zabbix, @zabbix, 1)
+
+        expect(result).to eq('key' => 'dummy')
+      end
+    end
+
+    describe '#update_host_zabbix' do
+      it 'request zabbix api with host.update method' do
+        expected_parameters = {
+          method: 'host.update',
+          params: {
+            hostid: 1,
+            groups: [
+              { groupid: 2 }
+            ]
+          }
+        }
+
+        @client.stub(:get_hostgroups_host_belongs_to_zabbix).and_return []
+
+        @zabbix_client.should_receive(:api_request).with(expected_parameters)
+        @client.send(:update_host_zabbix, @zabbix, 1, 2)
+      end
+    end
+
+    describe '#get_host_id_zabbix' do
+      it 'get hosts via ZabbixApi with target hostname' do
+        hosts = double('ZabbixApi::Hosts')
+        @zabbix.stub(:hosts).and_return(hosts)
+
+        hosts.should_receive(:get).with(name: 'example.com').and_return([])
+
+        @client.send(:get_host_id_zabbix, @zabbix, 'example.com')
+      end
+    end
+
+    describe '#add_host_zabbix' do
+      it 'call update_host_zabbix only when host already exist' do
+        @client.stub(:get_host_id_zabbix).and_return 1
+        @client.should_receive(:update_host_zabbix).with(@zabbix, 1, 2)
+        @zabbix.should_not_receive(:hosts)
+
+        @client.send(:add_host_zabbix, @zabbix, 'example.com', 2, 3)
+      end
+
+      it 'call Hosts#create_or_update with parameters wieh host does not exist' do
+        @client.stub(:get_host_id_zabbix).and_return nil
+
+        hosts = double('ZabbixApi::Hosts')
+        @zabbix.stub(:hosts).and_return(hosts)
+
+        expected_parameters = {
+          host: 'example.com',
+          interfaces: [
+            hash_including(
+              dns: 'example.com'
+            )
+          ],
+          groups: [groupid: 1],
+          templates: [templateid: 2]
+        }
+
+        hosts.should_receive(:create_or_update).with(expected_parameters)
+        @client.send(:add_host_zabbix, @zabbix, 'example.com', 1, 2)
+      end
+    end
+
+    describe '#create_action_command_zabbix' do
+      it 'return curl command with arguments' do
+        command = @client.send(:create_action_command_zabbix, 'http://example.com/zabbix', 1)
+        expect(command).to eq('curl -H "Content-Type:application/json" -X POST -d \'{"system_id": "1"}\' http://example.com/zabbix')
+      end
+    end
+
+    describe '#add_action_zabbix' do
+      it 'request zabbix api with action.create method' do
+        @client.stub(:create_action_command_zabbix).and_return('dummy_command')
+
+        expected_parameters = satisfy do |params|
+          expect(params[:method]).to eq('action.create')
+          expect(params[:params][:name]).to eq('dummy_name')
+          expect(params[:params][:conditions][0][:value]).to eq(1)
+          expect(params[:params][:operations][0][:opcommand][:command]).to eq('dummy_command')
+        end
+
+        @zabbix_client.should_receive(:api_request).with(expected_parameters)
+        @client.send(
+          :add_action_zabbix,
+          zbx: @zabbix,
+          host_id: 1,
+          cc_api_url: 'http://example.com/zabbix',
+          system_id: 2,
+          action_name: 'dummy_name'
+        )
+      end
+    end
+
+    describe '#get_action_zabbix' do
+      it 'request zabbix api with action.get method' do
+        expected_parameters = {
+          method: 'action.get',
+          params: {
+            filter: {
+              name: 'dummy_name'
+            }
+          }
+        }
+
+        @zabbix_client.should_receive(:api_request).with(hash_including(expected_parameters)).and_return [{ 'actionid' => '1' }]
+        @client.send(:get_action_zabbix, zbx: @zabbix, action_name: 'dummy_name')
+      end
+    end
+
+    describe '#update_action' do
+      it 'request zabbix api with action.update method' do
+        @client.stub(:create_action_command_zabbix).and_return('dummy_command')
+
+        expected_parameters = satisfy do|params|
+          expect(params[:method]).to eq('action.update')
+          expect(params[:params][:name]).to eq('dummy_name')
+          expect(params[:params][:actionid]).to eq('2')
+          expect(params[:params][:operations][0][:opcommand][:command]).to eq('dummy_command')
+        end
+
+        @zabbix_client.should_receive(:api_request).with(expected_parameters)
+        @client.send(
+          :update_action,
+          zbx: @zabbix,
+          cc_api_url: 'http://example.com/zabbix',
+          system_id: 1,
+          action_name: 'dummy_name',
+          action_id: '2'
+        )
       end
     end
   end
