@@ -22,7 +22,6 @@ Spork.prefork do
   ActiveRecord::Base.establish_connection :test
 
   FactoryGirl.definition_file_paths = %w(./spec/factories)
-  FactoryGirl.find_definitions
 
   RSpec.configure do |config|
     # Enable focus feature to execute focused test only.
@@ -30,6 +29,7 @@ Spork.prefork do
     config.run_all_when_everything_filtered = true
 
     config.before :all do
+      FactoryGirl.find_definitions
       FactoryGirl.reload
     end
 
