@@ -24,11 +24,11 @@ module CloudConductor
       hostgroup_id = zbx.hostgroups.create_or_update name: host_name
       template_id = zbx.templates.get_id host: 'Template App HTTP Service'
       action_name = "FailOver_#{system.monitoring_host}"
-      action_id = get_action_zabbix(zbx: zbx, action_name: action_name)
+      action_id = get_action(zbx: zbx, action_name: action_name)
 
       if action_id.nil?
-        host_id = add_host_zabbix zbx, system.monitoring_host, hostgroup_id, template_id
-        add_action_zabbix(
+        host_id = add_host zbx, system.monitoring_host, hostgroup_id, template_id
+        add_action(
           zbx: zbx,
           host_id: host_id,
           cc_api_url: cc_api_url,
@@ -49,7 +49,7 @@ module CloudConductor
 
     private
 
-    def get_hostgroups_host_belongs_to_zabbix(zbx, host_id)
+    def get_hostgroups(zbx, host_id)
       params = {
         method: 'host.get',
         params: {
@@ -66,7 +66,7 @@ module CloudConductor
       result.with_indifferent_access[:groups]
     end
 
-    def update_host_zabbix(zbx, host_id, hostgroup_id)
+    def update_host(zbx, host_id, hostgroup_id)
       params = {
         method: 'host.update',
         params: {
@@ -76,20 +76,20 @@ module CloudConductor
           ]
         }
       }
-      prev_hostgroups = get_hostgroups_host_belongs_to_zabbix zbx, host_id
+      prev_hostgroups = get_hostgroups zbx, host_id
       prev_hostgroups.each { |hostgroup| params[:params][:groups] << { groupid: hostgroup[:groupid] } }
       zbx.client.api_request(params)
       host_id
     end
 
-    def get_host_id_zabbix(zbx, target_host)
+    def get_host_id(zbx, target_host)
       result = zbx.hosts.get(name: target_host).find { |host| host.with_indifferent_access[:host] == target_host }
       result ? result.with_indifferent_access[:hostid] : nil
     end
 
-    def add_host_zabbix(zbx, target_host, hostgroup_id, template_id)
-      host_id = get_host_id_zabbix(zbx, target_host)
-      return update_host_zabbix(zbx, host_id, hostgroup_id) if host_id
+    def add_host(zbx, target_host, hostgroup_id, template_id)
+      host_id = get_host_id(zbx, target_host)
+      return update_host(zbx, host_id, hostgroup_id) if host_id
       params = {
         host: target_host,
         interfaces: [
@@ -108,12 +108,12 @@ module CloudConductor
       zbx.hosts.create_or_update params
     end
 
-    def create_action_command_zabbix(cc_api_url, system_id)
+    def create_action_command(cc_api_url, system_id)
       "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{cc_api_url}"
     end
 
     # rubocop: disable MethodLength
-    def add_action_zabbix(parameters)
+    def add_action(parameters)
       zbx = parameters[:zbx]
       host_id = parameters[:host_id]
       cc_api_url = parameters[:cc_api_url]
@@ -150,7 +150,7 @@ module CloudConductor
               },
               opcommand: {
                 type: 0,
-                command: create_action_command_zabbix(cc_api_url, system_id),
+                command: create_action_command(cc_api_url, system_id),
                 execute_on: '1'
               }
             }
@@ -161,7 +161,7 @@ module CloudConductor
     end
     # rubocop: enable MethodLength
 
-    def get_action_zabbix(parameters)
+    def get_action(parameters)
       zbx = parameters[:zbx]
       action_name = parameters[:action_name]
 
@@ -200,7 +200,7 @@ module CloudConductor
               },
               opcommand: {
                 type: 0,
-                command: create_action_command_zabbix(cc_api_url, system_id),
+                command: create_action_command(cc_api_url, system_id),
                 execute_on: '1'
               }
             }
