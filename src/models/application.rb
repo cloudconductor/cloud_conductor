@@ -29,7 +29,7 @@ class Application < ActiveRecord::Base
     latest.version if latest
   end
 
-  def to_json(options = {})
+  def as_json(options = {})
     super options.merge(methods: [:latest, :latest_version])
   end
 

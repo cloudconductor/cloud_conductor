@@ -58,7 +58,7 @@ class Cloud < ActiveRecord::Base
     templates[type].to_json
   end
 
-  def to_json(options = {})
+  def as_json(options = {})
     original_secret = secret
     self.secret = '********'
     json = super options
