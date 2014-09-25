@@ -15,27 +15,15 @@
 module CloudConductor
   describe StackObserver do
     before do
-      @cloud_aws = FactoryGirl.create(:cloud_aws)
-      @cloud_openstack = FactoryGirl.create(:cloud_openstack)
-
-      @pattern = FactoryGirl.create(:pattern)
-
-      @system = System.new
-      @system.name = 'Test'
-      @system.pattern = @pattern
-      @system.template_parameters = '{}'
-      @system.parameters = '{ "dummy": "value" }'
-      @system.monitoring_host = nil
-      @system.domain = 'example.com'
-
-      @system.add_cloud(@cloud_aws, 1)
-      @system.add_cloud(@cloud_openstack, 2)
+      @stack = FactoryGirl.create(:stack)
 
       CloudConductor::Client.stub_chain(:new, :create_stack)
-      @system.save!
+      @stack.save!
 
-      System.any_instance.stub(:status).and_return(:CREATE_COMPLETE)
-      System.any_instance.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+      @system = @stack.system
+
+      Stack.any_instance.stub(:status).and_return(:CREATE_COMPLETE)
+      Stack.any_instance.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
       Serf::Client.any_instance.stub(:call).and_return(double('status', 'success?' => true))
       Consul::Client::Client.any_instance.stub(:running?).and_return(true)
 
@@ -47,7 +35,7 @@ module CloudConductor
     describe '#update' do
       before do
         @observer = StackObserver.new
-        @observer.stub(:update_system)
+        @observer.stub(:update_stack)
       end
 
       it 'check all stacks without exception' do
@@ -57,7 +45,7 @@ module CloudConductor
       it 'will check stack status' do
         mock = double('status')
         mock.should_receive(:dummy).at_least(1)
-        System.any_instance.stub(:status) do
+        Stack.any_instance.stub(:status) do
           mock.dummy
         end
         @observer.update
@@ -66,7 +54,7 @@ module CloudConductor
       it 'will retrieve stack outputs' do
         mock = double('outputs')
         mock.should_receive(:dummy).at_least(1)
-        System.any_instance.stub(:outputs) do
+        Stack.any_instance.stub(:outputs) do
           mock.dummy
           { 'FrontendAddress' => '127.0.0.1' }
         end
@@ -93,13 +81,13 @@ module CloudConductor
         @observer.update
       end
 
-      it 'will call update_system' do
-        @observer.should_receive(:update_system).with(@system, '127.0.0.1')
+      it 'will call update_stack' do
+        @observer.should_receive(:update_stack).with(@stack, '127.0.0.1')
         @observer.update
       end
     end
 
-    describe '#update_system' do
+    describe '#update_stack' do
       before do
         System.skip_callback :save, :before, :enable_monitoring
         System.skip_callback :save, :before, :update_dns
@@ -119,18 +107,18 @@ module CloudConductor
         expected_payload = { 'dummy' => 'value' }
         @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
 
-        @observer.send(:update_system, @system, '127.0.0.1')
+        @observer.send(:update_stack, @stack, '127.0.0.1')
       end
 
       it 'will call System#deploy_applications' do
         @system.should_receive(:deploy_applications)
-        @observer.send(:update_system, @system, '127.0.0.1')
+        @observer.send(:update_stack, @stack, '127.0.0.1')
       end
 
       it 'will request restore event to serf' do
         @serf_client.should_receive(:call).with('event', 'restore', {})
 
-        @observer.send(:update_system, @system, '127.0.0.1')
+        @observer.send(:update_stack, @stack, '127.0.0.1')
       end
     end
   end

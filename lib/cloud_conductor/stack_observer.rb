@@ -15,13 +15,13 @@
 module CloudConductor
   class StackObserver
     def update
-      System.in_progress.each do |system|
-        Log.info "Check and update stack with #{system.name}"
-        next if system.status != :CREATE_COMPLETE
+      Stack.in_progress.each do |stack|
+        Log.info "Check and update stack with #{stack.name}"
+        next if stack.status != :CREATE_COMPLETE
 
         Log.debug '  Status is CREATE_COMPLETE'
 
-        outputs = system.outputs
+        outputs = stack.outputs
         next if outputs['FrontendAddress'].nil?
 
         ip_address = outputs['FrontendAddress']
@@ -35,18 +35,20 @@ module CloudConductor
         next unless status.success?
 
         Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
-        update_system system, ip_address
+        update_stack stack, ip_address
       end
     end
 
     private
 
-    def update_system(system, ip_address)
+    def update_stack(stack, ip_address)
+      system = stack.system
+
       system.ip_address = ip_address
       system.monitoring_host = system.domain
       system.save!
 
-      payload = JSON.parse(system.parameters)
+      payload = JSON.parse(stack.parameters)
       system.serf.call('event', 'configure', payload)
 
       system.send_application_payload

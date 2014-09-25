@@ -17,16 +17,8 @@ describe System do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
-    @pattern = FactoryGirl.create(:pattern)
-    @image = FactoryGirl.create(:image)
-    @image.status = :created
-    @pattern.images.push(@image)
-
     @system = System.new
     @system.name = 'Test'
-    @system.pattern = @pattern
-    @system.template_parameters = '{}'
-    @system.parameters = '{}'
     @system.monitoring_host = nil
     @system.domain = 'example.com'
 
@@ -43,6 +35,14 @@ describe System do
     @system.applications << FactoryGirl.create(:application)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
+
+    @system.stacks << FactoryGirl.create(:stack)
+    @system.stacks << FactoryGirl.create(:stack)
+    Stack.skip_callback :destroy, :before, :destroy_stack
+  end
+
+  after do
+    Stack.set_callback :destroy, :before, :destroy_stack
   end
 
   it 'create with valid parameters' do
@@ -76,16 +76,6 @@ describe System do
       expect(@system.valid?).to be_falsey
     end
 
-    it 'returns false when template_parameters is invalid JSON string' do
-      @system.template_parameters = '{'
-      expect(@system.valid?).to be_falsey
-    end
-
-    it 'returns false when parameters is invalid JSON string' do
-      @system.parameters = '{'
-      expect(@system.valid?).to be_falsey
-    end
-
     it 'returns false when clouds is empty' do
       @system.clouds.delete_all
       expect(@system.valid?).to be_falsey
@@ -97,37 +87,10 @@ describe System do
       @system.clouds << @cloud_aws
       expect(@system.valid?).to be_falsey
     end
-
-    it 'returns false when pattern status isn\'t created' do
-      @image.status = :processing
-      expect(@system.valid?).to be_falsey
-    end
   end
 
   describe '#before_create' do
-    before do
-      @template_parameters = JSON.parse @system.template_parameters
-    end
-
-    it 'call create_stack on cloud that has highest priority' do
-      @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @template_parameters)
-
-      @system.save!
-    end
-
-    it 'call create_stack on clouds with priority order' do
-      @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @template_parameters).ordered
-        .and_raise('Dummy exception')
-
-      @client.should_receive(:create_stack)
-        .with(@system.name, @system.pattern, @template_parameters).ordered
-
-      @system.save!
-    end
-
-    it 'update active flag on successful cloud' do
+    xit 'update active flag on successful cloud' do
       @system.save!
       expect(@system.candidates.find_by_cloud_id(@cloud_openstack).active).to be_truthy
     end
@@ -207,8 +170,7 @@ describe System do
   describe '#dup' do
     it 'duplicate all attributes in system without name and ip_address' do
       duplicated_system = @system.dup
-      expect(duplicated_system.template_parameters).to eq(@system.template_parameters)
-      expect(duplicated_system.parameters).to eq(@system.parameters)
+      expect(duplicated_system.domain).to eq(@system.domain)
     end
 
     it 'duplicate name with uuid to avoid unique constraint' do
@@ -243,40 +205,11 @@ describe System do
       expect(histories.size).to eq(@system.applications.first.histories.size)
       expect(histories).to be_all(&:new_record?)
     end
-  end
 
-  describe '#status' do
-    it 'call get_stack_status on adapter that related active cloud' do
-      @system.save!
-
-      @client.should_receive(:get_stack_status).with(@system.name).and_return(:dummy)
-
-      expect(@system.status).to eq(:dummy)
-    end
-  end
-
-  describe '#outputs' do
-    it 'call get_outputs on adapter that related active cloud' do
-      @system.save!
-
-      @client.should_receive(:get_outputs).with(@system.name).and_return(key: 'value')
-
-      expect(@system.outputs).to eq(key: 'value')
-    end
-  end
-
-  describe '.in_progress scope' do
-    it 'returns systems without monitoring host' do
-      count = System.in_progress.count
-
-      @system.save!
-
-      expect(System.in_progress.count).to eq(count + 1)
-
-      @system.ip_address = '192.168.0.1'
-      @system.save!
-
-      expect(System.in_progress.count).to eq(count)
+    it 'duplicate stacks without save' do
+      stacks = @system.dup.stacks
+      expect(stacks.size).to eq(@system.stacks.size)
+      expect(stacks).to be_all(&:new_record?)
     end
   end
 
@@ -296,14 +229,6 @@ describe System do
       expect(Candidate.count).to eq(count)
     end
 
-    it 'will call destroy_stack method on current adapter' do
-      @system.save!
-
-      @client.should_receive(:destroy_stack).with(@system.name)
-
-      @system.destroy
-    end
-
     it 'destroy all applications in target system' do
       @system.save!
 
@@ -314,6 +239,16 @@ describe System do
 
       expect(Application.count).to eq(application_count - 2)
       expect(ApplicationHistory.count).to eq(history_count - 2)
+    end
+
+    it 'destroy all stacks in target system' do
+      @system.save!
+
+      stack_count = Stack.count
+
+      @system.destroy
+
+      expect(Stack.count).to eq(stack_count - 2)
     end
   end
 

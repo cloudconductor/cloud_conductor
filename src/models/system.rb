@@ -17,38 +17,19 @@ require 'open-uri'
 
 # rubocop:disable ClassLength
 class System < ActiveRecord::Base
-  before_destroy :destroy_stack
-
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
   has_many :applications, dependent: :destroy
+  has_many :stacks, dependent: :destroy
 
-  belongs_to :pattern
-
-  before_save :create_stack, if: -> { status == :NOT_CREATED }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
-  scope :in_progress, -> { where(ip_address: nil) }
-
   validates :name, presence: true, uniqueness: true
-  validates :pattern, presence: true
   validates :clouds, presence: true
-
-  validates_each :template_parameters, :parameters do |record, attr, value|
-    begin
-      JSON.parse(value) unless value.nil?
-    rescue JSON::ParserError
-      record.errors.add(attr, 'is malformed or invalid json string')
-    end
-  end
 
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
-
-    if pattern
-      errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
-    end
   end
 
   def create_stack
@@ -94,6 +75,8 @@ class System < ActiveRecord::Base
       duplicated_application.histories = application.histories.map(&:dup)
       duplicated_application
     end
+
+    system.stacks = stacks.map(&:dup)
 
     system
   end

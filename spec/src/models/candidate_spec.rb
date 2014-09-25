@@ -17,18 +17,12 @@ describe Candidate do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
-    @pattern = FactoryGirl.create(:pattern)
+    @system = FactoryGirl.create(:system)
 
-    @system = System.new
-    @system.name = 'Test'
-    @system.pattern = @pattern
-    @system.template_parameters = '{}'
-    @system.parameters = '{}'
-    @system.monitoring_host = nil
-    @system.domain = 'example.com'
-
+    @system.available_clouds.destroy_all
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
+    @system.save!
 
     @client = double('client')
     Cloud.any_instance.stub(:client).and_return(@client)
@@ -40,6 +34,8 @@ describe Candidate do
   describe '.active' do
     it 'return cloud that has active flag' do
       @client.stub(:create_stack).and_return(nil)
+      @system.available_clouds.last.active = true
+      @system.available_clouds.last.save!
 
       @system.save!
 
