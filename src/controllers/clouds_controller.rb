@@ -14,18 +14,15 @@
 require 'yaml'
 
 class CloudsController < Sinatra::Base
-  configure :development do
-    register Sinatra::Reloader
-  end
+  register ConfigLoader
 
   get '/' do
     page = (params[:page] || 1).to_i
-    per_page = (params[:per_page] || 5).to_i
-
-    state = {}
-    state[:total_pages] = (Cloud.count / per_page.to_f).ceil
-
-    json [state, Cloud.limit(per_page).offset((page - 1) * per_page)]
+    per_page = (params[:per_page] || settings.per_page).to_i
+    clouds = Cloud.limit(per_page).offset((page - 1) * per_page)
+    headers link_header('/', Cloud.count, page, per_page)
+    status 200
+    json clouds
   end
 
   get '/:id' do

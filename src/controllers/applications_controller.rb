@@ -16,12 +16,11 @@ module ApplicationsController
   def self.registered(base)
     base.get do
       page = (params[:page] || 1).to_i
-      per_page = (params[:per_page] || 5).to_i
-
-      state = {}
-      state[:total_pages] = (Application.count / per_page.to_f).ceil
-
-      json [state, Application.limit(per_page).offset((page - 1) * per_page)]
+      per_page = (params[:per_page] || settings.per_page).to_i
+      applications = Application.limit(per_page).offset((page - 1) * per_page)
+      headers link_header("/#{params[:system_id]}/applications", Application.count, page, per_page)
+      status 200
+      json applications
     end
 
     base.get '/:id' do
