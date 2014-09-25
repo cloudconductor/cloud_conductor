@@ -56,6 +56,16 @@ class PatternsController < Sinatra::Base
     end
   end
 
+  get '/:id/parameters' do
+    begin
+      pattern = Pattern.find(params[:id])
+      status 200
+      pattern.parameters
+    rescue ActiveRecord::RecordNotFound
+      status 404
+    end
+  end
+
   def permit_params
     ActionController::Parameters.new(params)
       .permit(:url, :revision, :parameters)

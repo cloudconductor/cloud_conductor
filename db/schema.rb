@@ -79,7 +79,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.string   "type"
     t.string   "url"
     t.string   "revision"
-    t.integer  "metadata_id"
+    t.text     "parameters"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

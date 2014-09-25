@@ -26,7 +26,7 @@ describe Pattern do
     Dir.stub(:chdir).and_yield
     YAML.stub(:load_file).and_return({})
     File.stub(:open).and_call_original
-    double = double('File', read: '{ "Resources" : {} }')
+    double = double('File', read: '{ "Parameters": {}, "Resources": {} }')
     File.stub(:open).with(/template.json/).and_return double
   end
 
@@ -237,6 +237,49 @@ describe Pattern do
       end
     end
 
+    describe '#load_parameters' do
+      it 'will load template.json and get parameters' do
+        template = <<-EOS
+          {
+            "Parameters": {
+              "KeyName" : {
+                "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
+                "Type" : "String",
+                "MinLength" : "1",
+                "MaxLength" : "255",
+                "AllowedPattern" : "[\\x20-\\x7E]*",
+                "ConstraintDescription" : "can contain only ASCII characters."
+              },
+              "SSHLocation" : {
+                "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
+                "Type" : "String",
+                "MinLength" : "9",
+                "MaxLength" : "18",
+                "Default" : "0.0.0.0/0",
+                "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+                "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+              },
+              "webInstanceType" : {
+                "Description" : "WebServer instance type",
+                "Type" : "String",
+                "Default" : "t2.small"
+              },
+              "webImageId" : {
+                "Description" : "DBServer Image Id. This parameter is automatically filled by CloudConductor.",
+                "Type" : "String"
+              }
+            }
+          }
+        EOS
+        File.stub(:open).with(/template.json/).and_return(double('File', read: template))
+        parameters = @pattern.send(:load_parameters, @path)
+        keys = parameters.map { |p| p[:keyname] }
+        expect(parameters).to be_instance_of Array
+        expect(keys).to eq %w(key_name ssh_location web_instance_type web_image_id)
+        expect(parameters.first[:min_length]).to eq '1'
+      end
+    end
+
     describe '#update_metadata' do
       before do
         Dir.stub(:chdir).and_yield
@@ -261,6 +304,13 @@ describe Pattern do
         @pattern.send(:update_metadata, @path, metadata)
 
         expect(@pattern.type).to eq('Platform')
+      end
+
+      it 'update parameters attribute with parameters in template' do
+        parameters = [{ keyname: 'key_name', type: 'String' }]
+        @pattern.stub(:load_parameters).with(@path).and_return(parameters)
+        @pattern.send(:update_metadata, @path, {})
+        expect(@pattern.parameters).to eq(parameters.to_json)
       end
 
       it 'update revision attribute when revision is nil' do
