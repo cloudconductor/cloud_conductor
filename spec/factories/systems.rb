@@ -28,6 +28,7 @@ FactoryGirl.define do
 
     before(:create) do |system|
       system.add_cloud create(:cloud_aws), 1
+      system.add_cloud create(:cloud_openstack), 2
     end
   end
 end

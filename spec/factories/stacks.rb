@@ -14,11 +14,13 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :stack, class: Stack do
+    system { create(:system) }
+    pattern { create(:pattern) }
+    cloud { create(:cloud_aws) }
+
     sequence(:name) { |n| "stack-#{n}" }
     template_parameters '{}'
     parameters '{ "dummy": "value" }'
-    pattern { create(:pattern) }
-    system { create(:system) }
     status :PROGRESS
 
     after(:build) do

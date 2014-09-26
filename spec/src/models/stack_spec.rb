@@ -14,9 +14,6 @@
 # limitations under the License.
 describe Stack do
   before do
-    @cloud_aws = FactoryGirl.create(:cloud_aws)
-    @cloud_openstack = FactoryGirl.create(:cloud_openstack)
-
     @pattern = FactoryGirl.create(:pattern)
     @image = FactoryGirl.create(:image)
     @image.status = :created
@@ -27,16 +24,12 @@ describe Stack do
     @stack.template_parameters = '{}'
     @stack.parameters = '{}'
     @stack.pattern = @pattern
+    @stack.cloud = FactoryGirl.create(:cloud_aws)
     @stack.system = FactoryGirl.create(:system)
-    @stack.system.available_clouds.destroy_all
-    @stack.system.add_cloud @cloud_aws, 42
-    @stack.system.add_cloud @cloud_openstack, 10
-    @stack.system.available_clouds.first.active = true
-    @stack.system.available_clouds.first.save!
-    @stack.system.save!
+    @stack.status = :NOT_CREATED
 
-    @client = double('client', create_stack: nil, get_stack_status: :NOT_CREATED, destroy_stack: nil)
-    Cloud.any_instance.stub(:client).and_return(@client)
+    @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
+    @stack.cloud.stub(:client).and_return(@client)
   end
 
   it 'create with valid parameters' do
@@ -57,6 +50,16 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
 
       @stack.name = ''
+      expect(@stack.valid?).to be_falsey
+    end
+
+    it 'returns false when system is unset' do
+      @stack.system = nil
+      expect(@stack.valid?).to be_falsey
+    end
+
+    it 'returns false when cloud is unset' do
+      @stack.cloud = nil
       expect(@stack.valid?).to be_falsey
     end
 
@@ -81,27 +84,24 @@ describe Stack do
       @template_parameters = JSON.parse @stack.template_parameters
     end
 
-    it 'call create_stack on cloud that has highest priority' do
-      @client.should_receive(:create_stack)
-        .with(@stack.name, @stack.pattern, @template_parameters)
+    it 'call create_stack on cloud' do
+      @client.should_receive(:create_stack).with(@stack.name, @stack.pattern, @template_parameters)
 
       @stack.save!
     end
 
-    it 'call create_stack on clouds with priority order' do
-      @client.should_receive(:create_stack)
-        .with(@stack.name, @stack.pattern, @template_parameters).ordered
-        .and_raise('Dummy exception')
-
-      @client.should_receive(:create_stack)
-        .with(@stack.name, @stack.pattern, @template_parameters).ordered
-
+    it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
+      @client.stub(:create_stack)
       @stack.save!
+
+      expect(@stack.attributes['status']).to eq(:PROGRESS)
     end
 
-    xit 'update active flag on successful cloud' do
+    it 'update status to :ERROR if Client#create_stack raise error' do
+      @client.stub(:create_stack).and_raise
       @stack.save!
-      expect(@stack.system.available_clouds.find_by_cloud_id(@cloud_openstack).active).to be_truthy
+
+      expect(@stack.attributes['status']).to eq(:ERROR)
     end
   end
 
@@ -120,11 +120,23 @@ describe Stack do
   end
 
   describe '#status' do
-    it 'call get_stack_status on adapter that related active cloud' do
-      @stack.save!
+    it 'return status without API request when status isn\'t progress' do
+      @client.should_not_receive(:get_stack_status)
 
+      @stack.status = :NOT_CREATED
+      expect(@stack.status).to eq(:NOT_CREATED)
+
+      @stack.status = :CREATED
+      expect(@stack.status).to eq(:CREATED)
+
+      @stack.status = :ERROR
+      expect(@stack.status).to eq(:ERROR)
+    end
+
+    it 'call get_stack_status on adapter that related active cloud while progress' do
       @client.should_receive(:get_stack_status).with(@stack.name).and_return(:dummy)
 
+      @stack.status = :PROGRESS
       expect(@stack.status).to eq(:dummy)
     end
   end

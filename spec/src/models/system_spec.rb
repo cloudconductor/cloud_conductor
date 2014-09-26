@@ -25,9 +25,6 @@ describe System do
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
 
-    @client = double('client', create_stack: nil, get_stack_status: :NOT_CREATED, destroy_stack: nil)
-    Cloud.any_instance.stub(:client).and_return(@client)
-
     CloudConductor::DNSClient.stub_chain(:new, :update)
     CloudConductor::ZabbixClient.stub_chain(:new, :register)
 
@@ -86,13 +83,6 @@ describe System do
       @system.clouds << @cloud_aws
       @system.clouds << @cloud_aws
       expect(@system.valid?).to be_falsey
-    end
-  end
-
-  describe '#before_create' do
-    xit 'update active flag on successful cloud' do
-      @system.save!
-      expect(@system.candidates.find_by_cloud_id(@cloud_openstack).active).to be_truthy
     end
   end
 

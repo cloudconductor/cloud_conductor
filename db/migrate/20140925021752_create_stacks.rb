@@ -3,6 +3,7 @@ class CreateStacks < ActiveRecord::Migration
     create_table :stacks do |t|
       t.references :system
       t.references :pattern
+      t.references :cloud
       t.string :name
       t.string :status
       t.text :template_parameters

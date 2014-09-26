@@ -32,22 +32,6 @@ class System < ActiveRecord::Base
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
-  def create_stack
-    candidates.sort_by(&:priority).reverse.each do |candidate|
-      cloud = candidate.cloud
-      begin
-        cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
-      rescue => e
-        Log.info("Create stack on #{cloud.name} ... FAILED")
-        Log.error(e)
-      else
-        candidate.active = true
-        Log.info("Create stack on #{cloud.name} ... SUCCESS")
-        break
-      end
-    end
-  end
-
   def add_cloud(cloud, priority)
     clouds << cloud
 
@@ -97,18 +81,6 @@ class System < ActiveRecord::Base
     cloud.client.get_stack_status name
   rescue
     :ERROR
-  end
-
-  def outputs
-    cloud = candidates.active
-    cloud.client.get_outputs name
-  rescue
-    {}
-  end
-
-  def destroy_stack
-    cloud = candidates.active
-    cloud.client.destroy_stack name if cloud
   end
 
   def serf

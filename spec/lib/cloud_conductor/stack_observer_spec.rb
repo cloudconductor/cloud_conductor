@@ -16,25 +16,18 @@ module CloudConductor
   describe StackObserver do
     before do
       @stack = FactoryGirl.create(:stack)
-
-      CloudConductor::Client.stub_chain(:new, :create_stack)
-      @stack.save!
-
-      @system = @stack.system
-
-      Stack.any_instance.stub(:status).and_return(:CREATE_COMPLETE)
-      Stack.any_instance.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
-      Serf::Client.any_instance.stub(:call).and_return(double('status', 'success?' => true))
-      Consul::Client::Client.any_instance.stub(:running?).and_return(true)
-
-      @serf_client = double(:serf_client)
-      @serf_client.stub(:call).with(any_args)
-      @system.stub(:serf).and_return(@serf_client)
+      @observer = StackObserver.new
     end
 
     describe '#update' do
       before do
-        @observer = StackObserver.new
+        Stack.stub(:in_progress).and_return [@stack]
+        @stack.stub(:status).and_return(:CREATE_COMPLETE)
+        @stack.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+
+        Consul::Client.stub_chain(:connect, :running?).and_return true
+        Serf::Client.stub_chain(:new, :call, :success?).and_return true
+
         @observer.stub(:update_stack)
       end
 
@@ -43,41 +36,29 @@ module CloudConductor
       end
 
       it 'will check stack status' do
-        mock = double('status')
-        mock.should_receive(:dummy).at_least(1)
-        Stack.any_instance.stub(:status) do
-          mock.dummy
-        end
+        @stack.should_receive(:status)
         @observer.update
       end
 
       it 'will retrieve stack outputs' do
-        mock = double('outputs')
-        mock.should_receive(:dummy).at_least(1)
-        Stack.any_instance.stub(:outputs) do
-          mock.dummy
-          { 'FrontendAddress' => '127.0.0.1' }
-        end
-        @observer.update
-      end
-
-      it 'will call serf request to check serf availability' do
-        mock = double('client')
-        mock.should_receive(:dummy).at_least(1)
-        Serf::Client.any_instance.stub(:call) do
-          mock.dummy
-          double('status', 'success?' => true)
-        end
+        @stack.should_receive(:outputs)
         @observer.update
       end
 
       it 'will call consul request to check consul availability' do
-        mock = double('client')
-        mock.should_receive(:dummy).at_least(1)
-        Consul::Client::Client.any_instance.stub(:running?) do
-          mock.dummy
-          true
-        end
+        consul_client = double('Consul::Client')
+        consul_client.should_receive(:running?)
+
+        Consul::Client.should_receive(:connect).with(host: '127.0.0.1').and_return(consul_client)
+
+        @observer.update
+      end
+
+      it 'will call serf request to check serf availability' do
+        serf_client = double('Serf::Client')
+        Serf::Client.should_receive(:new).with(host: '127.0.0.1').and_return(serf_client)
+
+        serf_client.should_receive(:call).and_return(double('Status', success?: true))
         @observer.update
       end
 
@@ -92,9 +73,12 @@ module CloudConductor
         System.skip_callback :save, :before, :enable_monitoring
         System.skip_callback :save, :before, :update_dns
 
-        @observer = StackObserver.new
         @observer.stub(:sleep)
 
+        @serf_client = double(:serf_client, call: double('status', success?: true))
+        @system = @stack.system
+        @system.stub(:serf).and_return(@serf_client)
+        @system.stub(:send_application_payload)
         @system.stub(:deploy_applications)
       end
 
@@ -107,6 +91,11 @@ module CloudConductor
         expected_payload = { 'dummy' => 'value' }
         @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
 
+        @observer.send(:update_stack, @stack, '127.0.0.1')
+      end
+
+      it 'will call System#send_application_payload' do
+        @system.should_receive(:send_application_payload)
         @observer.send(:update_stack, @stack, '127.0.0.1')
       end
 

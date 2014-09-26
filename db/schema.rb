@@ -94,6 +94,7 @@ ActiveRecord::Schema.define(version: 20140925021752) do
   create_table "stacks", force: true do |t|
     t.integer  "system_id"
     t.integer  "pattern_id"
+    t.integer  "cloud_id"
     t.string   "name"
     t.string   "status"
     t.text     "template_parameters"
