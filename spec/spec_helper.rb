@@ -29,6 +29,7 @@ Spork.prefork do
     config.run_all_when_everything_filtered = true
 
     config.before :all do
+      FactoryGirl.factories.clear
       FactoryGirl.find_definitions
       FactoryGirl.reload
     end
