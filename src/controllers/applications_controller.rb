@@ -12,71 +12,78 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module ApplicationsController
-  # rubocop:disable MethodLength, CyclomaticComplexity
+  # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
   def self.registered(base)
     base.get do
       page = (params[:page] || 1).to_i
       per_page = (params[:per_page] || settings.per_page).to_i
-      applications = Application.limit(per_page).offset((page - 1) * per_page)
-      headers link_header("/#{params[:system_id]}/applications", Application.count, page, per_page)
+      applications = Application.where(system_id: params[:system_id]).limit(per_page).offset((page - 1) * per_page)
+      count = Application.where(system_id: params[:system_id]).count
+      headers link_header("/#{params[:system_id]}/applications", count, page, per_page)
       status 200
       json applications
     end
 
     base.get '/:id' do
-      json Application.find(params[:id])
+      application = Application.where(id: params[:id], system_id: params[:system_id]).first
+      if application.nil?
+        status 404
+      else
+        status 200
+        json application
+      end
     end
 
     base.get '/:id/:version' do
-      json ApplicationHistory.where(application_id: params[:id], version: params[:version])
+      application_history = ApplicationHistory.where(application_id: params[:id], version: params[:version]).first
+      if application_history.nil?
+        status 404
+      else
+        status 200
+        json application_history
+      end
     end
 
     base.post do
       application = Application.new application_permit_params
       application.histories.build history_permit_params
-      unless application.save
+      if application.save
+        status 201
+        json application
+      else
         status 400
-        return json application.errors
+        json message: application.errors
       end
-
-      status 201
-      json application
     end
 
     base.put '/:id' do
-      begin
-        application = Application.find(params[:id])
-      rescue => e
-        Log.error e
-        status 400
-        return json message: e.message
+      application = Application.where(id: params[:id], system_id: params[:system_id]).first
+      if application.nil?
+        status 404
+        return
       end
-
       begin
         application.transaction do
           application.update_attributes! application_permit_params
           application.histories.build history_permit_params
           application.save!
         end
+        status 200
+        json application
       rescue => e
         status 400
-        return json message: e.message
+        json message: e.message
       end
-
-      status 200
-      json application
     end
 
     base.delete '/:id' do
-      begin
-        Application.find(params[:id]).destroy
-      rescue => e
-        Log.error e
-        status 400
-        return json message: e.message
+      application = Application.where(id: params[:id], system_id: params[:system_id]).first
+      if application.nil?
+        status 404
+      else
+        application.destroy
+        status 204
       end
-
-      status 204
     end
   end
 
