@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(version: 20140925021752) do
     t.string   "name"
     t.string   "description"
     t.string   "type"
+    t.string   "protocol"
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
