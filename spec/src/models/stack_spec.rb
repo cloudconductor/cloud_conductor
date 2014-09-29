@@ -31,6 +31,20 @@ describe Stack do
     @stack.cloud.stub(:client).and_return(@client)
   end
 
+  describe '.created' do
+    it 'return created stacks' do
+      system = FactoryGirl.create(:system)
+      _stack1 = FactoryGirl.create(:stack, system: system, status: :PENDING)
+      stack2 = FactoryGirl.create(:stack, system: system, status: :CREATE_COMPLETE)
+      _stack3 = FactoryGirl.create(:stack, system: system, status: :PENDING)
+      stack4 = FactoryGirl.create(:stack, system: system, status: :CREATE_COMPLETE)
+
+      _stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+
+      expect(system.stacks.created).to eq([stack2, stack4])
+    end
+  end
+
   describe '#update_status' do
     before do
       Stack.skip_callback :save, :before, :create_stack

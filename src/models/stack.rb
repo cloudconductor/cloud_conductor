@@ -26,6 +26,7 @@ class Stack < ActiveRecord::Base
   before_save :create_stack, if: -> { status == :READY }
 
   scope :in_progress, -> { where(status: :PROGRESS) }
+  scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   validates :name, presence: true, uniqueness: true
   validates :system, presence: true
