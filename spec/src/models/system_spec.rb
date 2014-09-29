@@ -60,6 +60,12 @@ describe System do
     expect(@system.candidates).to be_empty
   end
 
+  describe '#new' do
+    it 'set empty JSON to template_parameters' do
+      expect(@system.template_parameters).to eq('{}')
+    end
+  end
+
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@system.valid?).to be_truthy
