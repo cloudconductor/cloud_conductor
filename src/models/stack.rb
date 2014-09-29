@@ -22,7 +22,8 @@ class Stack < ActiveRecord::Base
   belongs_to :cloud
 
   before_destroy :destroy_stack
-  before_save :create_stack, if: -> { status == :NOT_CREATED }
+  before_save :update_status, if: -> { status.nil? }
+  before_save :create_stack, if: -> { status == :READY }
 
   scope :in_progress, -> { where(status: :PROGRESS) }
 
@@ -44,6 +45,14 @@ class Stack < ActiveRecord::Base
     errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
   end
 
+  def update_status
+    if pattern.type == :platform
+      self.status = :READY
+    else
+      self.status = :PENDING
+    end
+  end
+
   def create_stack
     cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
   rescue => e
@@ -62,6 +71,12 @@ class Stack < ActiveRecord::Base
     stack.name = "#{basename}-#{SecureRandom.uuid}"
 
     stack
+  end
+
+  %i(pending ready progress create_complete error).each do |method|
+    define_method "#{method}?" do
+      (attributes['status'] || :NIL).to_sym == method.upcase
+    end
   end
 
   def status

@@ -33,8 +33,8 @@ describe System do
     @system.applications.first.histories << FactoryGirl.build(:application_history)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
 
-    @system.stacks << FactoryGirl.create(:stack)
-    @system.stacks << FactoryGirl.create(:stack)
+    @system.stacks << FactoryGirl.create(:stack, status: :PENDING)
+    @system.stacks << FactoryGirl.create(:stack, status: :PENDING)
     Stack.skip_callback :destroy, :before, :destroy_stack
   end
 

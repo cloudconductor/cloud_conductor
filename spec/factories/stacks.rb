@@ -21,14 +21,14 @@ FactoryGirl.define do
     sequence(:name) { |n| "stack-#{n}" }
     template_parameters '{}'
     parameters '{ "dummy": "value" }'
-    status :PROGRESS
+    status nil
 
     after(:build) do
       Stack.skip_callback :save, :before, :create_stack
     end
 
     after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { status == :NOT_CREATED }
+      Stack.set_callback :save, :before, :create_stack, if: -> { status == :READY }
     end
   end
 end

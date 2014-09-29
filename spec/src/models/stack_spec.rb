@@ -26,10 +26,29 @@ describe Stack do
     @stack.pattern = @pattern
     @stack.cloud = FactoryGirl.create(:cloud_aws)
     @stack.system = FactoryGirl.create(:system)
-    @stack.status = :NOT_CREATED
 
     @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
     @stack.cloud.stub(:client).and_return(@client)
+  end
+
+  describe '#update_status' do
+    before do
+      Stack.skip_callback :save, :before, :create_stack
+    end
+
+    after do
+      Stack.set_callback :save, :before, :create_stack, if: -> { status == :READY }
+    end
+
+    it 'set :READY status when stack has platform pattern' do
+      stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :platform))
+      expect(stack.status).to eq(:READY)
+    end
+
+    it 'set :PENDING status when stack has platform pattern' do
+      stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :optional))
+      expect(stack.status).to eq(:PENDING)
+    end
   end
 
   it 'create with valid parameters' do
@@ -84,9 +103,18 @@ describe Stack do
       @template_parameters = JSON.parse @stack.template_parameters
     end
 
-    it 'call create_stack on cloud' do
-      @client.should_receive(:create_stack).with(@stack.name, @stack.pattern, @template_parameters)
+    it 'call create_stack on cloud when ready status' do
+      expected_parameters = @template_parameters
+      @client.should_receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters)
 
+      @stack.status = :READY
+      @stack.save!
+    end
+
+    it 'doesn\'t call create_stack on cloud when pending status' do
+      @client.should_not_receive(:create_stack)
+
+      @stack.status = :PENDING
       @stack.save!
     end
 
@@ -123,11 +151,14 @@ describe Stack do
     it 'return status without API request when status isn\'t progress' do
       @client.should_not_receive(:get_stack_status)
 
-      @stack.status = :NOT_CREATED
-      expect(@stack.status).to eq(:NOT_CREATED)
+      @stack.status = :PENDING
+      expect(@stack.status).to eq(:PENDING)
 
-      @stack.status = :CREATED
-      expect(@stack.status).to eq(:CREATED)
+      @stack.status = :READY
+      expect(@stack.status).to eq(:READY)
+
+      @stack.status = :CREATE_COMPLETE
+      expect(@stack.status).to eq(:CREATE_COMPLETE)
 
       @stack.status = :ERROR
       expect(@stack.status).to eq(:ERROR)
@@ -159,7 +190,7 @@ describe Stack do
 
       expect(Stack.in_progress.count).to eq(count + 1)
 
-      @stack.status = :CREATED
+      @stack.status = :CREATE_COMPLETE
       @stack.save!
 
       expect(Stack.in_progress.count).to eq(count)
@@ -195,6 +226,46 @@ describe Stack do
       expect(pattern_payload[:url]).to eq(@stack.pattern.url)
       expect(pattern_payload[:revision]).to eq(@stack.pattern.revision)
       expect(pattern_payload[:user_attributes]).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
+    end
+  end
+
+  describe '#pending?' do
+    it 'return boolean for status is pending' do
+      expect(@stack.pending?).to be_falsey
+      @stack.status = :PENDING
+      expect(@stack.pending?).to be_truthy
+    end
+  end
+
+  describe '#ready?' do
+    it 'return boolean for status is ready' do
+      expect(@stack.ready?).to be_falsey
+      @stack.status = :READY
+      expect(@stack.ready?).to be_truthy
+    end
+  end
+
+  describe '#progress?' do
+    it 'return boolean for status is progress' do
+      expect(@stack.progress?).to be_falsey
+      @stack.status = :PROGRESS
+      expect(@stack.progress?).to be_truthy
+    end
+  end
+
+  describe '#create_complete?' do
+    it 'return boolean for status is create_complete' do
+      expect(@stack.create_complete?).to be_falsey
+      @stack.status = :CREATE_COMPLETE
+      expect(@stack.create_complete?).to be_truthy
+    end
+  end
+
+  describe '#error?' do
+    it 'return boolean for status is error' do
+      expect(@stack.error?).to be_falsey
+      @stack.status = :ERROR
+      expect(@stack.error?).to be_truthy
     end
   end
 end
