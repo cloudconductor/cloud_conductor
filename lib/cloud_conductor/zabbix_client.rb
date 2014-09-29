@@ -63,8 +63,8 @@ module CloudConductor
           }
         }
       }
-      result = (zbx.client.api_request params).find { |host| host.with_indifferent_access[:hostid] == host_id }
-      result.with_indifferent_access[:groups]
+      result = (zbx.client.api_request params).find { |host| host[:hostid] == host_id }
+      result[:groups]
     end
 
     def update_host(zbx, host_id, hostgroup_id)
@@ -84,8 +84,8 @@ module CloudConductor
     end
 
     def get_host_id(zbx, target_host)
-      result = zbx.hosts.get(name: target_host).find { |host| host.with_indifferent_access[:host] == target_host }
-      result ? result.with_indifferent_access[:hostid] : nil
+      result = zbx.hosts.get(name: target_host).find { |host| host[:host] == target_host }
+      result ? result[:hostid] : nil
     end
 
     def add_host(zbx, target_host, hostgroup_id, template_id)

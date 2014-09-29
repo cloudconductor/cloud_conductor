@@ -138,7 +138,7 @@ module CloudConductor
         @zabbix_client.should_receive(:api_request).with(hash_including(expected_parameters)).and_return response
         result = @client.send(:get_hostgroups, @zabbix, 1)
 
-        expect(result).to eq('key' => 'dummy')
+        expect(result).to eq(key: 'dummy')
       end
     end
 
