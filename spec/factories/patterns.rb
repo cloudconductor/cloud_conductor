@@ -15,6 +15,7 @@
 FactoryGirl.define do
   factory :pattern do
     sequence(:name) { |n| "pattern_#{n}" }
+    type :platform
     protocol :git
     url 'http://example.com/'
 

@@ -82,4 +82,12 @@ class Stack < ActiveRecord::Base
   def destroy_stack
     cloud.client.destroy_stack name
   end
+
+  def payload
+    payload = {}
+    payload[pattern.name] = JSON.parse(pattern.to_json, symbolize_names: true)
+    payload[pattern.name][:user_attributes] = JSON.parse(parameters, symbolize_names: true)
+
+    payload
+  end
 end

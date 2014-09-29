@@ -22,7 +22,7 @@ describe Stack do
     @stack = Stack.new
     @stack.name = 'Test'
     @stack.template_parameters = '{}'
-    @stack.parameters = '{}'
+    @stack.parameters = '{ "key1": "value1" }'
     @stack.pattern = @pattern
     @stack.cloud = FactoryGirl.create(:cloud_aws)
     @stack.system = FactoryGirl.create(:system)
@@ -180,6 +180,21 @@ describe Stack do
       @client.should_receive(:destroy_stack).with(@stack.name)
 
       @stack.destroy
+    end
+  end
+
+  describe '#payload' do
+    it 'return hash that has pattern information and parameters of stack' do
+      payload = @stack.payload
+      expect(payload.keys).to eq([@stack.pattern.name])
+
+      pattern_payload = payload[@stack.pattern.name]
+      expect(pattern_payload[:name]).to eq(@stack.pattern.name)
+      expect(pattern_payload[:type]).to eq(@stack.pattern.type.to_s)
+      expect(pattern_payload[:protocol]).to eq(@stack.pattern.protocol.to_s)
+      expect(pattern_payload[:url]).to eq(@stack.pattern.url)
+      expect(pattern_payload[:revision]).to eq(@stack.pattern.revision)
+      expect(pattern_payload[:user_attributes]).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
     end
   end
 end
