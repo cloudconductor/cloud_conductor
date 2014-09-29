@@ -19,10 +19,11 @@ module CloudConductor
     def register(system)
       cc_api_url = CloudConductor::Config.cloudconductor.url
       zbx = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
+      template_host = CloudConductor::Config.zabbix.template_host
 
       host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
       hostgroup_id = zbx.hostgroups.create_or_update name: host_name
-      template_id = zbx.templates.get_id host: 'Template App HTTP Service'
+      template_id = zbx.templates.get_id host: template_host
       action_name = "FailOver_#{system.monitoring_host}"
       action_id = get_action(zbx: zbx, action_name: action_name)
 
