@@ -32,6 +32,10 @@ class System < ActiveRecord::Base
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
+  after_initialize do
+    self.template_parameters ||= '{}'
+  end
+
   def add_cloud(cloud, priority)
     clouds << cloud
 

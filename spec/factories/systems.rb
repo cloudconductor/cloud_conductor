@@ -15,6 +15,8 @@
 FactoryGirl.define do
   factory :system, class: System do
     sequence(:name) { |n| "system-#{n}" }
+    domain 'example.com'
+    template_parameters '{ "dummy": "value" }'
 
     after(:build) do
       System.skip_callback :save, :before, :enable_monitoring

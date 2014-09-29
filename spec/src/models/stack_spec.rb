@@ -105,6 +105,7 @@ describe Stack do
 
     it 'call create_stack on cloud when ready status' do
       expected_parameters = @template_parameters
+      expected_parameters.deep_merge!(dummy: 'value')
       @client.should_receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters)
 
       @stack.status = :READY

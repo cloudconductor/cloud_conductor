@@ -5,6 +5,7 @@ class CreateSystems < ActiveRecord::Migration
       t.string :monitoring_host
       t.string :ip_address
       t.string :domain
+      t.text :template_parameters
       t.timestamps
     end
   end
