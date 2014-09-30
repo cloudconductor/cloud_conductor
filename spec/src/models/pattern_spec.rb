@@ -299,10 +299,10 @@ describe Pattern do
       end
 
       it 'update type attribute with type in metadata' do
-        metadata = { type: 'Platform' }
+        metadata = { type: 'platform' }
         @pattern.send(:update_metadata, @path, metadata)
 
-        expect(@pattern.type).to eq('Platform')
+        expect(@pattern.type).to eq(:platform)
       end
 
       it 'update parameters attribute with parameters in template' do

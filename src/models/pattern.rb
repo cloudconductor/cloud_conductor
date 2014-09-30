@@ -41,6 +41,10 @@ class Pattern < ActiveRecord::Base
     super options.merge(methods: :status, except: :parameters)
   end
 
+  def type
+    super && super.to_sym
+  end
+
   def execute_packer
     clone_repository do |path|
       metadata = load_metadata path
