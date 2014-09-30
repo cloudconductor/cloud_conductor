@@ -84,7 +84,7 @@ class Stack < ActiveRecord::Base
 
   def status
     status = super
-    return status unless status == :PROGRESS
+    return status unless status && status.to_sym == :PROGRESS
 
     cloud.client.get_stack_status name if cloud.client
   rescue
