@@ -102,6 +102,6 @@ class SystemsController < Sinatra::Base
 
   def permit_params
     ActionController::Parameters.new(params)
-      .permit(:name, :pattern_id, :template_parameters, :parameters, :monitoring_host, :domain)
+      .permit(:name, :monitoring_host, :domain)
   end
 end
