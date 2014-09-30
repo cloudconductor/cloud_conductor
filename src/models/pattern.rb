@@ -49,7 +49,7 @@ class Pattern < ActiveRecord::Base
 
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
-        create_images operating_systems, role
+        create_images operating_systems, role, metadata[:name]
       end
     end
 
@@ -121,7 +121,8 @@ class Pattern < ActiveRecord::Base
     end
   end
 
-  def create_images(operating_systems, role)
+  # rubocop:disable LineLength
+  def create_images(operating_systems, role, platform_pattern_name)
     clouds.each do |cloud|
       operating_systems.each do |operating_system|
         images.build(cloud: cloud, operating_system: operating_system, role: role)
@@ -130,7 +131,7 @@ class Pattern < ActiveRecord::Base
 
     cloud_names = clouds.map(&:name)
     operating_system_names = operating_systems.map(&:name)
-    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role do |results|
+    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, platform_pattern_name do |results|
       results.each do |key, result|
         cloud_name, os_name = key.split('-')
         cloud = Cloud.where(name: cloud_name).first
@@ -143,4 +144,5 @@ class Pattern < ActiveRecord::Base
       end
     end
   end
+  # rubocop:enable LineLength
 end

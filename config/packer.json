@@ -1,6 +1,9 @@
 {
   "variables": {
-    "patterns_root": null,
+    "cloudconductor_root": null,
+    "cloudconductor_init_url": null,
+    "cloudconductor_init_revision": null,
+    "platform_pattern_name": null,
     "repository_url": null,
     "revision": null,
     "role": null,
@@ -13,18 +16,13 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -x",
       "inline": [
-        "if [ ! -d {{user `patterns_root`}} ]; then",
-        "  sudo mkdir -p {{user `patterns_root`}}",
-        "fi",
+        "sudo git clone {{user `cloudconductor_init_url`}} {{user `cloudconductor_root`}}",
 
-        "cd {{user `patterns_root`}}",
-        "sudo git clone {{user `repository_url`}}",
+        "cd {{user `cloudconductor_root`}}",
+        "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
-        "cd {{user `patterns_root`}}/*",
-        "sudo git checkout {{user `revision`}}",
-
-        "if [ -f ./events/init/user-setup ]; then",
-        "  sudo SERF_TAG_ROLE={{user `role`}} /opt/chefdk/embedded/bin/ruby ./events/init/user-setup",
+        "if [ -f ./bin/init.sh ]; then",
+        "  sudo SERF_TAG_ROLE={{user `role`}} PLATFORM_PATTERN_NAME={{user `platform_pattern_name`}} PLATFORM_PATTERN_URL={{user `repository_url`}} PLATFORM_PATTERN_REVISION={{user `revision`}} ./bin/init.sh",
         "fi",
 
         "sync"
