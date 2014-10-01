@@ -62,8 +62,8 @@ module CloudConductor
           }
         }
       }
-      result = (@zabbix.client.api_request params).find { |host| host[:hostid] == host_id }
-      result[:groups]
+      result = (@zabbix.client.api_request params).find { |host| host['hostid'] == host_id }
+      result['groups']
     end
 
     def update_host(host_id, hostgroup_id)
@@ -77,14 +77,14 @@ module CloudConductor
         }
       }
       prev_hostgroups = get_hostgroups host_id
-      prev_hostgroups.each { |hostgroup| params[:params][:groups] << { groupid: hostgroup[:groupid] } }
+      prev_hostgroups.each { |hostgroup| params[:params][:groups] << { groupid: hostgroup['groupid'] } }
       @zabbix.client.api_request(params)
       host_id
     end
 
     def get_host_id(target_host)
-      result = @zabbix.hosts.get(name: target_host).find { |host| host[:host] == target_host }
-      result ? result[:hostid] : nil
+      result = @zabbix.hosts.get(name: target_host).find { |host| host['host'] == target_host }
+      result ? result['hostid'] : nil
     end
 
     def add_host(target_host, hostgroup_id, template_id)
