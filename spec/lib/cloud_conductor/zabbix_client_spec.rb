@@ -22,9 +22,7 @@ module CloudConductor
 
       @client = ZabbixClient.new
 
-      @system = FactoryGirl.create(:system)
-      @system.name = 'example'
-      @system.monitoring_host = 'example.com'
+      @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
     end
 
     describe '#register' do
@@ -65,7 +63,7 @@ module CloudConductor
       end
 
       it 'call get_action with action_name' do
-        @client.should_receive(:get_action).with(zbx: @zabbix, action_name: 'FailOver_example.com')
+        @client.should_receive(:get_action).with(zbx: @zabbix, action_name: 'FailOver_example')
         @client.register(@system)
       end
 
@@ -83,7 +81,7 @@ module CloudConductor
           host_id: 3,
           cc_api_url: 'http://example.com/zabbix',
           system_id: @system.id,
-          action_name: 'FailOver_example.com'
+          action_name: 'FailOver_example'
         }
         @client.should_receive(:add_action).with(expected_parameters)
         @client.register(@system)
@@ -101,7 +99,7 @@ module CloudConductor
           zbx: @zabbix,
           cc_api_url: 'http://example.com/zabbix',
           system_id: @system.id,
-          action_name: 'FailOver_example.com',
+          action_name: 'FailOver_example',
           action_id: '4'
         }
         @client.should_receive(:update_action).with(expected_parameters)

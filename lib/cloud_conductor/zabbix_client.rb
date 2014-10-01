@@ -24,7 +24,7 @@ module CloudConductor
       host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
       hostgroup_id = zbx.hostgroups.create_or_update name: host_name
       template_id = zbx.templates.get_id host: template_host
-      action_name = "FailOver_#{system.monitoring_host}"
+      action_name = "FailOver_#{host_name}"
       action_id = get_action(zbx: zbx, action_name: action_name)
 
       if action_id.nil?
