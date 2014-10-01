@@ -50,7 +50,7 @@ module CloudConductor
         Log.info '  Instance is running, CloudConductor will register host to zabbix/DNS.'
         system.ip_address = outputs['FrontendAddress']
         system.monitoring_host = system.domain
-        system.template_parameters = outputs.to_json
+        system.template_parameters = outputs.except('FrontendAddress').to_json
         system.save!
       end
 

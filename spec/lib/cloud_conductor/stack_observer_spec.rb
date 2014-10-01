@@ -109,14 +109,15 @@ module CloudConductor
 
       it 'update system when outputs exists' do
         outputs = {
-          'FrontendAddress' => '127.0.0.1'
+          'FrontendAddress' => '127.0.0.1',
+          'dummy' => 'value'
         }
 
         @observer.send(:update_system, @system, outputs)
 
         expect(@system.ip_address).to eq('127.0.0.1')
         expect(@system.monitoring_host).to eq('example.com')
-        expect(@system.template_parameters).to eq('{"FrontendAddress":"127.0.0.1"}')
+        expect(@system.template_parameters).to eq('{"dummy":"value"}')
       end
 
       it 'change next stack status to ready' do
