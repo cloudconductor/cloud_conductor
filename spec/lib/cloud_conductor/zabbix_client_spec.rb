@@ -15,20 +15,30 @@
 module CloudConductor
   describe ZabbixClient do
     before do
+      CloudConductor::Config.stub_chain(:zabbix, :configuration)
+      CloudConductor::Config.stub_chain(:cloudconductor, :url).and_return('http://example.com/zabbix')
+
       @zabbix_client = double('zabbix')
 
       @zabbix = double('zabbix')
       @zabbix.stub(:client).and_return(@zabbix_client)
+
+      ZabbixApi.stub(:connect).and_return(@zabbix)
 
       @client = ZabbixClient.new
 
       @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
     end
 
+    describe '#initialize' do
+      it 'return instance of ZabbixClient without error' do
+        expect(ZabbixClient.new).to be_is_a ZabbixClient
+      end
+    end
+
     describe '#register' do
       before do
-        CloudConductor::Config.stub_chain(:cloudconductor, :url).and_return('http://example.com/zabbix')
-        ZabbixApi.stub(:connect).and_return(@zabbix)
+        CloudConductor::Config.stub_chain(:zabbix, :template_host).and_return('Dummy Template Host')
         @zabbix.stub_chain(:hostgroups, :create_or_update).and_return(1)
         @zabbix.stub_chain(:templates, :get_id).and_return(2)
         @client.stub(:get_action)
@@ -58,18 +68,18 @@ module CloudConductor
         templates = double('ZabbixApi::Templates')
         @zabbix.stub(:templates).and_return(templates)
 
-        templates.should_receive(:get_id).with(host: 'Template App HTTP Service')
+        templates.should_receive(:get_id).with(host: 'Dummy Template Host')
         @client.register(@system)
       end
 
       it 'call get_action with action_name' do
-        @client.should_receive(:get_action).with(zbx: @zabbix, action_name: 'FailOver_example')
+        @client.should_receive(:get_action).with(action_name: 'FailOver_example')
         @client.register(@system)
       end
 
       it 'call add_host when target action does not exist' do
         @client.stub(:get_action).and_return(nil)
-        @client.should_receive(:add_host).with(@zabbix, 'example.com', 1, 2)
+        @client.should_receive(:add_host).with('example.com', 1, 2)
         @client.register(@system)
       end
 
@@ -77,9 +87,7 @@ module CloudConductor
         @client.stub(:get_action).and_return(nil)
 
         expected_parameters = {
-          zbx: @zabbix,
           host_id: 3,
-          cc_api_url: 'http://example.com/zabbix',
           system_id: @system.id,
           action_name: 'FailOver_example'
         }
@@ -96,8 +104,6 @@ module CloudConductor
       it 'call update_action when target action already exist' do
         @client.stub(:get_action).and_return('4')
         expected_parameters = {
-          zbx: @zabbix,
-          cc_api_url: 'http://example.com/zabbix',
           system_id: @system.id,
           action_name: 'FailOver_example',
           action_id: '4'
@@ -134,7 +140,7 @@ module CloudConductor
         ]
 
         @zabbix_client.should_receive(:api_request).with(hash_including(expected_parameters)).and_return response
-        result = @client.send(:get_hostgroups, @zabbix, 1)
+        result = @client.send(:get_hostgroups, 1)
 
         expect(result).to eq(key: 'dummy')
       end
@@ -155,7 +161,7 @@ module CloudConductor
         @client.stub(:get_hostgroups).and_return []
 
         @zabbix_client.should_receive(:api_request).with(expected_parameters)
-        @client.send(:update_host, @zabbix, 1, 2)
+        @client.send(:update_host, 1, 2)
       end
     end
 
@@ -166,17 +172,17 @@ module CloudConductor
 
         hosts.should_receive(:get).with(name: 'example.com').and_return([])
 
-        @client.send(:get_host_id, @zabbix, 'example.com')
+        @client.send(:get_host_id, 'example.com')
       end
     end
 
     describe '#add_host' do
       it 'call update_host only when host already exist' do
         @client.stub(:get_host_id).and_return 1
-        @client.should_receive(:update_host).with(@zabbix, 1, 2)
+        @client.should_receive(:update_host).with(1, 2)
         @zabbix.should_not_receive(:hosts)
 
-        @client.send(:add_host, @zabbix, 'example.com', 2, 3)
+        @client.send(:add_host, 'example.com', 2, 3)
       end
 
       it 'call Hosts#create_or_update with parameters wieh host does not exist' do
@@ -197,20 +203,20 @@ module CloudConductor
         }
 
         hosts.should_receive(:create_or_update).with(expected_parameters)
-        @client.send(:add_host, @zabbix, 'example.com', 1, 2)
+        @client.send(:add_host, 'example.com', 1, 2)
       end
     end
 
-    describe '#create_action_command' do
+    describe '#recreate_system_command' do
       it 'return curl command with arguments' do
-        command = @client.send(:create_action_command, 'http://example.com/zabbix', 1)
+        command = @client.send(:recreate_system_command, 1)
         expect(command).to eq('curl -H "Content-Type:application/json" -X POST -d \'{"system_id": "1"}\' http://example.com/zabbix')
       end
     end
 
     describe '#add_action' do
       it 'request zabbix api with action.create method' do
-        @client.stub(:create_action_command).and_return('dummy_command')
+        @client.stub(:recreate_system_command).and_return('dummy_command')
 
         expected_parameters = satisfy do |params|
           expect(params[:method]).to eq('action.create')
@@ -222,9 +228,7 @@ module CloudConductor
         @zabbix_client.should_receive(:api_request).with(expected_parameters)
         @client.send(
           :add_action,
-          zbx: @zabbix,
           host_id: 1,
-          cc_api_url: 'http://example.com/zabbix',
           system_id: 2,
           action_name: 'dummy_name'
         )
@@ -243,13 +247,13 @@ module CloudConductor
         }
 
         @zabbix_client.should_receive(:api_request).with(hash_including(expected_parameters)).and_return [{ 'actionid' => '1' }]
-        @client.send(:get_action, zbx: @zabbix, action_name: 'dummy_name')
+        @client.send(:get_action, action_name: 'dummy_name')
       end
     end
 
     describe '#update_action' do
       it 'request zabbix api with action.update method' do
-        @client.stub(:create_action_command).and_return('dummy_command')
+        @client.stub(:recreate_system_command).and_return('dummy_command')
 
         expected_parameters = satisfy do|params|
           expect(params[:method]).to eq('action.update')
@@ -261,8 +265,6 @@ module CloudConductor
         @zabbix_client.should_receive(:api_request).with(expected_parameters)
         @client.send(
           :update_action,
-          zbx: @zabbix,
-          cc_api_url: 'http://example.com/zabbix',
           system_id: 1,
           action_name: 'dummy_name',
           action_id: '2'
