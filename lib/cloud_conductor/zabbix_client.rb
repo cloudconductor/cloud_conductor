@@ -109,7 +109,7 @@ module CloudConductor
       zbx.hosts.create_or_update params
     end
 
-    def create_action_command(cc_api_url, system_id)
+    def recreate_system_command(cc_api_url, system_id)
       "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{cc_api_url}"
     end
 
@@ -151,7 +151,7 @@ module CloudConductor
               },
               opcommand: {
                 type: 0,
-                command: create_action_command(cc_api_url, system_id),
+                command: recreate_system_command(cc_api_url, system_id),
                 execute_on: '1'
               }
             }
@@ -201,7 +201,7 @@ module CloudConductor
               },
               opcommand: {
                 type: 0,
-                command: create_action_command(cc_api_url, system_id),
+                command: recreate_system_command(cc_api_url, system_id),
                 execute_on: '1'
               }
             }
