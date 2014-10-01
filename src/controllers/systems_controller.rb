@@ -19,6 +19,11 @@ class SystemsController < Sinatra::Base
     include ApplicationsController
   end
 
+  namespace '/:system_id/stacks' do
+    register StacksController
+    include StacksController
+  end
+
   set(:clone) do |is_clone|
     condition do
       is_clone ? params[:system_id] : params[:system_id].nil?
