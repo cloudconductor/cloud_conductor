@@ -149,7 +149,7 @@ describe Stack do
   end
 
   describe '#dup' do
-    it 'duplicate all attributes in stack without name and ip_address' do
+    it 'duplicate all attributes in stack without name' do
       duplicated_stack = @stack.dup
       expect(duplicated_stack.template_parameters).to eq(@stack.template_parameters)
       expect(duplicated_stack.parameters).to eq(@stack.parameters)
@@ -159,6 +159,22 @@ describe Stack do
       duplicated_stack = @stack.dup
       expect(duplicated_stack.name).not_to eq(@stack.name)
       expect(duplicated_stack.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+    end
+
+    it 'update status with :READY if stack has platform pattern' do
+      @stack.pattern.type = :platform
+      duplicated_stack = @stack.dup
+      expect(duplicated_stack.status).to eq(:READY)
+    end
+
+    it 'update status with :PENDING if stack has optional pattern' do
+      Pattern.skip_callback :save, :before, :execute_packer
+      @stack.pattern.type = :optional
+      @stack.pattern.save!
+      Pattern.set_callback :save, :before, :execute_packer
+
+      duplicated_stack = @stack.dup
+      expect(duplicated_stack.status).to eq(:PENDING)
     end
   end
 

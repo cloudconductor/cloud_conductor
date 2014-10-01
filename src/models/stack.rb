@@ -72,6 +72,7 @@ class Stack < ActiveRecord::Base
 
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     stack.name = "#{basename}-#{SecureRandom.uuid}"
+    stack.update_status
 
     stack
   end
