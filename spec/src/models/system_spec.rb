@@ -180,6 +180,11 @@ describe System do
       expect(@system.dup.ip_address).to be_nil
     end
 
+    it 'clear template_parameters' do
+      @system.template_parameters = '{"SubnetId": "123456"}'
+      expect(@system.dup.template_parameters).to eq('{}')
+    end
+
     it 'duplicated associated clouds' do
       duplicated_system = @system.dup
       expect(duplicated_system.clouds).to eq(@system.clouds)

@@ -53,6 +53,7 @@ class System < ActiveRecord::Base
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     system.name = "#{basename}-#{SecureRandom.uuid}"
     system.ip_address = nil
+    system.template_parameters = '{}'
 
     candidates.each do |candidate|
       system.add_cloud candidate.cloud, candidate.priority
