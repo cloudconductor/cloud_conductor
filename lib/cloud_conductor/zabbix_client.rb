@@ -26,7 +26,7 @@ module CloudConductor
     def register(system)
       host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
       hostgroup_id = @zabbix.hostgroups.create_or_update name: host_name
-      template_id = @zabbix.templates.get_id host: CloudConductor::Config.zabbix.template_host
+      template_id = @zabbix.templates.get_id host: CloudConductor::Config.zabbix.default_template_name
       action_name = "FailOver_#{host_name}"
       action_id = get_action(action_name: action_name)
 

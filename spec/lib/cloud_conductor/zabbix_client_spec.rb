@@ -38,7 +38,7 @@ module CloudConductor
 
     describe '#register' do
       before do
-        CloudConductor::Config.stub_chain(:zabbix, :template_host).and_return('Dummy Template Host')
+        CloudConductor::Config.stub_chain(:zabbix, :default_template_name).and_return('Dummy Template Host')
         @zabbix.stub_chain(:hostgroups, :create_or_update).and_return(1)
         @zabbix.stub_chain(:templates, :get_id).and_return(2)
         @client.stub(:get_action)
