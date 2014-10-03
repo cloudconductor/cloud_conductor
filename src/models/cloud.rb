@@ -46,7 +46,7 @@ class Cloud < ActiveRecord::Base
   end
 
   def used?
-    AvailableCloud.where(cloud_id: id).count > 0
+    Candidate.where(cloud_id: id).count > 0
   end
 
   def raise_error_in_use

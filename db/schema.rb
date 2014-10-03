@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.datetime "updated_at"
   end
 
-  create_table "available_clouds", id: false, force: true do |t|
+  create_table "candidates", id: false, force: true do |t|
     t.integer  "cloud_id"
     t.integer  "system_id"
     t.integer  "priority"

@@ -55,12 +55,12 @@ describe System do
 
   it 'delete all relatioship between system and cloud' do
     expect(@system.clouds).not_to be_empty
-    expect(@system.available_clouds).not_to be_empty
+    expect(@system.candidates).not_to be_empty
 
     @system.clouds.delete_all
 
     expect(@system.clouds).to be_empty
-    expect(@system.available_clouds).to be_empty
+    expect(@system.candidates).to be_empty
   end
 
   describe '#valid?' do
@@ -129,7 +129,7 @@ describe System do
 
     it 'update active flag on successful cloud' do
       @system.save!
-      expect(@system.available_clouds.find_by_cloud_id(@cloud_openstack).active).to be_truthy
+      expect(@system.candidates.find_by_cloud_id(@cloud_openstack).active).to be_truthy
     end
   end
 
@@ -191,16 +191,16 @@ describe System do
   end
 
   describe '#add_cloud' do
-    it 'build relationship between system and specified cloud via AvailableCloud' do
+    it 'build relationship between system and specified cloud via Candidate' do
       @system.clouds.delete_all
       expect(@system.clouds).to be_empty
-      expect(@system.available_clouds).to be_empty
+      expect(@system.candidates).to be_empty
 
       @system.add_cloud(@cloud_aws, 45)
       @system.add_cloud(@cloud_openstack, 32)
 
       expect(@system.clouds).to eq([@cloud_aws, @cloud_openstack])
-      expect(@system.available_clouds.map(&:priority)).to eq([45, 32])
+      expect(@system.candidates.map(&:priority)).to eq([45, 32])
     end
   end
 
@@ -226,8 +226,8 @@ describe System do
       duplicated_system = @system.dup
       expect(duplicated_system.clouds).to eq(@system.clouds)
 
-      original_clouds = @system.available_clouds
-      duplicated_clouds = duplicated_system.available_clouds
+      original_clouds = @system.candidates
+      duplicated_clouds = duplicated_system.candidates
       expect(duplicated_clouds.map(&:cloud)).to match_array(original_clouds.map(&:cloud))
       expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
     end
@@ -288,12 +288,12 @@ describe System do
       expect(System.count).to eq(count)
     end
 
-    it 'will delete relation record on AvailableCloud' do
-      count = AvailableCloud.count
+    it 'will delete relation record on Candidate' do
+      count = Candidate.count
       @system.save!
-      expect(AvailableCloud.count).to_not eq(count)
+      expect(Candidate.count).to_not eq(count)
       @system.destroy
-      expect(AvailableCloud.count).to eq(count)
+      expect(Candidate.count).to eq(count)
     end
 
     it 'will call destroy_stack method on current adapter' do

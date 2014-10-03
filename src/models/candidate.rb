@@ -14,7 +14,7 @@
 # limitations under the License.
 require 'sinatra/activerecord'
 
-class AvailableCloud < ActiveRecord::Base
+class Candidate < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :system
 

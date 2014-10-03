@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-describe AvailableCloud do
+describe Candidate do
   before do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
@@ -43,7 +43,7 @@ describe AvailableCloud do
 
       @system.save!
 
-      expect(@system.available_clouds.active).to eq(@cloud_openstack)
+      expect(@system.candidates.active).to eq(@cloud_openstack)
     end
 
     it 'return nil if all clouds are disabled' do
@@ -51,7 +51,7 @@ describe AvailableCloud do
 
       @system.save!
 
-      expect(@system.available_clouds.active).to be_nil
+      expect(@system.candidates.active).to be_nil
     end
   end
 end

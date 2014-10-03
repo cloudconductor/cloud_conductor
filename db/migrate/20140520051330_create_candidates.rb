@@ -1,6 +1,6 @@
-class CreateAvailableClouds < ActiveRecord::Migration
+class CreateCandidates < ActiveRecord::Migration
   def change
-    create_table :available_clouds, id: false do |t|
+    create_table :candidates, id: false do |t|
       t.references :cloud
       t.references :system
       t.integer :priority

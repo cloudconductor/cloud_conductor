@@ -19,8 +19,8 @@ require 'open-uri'
 class System < ActiveRecord::Base
   before_destroy :destroy_stack
 
-  has_many :available_clouds, dependent: :destroy
-  has_many :clouds, through: :available_clouds
+  has_many :candidates, dependent: :destroy
+  has_many :clouds, through: :candidates
   has_many :applications, dependent: :destroy
 
   belongs_to :pattern
@@ -52,15 +52,15 @@ class System < ActiveRecord::Base
   end
 
   def create_stack
-    available_clouds.sort_by(&:priority).reverse.each do |available_cloud|
-      cloud = available_cloud.cloud
+    candidates.sort_by(&:priority).reverse.each do |candidate|
+      cloud = candidate.cloud
       begin
         cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
       rescue => e
         Log.info("Create stack on #{cloud.name} ... FAILED")
         Log.error(e)
       else
-        available_cloud.active = true
+        candidate.active = true
         Log.info("Create stack on #{cloud.name} ... SUCCESS")
         break
       end
@@ -70,10 +70,10 @@ class System < ActiveRecord::Base
   def add_cloud(cloud, priority)
     clouds << cloud
 
-    available_cloud = available_clouds.find do |c|
+    candidate = candidates.find do |c|
       c.cloud_id == cloud.id
     end
-    available_cloud.priority = priority
+    candidate.priority = priority
 
     clouds
   end
@@ -85,8 +85,8 @@ class System < ActiveRecord::Base
     system.name = "#{basename}-#{SecureRandom.uuid}"
     system.ip_address = nil
 
-    available_clouds.each do |available_cloud|
-      system.add_cloud available_cloud.cloud, available_cloud.priority
+    candidates.each do |candidate|
+      system.add_cloud candidate.cloud, candidate.priority
     end
 
     system.applications = applications.map do |application|
@@ -109,7 +109,7 @@ class System < ActiveRecord::Base
   end
 
   def status
-    cloud = available_clouds.active
+    cloud = candidates.active
     return :NOT_CREATED if cloud.nil?
     cloud.client.get_stack_status name
   rescue
@@ -117,14 +117,14 @@ class System < ActiveRecord::Base
   end
 
   def outputs
-    cloud = available_clouds.active
+    cloud = candidates.active
     cloud.client.get_outputs name
   rescue
     {}
   end
 
   def destroy_stack
-    cloud = available_clouds.active
+    cloud = candidates.active
     cloud.client.destroy_stack name if cloud
   end
 
