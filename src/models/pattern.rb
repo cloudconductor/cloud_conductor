@@ -105,13 +105,8 @@ class Pattern < ActiveRecord::Base
 
   def load_parameters(path)
     template_path = File.expand_path('template.json', path)
-    template = JSON.parse(File.open(template_path).read).with_indifferent_access
-    parameters = template[:Parameters] || {}
-    parameters.map do |key, value|
-      param = Hash[value.map { |k, v| [k.to_s.underscore.to_sym, v] }]
-      param[:keyname] = key.to_s.underscore
-      param
-    end
+    template = JSON.parse(File.open(template_path).read)
+    template['Parameters'] || {}
   end
 
   def update_metadata(path, metadata)

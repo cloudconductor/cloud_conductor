@@ -273,10 +273,9 @@ describe Pattern do
         EOS
         File.stub(:open).with(/template.json/).and_return(double('File', read: template))
         parameters = @pattern.send(:load_parameters, @path)
-        keys = parameters.map { |p| p[:keyname] }
-        expect(parameters).to be_instance_of Array
-        expect(keys).to eq %w(key_name ssh_location web_instance_type web_image_id)
-        expect(parameters.first[:min_length]).to eq '1'
+        expect(parameters).to be_instance_of Hash
+        expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType webImageId)
+        expect(parameters['KeyName']['MinLength']).to eq '1'
       end
     end
 
