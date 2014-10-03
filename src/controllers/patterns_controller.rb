@@ -43,6 +43,7 @@ class PatternsController < Sinatra::Base
       rescue ActiveRecord::RecordNotFound
         status 400
         json message: 'Specified cloud does not exist'
+        return
       end
     end
     if pattern.save
@@ -50,7 +51,7 @@ class PatternsController < Sinatra::Base
       json pattern
     else
       status 400
-      json pattern.errors
+      json message: pattern.errors
     end
   end
 
