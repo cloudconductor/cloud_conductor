@@ -12,47 +12,69 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 class PatternsController < Sinatra::Base
-  configure :development do
-    register Sinatra::Reloader
-  end
+  register ConfigLoader
 
   get '/' do
     page = (params[:page] || 1).to_i
-    per_page = (params[:per_page] || 5).to_i
-
-    state = {}
-    state[:total_pages] = (Pattern.count / per_page.to_f).ceil
-
-    json [state, Pattern.limit(per_page).offset((page - 1) * per_page)]
+    per_page = (params[:per_page] || settings.per_page).to_i
+    patterns = Pattern.limit(per_page).offset((page - 1) * per_page)
+    headers link_header('/', Pattern.count, page, per_page)
+    status 200
+    json patterns
   end
 
   get '/:id' do
-    json Pattern.find(params[:id])
+    begin
+      pattern = Pattern.find(params[:id])
+      status 200
+      json pattern
+    rescue ActiveRecord::RecordNotFound
+      status 404
+    end
   end
 
   post '/' do
     pattern = Pattern.new permit_params
-    (params[:clouds] || Cloud.all.map(&:id)).each do |cloud|
-      pattern.clouds << Cloud.find(cloud)
+    clouds = params[:clouds] || Cloud.all.map(&:id)
+    clouds.each do |cloud_id|
+      begin
+        cloud = Cloud.find(cloud_id)
+        pattern.clouds << cloud
+      rescue ActiveRecord::RecordNotFound
+        status 400
+        json message: 'Specified cloud does not exist'
+        return
+      end
     end
-
-    unless pattern.save
+    if pattern.save
+      status 201
+      json pattern
+    else
       status 400
-      return json pattern.errors
+      json message: pattern.errors
     end
-
-    status 201
-    json pattern
   end
 
   delete '/:id' do
     begin
       pattern = Pattern.find(params[:id])
-      pattern.destroy
-    rescue => e
-      Log.error e
-      status 400
-      return json message: e.message
+      if pattern.destroy
+        status 204
+      else
+        status 400
+      end
+    rescue ActiveRecord::RecordNotFound
+      status 404
+    end
+  end
+
+  get '/:id/parameters' do
+    begin
+      pattern = Pattern.find(params[:id])
+      status 200
+      pattern.parameters
+    rescue ActiveRecord::RecordNotFound
+      status 404
     end
   end
 

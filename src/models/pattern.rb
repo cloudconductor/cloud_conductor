@@ -15,6 +15,7 @@
 require 'sinatra/activerecord'
 require 'yaml'
 
+# rubocop:disable ClassLength
 class Pattern < ActiveRecord::Base
   before_save :execute_packer
   self.inheritance_column = nil
@@ -36,8 +37,8 @@ class Pattern < ActiveRecord::Base
     :created
   end
 
-  def to_json(options = {})
-    super options.merge(methods: :status)
+  def as_json(options = {})
+    super options.merge(methods: :status, except: :parameters)
   end
 
   def execute_packer
@@ -102,10 +103,17 @@ class Pattern < ActiveRecord::Base
     roles.uniq
   end
 
+  def load_parameters(path)
+    template_path = File.expand_path('template.json', path)
+    template = JSON.parse(File.open(template_path).read)
+    template['Parameters'] || {}
+  end
+
   def update_metadata(path, metadata)
     self.name = metadata[:name]
     self.description = metadata[:description]
     self.type = metadata[:type]
+    self.parameters = load_parameters(path).to_json
 
     Dir.chdir path do
       self.revision = `git log --pretty=format:%H --max-count=1`

@@ -12,10 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 class SystemsController < Sinatra::Base
-  register Sinatra::Namespace
-  configure :development do
-    register Sinatra::Reloader
-  end
+  register Sinatra::Namespace, ConfigLoader
 
   namespace '/:system_id/applications' do
     register ApplicationsController
@@ -30,12 +27,11 @@ class SystemsController < Sinatra::Base
 
   get '/' do
     page = (params[:page] || 1).to_i
-    per_page = (params[:per_page] || 5).to_i
-
-    state = {}
-    state[:total_pages] = (System.count / per_page.to_f).ceil
-
-    json [state, System.limit(per_page).offset((page - 1) * per_page)]
+    per_page = (params[:per_page] || settings.per_page).to_i
+    systems = System.limit(per_page).offset((page - 1) * per_page)
+    headers link_header('/', System.count, page, per_page)
+    status 200
+    json systems
   end
 
   get '/:id' do

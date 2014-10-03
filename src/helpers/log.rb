@@ -60,4 +60,8 @@ class Log
       msg.inspect
     end
   end
+
+  class << self
+    alias_method :write, :'<<'
+  end
 end

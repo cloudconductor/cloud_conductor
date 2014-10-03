@@ -6,7 +6,7 @@ class CreatePatterns < ActiveRecord::Migration
       t.string :type
       t.string :url
       t.string :revision
-      t.references :metadata
+      t.text :parameters
       t.timestamps
     end
   end
