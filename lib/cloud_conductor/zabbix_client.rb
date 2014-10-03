@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'zabbix_api'
-
 module CloudConductor
   # rubocop: disable ClassLength
   class ZabbixClient
@@ -94,12 +92,12 @@ module CloudConductor
         host: target_host,
         interfaces: [
           {
-            type: ZabbixApi::HostInterface::Type::AGENT,
-            main: ZabbixApi::HostInterface::Main::DEFAULT,
+            type: 1, # agent
+            main: 1, # default.
             ip: '',
             dns: target_host,
             port: 10_050,
-            useip: ZabbixApi::HostInterface::UseIp::DNS_NAME
+            useip: 0 # connect using host DNS name
           }
         ],
         groups: [groupid: hostgroup_id],
@@ -123,33 +121,33 @@ module CloudConductor
         params: {
           name: action_name,
           eventsource: 0,
-          evaltype:  ZabbixApi::Action::Evaltype::AND,
-          status: ZabbixApi::Action::Status::ENABLED,
+          evaltype: 1, # AND
+          status: 0, # enabled
           esc_period: 120,
           def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
           def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
           conditions: [
             {
-              conditiontype: ZabbixApi::Action::Condition::Type::HOST,
-              operator: ZabbixApi::Action::Condition::Operator::EQUAL,
+              conditiontype: 1, # host
+              operator: 0, # equal
               value: host_id
             },
             {
-              conditiontype: ZabbixApi::Action::Condition::Type::TRIGGER_VALUE,
-              operator: ZabbixApi::Action::Condition::Operator::EQUAL,
+              conditiontype: 5, # trigger value
+              operator: 0, # equal
               value: 1
             }
           ],
           operations: [
             {
-              operationtype: ZabbixApi::Action::Operation::Type::REMOTE_COMMAND,
+              operationtype: 1, # remote command
               opcommand_hst: {
                 hostid: 0
               },
               opcommand: {
-                type: ZabbixApi::Action::Operation::Command::Type::CUSTOM_SCRIPT,
+                type: 0, # custom script
                 command: recreate_system_command(system_id),
-                execute_on: ZabbixApi::Action::Operation::Command::ExecuteOn::ZABBIX_SERVER
+                execute_on: 1 # Zabbix server
               }
             }
           ]
@@ -189,14 +187,14 @@ module CloudConductor
           actionid: action_id,
           operations: [
             {
-              operationtype: ZabbixApi::Action::Operation::Type::REMOTE_COMMAND,
+              operationtype: 1, # remote command
               opcommand_hst: {
                 hostid: 0
               },
               opcommand: {
-                type: ZabbixApi::Action::Operation::Command::Type::CUSTOM_SCRIPT,
+                type: 0, # custom script
                 command: recreate_system_command(system_id),
-                execute_on: ZabbixApi::Action::Operation::Command::ExecuteOn::ZABBIX_SERVER
+                execute_on: 1 # Zabbix server
               }
             }
           ]
