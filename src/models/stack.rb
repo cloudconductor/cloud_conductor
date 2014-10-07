@@ -28,7 +28,7 @@ class Stack < ActiveRecord::Base
   scope :in_progress, -> { where(status: :PROGRESS) }
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
-  validates :name, presence: true, uniqueness: true
+  validates :name, presence: true, uniqueness: { scope: :cloud_id }
   validates :system, presence: true
   validates :cloud, presence: true
 

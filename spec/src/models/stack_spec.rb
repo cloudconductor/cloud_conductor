@@ -18,13 +18,14 @@ describe Stack do
     @image = FactoryGirl.create(:image)
     @image.status = :created
     @pattern.images.push(@image)
+    @cloud = FactoryGirl.create(:cloud_aws)
 
     @stack = Stack.new
     @stack.name = 'Test'
     @stack.template_parameters = '{}'
     @stack.parameters = '{ "key1": "value1" }'
     @stack.pattern = @pattern
-    @stack.cloud = FactoryGirl.create(:cloud_aws)
+    @stack.cloud = @cloud
     @stack.system = FactoryGirl.create(:system)
 
     @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
@@ -83,6 +84,25 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
 
       @stack.name = ''
+      expect(@stack.valid?).to be_falsey
+    end
+
+    it 'return false when name is not unique in Cloud' do
+      stack = Stack.new
+      stack.name = 'Test'
+      stack.template_parameters = '{}'
+      stack.parameters = '{ "key1": "value1" }'
+      stack.pattern = @pattern
+      stack.system = FactoryGirl.create(:system)
+      stack.cloud = FactoryGirl.create(:cloud_openstack)
+      stack.cloud.stub(:client).and_return(@client)
+      stack.save!
+
+      expect(@stack.valid?).to be_truthy
+
+      stack.cloud = @cloud
+      stack.cloud.stub(:client).and_return(@client)
+      stack.save!
       expect(@stack.valid?).to be_falsey
     end
 
