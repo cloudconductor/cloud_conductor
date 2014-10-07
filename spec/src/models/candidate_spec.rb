@@ -19,7 +19,7 @@ describe Candidate do
 
   describe '.active' do
     it 'return cloud that has active flag' do
-      active_cloud = @system.available_clouds.last
+      active_cloud = @system.candidates.last
       active_cloud.active = true
       active_cloud.save!
 
