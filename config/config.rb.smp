@@ -29,3 +29,4 @@ dns.ttl 60
 zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
 zabbix.user 'Admin'
 zabbix.password 'zabbix'
+zabbix.default_template_name 'Template App HTTP Service'
