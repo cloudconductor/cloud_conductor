@@ -46,26 +46,6 @@ describe Stack do
     end
   end
 
-  describe '#update_status' do
-    before do
-      Stack.skip_callback :save, :before, :create_stack
-    end
-
-    after do
-      Stack.set_callback :save, :before, :create_stack, if: -> { status == :READY }
-    end
-
-    it 'set :READY status when stack has platform pattern' do
-      stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :platform))
-      expect(stack.status).to eq(:READY)
-    end
-
-    it 'set :PENDING status when stack has platform pattern' do
-      stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :optional))
-      expect(stack.status).to eq(:PENDING)
-    end
-  end
-
   it 'create with valid parameters' do
     count = Stack.count
 
@@ -160,6 +140,7 @@ describe Stack do
 
     it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
       @client.stub(:create_stack)
+      @stack.status = :READY
       @stack.save!
 
       expect(@stack.attributes['status']).to eq(:PROGRESS)
@@ -167,6 +148,7 @@ describe Stack do
 
     it 'update status to :ERROR if Client#create_stack raise error' do
       @client.stub(:create_stack).and_raise
+      @stack.status = :READY
       @stack.save!
 
       expect(@stack.attributes['status']).to eq(:ERROR)
@@ -184,22 +166,6 @@ describe Stack do
       duplicated_stack = @stack.dup
       expect(duplicated_stack.name).not_to eq(@stack.name)
       expect(duplicated_stack.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
-    end
-
-    it 'update status with :READY if stack has platform pattern' do
-      @stack.pattern.type = :platform
-      duplicated_stack = @stack.dup
-      expect(duplicated_stack.status).to eq(:READY)
-    end
-
-    it 'update status with :PENDING if stack has optional pattern' do
-      Pattern.skip_callback :save, :before, :execute_packer
-      @stack.pattern.type = :optional
-      @stack.pattern.save!
-      Pattern.set_callback :save, :before, :execute_packer
-
-      duplicated_stack = @stack.dup
-      expect(duplicated_stack.status).to eq(:PENDING)
     end
   end
 
@@ -241,7 +207,7 @@ describe Stack do
   describe '.in_progress scope' do
     it 'returns stacks in progress status' do
       count = Stack.in_progress.count
-
+      @stack.status = :READY
       @stack.save!
 
       expect(Stack.in_progress.count).to eq(count + 1)
@@ -262,9 +228,19 @@ describe Stack do
     end
 
     it 'will call destroy_stack method on current adapter' do
+      @stack.status = :CREATE_COMPLETE
       @stack.save!
 
       @client.should_receive(:destroy_stack).with(@stack.name)
+
+      @stack.destroy
+    end
+
+    it 'won\'t call destroy_stack method on current adapter if stack has pending status' do
+      @stack.status = :PENDING
+      @stack.save!
+
+      @client.should_not_receive(:destroy_stack)
 
       @stack.destroy
     end
@@ -287,6 +263,7 @@ describe Stack do
 
   describe '#pending?' do
     it 'return boolean for status is pending' do
+      @stack.status = :READY
       expect(@stack.pending?).to be_falsey
       @stack.status = :PENDING
       expect(@stack.pending?).to be_truthy
@@ -322,6 +299,30 @@ describe Stack do
       expect(@stack.error?).to be_falsey
       @stack.status = :ERROR
       expect(@stack.error?).to be_truthy
+    end
+  end
+
+  describe '#platform?' do
+    it 'return true if stack has platform pattern' do
+      @stack.pattern.type = :platform
+      expect(@stack.platform?).to be_truthy
+    end
+
+    it 'return false if stack has optional pattern' do
+      @stack.pattern.type = :optional
+      expect(@stack.platform?).to be_falsey
+    end
+  end
+
+  describe '#optional?' do
+    it 'return true if stack has optional pattern' do
+      @stack.pattern.type = :optional
+      expect(@stack.optional?).to be_truthy
+    end
+
+    it 'return false if stack has platform pattern' do
+      @stack.pattern.type = :platform
+      expect(@stack.optional?).to be_falsey
     end
   end
 end

@@ -13,17 +13,28 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Candidate do
-  before do
-    @system = FactoryGirl.create(:system)
-  end
+  describe '.primary' do
+    it 'return single candidates that has highest priority on specified system' do
+      system = FactoryGirl.build(:system)
+      system.add_cloud FactoryGirl.create(:cloud_aws), 10
+      system.add_cloud FactoryGirl.create(:cloud_aws), 30
+      system.add_cloud FactoryGirl.create(:cloud_aws), 20
+      system.save!
 
-  describe '.active' do
-    it 'return cloud that has active flag' do
-      active_cloud = @system.candidates.last
-      active_cloud.active = true
-      active_cloud.save!
+      expect(system.candidates.primary).to eq(system.candidates[1])
+    end
 
-      @system.save!
+    it 'ignore candidates on other system' do
+      system1 = FactoryGirl.build(:system)
+      system1.add_cloud FactoryGirl.create(:cloud_aws), 30
+      system1.save!
+
+      system2 = FactoryGirl.build(:system)
+      system2.add_cloud FactoryGirl.create(:cloud_aws), 10
+      system2.add_cloud FactoryGirl.create(:cloud_aws), 20
+      system2.save!
+
+      expect(system2.candidates.primary).to eq(system2.candidates[1])
     end
   end
 end

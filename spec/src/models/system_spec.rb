@@ -39,7 +39,7 @@ describe System do
   end
 
   after do
-    Stack.set_callback :destroy, :before, :destroy_stack
+    Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
   end
 
   it 'create with valid parameters' do

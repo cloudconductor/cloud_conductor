@@ -49,6 +49,15 @@ class SystemsController < Sinatra::Base
       return json message: system.errors
     end
 
+    cloud = system.candidates.primary.cloud
+    (params[:stacks] || []).each do |stack|
+      system.stacks.create(stack.merge(cloud: cloud))
+    end
+
+    Thread.new do
+      CloudConductor::SystemBuilder.new(system).build
+    end
+
     status 201
     json system
   end
