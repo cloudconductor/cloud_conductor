@@ -46,7 +46,7 @@ class SystemsController < Sinatra::Base
 
     unless system.save
       status 400
-      return json system.errors
+      return json message: system.errors
     end
 
     status 201
@@ -65,7 +65,7 @@ class SystemsController < Sinatra::Base
     system = previous_system.dup
     unless system.save
       status 400
-      return json system.errors
+      return json message: system.errors
     end
 
     status 201
@@ -83,7 +83,7 @@ class SystemsController < Sinatra::Base
 
     unless system.update_attributes permit_params
       status 400
-      return json system.errors
+      return json message: system.errors
     end
 
     status 200

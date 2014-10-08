@@ -41,7 +41,7 @@ class CloudsController < Sinatra::Base
     end
     unless cloud.save
       status 400
-      return json cloud.errors
+      return json message: cloud.errors
     end
 
     status 201
@@ -59,7 +59,7 @@ class CloudsController < Sinatra::Base
 
     unless cloud.update_attributes cloud_permit_params
       status 400
-      return json cloud.errors
+      return json message: cloud.errors
     end
 
     status 200
