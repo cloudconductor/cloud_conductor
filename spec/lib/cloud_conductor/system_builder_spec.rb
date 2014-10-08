@@ -216,5 +216,19 @@ module CloudConductor
         @builder.send(:finish_system)
       end
     end
+
+    describe '#reset_stacks' do
+      it 'reset ip_address, monitoring_host and template_parameters in system' do
+        @system.ip_address = '127.0.0.1'
+        @system.monitoring_host = 'example.com'
+        @system.template_parameters = '{ "key": "dummy" }'
+
+        @builder.send(:reset_stacks)
+
+        expect(@system.ip_address).to be_nil
+        expect(@system.monitoring_host).to be_nil
+        expect(@system.template_parameters).to eq('{}')
+      end
+    end
   end
 end

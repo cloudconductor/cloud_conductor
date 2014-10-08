@@ -126,7 +126,12 @@ module CloudConductor
     end
 
     def reset_stacks
+      @system.ip_address = nil
+      @system.monitoring_host = nil
+      @system.template_parameters = '{}'
       @system.stacks = @system.stacks.reload.map(&:dup)
+
+      @system.save!
     end
   end
 end
