@@ -126,6 +126,11 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
     end
 
+    it 'returns false when pattern is unset' do
+      @stack.pattern = nil
+      expect(@stack.valid?).to be_falsey
+    end
+
     it 'returns false when pattern status isn\'t created' do
       @image.status = :processing
       expect(@stack.valid?).to be_falsey

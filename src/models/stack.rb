@@ -31,6 +31,7 @@ class Stack < ActiveRecord::Base
   validates :name, presence: true, uniqueness: { scope: :cloud_id }
   validates :system, presence: true
   validates :cloud, presence: true
+  validates :pattern, presence: true
 
   validates_each :template_parameters, :parameters do |record, attr, value|
     begin
@@ -41,9 +42,7 @@ class Stack < ActiveRecord::Base
   end
 
   validate do
-    break unless pattern
-
-    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
+    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :created
   end
 
   def update_status
