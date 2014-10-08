@@ -36,7 +36,7 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new cloud_permit_params
-    params[:targets].each do |target_params|
+    (params[:targets] || []).each do |target_params|
       cloud.targets.build target_permit_params(target_params)
     end
     unless cloud.save
