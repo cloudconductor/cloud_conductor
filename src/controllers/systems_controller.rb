@@ -79,6 +79,10 @@ class SystemsController < Sinatra::Base
       return json message: system.errors
     end
 
+    Thread.new do
+      CloudConductor::SystemBuilder.new(system).build
+    end
+
     status 201
     json system
   end
