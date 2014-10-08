@@ -1,7 +1,7 @@
 module ErrorHandler
   def self.registered(app)
     app.error 404 do
-      json message: 'Not Found'
+      json message: 'Not Found' if response.body.empty?
     end
     app.error 500 do
       Log.error "#{env['sinatra.error'].class}: #{env['sinatra.error'].message}"
