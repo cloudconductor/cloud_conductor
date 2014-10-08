@@ -44,14 +44,16 @@ class SystemsController < Sinatra::Base
       system.add_cloud Cloud.find(cloud[:id]), cloud[:priority]
     end
 
-    unless system.save
-      status 400
-      return json message: system.errors
-    end
+    system.transaction do
+      unless system.save
+        status 400
+        return json message: system.errors
+      end
 
-    cloud = system.candidates.primary.cloud
-    (params[:stacks] || []).each do |stack|
-      system.stacks.create(stack.merge(cloud: cloud))
+      cloud = system.candidates.primary.cloud
+      (params[:stacks] || []).each do |stack|
+        system.stacks.create!(stack.merge(cloud: cloud))
+      end
     end
 
     Thread.new do
