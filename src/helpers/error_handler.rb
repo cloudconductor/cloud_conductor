@@ -4,7 +4,7 @@ module ErrorHandler
       json message: 'Not Found' if response.body.empty?
     end
     app.error 500 do
-      Log.error "#{env['sinatra.error'].class}: #{env['sinatra.error'].message}"
+      Log.error env['sinatra.error']
       json message: 'Unexpected error occured. Please contact server administrator.'
     end
   end
