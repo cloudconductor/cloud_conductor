@@ -70,9 +70,9 @@ module ApplicationsController
         end
         status 200
         json application
-      rescue ActiveRecord::RecordInvalid
+      rescue ActiveRecord::RecordInvalid => e
         status 400
-        json message: application.errors
+        json message: e.message
       end
     end
 
