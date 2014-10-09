@@ -95,7 +95,7 @@ module CloudConductor
     # rubocop:enable MethodLength, CyclomaticComplexity
 
     def update_system(outputs)
-      Log.info '  Instance is running, CloudConductor will register host to zabbix/DNS.'
+      Log.info 'Platform stack has created. CloudConductor will register host to zabbix/DNS.'
       @system.ip_address = outputs['FrontendAddress']
       @system.monitoring_host = @system.domain
       @system.template_parameters = outputs.except('FrontendAddress').to_json
@@ -126,6 +126,7 @@ module CloudConductor
     end
 
     def reset_stacks
+      Log.info 'Reset all stacks.'
       @system.ip_address = nil
       @system.monitoring_host = nil
       @system.template_parameters = '{}'
