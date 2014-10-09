@@ -102,6 +102,9 @@ class Stack < ActiveRecord::Base
 
   def destroy_stack
     cloud.client.destroy_stack name
+  rescue => e
+    Log.error "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.error e
   end
 
   def payload
