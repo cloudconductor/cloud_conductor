@@ -92,6 +92,40 @@ describe System do
     end
   end
 
+  describe '#status' do
+    it 'return status that integrated status over all stacks' do
+      @system.stacks[0].status = :PENDING
+      @system.stacks[1].status = :PENDING
+
+      expect(@system.status).to eq(:PROGRESS)
+    end
+
+    it 'return progress when least one stack has not create_complete status' do
+      @system.stacks[0].status = :CREATE_COMPLETE
+      @system.stacks[1].status = :READY
+
+      expect(@system.status).to eq(:PROGRESS)
+
+      @system.stacks[0].status = :CREATE_COMPLETE
+      @system.stacks[1].status = :PROGRESS
+
+      expect(@system.status).to eq(:PROGRESS)
+    end
+
+    it 'return create_complete when all stacks has create_complete status' do
+      @system.stacks[0].status = :CREATE_COMPLETE
+      @system.stacks[1].status = :CREATE_COMPLETE
+
+      expect(@system.status).to eq(:CREATE_COMPLETE)
+    end
+
+    it 'return error when one stack has error status' do
+      @system.stacks[0].status = :ERROR
+
+      expect(@system.status).to eq(:ERROR)
+    end
+  end
+
   describe '#enable_monitoring(before_save)' do
     before do
       @zabbix_client = double('zabbix_client', register: nil)

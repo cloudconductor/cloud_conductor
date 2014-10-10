@@ -36,6 +36,12 @@ class System < ActiveRecord::Base
     self.template_parameters ||= '{}'
   end
 
+  def status
+    return :ERROR if stacks.any?(&:error?)
+    return :CREATE_COMPLETE if stacks.all?(&:create_complete?)
+    :PROGRESS
+  end
+
   def add_cloud(cloud, priority)
     clouds << cloud
 
@@ -79,14 +85,6 @@ class System < ActiveRecord::Base
   def update_dns
     dns_client = CloudConductor::DNSClient.new
     dns_client.update domain, ip_address
-  end
-
-  def status
-    cloud = candidates.active
-    return :NOT_CREATED if cloud.nil?
-    cloud.client.get_stack_status name
-  rescue
-    :ERROR
   end
 
   def serf
