@@ -94,12 +94,12 @@ module CloudConductor
 
         if (row = rows.find(&success?(target)))
           data = row[5]
-          results[target][:status] = :success
+          results[target][:status] = :SUCCESS
           results[target][:image] = data.split(':').last
           next
         end
 
-        results[target][:status] = :error
+        results[target][:status] = :ERROR
         if (row = rows.find(&error1?(target)))
           data = row[3]
           results[target][:message] = data.gsub('%!(PACKER_COMMA)', ',')
