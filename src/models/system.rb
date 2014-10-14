@@ -37,7 +37,7 @@ class System < ActiveRecord::Base
   end
 
   def status
-    return :ERROR if stacks.any?(&:error?)
+    return :ERROR if stacks.blank? | stacks.any?(&:error?)
     return :CREATE_COMPLETE if stacks.all?(&:create_complete?)
     :PROGRESS
   end

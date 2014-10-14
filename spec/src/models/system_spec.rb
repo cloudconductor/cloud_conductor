@@ -124,6 +124,12 @@ describe System do
 
       expect(@system.status).to eq(:ERROR)
     end
+
+    it 'return error when stacks is empty array' do
+      @system.stacks = []
+
+      expect(@system.status).to eq(:ERROR)
+    end
   end
 
   describe '#enable_monitoring(before_save)' do
