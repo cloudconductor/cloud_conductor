@@ -42,6 +42,10 @@ class System < ActiveRecord::Base
     :PROGRESS
   end
 
+  def as_json(options = {})
+    super options.merge(methods: :status)
+  end
+
   def add_cloud(cloud, priority)
     clouds << cloud
 
