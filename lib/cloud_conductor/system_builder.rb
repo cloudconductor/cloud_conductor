@@ -24,32 +24,34 @@ module CloudConductor
 
     # rubocop:disable MethodLength
     def build
-      @clouds.each do |cloud|
-        begin
-          until @system.stacks.select(&:pending?).empty?
-            platforms = @system.stacks.select(&:pending?).select(&:platform?)
-            optionals = @system.stacks.select(&:pending?).select(&:optional?)
-            stack = [platforms, optionals].flatten.compact.first
-            stack.cloud = cloud
-            stack.status = :READY
-            stack.save!
+      ActiveRecord::Base.connection_pool.with_connection do
+        @clouds.each do |cloud|
+          begin
+            until @system.stacks.select(&:pending?).empty?
+              platforms = @system.stacks.select(&:pending?).select(&:platform?)
+              optionals = @system.stacks.select(&:pending?).select(&:optional?)
+              stack = [platforms, optionals].flatten.compact.first
+              stack.cloud = cloud
+              stack.status = :READY
+              stack.save!
 
-            wait_for_finished(stack, TIMEOUT)
+              wait_for_finished(stack, TIMEOUT)
 
-            stack.status = :CREATE_COMPLETE
-            stack.save!
+              stack.status = :CREATE_COMPLETE
+              stack.save!
 
-            update_system stack.outputs if stack.platform?
+              update_system stack.outputs if stack.platform?
+            end
+
+            finish_system if @system.reload
+
+            Log.info "Created all stacks on system(#{@system.name}) on #{cloud.name}"
+            break
+          rescue => e
+            Log.error "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
+            Log.error e
+            reset_stacks
           end
-
-          finish_system if @system.reload
-
-          Log.info "Created all stacks on system(#{@system.name}) on #{cloud.name}"
-          break
-        rescue => e
-          Log.error "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
-          Log.error e
-          reset_stacks
         end
       end
     end
