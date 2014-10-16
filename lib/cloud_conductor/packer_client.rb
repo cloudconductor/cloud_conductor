@@ -21,8 +21,8 @@ module CloudConductor
       packer_path: '/opt/packer/packer',
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
       cloudconductor_root: '/opt/cloudconductor',
-      cloudconductor_init_url: 'https://github.com/cloudconductor/cloudconductor_init.git',
-      cloudconductor_init_revision: 'develop',
+      cloudconductor_init_url: CloudConductor::Config.cloudconductor_init.url,
+      cloudconductor_init_revision: CloudConductor::Config.cloudconductor_init.revision,
       variables: {}
     }
 
