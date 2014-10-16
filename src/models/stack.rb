@@ -41,7 +41,7 @@ class Stack < ActiveRecord::Base
   end
 
   validate do
-    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :created
+    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :CREATE_COMPLETE
   end
 
   after_initialize do

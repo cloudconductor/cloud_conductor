@@ -32,9 +32,9 @@ class Pattern < ActiveRecord::Base
   end
 
   def status
-    return :error if images.any? { |image| image.status == :error }
-    return :processing if images.any? { |image| image.status == :processing }
-    :created
+    return :ERROR if images.any? { |image| image.status == :ERROR }
+    return :PROGRESS if images.any? { |image| image.status == :PROGRESS }
+    :CREATE_COMPLETE
   end
 
   def as_json(options = {})
@@ -141,7 +141,7 @@ class Pattern < ActiveRecord::Base
         cloud = Cloud.where(name: cloud_name).first
         operating_system = OperatingSystem.where(name: os_name).first
         image = images.where(cloud: cloud, operating_system: operating_system, role: role).first
-        image.status = result[:status] == :success ? :created : :error
+        image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
         image.image = result[:image]
         image.message = result[:message]
         image.save!

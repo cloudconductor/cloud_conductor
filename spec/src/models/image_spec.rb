@@ -52,8 +52,8 @@ describe Image do
   end
 
   describe '#status' do
-    it 'returns :processing status when initialized' do
-      expect(@image.status).to eq(:processing)
+    it 'returns :PROGRESS status when initialized' do
+      expect(@image.status).to eq(:PROGRESS)
     end
 
     it 'returns image status as symbol' do

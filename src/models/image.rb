@@ -22,7 +22,7 @@ class Image < ActiveRecord::Base
   validates :role, presence: true, format: /\A[^\-_]+\Z/
 
   after_initialize do
-    self.status ||= :processing
+    self.status ||= :PROGRESS
   end
 
   def status

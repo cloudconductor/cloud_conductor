@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :image, class: Image do
     sequence(:role) { |n| "role#{n}" }
-    status :processing
+    status :PROGRESS
     image 'dummy_image'
   end
 end

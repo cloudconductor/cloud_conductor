@@ -168,11 +168,11 @@ module CloudConductor
         expect(result.keys).to match_array(%w(aws-centos openstack-centos))
 
         aws = result['aws-centos']
-        expect(aws[:status]).to eq(:success)
+        expect(aws[:status]).to eq(:SUCCESS)
         expect(aws[:image]).to match(/ami-[0-9a-f]{8}/)
 
         openstack = result['openstack-centos']
-        expect(openstack[:status]).to eq(:success)
+        expect(openstack[:status]).to eq(:SUCCESS)
         expect(openstack[:image]).to match(/[0-9a-f\-]{36}/)
       end
 
@@ -183,7 +183,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
-        expect(aws[:status]).to eq(:error)
+        expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match(/Error querying AMI: The image id '\[ami-[0-9a-f]{8}\]' does not exist \(InvalidAMIID.NotFound\)/)
       end
@@ -195,7 +195,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
-        expect(aws[:status]).to eq(:error)
+        expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to eq('Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain')
       end
@@ -207,7 +207,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(aws-centos))
 
         aws = result['aws-centos']
-        expect(aws[:status]).to eq(:error)
+        expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match('Script exited with non-zero exit status: \d+')
       end
@@ -219,7 +219,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
-        expect(openstack[:status]).to eq(:error)
+        expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match(%r{Error launching source server: Expected HTTP response code \[202\] when accessing URL\(http://[0-9\.]+:8774/v2/[0-9a-f]+/servers\); got 400 instead with the following body:\\n\{"badRequest": \{"message": "Can not find requested image", "code": 400\}\}})
       end
@@ -231,7 +231,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
-        expect(openstack[:status]).to eq(:error)
+        expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to eq('Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain')
       end
@@ -243,7 +243,7 @@ module CloudConductor
         expect(result.keys).to match_array(%w(openstack-centos))
 
         openstack = result['openstack-centos']
-        expect(openstack[:status]).to eq(:error)
+        expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
       end
@@ -255,12 +255,12 @@ module CloudConductor
         expect(result.keys).to match_array(%w(aws-centos openstack-centos))
 
         aws = result['aws-centos']
-        expect(aws[:status]).to eq(:error)
+        expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match('Script exited with non-zero exit status: \d+')
 
         openstack = result['openstack-centos']
-        expect(openstack[:status]).to eq(:error)
+        expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
       end

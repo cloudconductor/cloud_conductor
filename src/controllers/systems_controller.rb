@@ -83,6 +83,10 @@ class SystemsController < Sinatra::Base
       CloudConductor::SystemBuilder.new(system).build
     end
 
+    Thread.new do
+      CloudConductor::SystemBuilder.new(system).build
+    end
+
     status 201
     json system
   end

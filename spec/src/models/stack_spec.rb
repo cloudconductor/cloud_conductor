@@ -16,7 +16,7 @@ describe Stack do
   before do
     @pattern = FactoryGirl.create(:pattern)
     @image = FactoryGirl.create(:image)
-    @image.status = :created
+    @image.status = :CREATE_COMPLETE
     @pattern.images.push(@image)
     @cloud = FactoryGirl.create(:cloud_aws)
 
@@ -111,8 +111,8 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when pattern status isn\'t created' do
-      @image.status = :processing
+    it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
+      @image.status = :PROGRESS
       expect(@stack.valid?).to be_falsey
     end
   end

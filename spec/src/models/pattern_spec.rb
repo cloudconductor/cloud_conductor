@@ -83,29 +83,29 @@ describe Pattern do
     end
 
     it 'return status that integrated status over all images' do
-      expect(@pattern.status).to eq(:processing)
+      expect(@pattern.status).to eq(:PROGRESS)
     end
 
-    it 'return processing when least one image has processing status' do
-      @pattern.images[0].status = :created
+    it 'return :PROGRESS when least one image has progress status' do
+      @pattern.images[0].status = :CREATE_COMPLETE
 
-      expect(@pattern.status).to eq(:processing)
+      expect(@pattern.status).to eq(:PROGRESS)
     end
 
-    it 'return created when all images have created status' do
-      @pattern.images[0].status = :created
-      @pattern.images[1].status = :created
-      @pattern.images[2].status = :created
+    it 'return :CREATE_COMPLETE when all images have CREATE_COMPLETE status' do
+      @pattern.images[0].status = :CREATE_COMPLETE
+      @pattern.images[1].status = :CREATE_COMPLETE
+      @pattern.images[2].status = :CREATE_COMPLETE
 
-      expect(@pattern.status).to eq(:created)
+      expect(@pattern.status).to eq(:CREATE_COMPLETE)
     end
 
     it 'return error when least one image has error status' do
-      @pattern.images[0].status = :created
-      @pattern.images[1].status = :processing
-      @pattern.images[2].status = :error
+      @pattern.images[0].status = :CREATE_COMPLETE
+      @pattern.images[1].status = :PROGRESS
+      @pattern.images[2].status = :ERROR
 
-      expect(@pattern.status).to eq(:error)
+      expect(@pattern.status).to eq(:ERROR)
     end
   end
 
@@ -376,11 +376,11 @@ describe Pattern do
       it 'update status of all images when call block' do
         results = {
           "#{@cloud_aws.name}-#{@operating_systems.first.name}" => {
-            status: :success,
+            status: :SUCCESS,
             image: 'ami-12345678'
           },
           "#{@cloud_openstack.name}-#{@operating_systems.first.name}" => {
-            status: :error,
+            status: :ERROR,
             message: 'dummy_message'
           }
         }
@@ -391,12 +391,12 @@ describe Pattern do
         @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
 
         aws = Image.where(cloud: @cloud_aws, operating_system: @operating_systems.first, role: 'nginx').first
-        expect(aws.status).to eq(:created)
+        expect(aws.status).to eq(:CREATE_COMPLETE)
         expect(aws.image).to eq('ami-12345678')
         expect(aws.message).to be_nil
 
         openstack = Image.where(cloud: @cloud_openstack, operating_system: @operating_systems.first, role: 'nginx').first
-        expect(openstack.status).to eq(:error)
+        expect(openstack.status).to eq(:ERROR)
         expect(openstack.image).to be_nil
         expect(openstack.message).to eq('dummy_message')
       end
