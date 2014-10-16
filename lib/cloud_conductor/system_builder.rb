@@ -30,7 +30,7 @@ module CloudConductor
             until @system.stacks.select(&:pending?).empty?
               platforms = @system.stacks.select(&:pending?).select(&:platform?)
               optionals = @system.stacks.select(&:pending?).select(&:optional?)
-              stack = [platforms, optionals].flatten.compact.first
+              stack = (platforms + optionals).first
               stack.cloud = cloud
               stack.status = :READY
               stack.save!
