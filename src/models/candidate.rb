@@ -20,7 +20,9 @@ class Candidate < ActiveRecord::Base
 
   self.primary_keys = :system_id, :cloud_id
 
-  def self.active
-    where(active: true).first
+  def self.primary
+    sorted.first
   end
+
+  scope :sorted, -> { order(priority: :desc) }
 end

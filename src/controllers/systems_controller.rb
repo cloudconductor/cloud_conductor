@@ -44,9 +44,20 @@ class SystemsController < Sinatra::Base
       system.add_cloud Cloud.find(cloud[:id]), cloud[:priority]
     end
 
-    unless system.save
-      status 400
-      return json message: system.errors
+    system.transaction do
+      unless system.save
+        status 400
+        return json message: system.errors
+      end
+
+      cloud = system.candidates.primary.cloud
+      (params[:stacks] || []).each do |stack|
+        system.stacks.create!(stack.merge(cloud: cloud))
+      end
+    end
+
+    Thread.new do
+      CloudConductor::SystemBuilder.new(system).build
     end
 
     status 201
@@ -66,6 +77,10 @@ class SystemsController < Sinatra::Base
     unless system.save
       status 400
       return json message: system.errors
+    end
+
+    Thread.new do
+      CloudConductor::SystemBuilder.new(system).build
     end
 
     status 201

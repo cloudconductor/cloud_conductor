@@ -21,9 +21,8 @@ class Stack < ActiveRecord::Base
   belongs_to :pattern
   belongs_to :cloud
 
-  before_destroy :destroy_stack
-  before_save :update_status, if: -> { status.nil? }
-  before_save :create_stack, if: -> { status == :READY }
+  before_destroy :destroy_stack, unless: -> { pending? }
+  before_save :create_stack, if: -> { ready? }
 
   scope :in_progress, -> { where(status: :PROGRESS) }
   scope :created, -> { where(status: :CREATE_COMPLETE) }
@@ -45,12 +44,8 @@ class Stack < ActiveRecord::Base
     errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :created
   end
 
-  def update_status
-    if pattern.type == :platform
-      self.status = :READY
-    else
-      self.status = :PENDING
-    end
+  after_initialize do
+    self.status ||= :PENDING
   end
 
   def create_stack
@@ -71,9 +66,17 @@ class Stack < ActiveRecord::Base
 
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     stack.name = "#{basename}-#{SecureRandom.uuid}"
-    stack.update_status
+    stack.status = :PENDING
 
     stack
+  end
+
+  def platform?
+    pattern && pattern.type == :platform
+  end
+
+  def optional?
+    pattern && pattern.type == :optional
   end
 
   %i(pending ready progress create_complete error).each do |method|
@@ -84,7 +87,7 @@ class Stack < ActiveRecord::Base
 
   def status
     status = super
-    return status unless status && status.to_sym == :PROGRESS
+    return status && status.to_sym unless status && status.to_sym == :PROGRESS
 
     cloud.client.get_stack_status name if cloud.client
   rescue
@@ -99,6 +102,9 @@ class Stack < ActiveRecord::Base
 
   def destroy_stack
     cloud.client.destroy_stack name
+  rescue => e
+    Log.error "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.error e
   end
 
   def payload
