@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :pattern do
-    sequence(:name) { |n| "pattern_#{n}" }
-    type :platform
-    protocol :git
-    url 'http://example.com/'
+  factory :stack, class: Stack do
+    system { create(:system) }
+    pattern { create(:pattern) }
+    cloud { create(:cloud_aws) }
+
+    sequence(:name) { |n| "stack-#{n}" }
+    template_parameters '{}'
+    parameters '{ "dummy": "value" }'
+    status nil
 
     after(:build) do
-      Pattern.skip_callback :save, :before, :execute_packer
+      Stack.skip_callback :save, :before, :create_stack
     end
 
     after(:create) do
-      Pattern.set_callback :save, :before, :execute_packer
-    end
-
-    before(:create) do |pattern|
-      pattern.clouds << create(:cloud_aws)
+      Stack.set_callback :save, :before, :create_stack, if: -> { status == :READY }
     end
   end
 end

@@ -21,6 +21,6 @@ class Candidate < ActiveRecord::Base
   self.primary_keys = :system_id, :cloud_id
 
   def self.active
-    where(active: true).first.cloud rescue nil
+    where(active: true).first
   end
 end

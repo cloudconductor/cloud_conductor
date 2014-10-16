@@ -14,44 +14,16 @@
 # limitations under the License.
 describe Candidate do
   before do
-    @cloud_aws = FactoryGirl.create(:cloud_aws)
-    @cloud_openstack = FactoryGirl.create(:cloud_openstack)
-
-    @pattern = FactoryGirl.create(:pattern)
-
-    @system = System.new
-    @system.name = 'Test'
-    @system.pattern = @pattern
-    @system.template_parameters = '{}'
-    @system.parameters = '{}'
-    @system.monitoring_host = nil
-    @system.domain = 'example.com'
-
-    @system.add_cloud(@cloud_aws, 1)
-    @system.add_cloud(@cloud_openstack, 2)
-
-    @client = double('client')
-    Cloud.any_instance.stub(:client).and_return(@client)
-
-    CloudConductor::DNSClient.stub_chain(:new, :update)
-    CloudConductor::ZabbixClient.stub_chain(:new, :register)
+    @system = FactoryGirl.create(:system)
   end
 
   describe '.active' do
     it 'return cloud that has active flag' do
-      @client.stub(:create_stack).and_return(nil)
+      active_cloud = @system.candidates.last
+      active_cloud.active = true
+      active_cloud.save!
 
       @system.save!
-
-      expect(@system.candidates.active).to eq(@cloud_openstack)
-    end
-
-    it 'return nil if all clouds are disabled' do
-      @client.stub(:create_stack).and_raise
-
-      @system.save!
-
-      expect(@system.candidates.active).to be_nil
     end
   end
 end

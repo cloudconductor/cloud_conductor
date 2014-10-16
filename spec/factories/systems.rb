@@ -14,25 +14,23 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :system, class: System do
-    sequence(:name) { |n| "stack-#{n}" }
-    template_parameters '{}'
-    parameters '{}'
-    pattern { create(:pattern) }
+    sequence(:name) { |n| "system-#{n}" }
+    domain 'example.com'
+    template_parameters '{ "dummy": "value" }'
 
     after(:build) do
-      System.skip_callback :save, :before, :create_stack
       System.skip_callback :save, :before, :enable_monitoring
       System.skip_callback :save, :before, :update_dns
     end
 
     after(:create) do
-      System.set_callback :save, :before, :create_stack, if: -> { status == :NOT_CREATED }
       System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
       System.set_callback :save, :before, :update_dns, if: -> { ip_address }
     end
 
     before(:create) do |system|
       system.add_cloud create(:cloud_aws), 1
+      system.add_cloud create(:cloud_openstack), 2
     end
   end
 end

@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140826022656) do
+ActiveRecord::Schema.define(version: 20140925021752) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
@@ -77,6 +77,7 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.string   "name"
     t.string   "description"
     t.string   "type"
+    t.string   "protocol"
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
@@ -91,14 +92,24 @@ ActiveRecord::Schema.define(version: 20140826022656) do
     t.datetime "updated_at"
   end
 
-  create_table "systems", force: true do |t|
+  create_table "stacks", force: true do |t|
+    t.integer  "system_id"
     t.integer  "pattern_id"
+    t.integer  "cloud_id"
     t.string   "name"
+    t.string   "status"
     t.text     "template_parameters"
     t.text     "parameters"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+  end
+
+  create_table "systems", force: true do |t|
+    t.string   "name"
     t.string   "monitoring_host"
     t.string   "ip_address"
     t.string   "domain"
+    t.text     "template_parameters"
     t.datetime "created_at"
     t.datetime "updated_at"
   end

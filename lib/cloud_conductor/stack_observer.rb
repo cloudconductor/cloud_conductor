@@ -15,46 +15,74 @@
 module CloudConductor
   class StackObserver
     def update
-      System.in_progress.each do |system|
-        Log.info "Check and update stack with #{system.name}"
-        next if system.status != :CREATE_COMPLETE
+      Stack.in_progress.each do |stack|
+        Log.info "Check and update stack with #{stack.name}"
+        next if stack.status != :CREATE_COMPLETE
 
         Log.debug '  Status is CREATE_COMPLETE'
 
-        outputs = system.outputs
-        next if outputs['FrontendAddress'].nil?
+        if stack.pattern.type == :platform
+          outputs = stack.outputs
+          next if outputs['FrontendAddress'].nil?
 
-        ip_address = outputs['FrontendAddress']
-        Log.debug "  Outputs has FrontendAddress(#{ip_address})"
+          ip_address = outputs['FrontendAddress']
+          Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-        consul = Consul::Client.connect host: ip_address
-        next unless consul.running?
+          consul = Consul::Client.connect host: ip_address
+          next unless consul.running?
 
-        serf = Serf::Client.new host: ip_address
-        status, _results = serf.call('info')
-        next unless status.success?
+          serf = Serf::Client.new host: ip_address
+          status, _results = serf.call('info')
+          next unless status.success?
+        end
 
-        Log.info "  Instance is running on #{ip_address}, CloudConductor will register host to zabbix."
-        update_system system, ip_address
+        stack.status = :CREATE_COMPLETE
+        stack.save!
+
+        update_system stack.system, outputs
       end
     end
 
     private
 
-    def update_system(system, ip_address)
-      system.ip_address = ip_address
-      system.monitoring_host = system.domain
-      system.save!
+    def update_system(system, outputs)
+      if outputs
+        Log.info '  Instance is running, CloudConductor will register host to zabbix/DNS.'
+        system.ip_address = outputs['FrontendAddress']
+        system.monitoring_host = system.domain
+        system.template_parameters = outputs.except('FrontendAddress').to_json
+        system.save!
+      end
 
-      payload = JSON.parse(system.parameters)
+      stack = system.stacks.find(&:pending?)
+      if stack
+        stack.status = :READY
+        stack.save!
+      else
+        finish_system system
+      end
+    end
+
+    def finish_system(system)
+      payload = {
+        cloudconductor: {
+          patterns: {
+          }
+        }
+      }
+
+      system.stacks.created.each do |stack|
+        payload[:cloudconductor][:patterns].deep_merge! stack.payload
+      end
       system.serf.call('event', 'configure', payload)
 
+      sleep 3
       system.send_application_payload
 
-      sleep 30
+      sleep 3
       system.serf.call('event', 'restore', {})
 
-      sleep 30
+      sleep 3
       system.deploy_applications
     end
   end

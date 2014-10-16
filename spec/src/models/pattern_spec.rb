@@ -137,7 +137,7 @@ describe Pattern do
       @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
       @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
       @pattern.should_receive(:update_metadata).with(path_pattern, {})
-      @pattern.should_receive(:create_images).with(anything, 'dummy')
+      @pattern.should_receive(:create_images).with(anything, 'dummy', nil)
       @pattern.save!
     end
 
@@ -299,10 +299,10 @@ describe Pattern do
       end
 
       it 'update type attribute with type in metadata' do
-        metadata = { type: 'Platform' }
+        metadata = { type: 'platform' }
         @pattern.send(:update_metadata, @path, metadata)
 
-        expect(@pattern.type).to eq('Platform')
+        expect(@pattern.type).to eq(:platform)
       end
 
       it 'update parameters attribute with parameters in template' do
@@ -354,7 +354,7 @@ describe Pattern do
       it 'create image each cloud, operating_system and role' do
         count = Image.count
 
-        @pattern.send(:create_images, @operating_systems, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
         @pattern.save!
 
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
@@ -367,9 +367,10 @@ describe Pattern do
         args << @pattern.clouds.map(&:name)
         args << @operating_systems.map(&:name)
         args << 'nginx'
+        args << 'dummy_platform'
         CloudConductor::PackerClient.any_instance.should_receive(:build).with(*args)
 
-        @pattern.send(:create_images, @operating_systems, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
       end
 
       it 'update status of all images when call block' do
@@ -387,7 +388,7 @@ describe Pattern do
           @pattern.save!
           block.call results
         end
-        @pattern.send(:create_images, @operating_systems, 'nginx')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
 
         aws = Image.where(cloud: @cloud_aws, operating_system: @operating_systems.first, role: 'nginx').first
         expect(aws.status).to eq(:created)

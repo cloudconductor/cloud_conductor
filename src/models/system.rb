@@ -17,54 +17,23 @@ require 'open-uri'
 
 # rubocop:disable ClassLength
 class System < ActiveRecord::Base
-  before_destroy :destroy_stack
-
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
   has_many :applications, dependent: :destroy
+  has_many :stacks, dependent: :destroy
 
-  belongs_to :pattern
-
-  before_save :create_stack, if: -> { status == :NOT_CREATED }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
 
-  scope :in_progress, -> { where(ip_address: nil) }
-
   validates :name, presence: true, uniqueness: true
-  validates :pattern, presence: true
   validates :clouds, presence: true
-
-  validates_each :template_parameters, :parameters do |record, attr, value|
-    begin
-      JSON.parse(value) unless value.nil?
-    rescue JSON::ParserError
-      record.errors.add(attr, 'is malformed or invalid json string')
-    end
-  end
 
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
-
-    if pattern
-      errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') unless pattern.status == :created
-    end
   end
 
-  def create_stack
-    candidates.sort_by(&:priority).reverse.each do |candidate|
-      cloud = candidate.cloud
-      begin
-        cloud.client.create_stack name, pattern, JSON.parse(template_parameters).with_indifferent_access
-      rescue => e
-        Log.info("Create stack on #{cloud.name} ... FAILED")
-        Log.error(e)
-      else
-        candidate.active = true
-        Log.info("Create stack on #{cloud.name} ... SUCCESS")
-        break
-      end
-    end
+  after_initialize do
+    self.template_parameters ||= '{}'
   end
 
   def add_cloud(cloud, priority)
@@ -85,6 +54,7 @@ class System < ActiveRecord::Base
     system.name = "#{basename}-#{SecureRandom.uuid}"
     system.ip_address = nil
     system.monitoring_host = nil
+    system.template_parameters = '{}'
 
     candidates.each do |candidate|
       system.add_cloud candidate.cloud, candidate.priority
@@ -95,6 +65,8 @@ class System < ActiveRecord::Base
       duplicated_application.histories = application.histories.map(&:dup)
       duplicated_application
     end
+
+    system.stacks = stacks.map(&:dup)
 
     system
   end
@@ -115,18 +87,6 @@ class System < ActiveRecord::Base
     cloud.client.get_stack_status name
   rescue
     :ERROR
-  end
-
-  def outputs
-    cloud = candidates.active
-    cloud.client.get_outputs name
-  rescue
-    {}
-  end
-
-  def destroy_stack
-    cloud = candidates.active
-    cloud.client.destroy_stack name if cloud
   end
 
   def serf

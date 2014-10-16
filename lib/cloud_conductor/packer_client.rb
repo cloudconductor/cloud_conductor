@@ -20,7 +20,9 @@ module CloudConductor
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
-      patterns_root: '/opt/cloudconductor/patterns',
+      cloudconductor_root: '/opt/cloudconductor',
+      cloudconductor_init_url: CloudConductor::Config.cloudconductor_init.url,
+      cloudconductor_init_revision: CloudConductor::Config.cloudconductor_init.revision,
       variables: {}
     }
 
@@ -28,17 +30,19 @@ module CloudConductor
       options.reverse_merge! DEFAULT_OPTIONS
       @packer_path = options[:packer_path]
       @template_path = options[:template_path]
-      @patterns_root = options[:patterns_root]
+      @cloudconductor_root = options[:cloudconductor_root]
+      @cloudconductor_init_url = options[:cloudconductor_init_url]
+      @cloudconductor_init_revision = options[:cloudconductor_init_revision]
 
       @vars = options[:variables]
     end
 
-    # rubocop:disable MethodLength
-    def build(repository_url, revision, clouds, operating_systems, role)
+    # rubocop:disable MethodLength, ParameterLists
+    def build(repository_url, revision, clouds, operating_systems, role, pattern_name)
       only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
       packer_json_path = create_json clouds
 
-      command = build_command repository_url, revision, only, role, packer_json_path
+      command = build_command repository_url, revision, only, role, pattern_name, packer_json_path
       Thread.new do
         start = Time.now
         status, stdout, stderr = systemu(command)
@@ -60,20 +64,25 @@ module CloudConductor
         end
       end
     end
-    # rubocop:enable MethodLength
+    # rubocop:enable MethodLength, ParameterLists
 
     private
 
-    def build_command(repository_url, revision, only, role, packer_json_path)
+    # rubocop:disable ParameterLists
+    def build_command(repository_url, revision, only, role, pattern_name, packer_json_path)
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
       vars_text << " -var 'role=#{role}'"
+      vars_text << " -var 'pattern_name=#{pattern_name}'"
       vars_text << " -var 'image_name=#{role.gsub(/,\s*/, '-')}'"
-      vars_text << " -var 'patterns_root=#{@patterns_root}'"
+      vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
+      vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
+      vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
 
       "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
     end
+    # rubocop:enable ParameterLists
 
     # rubocop:disable MethodLength
     def parse(stdout, only)

@@ -23,6 +23,8 @@ module CloudConductor
 
     config_context :cloudconductor do
     end
+    config_context :cloudconductor_init do
+    end
     config_context :dns do
     end
     config_context :zabbix do
