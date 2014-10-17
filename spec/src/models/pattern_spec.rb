@@ -30,6 +30,12 @@ describe Pattern do
     File.stub(:open).with(/template.json/).and_return double
   end
 
+  describe '#initialize' do
+    it 'set protocol to git' do
+      expect(@pattern.protocol).to eq('git')
+    end
+  end
+
   it 'create with valid parameters' do
     count = Pattern.count
 

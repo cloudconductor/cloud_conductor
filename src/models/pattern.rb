@@ -31,6 +31,10 @@ class Pattern < ActiveRecord::Base
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
+  after_initialize do
+    self.protocol ||= 'git'
+  end
+
   def status
     return :ERROR if images.any? { |image| image.status == :ERROR }
     return :PROGRESS if images.any? { |image| image.status == :PROGRESS }
