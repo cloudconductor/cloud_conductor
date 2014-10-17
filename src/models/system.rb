@@ -42,8 +42,17 @@ class System < ActiveRecord::Base
     :PROGRESS
   end
 
+  def chef_status
+    return :PENDING if ip_address.blank?
+    _, results = serf(format: 'json').call('query', 'chef_status')
+    return :ERROR if JSON.parse(results)['Responses'].values.any? do |result|
+      JSON.parse(result)['status'] == 'ERROR'
+    end
+    :SUCCESS
+  end
+
   def as_json(options = {})
-    super options.merge(methods: :status)
+    super options.merge(methods: [:status, :chef_status])
   end
 
   def add_cloud(cloud, priority)
@@ -91,10 +100,10 @@ class System < ActiveRecord::Base
     dns_client.update domain, ip_address
   end
 
-  def serf
+  def serf(options = {})
     fail 'ip_address does not specified' unless ip_address
 
-    Serf::Client.new host: ip_address
+    Serf::Client.new host: ip_address, options: options
   end
 
   def send_application_payload
