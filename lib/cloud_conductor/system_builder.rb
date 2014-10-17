@@ -37,10 +37,10 @@ module CloudConductor
 
               wait_for_finished(stack, TIMEOUT)
 
+              update_system stack.outputs if stack.platform?
+
               stack.status = :CREATE_COMPLETE
               stack.save!
-
-              update_system stack.outputs if stack.platform?
             end
 
             finish_system if @system.reload
