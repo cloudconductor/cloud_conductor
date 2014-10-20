@@ -45,6 +45,8 @@ class Stack < ActiveRecord::Base
   end
 
   after_initialize do
+    self.template_parameters ||= '{}'
+    self.parameters ||= '{}'
     self.status ||= :PENDING
   end
 

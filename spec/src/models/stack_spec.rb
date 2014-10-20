@@ -54,6 +54,15 @@ describe Stack do
     expect(Stack.count).to eq(count + 1)
   end
 
+  describe '#initialize' do
+    it 'set default values to status, template_parameters and parameters' do
+      stack = Stack.new
+      expect(stack.status).to eq(:PENDING)
+      expect(stack.template_parameters).to eq('{}')
+      expect(stack.parameters).to eq('{}')
+    end
+  end
+
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@stack.valid?).to be_truthy
