@@ -65,9 +65,7 @@ module CloudConductor
 
         expect do |b|
           @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name', &b)
-          (Thread.list - threads).each do |thread|
-            thread.join
-          end
+          (Thread.list - threads).each(&:join)
         end.to yield_control
       end
     end

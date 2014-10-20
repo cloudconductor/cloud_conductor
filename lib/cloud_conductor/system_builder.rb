@@ -59,7 +59,7 @@ module CloudConductor
 
     private
 
-    # rubocop:disable MethodLength, CyclomaticComplexity
+    # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
     def wait_for_finished(stack, timeout)
       elapsed_time = 0
 
