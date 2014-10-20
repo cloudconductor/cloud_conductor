@@ -27,10 +27,11 @@ class CloudsController < Sinatra::Base
 
   get '/:id' do
     begin
-      json Cloud.find(params[:id])
+      cloud = Cloud.find(params[:id])
+      status 200
+      json cloud
     rescue ActiveRecord::RecordNotFound
       status 404
-      { error: "Cloud record(id = #{params[:id]}) not found" }.to_json
     end
   end
 
@@ -69,14 +70,17 @@ class CloudsController < Sinatra::Base
   delete '/:id' do
     begin
       cloud = Cloud.find(params[:id])
-      cloud.destroy
+      if cloud.destroy
+        status 204
+      else
+        status 400
+        json message: cloud.errors
+      end
     rescue => e
       Log.error e
       status 400
       return json message: e.message
     end
-
-    status 204
   end
 
   def cloud_permit_params

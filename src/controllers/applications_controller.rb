@@ -70,9 +70,9 @@ module ApplicationsController
         end
         status 200
         json application
-      rescue ActiveRecord::RecordInvalid => e
+      rescue ActiveRecord::RecordInvalid
         status 400
-        json message: e.message
+        json message: application.errors
       end
     end
 
@@ -81,8 +81,12 @@ module ApplicationsController
       if application.nil?
         status 404
       else
-        application.destroy
-        status 204
+        if application.destroy
+          status 204
+        else
+          status 400
+          json message: application.errors
+        end
       end
     end
   end

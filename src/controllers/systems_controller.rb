@@ -11,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# rubocop:disable ClassLength
 class SystemsController < Sinatra::Base
   register Sinatra::Namespace, ConfigLoader
 
@@ -35,7 +36,13 @@ class SystemsController < Sinatra::Base
   end
 
   get '/:id' do
-    json System.find(params[:id])
+    begin
+      system = System.find(params[:id])
+      status 200
+      json system
+    rescue ActiveRecord::RecordNotFound
+      status 404
+    end
   end
 
   post '/', clone: false do
@@ -111,7 +118,12 @@ class SystemsController < Sinatra::Base
   delete '/:id' do
     begin
       system = System.find(params[:id])
-      system.destroy
+      if system.destroy
+        status 204
+      else
+        status 400
+        json message: system.errors
+      end
     rescue => e
       Log.error e
       status 400

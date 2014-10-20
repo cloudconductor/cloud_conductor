@@ -62,6 +62,7 @@ class PatternsController < Sinatra::Base
         status 204
       else
         status 400
+        json message: pattern.errors
       end
     rescue ActiveRecord::RecordNotFound
       status 404
