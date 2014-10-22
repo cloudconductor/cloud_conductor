@@ -37,6 +37,7 @@ end
 group :test do
   gem 'rspec', '~>2'
   gem 'rspec-mocks'
+  gem 'rspec_junit_formatter'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
   gem 'spork'
