@@ -14,6 +14,14 @@
 # limitations under the License.
 require 'rubygems'
 require 'spork'
+require "simplecov"
+require 'simplecov-rcov'
+
+SimpleCov.start do
+  coverage_dir 'tmp/coverage'
+end
+
+SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
 
 Spork.prefork do
   require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
