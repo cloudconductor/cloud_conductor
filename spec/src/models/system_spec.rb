@@ -132,6 +132,46 @@ describe System do
     end
   end
 
+  describe '#chef_status' do
+    before do
+      @system.ip_address = '192.168.0.1'
+      @serf_client = double(:serf_client)
+      @system.stub(:serf).and_return(@serf_client)
+    end
+
+    it 'return error when system status is error' do
+      @system.stub('status').and_return(:ERROR)
+
+      expect(@system.chef_status).to eq(:ERROR)
+    end
+
+    it 'return pending when system status is progress' do
+      @system.stub('status').and_return(:PROGRESS)
+
+      expect(@system.chef_status).to eq(:PENDING)
+    end
+
+    it 'return pending when system ip_address is nil' do
+      @system.ip_address = nil
+
+      expect(@system.chef_status).to eq(:PENDING)
+    end
+
+    it 'return error when serf query result is error' do
+      @system.stub('status').and_return(:CREATE_COMPLETE)
+      @serf_client.stub('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"ERROR\\\" }\" } }"])
+
+      expect(@system.chef_status).to eq(:ERROR)
+    end
+
+    it 'return success when system status is create complete and serf query result is not error' do
+      @system.stub('status').and_return(:CREATE_COMPLETE)
+      @serf_client.stub('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"INFO\\\" }\" } }"])
+
+      expect(@system.chef_status).to eq(:SUCCESS)
+    end
+  end
+
   describe '#enable_monitoring(before_save)' do
     before do
       @zabbix_client = double('zabbix_client', register: nil)

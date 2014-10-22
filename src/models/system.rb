@@ -43,7 +43,8 @@ class System < ActiveRecord::Base
   end
 
   def chef_status
-    return :PENDING if ip_address.blank?
+    return :ERROR if status == :ERROR
+    return :PENDING if ip_address.blank? || status == :PROGRESS
     _, results = serf(format: 'json').call('query', 'chef_status')
     return :ERROR if JSON.parse(results)['Responses'].values.any? do |result|
       JSON.parse(result)['status'] == 'ERROR'
