@@ -39,7 +39,7 @@ group :test do
   gem 'rspec-mocks'
   gem 'rspec_junit_formatter'
   gem 'simplecov'
-  gem "simplecov-rcov"
+  gem 'simplecov-rcov'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
   gem 'spork'

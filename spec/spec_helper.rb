@@ -14,7 +14,7 @@
 # limitations under the License.
 require 'rubygems'
 require 'spork'
-require "simplecov"
+require 'simplecov'
 require 'simplecov-rcov'
 
 SimpleCov.start do
