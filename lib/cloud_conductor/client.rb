@@ -43,8 +43,7 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      operating_system = OperatingSystem.where(name: parameters.delete(:operating_system))
-
+      operating_system = OperatingSystem.where(name: 'centos')
       images = pattern.images.where(cloud: @cloud, operating_system: operating_system)
       fail 'Appropriate image does not exist' if images.empty?
 
