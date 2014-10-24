@@ -50,6 +50,8 @@ class System < ActiveRecord::Base
       JSON.parse(result)['status'] == 'ERROR'
     end
     :SUCCESS
+  rescue
+    :ERROR
   end
 
   def as_json(options = {})
