@@ -34,10 +34,10 @@ module CloudConductor
       before do
         @name = 'stack_name'
         @cloud = FactoryGirl.create(:cloud_aws)
-        @operating_system = FactoryGirl.create(:operating_system)
+        @operating_system = FactoryGirl.create(:operating_system, name: 'centos')
         @pattern = FactoryGirl.create(:pattern)
 
-        @parameters = { operating_system: @operating_system.name }
+        @parameters = {}
         @client = Client.new @cloud
 
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
