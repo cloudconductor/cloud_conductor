@@ -50,10 +50,14 @@ class Stack < ActiveRecord::Base
     self.status ||= :PENDING
   end
 
+  def client
+    @client ||= cloud.client
+  end
+
   def create_stack
     common_parameters = JSON.parse(system.template_parameters, symbolize_names: true)
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
-    cloud.client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
+    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
   rescue => e
     self.status = :ERROR
     Log.info("Create stack on #{cloud.name} ... FAILED")

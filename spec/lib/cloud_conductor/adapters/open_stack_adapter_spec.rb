@@ -214,6 +214,126 @@ module CloudConductor
         end
       end
 
+      describe '#add_security_rule' do
+        before do
+          @template = <<-EOS
+{
+  "Resources": {
+    "SharedSecurityGroupInboundRule":{
+      "Type":"AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "IpProtocol":"tcp",
+        "FromPort":"10050",
+        "ToPort":"10050",
+        "CidrIp":"10.0.0.0/16",
+        "GroupId":{"Ref":"SharedSecurityGroup"}
+      }
+    }
+  }
+}
+          EOS
+          @name = 'DummyStackName'
+          @parameters = { SharedSecurityGroup: 'dummy_id' }.with_indifferent_access
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'dummy_key'
+          @options[:secret] = 'dummy_secret'
+          @options[:tenant_name] = 'dummy_tenant'
+
+          @rules = double(:security_group_rules)
+          @rules.stub(:save)
+          @compute = double(:compute)
+          @compute.stub_chain(:security_group_rules, :new).and_return(@rules)
+          @security_group = double(:security_group)
+          @security_group.stub(:name).and_return('DummyStackName-DummySourceGroup-1234567890ab')
+          @security_group.stub(:id).and_return('dummy_security_group_id')
+          @compute.stub_chain(:security_groups, :all).and_return([@security_group])
+          ::Fog::Compute.stub(:new).and_return(@compute)
+        end
+
+        it 'execute without exception' do
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+
+        it 'instantiate a Fog Compute' do
+          ::Fog::Compute.should_receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'dummy_secret',
+              openstack_username: 'dummy_key',
+              openstack_tenant: 'dummy_tenant'
+            )
+
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+
+        it 'do nothing when SharedSecurityGroup in parameters is blank' do
+          ::Fog::Compute.should_not_receive(:new)
+          @rules.should_not_receive(:new)
+          @rules.should_not_receive(:save)
+
+          @parameters = {}
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+
+        it 'do nothing when AWS::EC2::SecurityGroupIngress in template is blank' do
+          @rules.should_not_receive(:new)
+          @rules.should_not_receive(:save)
+
+          @template = {}
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+
+        it 'instantiate a security_group_rules in the case of CidrIp in template' do
+          rule = {
+            ip_protocol: 'tcp',
+            from_port: '10050',
+            to_port: '10050',
+            parent_group_id: 'dummy_id',
+            ip_range: { cidr: '10.0.0.0/16' }
+          }.with_indifferent_access
+          @compute.security_group_rules.should_receive(:new).with(rule)
+
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+
+        it 'instantiate a security_group_rules in the case of SourceSecurityGroupId in template' do
+          rule = {
+            ip_protocol: 'tcp',
+            from_port: '10050',
+            to_port: '10050',
+            parent_group_id: 'dummy_id',
+            group: 'dummy_security_group_id'
+          }.with_indifferent_access
+          @compute.security_group_rules.should_receive(:new).with(rule)
+
+          template = <<-EOS
+{
+  "Resources": {
+    "SharedSecurityGroupInboundRule":{
+      "Type":"AWS::EC2::SecurityGroupIngress",
+      "Properties":{
+        "IpProtocol":"tcp",
+        "FromPort":"10050",
+        "ToPort":"10050",
+        "CidrIp":"10.0.0.0/16",
+        "SourceSecurityGroupId":{"Ref":"DummySourceGroup"}
+      }
+    }
+  }
+}
+          EOS
+          @adapter.add_security_rule(@name, template, @parameters, @options)
+        end
+
+        it 'call save to add security rule' do
+          @rules.should_receive(:save)
+
+          @adapter.add_security_rule(@name, @template, @parameters, @options)
+        end
+      end
+
       describe '#destroy_stack' do
         before do
           @stacks = {

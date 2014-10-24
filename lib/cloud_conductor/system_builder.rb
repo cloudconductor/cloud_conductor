@@ -42,6 +42,8 @@ module CloudConductor
 
               stack.status = :CREATE_COMPLETE
               stack.save!
+
+              stack.client.post_process
             end
 
             finish_system if @system.reload

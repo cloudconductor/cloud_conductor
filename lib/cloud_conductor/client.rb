@@ -65,5 +65,9 @@ module CloudConductor
     def destroy_stack(name)
       @adapter.destroy_stack name, @cloud.attributes
     end
+
+    def post_process
+      @adapter.post_process
+    end
   end
 end

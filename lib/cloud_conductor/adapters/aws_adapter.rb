@@ -18,6 +18,7 @@ module CloudConductor
       TYPE = :aws
 
       def initialize
+        @post_processes = []
       end
 
       def create_stack(name, template, parameters, options = {})
@@ -72,6 +73,10 @@ module CloudConductor
         cf = AWS::CloudFormation.new aws_options
         stack = cf.stacks[name]
         stack.delete if stack
+      end
+
+      def post_process
+        @post_processes.each(&:call)
       end
     end
   end
