@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
+  # rubocop:disable ClassLength
   class SystemBuilder
     TIMEOUT = 1800
     CHECK_PERIOD = 3
@@ -51,6 +52,13 @@ module CloudConductor
             Log.error "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
             Log.error e
             reset_stacks
+          end
+        end
+
+        unless @system.status == :CREATE_COMPLETE
+          @system.stacks.each do |stack|
+            stack.status = :ERROR
+            stack.save!
           end
         end
       end

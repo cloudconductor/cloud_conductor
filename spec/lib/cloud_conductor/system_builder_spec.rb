@@ -76,6 +76,14 @@ module CloudConductor
         @builder.build
         expect(@system.stacks.all?(&:create_complete?)).to be_truthy
       end
+
+      it 'set status of stacks to :ERROR when all candidates failed' do
+        @builder.should_receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        @builder.stub(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        @builder.build
+
+        expect(@system.stacks.all?(&:error?)).to be_truthy
+      end
     end
 
     describe '#wait_for_finished' do
