@@ -170,6 +170,13 @@ describe System do
 
       expect(@system.chef_status).to eq(:SUCCESS)
     end
+
+    it 'return error when some errors occurred while serf query' do
+      @system.stub('status').and_return(:CREATE_COMPLETE)
+      @serf_client.stub('call').and_return(ActiveRecord::RecordInvalid)
+
+      expect(@system.chef_status).to eq(:ERROR)
+    end
   end
 
   describe '#enable_monitoring(before_save)' do
