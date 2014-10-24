@@ -74,7 +74,7 @@ module CloudConductor
 
       it 'create all stacks' do
         @builder.build
-        expect(@system.stacks.all(&:create_completed?)).to be_truthy
+        expect(@system.stacks.all?(&:create_complete?)).to be_truthy
       end
     end
 
