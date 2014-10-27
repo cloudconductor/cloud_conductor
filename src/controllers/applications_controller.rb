@@ -35,7 +35,13 @@ module ApplicationsController
     end
 
     base.get '/:id/:version' do
-      application_history = ApplicationHistory.where(application_id: params[:id], version: params[:version]).first
+      application = Application.where(id: params[:id], system_id: params[:system_id]).first
+      if application.nil?
+        status 404
+      end
+
+      binding.pry
+      application_history = application.histories.where(version: params[:version]).first
       if application_history.nil?
         status 404
       else
