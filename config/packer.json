@@ -14,7 +14,7 @@
   "provisioners": [
     {
       "type": "shell",
-      "inline_shebang": "/bin/bash -x",
+      "inline_shebang": "/bin/bash -ex",
       "inline": [
         "sudo git clone {{user `cloudconductor_init_url`}} {{user `cloudconductor_root`}}",
 
