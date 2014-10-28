@@ -2,24 +2,9 @@
 /Gemfile.lock
 /tmp/*
 /log/*
-/.grunt
-/.sass-cache
-/scripts/tmp/
 
 # Ignore database files
 /db/*.sqlite3
 
 # Ignore setting file for individual environment
 /config/config.rb
-
-# Ignore external javascript libralies
-/public/js/ext
-
-# Ignore node libraries what are installed by npm
-node_modules
-
-# Ignore auto generated files
-public/js/template.js
-public/_SpecRunner.html
-public/css
-/scripts/*.pem
