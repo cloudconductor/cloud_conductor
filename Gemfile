@@ -24,6 +24,8 @@ gem 'zabbixapi'
 gem 'systemu'
 
 gem 'faraday'
+gem 'rb-readline'
+gem 'unicorn'
 
 group :development do
   gem 'guard'
