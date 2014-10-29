@@ -22,8 +22,8 @@ class System < ActiveRecord::Base
   has_many :applications, dependent: :destroy
   has_many :stacks, dependent: :destroy
 
-  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
   before_save :update_dns, if: -> { ip_address }
+  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
 
   validates :name, presence: true, uniqueness: true
   validates :clouds, presence: true

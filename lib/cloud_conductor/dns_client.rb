@@ -80,7 +80,11 @@ module CloudConductor
       end
       existing_record = find_resource_record_set(hosted_zone, domain, 'A')
       action = existing_record.nil? ? 'CREATE' : 'UPSERT'
-      create_or_update_resource_record_set(hosted_zone, domain, ip_address, action)
+      result = create_or_update_resource_record_set(hosted_zone, domain, ip_address, action)
+
+      sleep 30 if existing_record.nil?
+
+      result
     end
 
     private

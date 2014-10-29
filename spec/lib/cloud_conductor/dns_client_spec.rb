@@ -112,6 +112,7 @@ module CloudConductor
         expect(result).to be_truthy
       end
       it 'should success to create Route53 resource record set when receive non-existent record name' do
+        route53.stub(:sleep)
         result = route53.update('www2.example.com', '127.0.2.1')
         expect(result).to be_truthy
       end
