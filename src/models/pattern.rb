@@ -15,8 +15,7 @@
 require 'sinatra/activerecord'
 require 'yaml'
 
-# rubocop:disable ClassLength
-class Pattern < ActiveRecord::Base
+class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   before_save :execute_packer
   self.inheritance_column = nil
 
@@ -129,7 +128,6 @@ class Pattern < ActiveRecord::Base
     end
   end
 
-  # rubocop:disable LineLength
   def create_images(operating_systems, role, pattern_name)
     clouds.each do |cloud|
       operating_systems.each do |operating_system|
@@ -152,5 +150,4 @@ class Pattern < ActiveRecord::Base
       end
     end
   end
-  # rubocop:enable LineLength
 end

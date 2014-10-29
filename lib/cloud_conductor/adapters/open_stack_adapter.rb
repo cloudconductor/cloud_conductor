@@ -13,10 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# rubocop:disable ClassLength
 module CloudConductor
   module Adapters
-    class OpenStackAdapter < AbstractAdapter
+    class OpenStackAdapter < AbstractAdapter # rubocop:disable ClassLength
       TYPE = :openstack
       def initialize
         @post_processes = []
@@ -90,8 +89,7 @@ module CloudConductor
         outputs
       end
 
-      # rubocop:disable MethodLength
-      def add_security_rule(name, template, parameters, options = {})
+      def add_security_rule(name, template, parameters, options = {}) # rubocop:disable MethodLength
         return if parameters[:SharedSecurityGroup].blank?
 
         options = options.with_indifferent_access

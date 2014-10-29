@@ -14,9 +14,8 @@
 # limitations under the License.
 require 'csv'
 
-# rubocop:disable ClassLength
 module CloudConductor
-  class PackerClient
+  class PackerClient # rubocop:disable ClassLength
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
@@ -84,8 +83,7 @@ module CloudConductor
     end
     # rubocop:enable ParameterLists
 
-    # rubocop:disable MethodLength
-    def parse(stdout, only)
+    def parse(stdout, only) # rubocop:disable MethodLength
       results = {}
       rows = CSV.parse(stdout, quote_char: "\0")
 
@@ -123,7 +121,6 @@ module CloudConductor
 
       results.with_indifferent_access
     end
-    # rubocop:enable MethodLength
 
     # rubocop:disable ParameterLists
     def success?(search_target)

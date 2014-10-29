@@ -15,7 +15,6 @@
 require 'sinatra/activerecord'
 require 'open-uri'
 
-# rubocop:disable ClassLength
 class Stack < ActiveRecord::Base
   belongs_to :system
   belongs_to :pattern

@@ -58,8 +58,7 @@ module CloudConductor
         end
 
         it 'doesn\'t call Patch#apply if Patch#need? return false' do
-          # rubocop:disable ClassAndModuleChildren
-          class Patches::DummyPatch < Patches::Patch
+          class Patches::DummyPatch < Patches::Patch # rubocop:disable ClassAndModuleChildren
             def initialize
             end
 

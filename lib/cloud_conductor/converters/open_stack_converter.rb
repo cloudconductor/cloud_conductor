@@ -14,10 +14,8 @@
 # limitations under the License.
 module CloudConductor
   module Converters
-    # rubocop:disable ClassLength
-    class OpenStackConverter < Converter
-      # rubocop:disable MethodLength
-      def initialize
+    class OpenStackConverter < Converter # rubocop:disable ClassLength
+      def initialize # rubocop:disable MethodLength
         super
 
         # Remove unimplemented properties

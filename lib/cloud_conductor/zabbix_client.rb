@@ -13,15 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
-  # rubocop: disable ClassLength
-  class ZabbixClient
+  class ZabbixClient # rubocop: disable ClassLength
     def initialize
       @zabbix = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
       @cc_api_url = CloudConductor::Config.cloudconductor.url
     end
 
-    # rubocop: disable MethodLength
-    def register(system)
+    def register(system) # rubocop: disable MethodLength
       host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
       hostgroup_id = @zabbix.hostgroups.create_or_update name: host_name
       template_id = @zabbix.templates.get_id host: CloudConductor::Config.zabbix.default_template_name
@@ -43,7 +41,6 @@ module CloudConductor
         )
       end
     end
-    # rubocop: enable MethodLength
 
     private
 
@@ -110,8 +107,7 @@ module CloudConductor
       "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{@cc_api_url}"
     end
 
-    # rubocop: disable MethodLength
-    def add_action(parameters)
+    def add_action(parameters) # rubocop: disable MethodLength
       host_id = parameters[:host_id]
       system_id = parameters[:system_id]
       action_name = parameters[:action_name]
@@ -155,7 +151,6 @@ module CloudConductor
       }
       @zabbix.client.api_request params
     end
-    # rubocop: enable MethodLength
 
     def get_action(parameters)
       action_name = parameters[:action_name]
@@ -173,8 +168,7 @@ module CloudConductor
       result['actionid'] if result
     end
 
-    # rubocop: disable MethodLength
-    def update_action(parameters)
+    def update_action(parameters) # rubocop: disable MethodLength
       system_id = parameters[:system_id]
       action_name = parameters[:action_name]
       action_id = parameters[:action_id]
@@ -202,7 +196,5 @@ module CloudConductor
       }
       @zabbix.client.api_request params
     end
-    # rubocop: enable MethodLength
   end
-  # rubocop: enable ClassLength
 end

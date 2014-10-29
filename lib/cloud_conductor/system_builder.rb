@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
-  # rubocop:disable ClassLength
-  class SystemBuilder
+  class SystemBuilder # rubocop:disable ClassLength
     TIMEOUT = 1800
     CHECK_PERIOD = 3
 
@@ -23,8 +22,7 @@ module CloudConductor
       @system = system
     end
 
-    # rubocop:disable MethodLength
-    def build
+    def build # rubocop:disable MethodLength
       ActiveRecord::Base.connection_pool.with_connection do
         @clouds.each do |cloud|
           begin
@@ -65,7 +63,6 @@ module CloudConductor
         end
       end
     end
-    # rubocop:enable MethodLength
 
     private
 
@@ -107,7 +104,7 @@ module CloudConductor
         break
       end
     end
-    # rubocop:enable MethodLength, CyclomaticComplexity
+    # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
     def update_system(outputs)
       Log.info 'Platform stack has created. CloudConductor will register host to zabbix/DNS.'

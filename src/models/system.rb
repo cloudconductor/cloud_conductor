@@ -15,7 +15,6 @@
 require 'sinatra/activerecord'
 require 'open-uri'
 
-# rubocop:disable ClassLength
 class System < ActiveRecord::Base
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
