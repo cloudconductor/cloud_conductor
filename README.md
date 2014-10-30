@@ -21,7 +21,7 @@ Prerequisites
 
 - git
 - sqlite-devel (or other database software)
-- ruby (>= 2.0.0)
+- ruby (>= 2.1.2)
 - rubygems
 - bundler
 
@@ -37,16 +37,74 @@ git clone https://github.com/cloudconductor/cloud_conductor.git
 
 ### Install dependencies and initialize database
 
-# TBD
+1. Install required modules or packages to build CloudConductor
+
+```bash
+yum -y update
+yum -y install gcc gcc-c++ make openssl-devel libxslt-devel libxml2-devel wget unzip
+```
+
+2. Install Packer (Please replace amd64 to 386 in case of working on 32bit operating systems)
+
+```bash
+mkdir /opt/packer
+wget https://dl.bintray.com/mitchellh/packer/packer_0.7.1_linux_amd64.zip
+unzip packer_0.7.1_linux_amd64.zip -d /opt/packer
+```
+
+3. Install Serf (Please replace amd64 to 386 in case of working on 32bit operating systems)
+
+```bash
+wget https://dl.bintray.com/mitchellh/serf/0.6.3_linux_amd64.zip
+unzip 0.6.3_linux_amd64.zip -d /usr/bin
+```
+
+4. Glone repository
+
+```bash
+git clone https://github.com/cloudconductor/cloud_conductor.git
+```
+
+5. Install required gems
+
+```bash
+gem install bundler
+cd cloud_conductor
+bundle install
+```
+
+6. Initialize configurations and database
+
+```bash
+$ cp config/config.rb.smp config/config.rb
+$ vi config/config.rb
+----------
+Edit configurations below.
+  cloudconductor.url
+  dns.service
+  dns.access_key, dns.secret_key or dns.server, dns.key_file
+  zabbix.url
+  zabbix.user
+  zabbix.password
+  zabbix.default_template_name
+
+Please see Getting Started in CloudConductor Official Website.
+----------
+$ bundle exec rake db:migrate RAILS_ENV=production
+$ bundle exec rake db:seed RAILS_ENV=production
+```
 
 ### Run server
 
-# TBD
+```bash
+bundle exec unicorn -c config/unicorn.rb -E production -D
+```
 
 ### Stop server
 
-# TBD
-
+```bash
+kill -QUIT `cat ./unicorn.pid`
+```
 
 Copyright and License
 =====================
