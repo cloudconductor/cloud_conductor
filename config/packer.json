@@ -1,0 +1,32 @@
+{
+  "variables": {
+    "cloudconductor_root": null,
+    "cloudconductor_init_url": null,
+    "cloudconductor_init_revision": null,
+    "pattern_name": null,
+    "repository_url": null,
+    "revision": null,
+    "role": null,
+    "image_name": null
+  },
+  "builders": [
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline_shebang": "/bin/bash -ex",
+      "inline": [
+        "sudo git clone {{user `cloudconductor_init_url`}} {{user `cloudconductor_root`}}",
+
+        "cd {{user `cloudconductor_root`}}",
+        "sudo git checkout {{user `cloudconductor_init_revision`}}",
+
+        "if [ -f ./bin/init.sh ]; then",
+        "  sudo SERF_TAG_ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} ./bin/init.sh",
+        "fi",
+
+        "sync"
+      ]
+    }
+  ]
+}

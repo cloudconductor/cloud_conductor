@@ -1,0 +1,39 @@
+1407119489,,ui,say,aws-centos output will be in this color.
+1407119489,,ui,say,
+1407119489,,ui,say,==> aws-centos: Inspecting the source AMI...
+1407119489,,ui,say,==> aws-centos: Creating temporary keypair: packer 53def081-349a-4625-c4fb-176f71694be8
+1407119490,,ui,say,==> aws-centos: Creating temporary security group for this instance...
+1407119490,,ui,say,==> aws-centos: Authorizing SSH access on the temporary security group...
+1407119490,,ui,say,==> aws-centos: Launching a source AWS instance...
+1407119491,,ui,message,    aws-centos: Instance ID: i-8ca7b88a
+1407119492,,ui,say,==> aws-centos: Waiting for instance (i-8ca7b88a) to become ready...
+1407119509,,ui,say,==> aws-centos: Waiting for SSH to become available...
+1407119564,,ui,say,==> aws-centos: Connected to SSH!
+1407119564,,ui,say,==> aws-centos: Provisioning with shell script: /tmp/packer-shell942600322
+1407119566,,ui,message,    aws-centos: + '[' -f /tmp/packer-create-image.sh ']'
+1407119566,,ui,message,    aws-centos: + cd /tmp
+1407119566,,ui,message,    aws-centos: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
+1407119566,,ui,message,    aws-centos: Initialized empty Git repository in /tmp/pattern/.git/
+1407119568,,ui,message,    aws-centos: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
+1407119568,,ui,message,    aws-centos: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
+1407119568,,ui,message,    aws-centos: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
+1407119568,,ui,message,    aws-centos: + cd /tmp/pattern/resources/chef-repos
+1407119568,,ui,message,    aws-centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repos: No such file or directory
+1407119568,,ui,message,    aws-centos: + berks vendor cookbooks
+1407119581,,ui,message,    aws-centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
+1407119581,,ui,message,    aws-centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407119585,,ui,message,    aws-centos: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
+1407119590,,ui,message,    aws-centos: Compiling Cookbooks...[0m
+1407119590,,ui,message,    aws-centos: [0m
+1407119590,,ui,message,    aws-centos: Running handlers:[0m
+1407119590,,ui,message,    aws-centos: Running handlers complete
+1407119590,,ui,message,    aws-centos: [0mChef Client failed. 0 resources updated in 4.800877363 seconds[0m
+1407119590,,ui,say,==> aws-centos: Terminating the source AWS instance...
+1407119637,,ui,say,==> aws-centos: Deleting temporary security group...
+1407119642,,ui,say,==> aws-centos: Deleting temporary keypair...
+1407119642,,ui,error,Build 'aws-centos' errored: Script exited with non-zero exit status: 1
+1407119642,,error-count,1
+1407119642,,ui,error,\n==> Some builds didn't complete successfully and had errors:
+1407119642,aws-centos,error,Script exited with non-zero exit status: 1
+1407119642,,ui,error,--> aws-centos: Script exited with non-zero exit status: 1
+1407119642,,ui,say,\n==> Builds finished but no artifacts were created.

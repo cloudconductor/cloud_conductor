@@ -1,0 +1,10 @@
+# Ignore temporary files and cache files.
+/Gemfile.lock
+/tmp/*
+/log/*
+
+# Ignore database files
+/db/*.sqlite3
+
+# Ignore setting file for individual environment
+/config/config.rb

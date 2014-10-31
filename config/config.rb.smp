@@ -1,0 +1,36 @@
+environment = (ENV['RACK_ENV'] || ENV['RAILS_ENV'] || :development).to_sym
+
+# log settings
+case environment
+when :production
+  log_file 'log/conductor_production.log'
+  log_level :warn
+when :development
+  log_file 'log/conductor_development.log'
+  log_level :debug
+when :test
+  log_file 'log/conductor_test.log'
+  log_level :debug
+end
+
+# cloudconductor server settings
+cloudconductor.url 'http://your-cloudconductor-server.example.com/systems'
+
+# cloudconductor_init settings
+cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
+cloudconductor_init.revision 'master'
+
+# dns settings
+dns.service 'route53'
+dns.access_key 'your_access_key'
+dns.secret_key 'your_secret_key'
+dns.ttl 60
+# dns.service 'bind9'
+# dns.server 'your-dns-server.example.com'
+# dns.key_file '/etc/rndc.key'
+
+# zabbix server settings
+zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
+zabbix.user 'Admin'
+zabbix.password 'zabbix'
+zabbix.default_template_name 'Template App HTTP Service'
