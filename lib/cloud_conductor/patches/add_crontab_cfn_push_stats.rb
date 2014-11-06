@@ -61,7 +61,7 @@ module CloudConductor
       def apply_files(template)
         template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration')).each do |launch_config, resource|
           auto_scaling_groups = template[:Resources].select(&type?('AWS::AutoScaling::AutoScalingGroup'))
-                                                    .select(&dependent?([launch_config]))
+                                .select(&dependent?([launch_config]))
 
           alarms = template[:Resources].select(&type?('AWS::CloudWatch::Alarm')).select(&dependent?(auto_scaling_groups.keys))
 

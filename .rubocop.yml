@@ -13,6 +13,9 @@ LineLength:
 MethodLength:
   Max: 20
 
+AbcSize:
+  Enabled: false
+
 AsciiComments:
   Enabled: false
 
