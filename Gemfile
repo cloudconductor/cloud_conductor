@@ -19,7 +19,7 @@ gem 'mixlib-log'
 
 gem 'aws-sdk'
 gem 'fog'
-gem 'zabbixapi'
+gem 'zbxapi'
 
 gem 'systemu'
 
