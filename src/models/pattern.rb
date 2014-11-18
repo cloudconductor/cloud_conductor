@@ -81,6 +81,16 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     FileUtils.rm_r path, force: true
   end
 
+  def parameters(is_include_computed = false)
+    return attributes['parameters'] if is_include_computed
+
+    parameters = JSON.parse(attributes['parameters'] || '{}').reject do |_, parameter|
+      parameter['Description'] =~ /^\[computed\]/
+    end
+
+    parameters.to_json
+  end
+
   private
 
   def type?(type)
