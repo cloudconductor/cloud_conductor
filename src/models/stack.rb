@@ -59,8 +59,8 @@ class Stack < ActiveRecord::Base
     client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
   rescue => e
     self.status = :ERROR
-    Log.info("Create stack on #{cloud.name} ... FAILED")
-    Log.error(e)
+    Log.warn("Create stack on #{cloud.name} ... FAILED")
+    Log.warn(e)
   else
     self.status = :PROGRESS
     Log.info("Create stack on #{cloud.name} ... SUCCESS")
@@ -108,8 +108,8 @@ class Stack < ActiveRecord::Base
   def destroy_stack
     cloud.client.destroy_stack name
   rescue => e
-    Log.error "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
-    Log.error e
+    Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.warn e.message
   end
 
   def payload
