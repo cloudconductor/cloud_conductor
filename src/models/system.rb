@@ -54,7 +54,9 @@ class System < ActiveRecord::Base
   end
 
   def as_json(options = {})
-    super options.merge(methods: [:status, :chef_status])
+    methods = [:status]
+    methods << :chef_status unless Array(options[:except]).include? :chef_status
+    super options.merge(methods: methods)
   end
 
   def add_cloud(cloud, priority)

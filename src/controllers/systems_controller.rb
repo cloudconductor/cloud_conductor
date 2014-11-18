@@ -31,7 +31,7 @@ class SystemsController < Sinatra::Base
     systems = System.limit(per_page).offset((page - 1) * per_page)
     headers link_header('/', System.count, page, per_page)
     status 200
-    json systems
+    systems.to_json(except: :chef_status)
   end
 
   get '/:id' do
