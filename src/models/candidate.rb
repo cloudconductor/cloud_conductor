@@ -18,8 +18,6 @@ class Candidate < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :system
 
-  self.primary_keys = :system_id, :cloud_id
-
   def self.primary
     sorted.first
   end
