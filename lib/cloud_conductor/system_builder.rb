@@ -26,7 +26,7 @@ module CloudConductor
       ActiveRecord::Base.connection_pool.with_connection do
         @clouds.each do |cloud|
           begin
-            Log.info "Start creating stacks on system(#{@system.name}) on #{cloud.name}"
+            Log.info "Start creating stacks of system(#{@system.name}) on #{cloud.name}"
             until @system.stacks.select(&:pending?).empty?
               platforms = @system.stacks.select(&:pending?).select(&:platform?)
               optionals = @system.stacks.select(&:pending?).select(&:optional?)
