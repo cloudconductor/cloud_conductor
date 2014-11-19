@@ -63,7 +63,7 @@ class Stack < ActiveRecord::Base
   rescue Excon::Errors::Unauthorized, AWS::CloudFormation::Errors::InvalidClientTokenId
     self.status = :ERROR
     Log.warn "Failed to authorize on #{cloud.name}"
-  rescue Net::OpenTimeout => e
+  rescue Net::OpenTimeout
     self.status = :ERROR
     Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
   rescue => e
@@ -117,7 +117,7 @@ class Stack < ActiveRecord::Base
 
   def destroy_stack
     cloud.client.destroy_stack name
-  rescue => e
+  rescue
     Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
   end
 
