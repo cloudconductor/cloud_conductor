@@ -52,6 +52,7 @@ module CloudConductor
         @clouds = %w(aws openstack)
         @client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
         @client.stub(:systemu).and_return([double('status', 'success?' => true), '', ''])
+        FileUtils.stub(:rm)
       end
 
       it 'will call #create_json to create json file' do
@@ -67,6 +68,25 @@ module CloudConductor
           @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name', &b)
           (Thread.list - threads).each(&:join)
         end.to yield_control
+      end
+
+      it 'remove temporary packer json when finished block without error' do
+        FileUtils.should_receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+
+        threads = Thread.list
+        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name')
+        (Thread.list - threads).each(&:join)
+      end
+
+      it 'remove temporary packer json when some errors occurred while yielding block' do
+        FileUtils.should_receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+
+        threads = Thread.list
+        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name') do
+          fail
+        end
+
+        (Thread.list - threads).each(&:join)
       end
     end
 
