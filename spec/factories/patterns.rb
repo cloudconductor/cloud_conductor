@@ -19,16 +19,13 @@ FactoryGirl.define do
     protocol :git
     url 'http://example.com/'
 
-    after(:build) do
+    before(:create) do |pattern|
       Pattern.skip_callback :save, :before, :execute_packer
+      pattern.clouds << create(:cloud_aws)
     end
 
     after(:create) do
       Pattern.set_callback :save, :before, :execute_packer
-    end
-
-    before(:create) do |pattern|
-      pattern.clouds << create(:cloud_aws)
     end
   end
 end
