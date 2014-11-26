@@ -23,7 +23,7 @@ module CloudConductor
 
       describe '#ensure' do
         it 'append Resources hash if hasn\'t it' do
-          patch = RemoveRoute.new
+          patch = RemoveResource.new 'dummy_resource'
           result = patch.ensure({}, {})
           expect(result.keys).to match_array([:Resources])
         end
