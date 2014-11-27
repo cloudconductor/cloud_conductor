@@ -37,7 +37,8 @@ module CloudConductor
           @options[:secret] = 'test_secret'
           @options[:tenant_name] = 'test_tenant'
 
-          Converters::OpenStackConverter.stub_chain(:new, :convert).and_return('{}')
+          @converter_stub = double('converter', convert: '{}')
+          CfnConverter.stub(:create_converter).and_return(@converter_stub)
         end
 
         it 'execute without exception' do
@@ -70,16 +71,14 @@ module CloudConductor
         end
 
         it 'call OpenStackConverter to convert template before create stack' do
-          converter_stub = double('converter')
-          converter_stub.should_receive(:convert).and_return('{}')
-          Converters::OpenStackConverter.stub(:new).and_return(converter_stub)
+          @converter_stub.should_receive(:convert)
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'use converted template to create stack' do
           converted_template = '{ dummy: "dummy" }'
-          Converters::OpenStackConverter.stub_chain(:new, :convert).and_return(converted_template)
+          @converter_stub.stub(:convert).and_return converted_template
 
           orc_stub = double('orc')
           orc_stub.should_receive(:create_stack).with('stack_name', hash_including(template: converted_template, parameters: {}))

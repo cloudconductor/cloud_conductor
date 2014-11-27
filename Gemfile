@@ -26,6 +26,9 @@ gem 'faraday'
 gem 'rb-readline'
 gem 'unicorn'
 
+gem 'cfn_converter', git: 'git@github.com:cloudconductor/cfn_converter.git',
+                     branch: 'develop'
+
 group :development do
   gem 'guard'
   gem 'byebug'
@@ -44,6 +47,6 @@ group :test do
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
   gem 'spork'
-  gem 'guard-spork'
+  gem 'guard-spork', '~>2.0'
   gem 'factory_girl'
 end
