@@ -450,4 +450,36 @@ describe System do
       @system.deploy_applications
     end
   end
+
+  describe '#as_json' do
+    before do
+      @system.id = 1
+      @system.monitoring_host = 'example.com'
+      @system.ip_address = '127.0.0.1'
+      @system.stub(:status).and_return(:PROGRESS)
+      @system.stub(:chef_status).and_return(:PENDING)
+    end
+
+    it 'return attributes as json format' do
+      json = @system.as_json
+      expect(json['id']).to eq(@system.id)
+      expect(json['name']).to eq(@system.name)
+      expect(json['monitoring_host']).to eq(@system.monitoring_host)
+      expect(json['ip_address']).to eq(@system.ip_address)
+      expect(json['domain']).to eq(@system.domain)
+      expect(json['template_parameters']).to eq(@system.template_parameters)
+      expect(json['status']).to eq(@system.status)
+      expect(json['chef_status']).to eq(@system.chef_status)
+    end
+
+    it 'return attributes as json format without chef_status' do
+      json = @system.as_json except: :chef_status
+      expect(json['chef_status']).to be_nil
+    end
+
+    it 'return attributes as json format without chef_status as array' do
+      json = @system.as_json except: [:chef_status]
+      expect(json['chef_status']).to be_nil
+    end
+  end
 end
