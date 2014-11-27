@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140925021752) do
+ActiveRecord::Schema.define(version: 20141119082127) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
@@ -36,7 +36,7 @@ ActiveRecord::Schema.define(version: 20140925021752) do
     t.datetime "updated_at"
   end
 
-  create_table "candidates", id: false, force: true do |t|
+  create_table "candidates", force: true do |t|
     t.integer  "cloud_id"
     t.integer  "system_id"
     t.integer  "priority"

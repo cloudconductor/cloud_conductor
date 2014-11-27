@@ -8,9 +8,8 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 
 gem 'sqlite3'
-gem 'activerecord', '4.1.5'
+gem 'activerecord'
 gem 'activesupport', require: 'active_support/dependencies'
-gem 'composite_primary_keys'
 gem 'sinatra-activerecord'
 gem 'actionpack'
 
