@@ -312,7 +312,7 @@ describe Pattern do
       end
 
       it 'update parameters attribute with parameters in template' do
-        parameters = [{ keyname: 'key_name', type: 'String' }]
+        parameters = { keyname: { Type: 'String' } }
         @pattern.stub(:load_parameters).with(@path).and_return(parameters)
         @pattern.send(:update_metadata, @path, {})
         expect(@pattern.parameters).to eq(parameters.to_json)
@@ -405,6 +405,41 @@ describe Pattern do
         expect(openstack.status).to eq(:ERROR)
         expect(openstack.image).to be_nil
         expect(openstack.message).to eq('dummy_message')
+      end
+    end
+
+    describe '#parameters' do
+      before do
+        @pattern.parameters = <<-EOS
+          {
+            "KeyName" : {
+              "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
+              "Type" : "String"
+            },
+            "SSHLocation" : {
+              "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
+              "Type" : "String"
+            },
+            "webImageId" : {
+              "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
+              "Type" : "String"
+            },
+            "webInstanceType" : {
+              "Description" : "WebServer instance type",
+              "Type" : "String"
+            }
+          }
+        EOS
+      end
+
+      it 'return parameters without [computed] annotation' do
+        parameters = JSON.parse(@pattern.parameters)
+        expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType)
+      end
+
+      it 'return all parameters when specified option' do
+        parameters = JSON.parse(@pattern.parameters true)
+        expect(parameters.keys).to eq %w(KeyName SSHLocation webImageId webInstanceType)
       end
     end
   end
