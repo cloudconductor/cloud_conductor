@@ -25,7 +25,7 @@ module CloudConductor
         end
 
         it 'return patches that are appended by #add_patch' do
-          @converter.add_patch Patches::RemoveRoute.new
+          @converter.add_patch Patches::RemoveResource.new 'dummy_resource'
           @converter.add_patch Patches::RemoveProperty.new 'Dummy', 'Dummy'
           expect(@converter.patches.size).to eq(2)
           expect(@converter.patches.all? { |patch| patch.is_a? Patches::Patch }).to be_truthy
@@ -34,7 +34,7 @@ module CloudConductor
 
       describe '#convert' do
         it 'call Patch#ensure on added patches' do
-          patch1 = Patches::RemoveRoute.new
+          patch1 = Patches::RemoveResource.new 'dummy_resource'
           patch2 = Patches::RemoveProperty.new 'Dummy', 'Dummy'
 
           patch1.should_receive(:ensure).and_call_original
@@ -46,7 +46,7 @@ module CloudConductor
         end
 
         it 'call Patch#apply on added patches' do
-          patch1 = Patches::RemoveRoute.new
+          patch1 = Patches::RemoveResource.new 'dummy_resource'
           patch2 = Patches::RemoveProperty.new 'Dummy', 'Dummy'
 
           patch1.should_receive(:apply).and_return({})

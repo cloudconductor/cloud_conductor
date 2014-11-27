@@ -14,11 +14,12 @@
 # limitations under the License.
 module CloudConductor
   module Patches
+    # rubocop:disable LineLength
     class AddNetworkInterface < Patch
       include PatchUtils
 
-      PORTABLE_PROPERTIES = %w(Description GroupSet PrivateIpAddress PrivateIpAddresses SecondaryPrivateIpAddressCount SubnetId)
-      DELETE_PROPERTIES = PORTABLE_PROPERTIES + %w(AssociatePublicIpAddress DeleteOnTermination)
+      PORTABLE_PROPERTIES = %w(Description GroupSet PrivateIpAddress SubnetId)
+      DELETE_PROPERTIES = PORTABLE_PROPERTIES + %w(AssociatePublicIpAddress DeleteOnTermination PrivateIpAddresses SecondaryPrivateIpAddressCount)
 
       NIC_TEMPLATE = <<-EOS
         {
@@ -36,6 +37,7 @@ module CloudConductor
         template
       end
 
+      # rubocop:disable MethodLength, CyclomaticComplexity
       def apply(template, _parameters)
         template = template.deep_dup
 
@@ -44,8 +46,18 @@ module CloudConductor
           instance[:Properties][:NetworkInterfaces].each do |network_interface|
             next unless network_interface[:NetworkInterfaceId].nil?
 
+            properties = network_interface.slice(*PORTABLE_PROPERTIES)
+
+            if properties[:PrivateIpAddress].nil? && network_interface[:PrivateIpAddresses]
+              private_ip_address = network_interface[:PrivateIpAddresses].find do |private_ip_specification|
+                private_ip_specification['Primary'] == true
+              end || network_interface[:PrivateIpAddresses].first
+
+              properties[:PrivateIpAddress] = private_ip_address['PrivateIpAddress']
+            end
+
             nic = JSON.parse(NIC_TEMPLATE).with_indifferent_access
-            nic[:Properties].update network_interface.slice(*PORTABLE_PROPERTIES)
+            nic[:Properties].update properties
             network_interface.except!(*DELETE_PROPERTIES)
 
             key = SecureRandom.uuid
