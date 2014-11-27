@@ -148,6 +148,10 @@ describe Pattern do
     end
 
     describe '#clone_repository' do
+      before do
+        FileUtils.stub(:rm_r)
+      end
+
       it 'will raise error when block does not given' do
         expect { @pattern.send(:clone_repository) }.to raise_error('Pattern#clone_repository needs block')
       end
@@ -185,6 +189,11 @@ describe Pattern do
       it 'will remove cloned repository after yield block' do
         FileUtils.should_receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
         @pattern.send(:clone_repository) {}
+      end
+
+      it 'will remove cloned repository when some errors occurred while yielding block' do
+        FileUtils.should_receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
+        expect { @pattern.send(:clone_repository) { fail } }.to raise_error
       end
     end
 

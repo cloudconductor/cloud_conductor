@@ -60,6 +60,8 @@ module CloudConductor
           end
         rescue => e
           Log.error(e)
+        ensure
+          FileUtils.rm packer_json_path
         end
       end
     end

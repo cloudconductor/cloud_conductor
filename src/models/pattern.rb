@@ -77,8 +77,8 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
 
     yield path
-
-    FileUtils.rm_r path, force: true
+  ensure
+    FileUtils.rm_r path, force: true if path
   end
 
   def parameters(is_include_computed = false)
