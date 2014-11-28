@@ -17,10 +17,42 @@ describe Target do
     @cloud = FactoryGirl.create(:cloud_aws)
     @operating_system = FactoryGirl.create(:operating_system)
 
+    images = { 'ap-northeast-1' => 'ami-12345678' }
+    YAML.stub(:load_file).with(Target::IMAGES_FILE_PATH).and_return(images)
+
     @target = Target.new
     @target.cloud = @cloud
     @target.operating_system = @operating_system
     @target.source_image = 'dummy_image'
+  end
+
+  describe 'after_initialize' do
+    it 'set source_image if cloud type equal aws and source_image is nil' do
+      target = Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
+
+      expect(target.source_image).to eq('ami-12345678')
+    end
+
+    it 'not set source_image if cloud type equal aws and source_image is not nil' do
+      target = Target.new(cloud: @cloud, operating_system_id: 1, source_image: 'ami-xxxxxxxx', ssh_username: 'dummy')
+
+      expect(target.source_image).to eq('ami-xxxxxxxx')
+    end
+
+    it 'not set source_imageif cloud type equal openstack' do
+      cloud = FactoryGirl.create(:cloud_openstack)
+      target = Target.new(cloud: cloud, operating_system_id: 1, source_image: 'dummy_source_image', ssh_username: 'dummy')
+
+      expect(target.source_image).to eq('dummy_source_image')
+    end
+
+    it 'call YAML.load_file only once' do
+      YAML.should_receive(:load_file).once
+
+      Target.images = nil
+      Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
+      Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
+    end
   end
 
   describe '#name' do
