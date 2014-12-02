@@ -25,7 +25,7 @@ describe Target do
 
   describe '#name' do
     it 'return string that joined cloud name and operating_system name with hyphen' do
-      expect(@target.name).to eq("#{@cloud.name}-#{@operating_system.name}")
+      expect(@target.name).to eq("#{@cloud.name}#{Target::SPLITTER}#{@operating_system.name}")
     end
   end
 

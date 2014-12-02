@@ -58,7 +58,7 @@ describe Cloud do
 
     it 'returns false when name contains hyphen character' do
       @cloud.name = 'sample-name'
-      expect(@cloud.valid?).to be_falsey
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns false when entry_point is unset' do

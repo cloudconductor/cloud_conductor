@@ -19,9 +19,10 @@ class Target < ActiveRecord::Base
   belongs_to :operating_system
 
   ALLOW_RECEIVERS = %w(target cloud operating_system)
+  SPLITTER = '----'
 
   def name
-    "#{cloud.name}-#{operating_system.name}"
+    "#{cloud.name}#{SPLITTER}#{operating_system.name}"
   end
 
   def to_json

@@ -36,9 +36,9 @@ module CloudConductor
       @vars = options[:variables]
     end
 
-    # rubocop:disable MethodLength, ParameterLists
+    # rubocop:disable MethodLength, ParameterLists, LineLength
     def build(repository_url, revision, clouds, operating_systems, role, pattern_name)
-      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}-#{operating_system}" }.join(',')
+      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}#{Target::SPLITTER}#{operating_system}" }.join(',')
       packer_json_path = create_json clouds
 
       command = build_command repository_url, revision, only, role, pattern_name, packer_json_path

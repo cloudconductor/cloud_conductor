@@ -24,7 +24,7 @@ class Cloud < ActiveRecord::Base
 
   before_destroy :raise_error_in_use
 
-  validates :name, presence: true, format: /\A[^\-]+\Z/
+  validates :name, presence: true
   validates :entry_point, presence: true
   validates :key, presence: true
   validates :secret, presence: true
