@@ -29,7 +29,7 @@ describe Stack do
     @stack.system = FactoryGirl.build(:system)
 
     @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
-    @stack.cloud.stub(:client).and_return(@client)
+    allow(@stack.cloud).to receive(:client).and_return(@client)
   end
 
   describe '.created' do
@@ -84,13 +84,13 @@ describe Stack do
       stack.pattern = @pattern
       stack.system = FactoryGirl.create(:system)
       stack.cloud = FactoryGirl.create(:cloud_openstack)
-      stack.cloud.stub(:client).and_return(@client)
+      allow(stack.cloud).to receive(:client).and_return(@client)
       stack.save!
 
       expect(@stack.valid?).to be_truthy
 
       stack.cloud = @cloud
-      stack.cloud.stub(:client).and_return(@client)
+      allow(stack.cloud).to receive(:client).and_return(@client)
       stack.save!
       expect(@stack.valid?).to be_falsey
     end
@@ -134,21 +134,21 @@ describe Stack do
     it 'call create_stack on cloud when ready status' do
       expected_parameters = @template_parameters
       expected_parameters.deep_merge!(dummy: 'value')
-      @client.should_receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters)
+      expect(@client).to receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters)
 
       @stack.status = :READY
       @stack.save!
     end
 
     it 'doesn\'t call create_stack on cloud when pending status' do
-      @client.should_not_receive(:create_stack)
+      expect(@client).not_to receive(:create_stack)
 
       @stack.status = :PENDING
       @stack.save!
     end
 
     it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
-      @client.stub(:create_stack)
+      allow(@client).to receive(:create_stack)
       @stack.status = :READY
       @stack.save!
 
@@ -156,7 +156,7 @@ describe Stack do
     end
 
     it 'update status to :ERROR if Client#create_stack raise error' do
-      @client.stub(:create_stack).and_raise
+      allow(@client).to receive(:create_stack).and_raise
       @stack.status = :READY
       @stack.save!
 
@@ -180,7 +180,7 @@ describe Stack do
 
   describe '#status' do
     it 'return status without API request when status isn\'t progress' do
-      @client.should_not_receive(:get_stack_status)
+      expect(@client).not_to receive(:get_stack_status)
 
       @stack.status = :PENDING
       expect(@stack.status).to eq(:PENDING)
@@ -196,7 +196,7 @@ describe Stack do
     end
 
     it 'call get_stack_status on adapter that related active cloud while progress' do
-      @client.should_receive(:get_stack_status).with(@stack.name).and_return(:dummy)
+      expect(@client).to receive(:get_stack_status).with(@stack.name).and_return(:dummy)
 
       @stack.status = :PROGRESS
       expect(@stack.status).to eq(:dummy)
@@ -207,7 +207,7 @@ describe Stack do
     it 'call get_outputs on adapter that related active cloud' do
       @stack.save!
 
-      @client.should_receive(:get_outputs).with(@stack.name).and_return(key: 'value')
+      expect(@client).to receive(:get_outputs).with(@stack.name).and_return(key: 'value')
 
       expect(@stack.outputs).to eq(key: 'value')
     end
@@ -240,7 +240,7 @@ describe Stack do
       @stack.status = :CREATE_COMPLETE
       @stack.save!
 
-      @client.should_receive(:destroy_stack).with(@stack.name)
+      expect(@client).to receive(:destroy_stack).with(@stack.name)
 
       @stack.destroy
     end
@@ -249,7 +249,7 @@ describe Stack do
       @stack.status = :PENDING
       @stack.save!
 
-      @client.should_not_receive(:destroy_stack)
+      expect(@client).not_to receive(:destroy_stack)
 
       @stack.destroy
     end
@@ -337,12 +337,12 @@ describe Stack do
 
   describe '#exist?' do
     it 'return true when target stack has been exist' do
-      @client.stub(:get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
+      allow(@client).to receive(:get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
       expect(@stack.exist?).to be_truthy
     end
 
     it 'return false when target stack has not been exist' do
-      @client.stub(:get_stack_status).with(@stack.name).and_raise
+      allow(@client).to receive(:get_stack_status).with(@stack.name).and_raise
       expect(@stack.exist?).to be_falsey
     end
   end

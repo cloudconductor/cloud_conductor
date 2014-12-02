@@ -18,7 +18,7 @@ describe Target do
     @operating_system = FactoryGirl.create(:operating_system)
 
     images = { 'ap-northeast-1' => 'ami-12345678' }
-    YAML.stub(:load_file).with(Target::IMAGES_FILE_PATH).and_return(images)
+    allow(YAML).to receive(:load_file).with(Target::IMAGES_FILE_PATH).and_return(images)
 
     @target = Target.new
     @target.cloud = @cloud
@@ -47,7 +47,7 @@ describe Target do
     end
 
     it 'call YAML.load_file only once' do
-      YAML.should_receive(:load_file).once
+      expect(YAML).to receive(:load_file).once
 
       Target.images = nil
       Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
@@ -63,7 +63,7 @@ describe Target do
 
   describe '#to_json' do
     it 'return valid JSON that is generated from Cloud#template' do
-      @target.cloud.stub(:template).and_return <<-EOS
+      allow(@target.cloud).to receive(:template).and_return <<-EOS
         {
           "dummy1": "dummy_value1",
           "dummy2": "dummy_value2"
@@ -75,7 +75,7 @@ describe Target do
     end
 
     it 'update variables in template' do
-      @target.cloud.stub(:template).and_return <<-EOS
+      allow(@target.cloud).to receive(:template).and_return <<-EOS
         {
           "cloud_name": "{{cloud `name`}}",
           "operating_system_name": "{{operating_system `name`}}",
@@ -90,7 +90,7 @@ describe Target do
     end
 
     it 'doesn\'t affect variables that has unrelated receiver' do
-      @target.cloud.stub(:template).and_return <<-EOS
+      allow(@target.cloud).to receive(:template).and_return <<-EOS
         {
           "dummy1": "{{user `name`}}",
           "dummy2": "{{env `PATH`}}",

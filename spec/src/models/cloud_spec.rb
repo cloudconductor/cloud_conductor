@@ -109,7 +109,7 @@ describe Cloud do
   describe '#client' do
     it 'return instance of CloudConductor::Client that is initialized by cloud type' do
       client = double('client')
-      CloudConductor::Client.should_receive(:new).with(@cloud).and_return(client)
+      expect(CloudConductor::Client).to receive(:new).with(@cloud).and_return(client)
 
       expect(@cloud.client).to eq(client)
     end
@@ -143,7 +143,7 @@ describe Cloud do
 
   describe '#template' do
     it 'load templates.yml and return JSON string' do
-      YAML.should_receive(:load_file).and_return('aws' => { 'key' => 'value' })
+      expect(YAML).to receive(:load_file).and_return('aws' => { 'key' => 'value' })
       expect(@cloud.template).to eq('{"key":"value"}')
     end
   end

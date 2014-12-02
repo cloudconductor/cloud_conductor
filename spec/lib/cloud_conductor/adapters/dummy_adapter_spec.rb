@@ -17,7 +17,7 @@ module CloudConductor
     describe DummyAdapter do
       before do
         @adapter = DummyAdapter.new
-        Log.stub(:debug)
+        allow(Log).to receive(:debug)
       end
 
       it 'extend AbstractAdapter class' do
@@ -40,7 +40,7 @@ module CloudConductor
         end
 
         it 'output log' do
-          Log.should_receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.create_stack')
+          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.create_stack')
           @adapter.create_stack 'stack_name', '{}', {}, {}
         end
       end
@@ -51,7 +51,7 @@ module CloudConductor
         end
 
         it 'output log' do
-          Log.should_receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.get_stack_status')
+          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.get_stack_status')
           @adapter.get_stack_status 'stack_name', {}
         end
       end
@@ -62,7 +62,7 @@ module CloudConductor
         end
 
         it 'output log' do
-          Log.should_receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.destroy_stack')
+          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.destroy_stack')
           @adapter.destroy_stack 'stack_name', {}
         end
       end
