@@ -39,14 +39,12 @@ group :development do
 end
 
 group :test do
-  gem 'rspec', '~>2'
+  gem 'rspec'
   gem 'rspec-mocks'
   gem 'rspec_junit_formatter'
   gem 'simplecov'
   gem 'simplecov-rcov'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
-  gem 'spork'
-  gem 'guard-spork', '~>2.0'
   gem 'factory_girl'
 end
