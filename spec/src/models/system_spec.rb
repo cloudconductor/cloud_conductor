@@ -487,4 +487,98 @@ describe System do
       expect(json['chef_status']).to be_nil
     end
   end
+
+  describe '#destroy_stacks' do
+    before do
+      pattern1 = FactoryGirl.build(:pattern, type: :optional)
+      pattern2 = FactoryGirl.build(:pattern, type: :platform)
+      pattern3 = FactoryGirl.build(:pattern, type: :optional)
+
+      @system.stacks.delete_all
+      @system.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, system: @system, pattern: pattern1, cloud: @cloud_aws)
+      @system.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, system: @system, pattern: pattern2, cloud: @cloud_aws)
+      @system.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, system: @system, pattern: pattern3, cloud: @cloud_aws)
+
+      @system.save!
+      Thread.stub(:new).and_yield
+
+      @client = double(:client, destroy_stack: nil, get_stack_status: :DESTROY_COMPLETE)
+      @cloud_aws.stub(:client).and_return(@client)
+
+      @system.stub(:sleep)
+
+      original_timeout = Timeout.method(:timeout)
+      Timeout.stub(:timeout) do |_, &block|
+        original_timeout.call(0.1, &block)
+      end
+    end
+
+    it 'destroy all stacks of system' do
+      expect(@system.stacks).not_to be_empty
+      @system.destroy_stacks
+      expect(@system.stacks).to be_empty
+    end
+
+    it 'create other thread to destroy stacks use their dependencies' do
+      Thread.should_receive(:new).and_yield
+      @system.destroy_stacks
+    end
+
+    it 'doen\'t anything in other thread when stacks are empty' do
+      @system.stacks.delete_all
+      Thread.should_not_receive(:new)
+      @system.destroy_stacks
+    end
+
+    it 'doen\'t anything in other thread when all stacks are pending' do
+      @system.stacks[0].status = :PENDING
+      @system.stacks[1].status = :PENDING
+      @system.stacks[2].status = :PENDING
+      Thread.should_not_receive(:new)
+      @system.destroy_stacks
+
+      expect(@system.stacks).to be_empty
+    end
+
+    it 'destroy optional patterns before platform' do
+      @client.should_receive(:destroy_stack).with(@system.stacks[0].name).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[2].name).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[1].name).ordered
+
+      @system.destroy_stacks
+    end
+
+    it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
+      @client.stub(:get_stack_status).and_return(:DESTROY_PROGRESS)
+      @client.should_receive(:destroy_stack).with(@system.stacks[0].name).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[2].name).ordered
+      @system.should_receive(:sleep).at_least(:once).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[1].name).ordered
+
+      @system.destroy_stacks
+    end
+
+    it 'wait and destroy platform pattern when destroyed all optional patterns' do
+      @client.stub(:get_stack_status).and_return(:DESTROY_PROGRESS, :DESTROY_COMPLETE)
+
+      @client.should_receive(:destroy_stack).with(@system.stacks[0].name).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[2].name).ordered
+      @system.should_receive(:sleep).once.ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[1].name).ordered
+
+      @system.destroy_stacks
+    end
+
+    it 'wait and destroy platform pattern when a part of stacks are already deleted' do
+      @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DESTROY_PROGRESS, :DESTROY_COMPLETE)
+      @client.stub(:get_stack_status).with(@system.stacks[2].name).and_raise
+
+      @client.should_receive(:destroy_stack).with(@system.stacks[0].name).ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[2].name).ordered
+      @system.should_receive(:sleep).once.ordered
+      @client.should_receive(:destroy_stack).with(@system.stacks[1].name).ordered
+
+      @system.destroy_stacks
+    end
+  end
 end
