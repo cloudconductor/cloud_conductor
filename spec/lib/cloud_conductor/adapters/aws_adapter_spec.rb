@@ -98,6 +98,11 @@ module CloudConductor
           status = @adapter.get_stack_status 'stack_name', @options
           expect(status).to eq(:dummy_status)
         end
+
+        it 'raise error  when target stack does not exist' do
+          @stacks.stub(:[]).and_return nil
+          expect { @adapter.get_stack_status 'undefined_stack', @options }.to raise_error
+        end
       end
 
       describe '#get_outputs' do
