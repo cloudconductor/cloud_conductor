@@ -18,18 +18,22 @@ class Target < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :operating_system
 
-  validates :operating_system_id, presence: true
+  validates :operating_system, presence: true
   validates :source_image, presence: true
   validates :ssh_username, presence: true
 
   cattr_accessor :images
 
+  SSH_USERNAME = 'ec2-user'
   ALLOW_RECEIVERS = %w(target cloud operating_system)
   IMAGES_FILE_PATH = File.expand_path('../../config/images.yml', File.dirname(__FILE__))
 
   after_initialize do
+    self.operating_system ||= OperatingSystem.first
+    self.ssh_username ||= SSH_USERNAME
+
+    Target.images ||= YAML.load_file(IMAGES_FILE_PATH)
     if cloud && cloud.type == :aws && source_image.nil?
-      Target.images ||= YAML.load_file(IMAGES_FILE_PATH)
       self.source_image = Target.images[cloud.entry_point]
     end
   end

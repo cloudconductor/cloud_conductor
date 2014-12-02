@@ -288,10 +288,10 @@ module CloudConductor
       before do
         cloud_aws = FactoryGirl.create(:cloud_aws)
         cloud_openstack = FactoryGirl.create(:cloud_openstack)
-        operating_system = FactoryGirl.create(:operating_system)
+        FactoryGirl.create(:operating_system, id: 1)
 
-        cloud_aws.targets.build(operating_system: operating_system, source_image: 'dummy_image_aws')
-        cloud_openstack.targets.build(operating_system: operating_system, source_image: 'dummy_image_openstack')
+        cloud_aws.targets.build
+        cloud_openstack.targets.build(source_image: 'dummy_image_openstack')
 
         @clouds = [cloud_aws, cloud_openstack]
         @cloud_names = @clouds.map(&:name)

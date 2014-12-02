@@ -14,34 +14,48 @@
 # limitations under the License.
 describe Target do
   before do
+    Target.images = nil
+    YAML.stub(:load_file).with(Target::IMAGES_FILE_PATH).and_return('ap-northeast-1' => 'ami-12345678')
+
     @cloud = FactoryGirl.create(:cloud_aws)
     @operating_system = FactoryGirl.create(:operating_system)
 
-    images = { 'ap-northeast-1' => 'ami-12345678' }
-    YAML.stub(:load_file).with(Target::IMAGES_FILE_PATH).and_return(images)
-
     @target = Target.new
     @target.cloud = @cloud
-    @target.operating_system = @operating_system
     @target.source_image = 'dummy_image'
   end
 
   describe 'after_initialize' do
+    it 'set default_value to operating_system and ssh_username' do
+      target = Target.new(cloud: @cloud)
+
+      expect(target.operating_system).to eq(@operating_system)
+      expect(target.ssh_username).to eq('ec2-user')
+    end
+
+    it 'set user value to operating_system and ssh_username' do
+      operating_system = FactoryGirl.create(:operating_system)
+      target = Target.new(cloud: @cloud, operating_system: operating_system, ssh_username: 'dummy_user')
+
+      expect(target.operating_system).to eq(operating_system)
+      expect(target.ssh_username).to eq('dummy_user')
+    end
+
     it 'set source_image if cloud type equal aws and source_image is nil' do
-      target = Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
+      target = Target.new(cloud: @cloud)
 
       expect(target.source_image).to eq('ami-12345678')
     end
 
     it 'not set source_image if cloud type equal aws and source_image is not nil' do
-      target = Target.new(cloud: @cloud, operating_system_id: 1, source_image: 'ami-xxxxxxxx', ssh_username: 'dummy')
+      target = Target.new(cloud: @cloud, source_image: 'ami-xxxxxxxx')
 
       expect(target.source_image).to eq('ami-xxxxxxxx')
     end
 
-    it 'not set source_imageif cloud type equal openstack' do
+    it 'not set source_image if cloud type equal openstack' do
       cloud = FactoryGirl.create(:cloud_openstack)
-      target = Target.new(cloud: cloud, operating_system_id: 1, source_image: 'dummy_source_image', ssh_username: 'dummy')
+      target = Target.new(cloud: cloud, source_image: 'dummy_source_image')
 
       expect(target.source_image).to eq('dummy_source_image')
     end
@@ -50,8 +64,8 @@ describe Target do
       YAML.should_receive(:load_file).once
 
       Target.images = nil
-      Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
-      Target.new(cloud: @cloud, operating_system_id: 1, ssh_username: 'dummy')
+      Target.new(cloud: @cloud)
+      Target.new(cloud: @cloud)
     end
   end
 

@@ -37,9 +37,7 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new cloud_permit_params
-    (params[:targets] || []).each do |target_params|
-      cloud.targets.build target_permit_params(cloud.type, target_params)
-    end
+    cloud.targets.build source_image: params[:base_image_id]
     unless cloud.save
       status 400
       return json message: cloud.errors
@@ -85,16 +83,5 @@ class CloudsController < Sinatra::Base
 
   def cloud_permit_params
     ActionController::Parameters.new(params).permit(:name, :type, :entry_point, :key, :secret, :tenant_name)
-  end
-
-  def target_permit_params(type, target_params)
-    case type
-    when :aws then
-      ActionController::Parameters.new(target_params).permit(:operating_system_id, :ssh_username)
-    when :openstack then
-      ActionController::Parameters.new(target_params).permit(:operating_system_id, :source_image, :ssh_username)
-    else
-      fail "Unsupported Cloud type(#{type})"
-    end
   end
 end
