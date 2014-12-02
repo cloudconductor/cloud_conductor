@@ -23,7 +23,7 @@ FactoryGirl.define do
     parameters '{ "dummy": "value" }'
     status nil
 
-    after(:build) do
+    before(:create) do
       Stack.skip_callback :save, :before, :create_stack
     end
 

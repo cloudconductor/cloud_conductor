@@ -17,6 +17,8 @@ describe System do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
+    pattern = FactoryGirl.build(:pattern)
+
     @system = System.new
     @system.name = 'Test'
     @system.monitoring_host = nil
@@ -28,18 +30,21 @@ describe System do
     CloudConductor::DNSClient.stub_chain(:new, :update)
     CloudConductor::ZabbixClient.stub_chain(:new, :register)
 
-    @system.applications << FactoryGirl.create(:application)
-    @system.applications << FactoryGirl.create(:application)
+    @system.applications << FactoryGirl.build(:application, system: @system)
+    @system.applications << FactoryGirl.build(:application, system: @system)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
 
-    @system.stacks << FactoryGirl.create(:stack, status: :PENDING)
-    @system.stacks << FactoryGirl.create(:stack, status: :PENDING)
+    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
+    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
+
     Stack.skip_callback :destroy, :before, :destroy_stack
+    ApplicationHistory.skip_callback :save, :before, :serf_request
   end
 
   after do
     Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
+    ApplicationHistory.set_callback :save, :before, :serf_request, if: -> { !deployed? && application.system.ip_address }
   end
 
   it 'create with valid parameters' do

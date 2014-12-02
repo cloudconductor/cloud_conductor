@@ -14,8 +14,8 @@
 # limitations under the License.
 describe Stack do
   before do
-    @pattern = FactoryGirl.create(:pattern)
-    @image = FactoryGirl.create(:image)
+    @pattern = FactoryGirl.build(:pattern)
+    @image = FactoryGirl.build(:image)
     @image.status = :CREATE_COMPLETE
     @pattern.images.push(@image)
     @cloud = FactoryGirl.create(:cloud_aws)
@@ -26,7 +26,7 @@ describe Stack do
     @stack.parameters = '{ "key1": "value1" }'
     @stack.pattern = @pattern
     @stack.cloud = @cloud
-    @stack.system = FactoryGirl.create(:system)
+    @stack.system = FactoryGirl.build(:system)
 
     @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
     @stack.cloud.stub(:client).and_return(@client)
