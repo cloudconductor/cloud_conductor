@@ -17,7 +17,7 @@ describe System do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
 
-    @pattern = FactoryGirl.build(:pattern)
+    pattern = FactoryGirl.build(:pattern)
 
     @system = System.new
     @system.name = 'Test'
@@ -35,8 +35,8 @@ describe System do
     @system.applications.first.histories << FactoryGirl.build(:application_history)
     @system.applications.first.histories << FactoryGirl.build(:application_history)
 
-    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: @pattern, cloud: @cloud_aws)
-    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: @pattern, cloud: @cloud_aws)
+    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
+    @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
 
     Stack.skip_callback :destroy, :before, :destroy_stack
     ApplicationHistory.skip_callback :save, :before, :serf_request
