@@ -19,8 +19,8 @@ class Cloud < ActiveRecord::Base
 
   self.inheritance_column = nil
 
-  has_many :targets, dependent: :destroy
-  has_many :operating_systems, through: :targets
+  has_many :base_images, dependent: :destroy
+  has_many :operating_systems, through: :base_images
 
   before_destroy :raise_error_in_use
 

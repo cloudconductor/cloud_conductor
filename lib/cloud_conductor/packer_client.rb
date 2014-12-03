@@ -152,8 +152,8 @@ module CloudConductor
       template_json = JSON.load(open(@template_path)).with_indifferent_access
 
       File.open(json_path, 'w') do |f|
-        clouds.map(&:targets).flatten.each do |target|
-          template_json[:builders].push JSON.parse(target.to_json)
+        clouds.map(&:base_images).flatten.each do |base_image|
+          template_json[:builders].push JSON.parse(base_image.to_json)
         end
 
         f.write template_json.to_json

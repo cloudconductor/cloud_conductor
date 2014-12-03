@@ -37,7 +37,7 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new cloud_permit_params
-    cloud.targets.build source_image: params[:base_image_id]
+    cloud.base_images.build source_image: params[:base_image_id]
     unless cloud.save
       status 400
       return json message: cloud.errors

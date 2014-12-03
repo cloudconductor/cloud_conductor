@@ -14,7 +14,7 @@
 # limitations under the License.
 require 'sinatra/activerecord'
 
-class Target < ActiveRecord::Base
+class BaseImage < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :operating_system
 
@@ -25,16 +25,16 @@ class Target < ActiveRecord::Base
   cattr_accessor :images
 
   SSH_USERNAME = 'ec2-user'
-  ALLOW_RECEIVERS = %w(target cloud operating_system)
+  ALLOW_RECEIVERS = %w(base_image cloud operating_system)
   IMAGES_FILE_PATH = File.expand_path('../../config/images.yml', File.dirname(__FILE__))
 
   after_initialize do
     self.operating_system ||= OperatingSystem.first
     self.ssh_username ||= SSH_USERNAME
 
-    Target.images ||= YAML.load_file(IMAGES_FILE_PATH)
+    BaseImage.images ||= YAML.load_file(IMAGES_FILE_PATH)
     if cloud && cloud.type == :aws && source_image.nil?
-      self.source_image = Target.images[cloud.entry_point]
+      self.source_image = BaseImage.images[cloud.entry_point]
     end
   end
 
@@ -52,7 +52,7 @@ class Target < ActiveRecord::Base
     end
   end
 
-  def target
+  def base_image
     self
   end
 end

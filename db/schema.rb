@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141119082127) do
+ActiveRecord::Schema.define(version: 20141203003236) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
@@ -34,6 +34,13 @@ ActiveRecord::Schema.define(version: 20141119082127) do
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
+  end
+
+  create_table "base_images", force: true do |t|
+    t.integer "cloud_id"
+    t.integer "operating_system_id"
+    t.string  "source_image"
+    t.string  "ssh_username"
   end
 
   create_table "candidates", force: true do |t|
@@ -112,13 +119,6 @@ ActiveRecord::Schema.define(version: 20141119082127) do
     t.text     "template_parameters"
     t.datetime "created_at"
     t.datetime "updated_at"
-  end
-
-  create_table "targets", force: true do |t|
-    t.integer "cloud_id"
-    t.integer "operating_system_id"
-    t.string  "source_image"
-    t.string  "ssh_username"
   end
 
 end

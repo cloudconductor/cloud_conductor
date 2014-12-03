@@ -290,8 +290,8 @@ module CloudConductor
         cloud_openstack = FactoryGirl.create(:cloud_openstack)
         FactoryGirl.create(:operating_system, id: 1)
 
-        cloud_aws.targets.build
-        cloud_openstack.targets.build(source_image: 'dummy_image_openstack')
+        cloud_aws.base_images.build
+        cloud_openstack.base_images.build(source_image: 'dummy_image_openstack')
 
         @clouds = [cloud_aws, cloud_openstack]
         @cloud_names = @clouds.map(&:name)
@@ -306,11 +306,11 @@ module CloudConductor
           }
         EOS
 
-        @targets = @clouds.map(&:targets).flatten
-        @targets.each do |target|
-          target.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
+        @base_images = @clouds.map(&:base_images).flatten
+        @base_images.each do |base_image|
+          base_image.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
         end
-        Cloud.stub_chain(:where, :map, :flatten).and_return @targets
+        Cloud.stub_chain(:where, :map, :flatten).and_return @base_images
 
         @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
         Dir.stub(:exist?).with(@directory).and_return true
@@ -334,9 +334,9 @@ module CloudConductor
         @client.send(:create_json, @cloud_names)
       end
 
-      it 'will generate json by Target#to_json' do
-        @targets.each do |target|
-          target.should_receive(:to_json)
+      it 'will generate json by BaseImage#to_json' do
+        @base_images.each do |base_image|
+          base_image.should_receive(:to_json)
         end
         @client.send(:create_json, @cloud_names)
       end
