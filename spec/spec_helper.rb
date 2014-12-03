@@ -12,8 +12,10 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
-Bundler.require(:development, :test)
+require 'rubygems'
+require 'spork'
+require 'simplecov'
+require 'simplecov-rcov'
 
 SimpleCov.start do
   coverage_dir 'tmp/coverage'
@@ -21,31 +23,39 @@ end
 
 SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
 
-ActiveRecord::Base.establish_connection :test
+Spork.prefork do
+  require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
+  Bundler.require(:development, :test)
 
-FactoryGirl.definition_file_paths = %w(./spec/factories)
+  ActiveRecord::Base.establish_connection :test
 
-RSpec.configure do |config|
-  # Enable focus feature to execute focused test only.
-  config.filter_run focus: true
-  config.run_all_when_everything_filtered = true
-  config.order = 'random'
+  FactoryGirl.definition_file_paths = %w(./spec/factories)
 
-  config.before :all do
-    FactoryGirl.factories.clear
-    FactoryGirl.find_definitions
-    FactoryGirl.reload
-  end
+  RSpec.configure do |config|
+    # Enable focus feature to execute focused test only.
+    config.filter_run focus: true
+    config.run_all_when_everything_filtered = true
+    config.order = 'random'
 
-  config.before :suite do
-    # config.raise_errors_for_deprecations!
-    DatabaseCleaner.strategy = :transaction
-    DatabaseCleaner.clean_with(:truncation)
-  end
+    config.before :all do
+      FactoryGirl.factories.clear
+      FactoryGirl.find_definitions
+      FactoryGirl.reload
+    end
 
-  config.around(:each) do |example|
-    DatabaseCleaner.cleaning do
-      example.run
+    config.before :suite do
+      DatabaseCleaner.strategy = :transaction
+      DatabaseCleaner.clean_with(:truncation)
+    end
+
+    config.around(:each) do |example|
+      DatabaseCleaner.cleaning do
+        example.run
+      end
     end
   end
+end
+
+Spork.each_run do
+  RSpec.configuration.start_time = Time.now
 end

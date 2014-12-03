@@ -47,4 +47,6 @@ group :test do
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
   gem 'factory_girl'
+  gem 'spork', git: 'https://github.com/sporkrb/spork.git'
+  gem 'guard-spork', '~>2'
 end
