@@ -150,9 +150,9 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     stacks.delete_all
 
     Thread.new do
-      optionals.each(&:destroy)
-
       begin
+        optionals.each(&:destroy)
+
         Timeout.timeout(TIMEOUT) do
           sleep 10 until optionals.all?(&stack_destroyed?)
         end

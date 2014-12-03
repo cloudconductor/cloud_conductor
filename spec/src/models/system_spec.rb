@@ -575,5 +575,12 @@ describe System do
 
       @system.send(:destroy_stacks)
     end
+
+    it 'ensure destroy platform when some error occurred while destroying optional' do
+      @system.stacks[0].stub(:destroy).and_raise
+      @system.stacks[1].should_receive(:destroy)
+
+      expect { @system.send(:destroy_stacks) }.to raise_error RuntimeError
+    end
   end
 end
