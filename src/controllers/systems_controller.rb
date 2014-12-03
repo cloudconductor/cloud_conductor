@@ -113,7 +113,6 @@ class SystemsController < Sinatra::Base
   delete '/:id' do
     begin
       system = System.find(params[:id])
-      system.destroy_stacks
       if system.destroy
         status 204
       else

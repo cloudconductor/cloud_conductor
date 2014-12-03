@@ -19,7 +19,9 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
   has_many :applications, dependent: :destroy
-  has_many :stacks, dependent: :destroy
+  has_many :stacks
+
+  before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
   before_save :update_dns, if: -> { ip_address }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
@@ -139,42 +141,33 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  TIMEOUT = 1800
-  def destroy_stacks # rubocop:disable MethodLength
-    return true if stacks.empty?
+  private
 
-    cloud = stacks.first.cloud
-    platforms = stacks.reject(&:pending?).select(&:platform?).map(&:name)
-    optionals = stacks.reject(&:pending?).select(&:optional?).map(&:name)
+  TIMEOUT = 1800
+  def destroy_stacks
+    platforms = stacks.select(&:platform?)
+    optionals = stacks.select(&:optional?)
     stacks.delete_all
 
-    return if (platforms + optionals).empty?
-
     Thread.new do
-      optionals.each do |name|
-        cloud.client.destroy_stack(name)
-      end
+      optionals.each(&:destroy)
 
       begin
         Timeout.timeout(TIMEOUT) do
-          sleep 10 until optionals.all?(&stack_destroyed?(cloud))
+          sleep 10 until optionals.all?(&stack_destroyed?)
         end
       rescue Timeout::Error
         Log.warn "Exceeded timeout while destroying stacks #{optionals}"
       ensure
-        platforms.each do |name|
-          cloud.client.destroy_stack(name)
-        end
+        platforms.each(&:destroy)
       end
     end
   end
 
-  private
-
-  def stack_destroyed?(cloud)
-    lambda do |name|
+  def stack_destroyed?
+    lambda do |stack|
       begin
-        cloud.client.get_stack_status(name) == :DESTROY_COMPLETE
+        stack.cloud.client.get_stack_status(stack.name) == :DESTROY_COMPLETE
       rescue
         true
       end
