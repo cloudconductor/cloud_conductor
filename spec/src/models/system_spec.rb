@@ -500,7 +500,7 @@ describe System do
       @system.save!
       Thread.stub(:new).and_yield
 
-      @client = double(:client, destroy_stack: nil, get_stack_status: :DESTROY_COMPLETE)
+      @client = double(:client, destroy_stack: nil, get_stack_status: :DELETE_COMPLETE)
       @cloud_aws.stub(:client).and_return(@client)
 
       @system.stub(:sleep)
@@ -543,7 +543,7 @@ describe System do
     end
 
     it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
-      @client.stub(:get_stack_status).and_return(:DESTROY_PROGRESS)
+      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS)
 
       @system.stacks[0].should_receive(:destroy).ordered
       @system.stacks[2].should_receive(:destroy).ordered
@@ -554,7 +554,7 @@ describe System do
     end
 
     it 'wait and destroy platform pattern when destroyed all optional patterns' do
-      @client.stub(:get_stack_status).and_return(:DESTROY_PROGRESS, :DESTROY_COMPLETE)
+      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
 
       @system.stacks[0].should_receive(:destroy).ordered
       @system.stacks[2].should_receive(:destroy).ordered
@@ -565,7 +565,7 @@ describe System do
     end
 
     it 'wait and destroy platform pattern when a part of stacks are already deleted' do
-      @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DESTROY_PROGRESS, :DESTROY_COMPLETE)
+      @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
       @client.stub(:get_stack_status).with(@system.stacks[2].name).and_raise
 
       @system.stacks[0].should_receive(:destroy).ordered
