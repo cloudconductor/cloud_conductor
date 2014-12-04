@@ -94,6 +94,13 @@ class Stack < ActiveRecord::Base
     pattern && pattern.type == :optional
   end
 
+  def exist?
+    cloud.client.get_stack_status name
+    true
+  rescue
+    false
+  end
+
   %i(pending ready progress create_complete error).each do |method|
     define_method "#{method}?" do
       (attributes['status'] || :NIL).to_sym == method.upcase
