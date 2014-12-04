@@ -525,13 +525,13 @@ describe System do
 
     it 'destroy all stacks of system' do
       expect(@system.stacks).not_to be_empty
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
       expect(@system.stacks).to be_empty
     end
 
     it 'create other thread to destroy stacks use their dependencies' do
       Thread.should_receive(:new).and_yield
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
     end
 
     it 'destroy optional patterns before platform' do
@@ -539,7 +539,7 @@ describe System do
       @system.stacks[2].should_receive(:destroy).ordered
       @system.stacks[1].should_receive(:destroy).ordered
 
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
     end
 
     it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
@@ -550,7 +550,7 @@ describe System do
       @system.should_receive(:sleep).at_least(:once).ordered
       @system.stacks[1].should_receive(:destroy).ordered
 
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
     end
 
     it 'wait and destroy platform pattern when destroyed all optional patterns' do
@@ -561,7 +561,7 @@ describe System do
       @system.should_receive(:sleep).once.ordered
       @system.stacks[1].should_receive(:destroy).ordered
 
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
     end
 
     it 'wait and destroy platform pattern when a part of stacks are already deleted' do
@@ -573,14 +573,14 @@ describe System do
       @system.should_receive(:sleep).once.ordered
       @system.stacks[1].should_receive(:destroy).ordered
 
-      @system.send(:destroy_stacks)
+      @system.destroy_stacks
     end
 
     it 'ensure destroy platform when some error occurred while destroying optional' do
       @system.stacks[0].stub(:destroy).and_raise
       @system.stacks[1].should_receive(:destroy)
 
-      expect { @system.send(:destroy_stacks) }.to raise_error RuntimeError
+      expect { @system.destroy_stacks }.to raise_error RuntimeError
     end
   end
 end
