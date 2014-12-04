@@ -26,7 +26,7 @@ gem 'faraday'
 gem 'rb-readline'
 gem 'unicorn'
 
-gem 'cfn_converter', git: 'git@github.com:cloudconductor/cfn_converter.git',
+gem 'cfn_converter', git: 'https://github.com/cloudconductor/cfn_converter.git',
                      branch: 'develop'
 
 group :development do
