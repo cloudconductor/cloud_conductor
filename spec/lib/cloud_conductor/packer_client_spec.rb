@@ -297,10 +297,10 @@ module CloudConductor
       before do
         cloud_aws = FactoryGirl.create(:cloud_aws)
         cloud_openstack = FactoryGirl.create(:cloud_openstack)
-        operating_system = FactoryGirl.create(:operating_system)
+        FactoryGirl.create(:operating_system, id: 1)
 
-        cloud_aws.targets.build(operating_system: operating_system, source_image: 'dummy_image_aws')
-        cloud_openstack.targets.build(operating_system: operating_system, source_image: 'dummy_image_openstack')
+        cloud_aws.base_images.build
+        cloud_openstack.base_images.build(source_image: 'dummy_image_openstack')
 
         @clouds = [cloud_aws, cloud_openstack]
         @cloud_names = @clouds.map(&:name)
@@ -315,11 +315,11 @@ module CloudConductor
           }
         EOS
 
-        @targets = @clouds.map(&:targets).flatten
-        @targets.each do |target|
-          allow(target).to receive(:to_json).and_return('{ "dummy": "dummy_value" }')
+        @base_images = @clouds.map(&:base_images).flatten
+        @base_images.each do |base_image|
+          allow(base_image).to receive(:to_json).and_return('{ "dummy": "dummy_value" }')
         end
-        allow(Cloud).to receive_message_chain(:where, :map, :flatten).and_return @targets
+        allow(Cloud).to receive_message_chain(:where, :map, :flatten).and_return @base_images
 
         @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
         allow(Dir).to receive(:exist?).with(@directory).and_return true
@@ -343,9 +343,9 @@ module CloudConductor
         @client.send(:create_json, @cloud_names)
       end
 
-      it 'will generate json by Target#to_json' do
-        @targets.each do |target|
-          expect(target).to receive(:to_json)
+      it 'will generate json by BaseImage#to_json' do
+        @base_images.each do |base_image|
+          expect(base_image).to receive(:to_json)
         end
         @client.send(:create_json, @cloud_names)
       end

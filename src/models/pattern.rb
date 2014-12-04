@@ -149,7 +149,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     operating_system_names = operating_systems.map(&:name)
     CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, pattern_name do |results|
       results.each do |key, result|
-        cloud_name, os_name = key.split(Target::SPLITTER)
+        cloud_name, os_name = key.split(BaseImage::SPLITTER)
         cloud = Cloud.where(name: cloud_name).first
         operating_system = OperatingSystem.where(name: os_name).first
         image = images.where(cloud: cloud, operating_system: operating_system, role: role).first

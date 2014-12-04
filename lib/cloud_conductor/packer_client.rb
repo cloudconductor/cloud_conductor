@@ -38,7 +38,7 @@ module CloudConductor
 
     # rubocop:disable MethodLength, ParameterLists, LineLength
     def build(repository_url, revision, clouds, operating_systems, role, pattern_name)
-      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}#{Target::SPLITTER}#{operating_system}" }.join(',')
+      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}#{BaseImage::SPLITTER}#{operating_system}" }.join(',')
       packer_json_path = create_json clouds
 
       command = build_command repository_url, revision, only, role, pattern_name, packer_json_path
@@ -152,8 +152,8 @@ module CloudConductor
       template_json = JSON.load(open(@template_path)).with_indifferent_access
 
       File.open(json_path, 'w') do |f|
-        clouds.map(&:targets).flatten.each do |target|
-          template_json[:builders].push JSON.parse(target.to_json)
+        clouds.map(&:base_images).flatten.each do |base_image|
+          template_json[:builders].push JSON.parse(base_image.to_json)
         end
 
         f.write template_json.to_json
