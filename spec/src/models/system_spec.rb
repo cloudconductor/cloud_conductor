@@ -567,6 +567,17 @@ describe System do
       @system.destroy_stacks
     end
 
+    it 'wait and destroy platform pattern when failed to destroy all optional patterns' do
+      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
+
+      @system.stacks[0].should_receive(:destroy).ordered
+      @system.stacks[2].should_receive(:destroy).ordered
+      @system.should_receive(:sleep).once.ordered
+      @system.stacks[1].should_receive(:destroy).ordered
+
+      @system.destroy_stacks
+    end
+
     it 'wait and destroy platform pattern when a part of stacks are already deleted' do
       @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
       @system.stacks[2].stub(:exist?).and_return(false)

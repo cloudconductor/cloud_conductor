@@ -167,7 +167,7 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
   def stack_destroyed?
     lambda do |stack|
       return true unless stack.exist?
-      stack.cloud.client.get_stack_status(stack.name) == :DELETE_COMPLETE
+      [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
     end
   end
 end
