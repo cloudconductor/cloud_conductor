@@ -19,7 +19,7 @@ module Consul
       @stubs  = Faraday::Adapter::Test::Stubs.new
 
       original_method = Faraday.method(:new)
-      Faraday.stub(:new) do |*args, &block|
+      allow(Faraday).to receive(:new) do |*args, &block|
         original_method.call(*args) do |builder|
           builder.adapter :test, @stubs
           yield block if block
@@ -58,7 +58,7 @@ module Consul
 
       describe '#running?' do
         let(:should_yield) do
-          (-> {}).tap { |proc| proc.should_receive(:call) }
+          (-> {}).tap { |proc| expect(proc).to receive(:call) }
         end
 
         it 'will request http://host:8500/ ' do

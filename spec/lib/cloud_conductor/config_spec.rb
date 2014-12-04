@@ -15,12 +15,12 @@
 describe CloudConductor::Config do
   describe '.from_file' do
     it 'load config from specified ruby file' do
-      IO.stub(:read).and_return('')
+      allow(IO).to receive(:read).and_return('')
       CloudConductor::Config.from_file 'dummy.rb'
     end
 
     it 'update config with new values what are specified in ruby file' do
-      IO.stub(:read).and_return('log_file "/tmp/dummy"')
+      allow(IO).to receive(:read).and_return('log_file "/tmp/dummy"')
       CloudConductor::Config.from_file 'dummy.rb'
 
       expect(CloudConductor::Config.log_file).to eq('/tmp/dummy')

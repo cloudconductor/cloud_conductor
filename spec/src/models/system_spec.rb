@@ -27,8 +27,8 @@ describe System do
     @system.add_cloud(@cloud_aws, 1)
     @system.add_cloud(@cloud_openstack, 2)
 
-    CloudConductor::DNSClient.stub_chain(:new, :update)
-    CloudConductor::ZabbixClient.stub_chain(:new, :register)
+    allow(CloudConductor::DNSClient).to receive_message_chain(:new, :update)
+    allow(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)
 
     @system.applications << FactoryGirl.build(:application, system: @system)
     @system.applications << FactoryGirl.build(:application, system: @system)
@@ -141,17 +141,17 @@ describe System do
     before do
       @system.ip_address = '192.168.0.1'
       @serf_client = double(:serf_client)
-      @system.stub(:serf).and_return(@serf_client)
+      allow(@system).to receive(:serf).and_return(@serf_client)
     end
 
     it 'return error when system status is error' do
-      @system.stub('status').and_return(:ERROR)
+      allow(@system).to receive('status').and_return(:ERROR)
 
       expect(@system.chef_status).to eq(:ERROR)
     end
 
     it 'return pending when system status is progress' do
-      @system.stub('status').and_return(:PROGRESS)
+      allow(@system).to receive('status').and_return(:PROGRESS)
 
       expect(@system.chef_status).to eq(:PENDING)
     end
@@ -163,22 +163,22 @@ describe System do
     end
 
     it 'return error when serf query result is error' do
-      @system.stub('status').and_return(:CREATE_COMPLETE)
-      @serf_client.stub('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"ERROR\\\" }\" } }"])
+      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
+      allow(@serf_client).to receive('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"ERROR\\\" }\" } }"])
 
       expect(@system.chef_status).to eq(:ERROR)
     end
 
     it 'return success when system status is create complete and serf query result is not error' do
-      @system.stub('status').and_return(:CREATE_COMPLETE)
-      @serf_client.stub('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"INFO\\\" }\" } }"])
+      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
+      allow(@serf_client).to receive('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"INFO\\\" }\" } }"])
 
       expect(@system.chef_status).to eq(:SUCCESS)
     end
 
     it 'return error when some errors occurred while serf query' do
-      @system.stub('status').and_return(:CREATE_COMPLETE)
-      @serf_client.stub('call').and_return(ActiveRecord::RecordInvalid)
+      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
+      allow(@serf_client).to receive('call').and_return(ActiveRecord::RecordInvalid)
 
       expect(@system.chef_status).to eq(:ERROR)
     end
@@ -187,11 +187,11 @@ describe System do
   describe '#enable_monitoring(before_save)' do
     before do
       @zabbix_client = double('zabbix_client', register: nil)
-      CloudConductor::ZabbixClient.stub(:new).and_return(@zabbix_client)
+      allow(CloudConductor::ZabbixClient).to receive(:new).and_return(@zabbix_client)
     end
 
     it 'doesn\'t call ZabbixClient#register when monitoring_host is nil' do
-      @zabbix_client.should_not_receive(:register)
+      expect(@zabbix_client).not_to receive(:register)
 
       @system.monitoring_host = nil
       @system.save!
@@ -202,7 +202,7 @@ describe System do
 
       @system.monitoring_host = 'example.com'
 
-      @zabbix_client.should_receive(:register).with(@system)
+      expect(@zabbix_client).to receive(:register).with(@system)
 
       @system.save!
     end
@@ -213,7 +213,7 @@ describe System do
       @system.monitoring_host = 'example.com'
       @system.save!
 
-      @zabbix_client.should_not_receive(:register)
+      expect(@zabbix_client).not_to receive(:register)
       @system.monitoring_host = 'example.com'
       @system.save!
     end
@@ -222,12 +222,12 @@ describe System do
   describe '#update_dns(before_save)' do
     before do
       @dns_client = double('dns_client')
-      CloudConductor::DNSClient.stub(:new).and_return(@dns_client)
-      @dns_client.stub('update')
+      allow(CloudConductor::DNSClient).to receive(:new).and_return(@dns_client)
+      allow(@dns_client).to receive('update')
     end
 
     it 'doesn\'t call DNSClient#update when ip_address is nil' do
-      @dns_client.should_not_receive(:update)
+      expect(@dns_client).not_to receive(:update)
 
       @system.ip_address = nil
       @system.save!
@@ -235,7 +235,7 @@ describe System do
 
     it 'call Client#update when monitoring_host isn\'t nil' do
       @system.ip_address = '192.168.0.1'
-      @dns_client.should_receive(:update).with(@system.domain, @system.ip_address)
+      expect(@dns_client).to receive(:update).with(@system.domain, @system.ip_address)
 
       @system.save!
     end
@@ -366,7 +366,7 @@ describe System do
       @time = Time.now.strftime('%Y%m%d')
 
       @consul_client = double(:consul_client)
-      Consul::Client.stub_chain(:connect, :kv).and_return @consul_client
+      allow(Consul::Client).to receive_message_chain(:connect, :kv).and_return @consul_client
     end
 
     it 'will send payload to consul' do
@@ -389,7 +389,7 @@ describe System do
         }
       }
 
-      @consul_client.should_receive(:merge).with(anything, expected_payload)
+      expect(@consul_client).to receive(:merge).with(anything, expected_payload)
 
       @system.send_application_payload
     end
@@ -425,7 +425,7 @@ describe System do
         }
       }
 
-      @consul_client.should_receive(:merge).with(anything, expected_payload)
+      expect(@consul_client).to receive(:merge).with(anything, expected_payload)
 
       @system.send_application_payload
     end
@@ -434,12 +434,12 @@ describe System do
   describe '#deploy_applications' do
     before do
       @serf_client = double(:serf_client)
-      @system.stub(:serf).and_return(@serf_client)
+      allow(@system).to receive(:serf).and_return(@serf_client)
       @system.applications.clear
     end
 
     it 'will NOT request deploy event to serf when applications are empty' do
-      @serf_client.should_not_receive(:call)
+      expect(@serf_client).not_to receive(:call)
       @system.deploy_applications
     end
 
@@ -448,7 +448,7 @@ describe System do
       application.histories << FactoryGirl.create(:application_history, application: application)
       @system.applications << application
 
-      @serf_client.should_receive(:call).with('event', 'deploy')
+      expect(@serf_client).to receive(:call).with('event', 'deploy')
 
       @system.deploy_applications
     end
@@ -459,8 +459,8 @@ describe System do
       @system.id = 1
       @system.monitoring_host = 'example.com'
       @system.ip_address = '127.0.0.1'
-      @system.stub(:status).and_return(:PROGRESS)
-      @system.stub(:chef_status).and_return(:PENDING)
+      allow(@system).to receive(:status).and_return(:PROGRESS)
+      allow(@system).to receive(:chef_status).and_return(:PENDING)
     end
 
     it 'return attributes as json format' do
@@ -499,28 +499,28 @@ describe System do
 
       @system.save!
 
-      @system.stacks.each { |stack| stack.stub(:exist?).and_return true }
+      @system.stacks.each { |stack| allow(stack).to receive(:exist?).and_return true }
 
-      Thread.stub(:new).and_yield
+      allow(Thread).to receive(:new).and_yield
 
       @client = double(:client, destroy_stack: nil, get_stack_status: :DELETE_COMPLETE)
-      @cloud_aws.stub(:client).and_return(@client)
+      allow(@cloud_aws).to receive(:client).and_return(@client)
 
-      @system.stub(:sleep)
+      allow(@system).to receive(:sleep)
 
       original_timeout = Timeout.method(:timeout)
-      Timeout.stub(:timeout) do |_, &block|
+      allow(Timeout).to receive(:timeout) do |_, &block|
         original_timeout.call(0.1, &block)
       end
     end
 
     it 'call #destroy_stacks when before destroy' do
-      @system.should_receive(:destroy_stacks)
+      expect(@system).to receive(:destroy_stacks)
       @system.destroy
     end
 
     it 'doesn\'t call #destroy_stacks when stacks are empty' do
-      @system.should_not_receive(:destroy_stacks)
+      expect(@system).not_to receive(:destroy_stacks)
 
       @system.stacks.delete_all
       @system.destroy
@@ -533,66 +533,66 @@ describe System do
     end
 
     it 'create other thread to destroy stacks use their dependencies' do
-      Thread.should_receive(:new).and_yield
+      expect(Thread).to receive(:new).and_yield
       @system.destroy_stacks
     end
 
     it 'destroy optional patterns before platform' do
-      @system.stacks[0].should_receive(:destroy).ordered
-      @system.stacks[2].should_receive(:destroy).ordered
-      @system.stacks[1].should_receive(:destroy).ordered
+      expect(@system.stacks[0]).to receive(:destroy).ordered
+      expect(@system.stacks[2]).to receive(:destroy).ordered
+      expect(@system.stacks[1]).to receive(:destroy).ordered
 
       @system.destroy_stacks
     end
 
     it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
-      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS)
+      allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS)
 
-      @system.stacks[0].should_receive(:destroy).ordered
-      @system.stacks[2].should_receive(:destroy).ordered
-      @system.should_receive(:sleep).at_least(:once).ordered
-      @system.stacks[1].should_receive(:destroy).ordered
+      expect(@system.stacks[0]).to receive(:destroy).ordered
+      expect(@system.stacks[2]).to receive(:destroy).ordered
+      expect(@system).to receive(:sleep).at_least(:once).ordered
+      expect(@system.stacks[1]).to receive(:destroy).ordered
 
       @system.destroy_stacks
     end
 
     it 'wait and destroy platform pattern when destroyed all optional patterns' do
-      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
+      allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
 
-      @system.stacks[0].should_receive(:destroy).ordered
-      @system.stacks[2].should_receive(:destroy).ordered
-      @system.should_receive(:sleep).once.ordered
-      @system.stacks[1].should_receive(:destroy).ordered
+      expect(@system.stacks[0]).to receive(:destroy).ordered
+      expect(@system.stacks[2]).to receive(:destroy).ordered
+      expect(@system).to receive(:sleep).once.ordered
+      expect(@system.stacks[1]).to receive(:destroy).ordered
 
       @system.destroy_stacks
     end
 
     it 'wait and destroy platform pattern when failed to destroy all optional patterns' do
-      @client.stub(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
+      allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
 
-      @system.stacks[0].should_receive(:destroy).ordered
-      @system.stacks[2].should_receive(:destroy).ordered
-      @system.should_receive(:sleep).once.ordered
-      @system.stacks[1].should_receive(:destroy).ordered
+      expect(@system.stacks[0]).to receive(:destroy).ordered
+      expect(@system.stacks[2]).to receive(:destroy).ordered
+      expect(@system).to receive(:sleep).once.ordered
+      expect(@system.stacks[1]).to receive(:destroy).ordered
 
       @system.destroy_stacks
     end
 
     it 'wait and destroy platform pattern when a part of stacks are already deleted' do
-      @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
-      @system.stacks[2].stub(:exist?).and_return(false)
+      allow(@client).to receive(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
+      allow(@system.stacks[2]).to receive(:exist?).and_return(false)
 
-      @system.stacks[0].should_receive(:destroy).ordered
-      @system.stacks[2].should_receive(:destroy).ordered
-      @system.should_receive(:sleep).once.ordered
-      @system.stacks[1].should_receive(:destroy).ordered
+      expect(@system.stacks[0]).to receive(:destroy).ordered
+      expect(@system.stacks[2]).to receive(:destroy).ordered
+      expect(@system).to receive(:sleep).once.ordered
+      expect(@system.stacks[1]).to receive(:destroy).ordered
 
       @system.destroy_stacks
     end
 
     it 'ensure destroy platform when some error occurred while destroying optional' do
-      @system.stacks[0].stub(:destroy).and_raise
-      @system.stacks[1].should_receive(:destroy)
+      allow(@system.stacks[0]).to receive(:destroy).and_raise
+      expect(@system.stacks[1]).to receive(:destroy)
 
       expect { @system.destroy_stacks }.to raise_error RuntimeError
     end

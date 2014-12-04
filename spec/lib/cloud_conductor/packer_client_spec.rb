@@ -50,14 +50,14 @@ module CloudConductor
     describe '#build' do
       before do
         @clouds = %w(aws openstack)
-        @client.stub(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
-        @client.stub(:systemu).and_return([double('status', 'success?' => true), '', ''])
-        FileUtils.stub(:rm)
+        allow(@client).to receive(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        allow(@client).to receive(:systemu).and_return([double('status', 'success?' => true), '', ''])
+        allow(FileUtils).to receive(:rm)
       end
 
       it 'will call #create_json to create json file' do
-        Thread.stub(:new)
-        @client.should_receive(:create_json).with(@clouds)
+        allow(Thread).to receive(:new)
+        expect(@client).to receive(:create_json).with(@clouds)
         @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name')
       end
 
@@ -71,7 +71,7 @@ module CloudConductor
       end
 
       it 'remove temporary packer json when finished block without error' do
-        FileUtils.should_receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
         @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name')
@@ -79,7 +79,7 @@ module CloudConductor
       end
 
       it 'remove temporary packer json when some errors occurred while yielding block' do
-        FileUtils.should_receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
         @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name') do
@@ -295,7 +295,7 @@ module CloudConductor
 
         @clouds = [cloud_aws, cloud_openstack]
         @cloud_names = @clouds.map(&:name)
-        @client.stub(:open).and_return <<-EOS
+        allow(@client).to receive(:open).and_return <<-EOS
           {
             "variables": {
             },
@@ -308,18 +308,18 @@ module CloudConductor
 
         @targets = @clouds.map(&:targets).flatten
         @targets.each do |target|
-          target.stub(:to_json).and_return('{ "dummy": "dummy_value" }')
+          allow(target).to receive(:to_json).and_return('{ "dummy": "dummy_value" }')
         end
-        Cloud.stub_chain(:where, :map, :flatten).and_return @targets
+        allow(Cloud).to receive_message_chain(:where, :map, :flatten).and_return @targets
 
         @directory = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
-        Dir.stub(:exist?).with(@directory).and_return true
-        File.stub(:open).and_yield double('file', write: nil)
+        allow(Dir).to receive(:exist?).with(@directory).and_return true
+        allow(File).to receive_message_chain(:open).and_yield double('file', write: nil)
       end
 
       it 'create directory to store packer.json if directory does not exist' do
-        Dir.stub(:exist?).with(@directory).and_return false
-        FileUtils.should_receive(:mkdir_p).with(@directory)
+        allow(Dir).to receive(:exist?).with(@directory).and_return false
+        expect(FileUtils).to receive(:mkdir_p).with(@directory)
         @client.send(:create_json, @cloud_names)
       end
 
@@ -330,20 +330,20 @@ module CloudConductor
       end
 
       it 'read json template from @template_path' do
-        @client.should_receive(:open).with('/tmp/packer.json')
+        expect(@client).to receive(:open).with('/tmp/packer.json')
         @client.send(:create_json, @cloud_names)
       end
 
       it 'will generate json by Target#to_json' do
         @targets.each do |target|
-          target.should_receive(:to_json)
+          expect(target).to receive(:to_json)
         end
         @client.send(:create_json, @cloud_names)
       end
 
       it 'write valid json to temporary packer.json' do
         doubled_file = double('file')
-        doubled_file.stub(:write) do |content|
+        allow(doubled_file).to receive(:write) do |content|
           json = JSON.load(content).with_indifferent_access
           expect(json[:builders].size).to eq(@clouds.size)
 
@@ -351,7 +351,7 @@ module CloudConductor
             expect(builder).to eq('dummy' => 'dummy_value')
           end
         end
-        File.stub(:open).and_yield doubled_file
+        allow(File).to receive(:open).and_yield doubled_file
 
         @client.send(:create_json, @cloud_names)
       end

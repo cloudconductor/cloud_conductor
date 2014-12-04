@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'bundler'
+
 Bundler.require(:default)
 Bundler.require((ENV['RACK_ENV'] || :development).to_sym)
 
@@ -24,13 +25,6 @@ autoload_paths = ['../models', '../controllers', '../../lib', '../helpers']
 autoload_paths.each do |path|
   ActiveSupport::Dependencies.autoload_paths << File.expand_path(path, File.dirname(__FILE__))
 end
-
-require 'sinatra'
-require 'sinatra/json'
-require 'sinatra/reloader'
-require 'sinatra/namespace'
-
-require 'action_controller'
 
 # Load config
 CloudConductor::Config.from_file File.expand_path('../../config/config.rb', File.dirname(__FILE__))

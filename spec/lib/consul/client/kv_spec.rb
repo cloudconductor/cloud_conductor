@@ -19,7 +19,7 @@ module Consul
         @stubs  = Faraday::Adapter::Test::Stubs.new
 
         original_method = Faraday.method(:new)
-        Faraday.stub(:new) do |*args, &block|
+        allow(Faraday).to receive(:new) do |*args, &block|
           original_method.call(*args) do |builder|
             builder.adapter :test, @stubs
             yield block if block
@@ -64,7 +64,7 @@ module Consul
 
       describe '#put' do
         let(:should_yield) do
-          (-> {}).tap { |proc| proc.should_receive(:call) }
+          (-> {}).tap { |proc| expect(proc).to receive(:call) }
         end
 
         it 'will request PUT /v1/kv with key' do
@@ -89,33 +89,33 @@ module Consul
 
       describe '#merge' do
         before do
-          @client.stub(:get)
-          @client.stub(:put)
+          allow(@client).to receive(:get)
+          allow(@client).to receive(:put)
         end
 
         it 'will get value' do
-          @client.should_receive(:get).with('dummy')
+          expect(@client).to receive(:get).with('dummy')
 
           @client.merge 'dummy', key: 'value'
         end
 
         it 'overwrite value if previous value isn\'t hash' do
-          @client.stub(:get).and_return('value')
-          @client.should_receive(:put).with('dummy', key: 'value')
+          allow(@client).to receive(:get).and_return('value')
+          expect(@client).to receive(:put).with('dummy', key: 'value')
 
           @client.merge 'dummy', key: 'value'
         end
 
         it 'merge both hashes if previous value is hash' do
-          @client.stub(:get).and_return(key: 'previous', key2: 'previous2')
-          @client.should_receive(:put).with('dummy', key: 'value', key2: 'previous2')
+          allow(@client).to receive(:get).and_return(key: 'previous', key2: 'previous2')
+          expect(@client).to receive(:put).with('dummy', key: 'value', key2: 'previous2')
 
           @client.merge 'dummy', key: 'value'
         end
 
         it 'merge deep hashes if previous value has hierarchy hash' do
-          @client.stub(:get).and_return(key: 'previous', key2: { subkey: 'previous2' })
-          @client.should_receive(:put).with('dummy', key: 'value', key2: { subkey: 'previous2', subkey2: 'value' })
+          allow(@client).to receive(:get).and_return(key: 'previous', key2: { subkey: 'previous2' })
+          expect(@client).to receive(:put).with('dummy', key: 'value', key2: { subkey: 'previous2', subkey2: 'value' })
 
           @client.merge 'dummy', key: 'value', key2: { subkey2: 'value' }
         end

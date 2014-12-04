@@ -41,17 +41,17 @@ module CloudConductor
         @client = Client.new @cloud
 
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-        @pattern.stub(:clone_repository).and_yield(path)
+        allow(@pattern).to receive(:clone_repository).and_yield(path)
         @pattern.images << FactoryGirl.create(:image, cloud: @cloud, operating_system: @operating_system)
 
         @template_content = '{ "dummy": "dummy_value" }'
-        @client.stub_chain(:open, :read).and_return(@template_content)
+        allow(@client).to receive_message_chain(:open, :read).and_return(@template_content)
 
-        Adapters::AWSAdapter.any_instance.stub(:create_stack)
+        allow_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
           .with(kind_of(String), anything, kind_of(Hash), kind_of(Hash))
 
         @client.create_stack @name, @pattern, @parameters
@@ -59,7 +59,7 @@ module CloudConductor
 
       it 'will clone repository' do
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-        @pattern.should_receive(:clone_repository).and_yield(path)
+        expect(@pattern).to receive(:clone_repository).and_yield(path)
 
         @client.create_stack @name, @pattern, @parameters
       end
@@ -67,9 +67,9 @@ module CloudConductor
       it 'will load template.json in repository' do
         path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}/template\.json}
 
-        @client.should_receive(:open).with(path_pattern) do
+        expect(@client).to receive(:open).with(path_pattern) do
           double('file').tap do |stub|
-            stub.should_receive(:read).and_return('{}')
+            expect(stub).to receive(:read).and_return('{}')
           end
         end
 
@@ -83,10 +83,10 @@ module CloudConductor
       end
 
       it 'remove operating_system from parameter-hash' do
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, hash_excluding(:operating_system), anything)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, hash_excluding(:operating_system), anything)
 
         client = Client.new @cloud
-        client.stub_chain(:open, :read).and_return(@template_content)
+        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
         client.create_stack @name, @pattern, @parameters
       end
 
@@ -99,10 +99,10 @@ module CloudConductor
           end
         end
 
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
 
         client = Client.new @cloud
-        client.stub_chain(:open, :read).and_return(@template_content)
+        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
         client.create_stack @name, @pattern, @parameters
       end
 
@@ -112,15 +112,15 @@ module CloudConductor
         image.save!
 
         expected_parameters = hash_including('webapdbImageId' => image.image)
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
 
         client = Client.new @cloud
-        client.stub_chain(:open, :read).and_return(@template_content)
+        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
         client.create_stack @name, @pattern, @parameters
       end
 
       it 'will call create_stack with content of template.json' do
-        Adapters::AWSAdapter.any_instance.should_receive(:create_stack)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
           .with(anything, @template_content, anything, anything)
 
         @client.create_stack @name, @pattern, @parameters
@@ -131,7 +131,7 @@ module CloudConductor
       it 'call adapter#get_stack_status with same arguments' do
         name = 'stack_name'
 
-        Adapters::AWSAdapter.any_instance.should_receive(:get_stack_status)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:get_stack_status)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
@@ -143,7 +143,7 @@ module CloudConductor
       it 'call adapter#get_outputs with same arguments' do
         name = 'stack_name'
 
-        Adapters::AWSAdapter.any_instance.should_receive(:get_outputs)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:get_outputs)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)
@@ -155,7 +155,7 @@ module CloudConductor
       it 'call adapter#destroy_stack with same arguments' do
         name = 'stack_name'
 
-        Adapters::AWSAdapter.any_instance.should_receive(:destroy_stack)
+        expect_any_instance_of(Adapters::AWSAdapter).to receive(:destroy_stack)
           .with(kind_of(String), kind_of(Hash))
 
         client = Client.new FactoryGirl.create(:cloud_aws)

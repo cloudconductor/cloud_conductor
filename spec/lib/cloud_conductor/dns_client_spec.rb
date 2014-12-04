@@ -16,7 +16,7 @@ module CloudConductor
   describe DNSClient do
     let(:dns_client) do
       config = { service: 'route53', access_key: 'access_key', secret_key: 'secret_key', ttl: 60 }
-      CloudConductor::Config.stub_chain(:dns, :configuration).and_return(config)
+      allow(CloudConductor::Config).to receive_message_chain(:dns, :configuration).and_return(config)
       DNSClient.new
     end
 
@@ -26,7 +26,7 @@ module CloudConductor
       end
       it 'store Bind9Client in @client' do
         config = { service: 'bind9', key_file: '/etc/testkey', server: 'test_dnsserver', ttl: 100 }
-        CloudConductor::Config.stub_chain(:dns, :configuration).and_return(config)
+        allow(CloudConductor::Config).to receive_message_chain(:dns, :configuration).and_return(config)
         new_client = DNSClient.new
         expect(new_client.instance_variable_get(:@client)).to be_instance_of Bind9Client
       end
@@ -52,7 +52,7 @@ module CloudConductor
 
     describe '#update' do
       it 'update record' do
-        Open3.stub(:capture3).and_return('out1', 'err1', 'nsupdate1')
+        allow(Open3).to receive(:capture3).and_return('out1', 'err1', 'nsupdate1')
         expect(Open3).to receive(:capture3).with(
           'sudo /usr/bin/nsupdate -k /etc/testkey',
           stdin_data: "server test_dnsserver\n" \
@@ -112,7 +112,7 @@ module CloudConductor
         expect(result).to be_truthy
       end
       it 'should success to create Route53 resource record set when receive non-existent record name' do
-        route53.stub(:sleep)
+        allow(route53).to receive(:sleep)
         result = route53.update('www2.example.com', '127.0.2.1')
         expect(result).to be_truthy
       end
