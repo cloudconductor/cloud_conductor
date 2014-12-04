@@ -498,6 +498,9 @@ describe System do
       @system.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, system: @system, pattern: pattern3, cloud: @cloud_aws)
 
       @system.save!
+
+      @system.stacks.each { |stack| stack.stub(:exist?).and_return true }
+
       Thread.stub(:new).and_yield
 
       @client = double(:client, destroy_stack: nil, get_stack_status: :DELETE_COMPLETE)
@@ -566,7 +569,7 @@ describe System do
 
     it 'wait and destroy platform pattern when a part of stacks are already deleted' do
       @client.stub(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
-      @client.stub(:get_stack_status).with(@system.stacks[2].name).and_raise
+      @system.stacks[2].stub(:exist?).and_return(false)
 
       @system.stacks[0].should_receive(:destroy).ordered
       @system.stacks[2].should_receive(:destroy).ordered
