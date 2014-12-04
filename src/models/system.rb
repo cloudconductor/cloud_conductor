@@ -141,8 +141,6 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  private
-
   TIMEOUT = 1800
   def destroy_stacks
     platforms = stacks.select(&:platform?)
@@ -163,6 +161,8 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
       end
     end
   end
+
+  private
 
   def stack_destroyed?
     lambda do |stack|

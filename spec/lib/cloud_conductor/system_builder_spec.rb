@@ -226,6 +226,19 @@ module CloudConductor
     end
 
     describe '#reset_stacks' do
+      before do
+        @system.stub(:destroy_stacks) do
+          @system.stacks.destroy_all
+        end
+      end
+
+      it 'destroy previous stacks and re-create stacks with PENDING status' do
+        expect(Stack.count).to eq(2)
+        @builder.send(:reset_stacks)
+        expect(Stack.count).to eq(2)
+        expect(Stack.all.all?(&:pending?)).to be_truthy
+      end
+
       it 'reset ip_address, monitoring_host and template_parameters in system' do
         @system.ip_address = '127.0.0.1'
         @system.monitoring_host = 'example.com'
