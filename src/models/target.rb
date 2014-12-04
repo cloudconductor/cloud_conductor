@@ -24,6 +24,7 @@ class Target < ActiveRecord::Base
 
   cattr_accessor :images
 
+  SPLITTER = '----'
   ALLOW_RECEIVERS = %w(target cloud operating_system)
   IMAGES_FILE_PATH = File.expand_path('../../config/images.yml', File.dirname(__FILE__))
 
@@ -35,7 +36,7 @@ class Target < ActiveRecord::Base
   end
 
   def name
-    "#{cloud.name}-#{operating_system.name}"
+    "#{cloud.name}#{SPLITTER}#{operating_system.name}"
   end
 
   def to_json

@@ -390,11 +390,11 @@ describe Pattern do
 
       it 'update status of all images when call block' do
         results = {
-          "#{@cloud_aws.name}-#{@operating_systems.first.name}" => {
+          "#{@cloud_aws.name}#{Target::SPLITTER}#{@operating_systems.first.name}" => {
             status: :SUCCESS,
             image: 'ami-12345678'
           },
-          "#{@cloud_openstack.name}-#{@operating_systems.first.name}" => {
+          "#{@cloud_openstack.name}#{Target::SPLITTER}#{@operating_systems.first.name}" => {
             status: :ERROR,
             message: 'dummy_message'
           }

@@ -50,7 +50,10 @@ module CloudConductor
     describe '#build' do
       before do
         @clouds = %w(aws openstack)
+        @operating_systems = %w(centos)
+
         allow(@client).to receive(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        allow(@client).to receive(:build_command)
         allow(@client).to receive(:systemu).and_return([double('status', 'success?' => true), '', ''])
         allow(FileUtils).to receive(:rm)
       end
@@ -58,14 +61,20 @@ module CloudConductor
       it 'will call #create_json to create json file' do
         allow(Thread).to receive(:new)
         expect(@client).to receive(:create_json).with(@clouds)
-        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
+      end
+
+      it 'will call #build_command to create packer command' do
+        allow(Thread).to receive(:new)
+        expect(@client).to receive(:build_command).with('http://example.com', 'dummy_revision', 'aws----centos,openstack----centos', 'nginx', 'dummy_pattern_name', '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
       end
 
       it 'will yield block' do
         threads = Thread.list
 
         expect do |b|
-          @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name', &b)
+          @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', &b)
           (Thread.list - threads).each(&:join)
         end.to yield_control
       end
@@ -74,7 +83,7 @@ module CloudConductor
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
-        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
         (Thread.list - threads).each(&:join)
       end
 
@@ -82,7 +91,7 @@ module CloudConductor
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
-        @client.build('http://example.com', 'dummy_revision', @clouds, [], 'nginx', 'dummy_pattern_name') do
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name') do
           fail
         end
 
