@@ -567,8 +567,8 @@ describe System do
       @system.destroy_stacks
     end
 
-    it 'wait and destroy platform pattern when failed to destroy all optional patterns' do
-      allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
+    it 'wait and destroy platform pattern when failed to destroyed all optional patterns' do
+      allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_FAILED)
 
       expect(@system.stacks[0]).to receive(:destroy).ordered
       expect(@system.stacks[2]).to receive(:destroy).ordered
