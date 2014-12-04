@@ -334,4 +334,16 @@ describe Stack do
       expect(@stack.optional?).to be_falsey
     end
   end
+
+  describe '#exist?' do
+    it 'return true when target stack has been exist' do
+      @client.stub(:get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
+      expect(@stack.exist?).to be_truthy
+    end
+
+    it 'return false when target stack has not been exist' do
+      @client.stub(:get_stack_status).with(@stack.name).and_raise
+      expect(@stack.exist?).to be_falsey
+    end
+  end
 end

@@ -143,7 +143,9 @@ module CloudConductor
       @system.ip_address = nil
       @system.monitoring_host = nil
       @system.template_parameters = '{}'
-      @system.stacks = @system.stacks.reload.map(&:dup)
+      stacks = @system.stacks.map(&:dup)
+      @system.destroy_stacks
+      @system.stacks = stacks
 
       @system.save!
     end

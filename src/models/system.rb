@@ -15,11 +15,13 @@
 require 'sinatra/activerecord'
 require 'open-uri'
 
-class System < ActiveRecord::Base
+class System < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
   has_many :applications, dependent: :destroy
-  has_many :stacks, dependent: :destroy
+  has_many :stacks
+
+  before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
   before_save :update_dns, if: -> { ip_address }
   before_save :enable_monitoring, if: -> { monitoring_host_changed? }
@@ -136,6 +138,36 @@ class System < ActiveRecord::Base
     applications.map(&:latest).compact.reject(&:deployed?).each do |history|
       history.status = :deployed
       history.save!
+    end
+  end
+
+  TIMEOUT = 1800
+  def destroy_stacks
+    platforms = stacks.select(&:platform?)
+    optionals = stacks.select(&:optional?)
+    stacks.delete_all
+
+    Thread.new do
+      begin
+        optionals.each(&:destroy)
+
+        Timeout.timeout(TIMEOUT) do
+          sleep 10 until optionals.all?(&stack_destroyed?)
+        end
+      rescue Timeout::Error
+        Log.warn "Exceeded timeout while destroying stacks #{optionals}"
+      ensure
+        platforms.each(&:destroy)
+      end
+    end
+  end
+
+  private
+
+  def stack_destroyed?
+    lambda do |stack|
+      return true unless stack.exist?
+      [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
     end
   end
 end
