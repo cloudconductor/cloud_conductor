@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'bundler'
+require 'action_controller'
 
 Bundler.require(:default)
 Bundler.require((ENV['RACK_ENV'] || :development).to_sym)
