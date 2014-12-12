@@ -112,7 +112,6 @@ module CloudConductor
           }
 
           allow(::Fog::Orchestration).to receive_message_chain(:new, :list_stacks).and_return(@stacks)
-
         end
 
         it 'execute without exception' do
