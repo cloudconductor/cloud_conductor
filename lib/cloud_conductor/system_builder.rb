@@ -118,6 +118,7 @@ module CloudConductor
     def finish_system
       payload = {
         cloudconductor: {
+          seed: rand(0xFFFFFFFF),
           patterns: {
           }
         }

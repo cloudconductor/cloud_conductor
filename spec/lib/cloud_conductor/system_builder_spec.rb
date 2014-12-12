@@ -185,6 +185,16 @@ module CloudConductor
         allow(@builder).to receive(:sleep)
       end
 
+      it 'will request configure event with random seed' do
+        expected_payload = satisfy do |payload|
+          expect(payload[:cloudconductor][:seed]).to be_is_a(Integer)
+        end
+
+        expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
+
+        @builder.send(:finish_system)
+      end
+
       it 'will request configure event to serf with payload' do
         expected_payload = satisfy do |payload|
           expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
