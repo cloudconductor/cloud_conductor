@@ -112,6 +112,12 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     Serf::Client.new host: ip_address, options: options
   end
 
+  def consul(options = {})
+    fail 'ip_address does not specified' unless ip_address
+
+    Consul::Client.connect(options.merge(host: ip_address))
+  end
+
   def send_application_payload
     return if applications.empty?
 

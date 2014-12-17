@@ -360,6 +360,18 @@ describe System do
     end
   end
 
+  describe '#consul' do
+    it 'will fail when ip_address does not specified' do
+      @system.ip_address = nil
+      expect { @system.consul }.to raise_error('ip_address does not specified')
+    end
+
+    it 'return serf client when ip_address already specified' do
+      @system.ip_address = '127.0.0.1'
+      expect(@system.consul).to be_is_a Consul::Client::Client
+    end
+  end
+
   describe '#send_application_payload' do
     before do
       @system.applications.clear
