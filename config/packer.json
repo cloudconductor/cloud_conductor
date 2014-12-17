@@ -22,7 +22,7 @@
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
         "if [ -f ./bin/init.sh ]; then",
-        "  sudo SERF_TAG_ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} ./bin/init.sh",
+        "  sudo SERF_TAG_ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} ./bin/init.sh || cat {{user `cloudconductor_root`}}/logs/event-handler.log",
         "fi",
 
         "sync"
