@@ -56,6 +56,12 @@ module Consul
         end
       end
 
+      describe '#event' do
+        it 'return Event instance' do
+          expect(@client.event).to be_is_a Consul::Client::Event
+        end
+      end
+
       describe '#running?' do
         let(:should_yield) do
           (-> {}).tap { |proc| expect(proc).to receive(:call) }

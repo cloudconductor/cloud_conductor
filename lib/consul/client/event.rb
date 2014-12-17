@@ -12,41 +12,30 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'consul/client/kv'
-require 'consul/client/event'
+require_relative 'event_results'
 
 module Consul
   module Client
-    def self.connect(options = {})
-      Consul::Client::Client.new options
-    end
-
-    class Client
-      DEFAULT_OPTIONS = {
-        port: 8500
-      }
-
+    class Event
       def initialize(options = {})
-        fail 'Consul::Client require host option' unless options[:host]
-        @options = DEFAULT_OPTIONS.merge(options)
-      end
+        @options = options
 
-      def kv
-        Consul::Client::KV.new @options
-      end
-
-      def event
-        Consul::Client::Event.new @options
-      end
-
-      def running?
-        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/')
+        url = URI::HTTP.build(host: options[:host], port: options[:port], path: '/v1')
         @faraday = Faraday.new url
+      end
 
-        response = @faraday.get('/')
-        response.success?
-      rescue
-        false
+      def fire(event, _payload = {})
+        response = @faraday.put("event/#{event}")
+        return nil unless response.success?
+
+        JSON.parse(response.body).with_indifferent_access
+      end
+
+      def get(id)
+        response = @faraday.get("kv/event/#{id}?recurse")
+        return nil unless response.success?
+
+        EventResults.parse(response.body)
       end
     end
   end
