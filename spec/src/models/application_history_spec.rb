@@ -35,6 +35,13 @@ describe ApplicationHistory do
     end
   end
 
+  describe '#status' do
+    it 'returns application history status as symbol' do
+      @history.status = 'sample'
+      expect(@history.status).to eq(:sample)
+    end
+  end
+
   describe '#save' do
     it 'create with valid parameters' do
       count = ApplicationHistory.count
