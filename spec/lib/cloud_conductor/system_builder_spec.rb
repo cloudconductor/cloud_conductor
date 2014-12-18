@@ -187,7 +187,7 @@ module CloudConductor
 
       it 'will request configure event with random seed' do
         expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:seed]).to be_is_a(Integer)
+          expect(payload[:cloudconductor][:seed]).to match(/[0-9a-f]{32}/)
         end
 
         expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
