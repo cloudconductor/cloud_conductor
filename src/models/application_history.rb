@@ -18,7 +18,7 @@ class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
 
   before_save :allocate_version, unless: -> { version }
-  before_save :serf_request, if: -> { !deployed? && application.system.ip_address }
+  before_save :consul_request, if: -> { !deployed? && application.system.ip_address }
 
   belongs_to :application
 
@@ -71,7 +71,7 @@ class ApplicationHistory < ActiveRecord::Base
     payload
   end
 
-  def serf_request
+  def consul_request
     payload = {
       cloudconductor: {
         applications: {
@@ -81,7 +81,9 @@ class ApplicationHistory < ActiveRecord::Base
 
     payload[:cloudconductor][:applications][application.name] = application_payload
 
-    application.system.serf.call('event', 'deploy', payload)
+    consul = application.system.consul
+    event_id = consul.event.fire(:deploy, payload)
+    Timeout.timeout(100) { consul.event.get(event_id).finished? }
 
     self.status = :deployed
   end

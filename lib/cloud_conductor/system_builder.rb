@@ -96,10 +96,6 @@ module CloudConductor
 
           consul = Consul::Client.connect host: ip_address
           next unless consul.running?
-
-          serf = Serf::Client.new host: ip_address
-          status, _results = serf.call('info')
-          next unless status.success?
         end
 
         break
@@ -116,26 +112,18 @@ module CloudConductor
     end
 
     def finish_system
-      payload = {
-        cloudconductor: {
-          patterns: {
-          }
-        }
-      }
+      event_id = @system.consul.event.fire(:configure, configure_payload(@system))
+      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
 
-      @system.stacks.created.each do |stack|
-        payload[:cloudconductor][:patterns].deep_merge! stack.payload
+      event_id = @system.consul.event.fire(:restore, application_payload(@system))
+      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
+
+      event_id = @system.consul.event.fire(:deploy, application_payload(@system))
+      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
+      @system.applications.map(&:latest).compact.each do |history|
+        history.status = :deployed
+        history.save!
       end
-      @system.serf.call('event', 'configure', payload)
-
-      sleep 3
-      @system.send_application_payload
-
-      sleep 3
-      @system.serf.call('event', 'restore', {})
-
-      sleep 3
-      @system.deploy_applications
     end
 
     def reset_stacks
@@ -148,6 +136,38 @@ module CloudConductor
       @system.stacks = stacks
 
       @system.save!
+    end
+
+    def configure_payload(system)
+      payload = {
+        cloudconductor: {
+          patterns: {
+          }
+        }
+      }
+
+      system.stacks.created.each do |stack|
+        payload[:cloudconductor][:patterns].deep_merge! stack.payload
+      end
+
+      payload
+    end
+
+    def application_payload(system)
+      return {} if system.applications.empty?
+
+      payload = {
+        cloudconductor: {
+          applications: {
+          }
+        }
+      }
+
+      system.applications.map(&:latest).compact.each do |history|
+        payload[:cloudconductor][:applications][history.application.name] = history.application_payload
+      end
+
+      payload
     end
   end
 end

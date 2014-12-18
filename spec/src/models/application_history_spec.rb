@@ -24,8 +24,10 @@ describe ApplicationHistory do
     @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
-    @serf_client = double('serf_client', call: nil)
-    allow(@application.system).to receive(:serf).and_return(@serf_client)
+    @event = double(:event, fire: 1)
+    @consul_client = double(:consul_client, event: @event)
+    allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
+    allow(@application.system).to receive(:consul).and_return(@consul_client)
     @today = Date.today.strftime('%Y%m%d')
   end
 
@@ -75,28 +77,28 @@ describe ApplicationHistory do
     end
 
     describe 'before_save' do
-      it 'will call serf_request if system already created' do
-        expect(@history).to receive(:serf_request)
+      it 'will call consul_request if system already created' do
+        expect(@history).to receive(:consul_request)
         @history.save!
       end
 
-      it 'will not call serf_request if system hasn\'t created' do
+      it 'will not call consul_request if system hasn\'t created' do
         @history.application.system.ip_address = nil
 
-        expect(@history).not_to receive(:serf_request)
+        expect(@history).not_to receive(:consul_request)
         @history.save!
       end
 
-      it 'will not call serf_request if already deployed' do
+      it 'will not call consul_request if already deployed' do
         @history.status = :deployed
 
-        expect(@history).not_to receive(:serf_request)
+        expect(@history).not_to receive(:consul_request)
         @history.save!
       end
     end
 
-    describe '#serf_request' do
-      it 'change status when call serf_request' do
+    describe '#consul_request' do
+      it 'change status when call consul_request' do
         expect(@history.status).to eq(:not_yet)
 
         @history.save!
@@ -104,7 +106,7 @@ describe ApplicationHistory do
         expect(@history.status).to eq(:deployed)
       end
 
-      it 'contains domain, type, version, protocol, url and parameters in payload when request to serf' do
+      it 'contains domain, type, version, protocol, url and parameters in payload when request to consul' do
         @history.application.name = 'dummy'
 
         payload = {
@@ -122,7 +124,7 @@ describe ApplicationHistory do
           }
         }
 
-        expect(@serf_client).to receive(:call).with('event', 'deploy', payload)
+        expect(@event).to receive(:fire).with(:deploy, payload)
         @history.save!
       end
 
@@ -140,7 +142,7 @@ describe ApplicationHistory do
           )
         end
 
-        expect(@serf_client).to receive(:call).with('event', 'deploy', expected_payload)
+        expect(@event).to receive(:fire).with(:deploy, expected_payload)
         @history.save!
       end
     end

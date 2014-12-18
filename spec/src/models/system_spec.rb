@@ -39,12 +39,12 @@ describe System do
     @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
 
     Stack.skip_callback :destroy, :before, :destroy_stack
-    ApplicationHistory.skip_callback :save, :before, :serf_request
+    ApplicationHistory.skip_callback :save, :before, :consul_request
   end
 
   after do
     Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
-    ApplicationHistory.set_callback :save, :before, :serf_request, if: -> { !deployed? && application.system.ip_address }
+    ApplicationHistory.set_callback :save, :before, :consul_request, if: -> { !deployed? && application.system.ip_address }
   end
 
   it 'create with valid parameters' do
@@ -140,8 +140,12 @@ describe System do
   describe '#chef_status' do
     before do
       @system.ip_address = '192.168.0.1'
-      @serf_client = double(:serf_client)
-      allow(@system).to receive(:serf).and_return(@serf_client)
+
+      @event = double(:event, fire: 1)
+      @consul_client = double(:consul_client, event: @event)
+      allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
+      allow(@event).to receive_message_chain(:get, :success?).and_return(true)
+      allow(@system).to receive(:consul).and_return(@consul_client)
     end
 
     it 'return error when system status is error' do
@@ -162,23 +166,22 @@ describe System do
       expect(@system.chef_status).to eq(:PENDING)
     end
 
-    it 'return error when serf query result is error' do
+    it 'return error when consul fire result is error' do
       allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@serf_client).to receive('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"ERROR\\\" }\" } }"])
+      allow(@event).to receive_message_chain(:get, :success?).and_return(false)
 
       expect(@system.chef_status).to eq(:ERROR)
     end
 
-    it 'return success when system status is create complete and serf query result is not error' do
+    it 'return success when system status is create complete and consul fire result is success' do
       allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@serf_client).to receive('call').and_return(['dummy_results', "{ \"Responses\": { \"dummy_result\": \"{ \\\"status\\\": \\\"INFO\\\" }\" } }"])
 
       expect(@system.chef_status).to eq(:SUCCESS)
     end
 
-    it 'return error when some errors occurred while serf query' do
+    it 'return error when some errors occurred' do
       allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@serf_client).to receive('call').and_return(ActiveRecord::RecordInvalid)
+      allow(@event).to receive(:fire).and_raise(StandardError)
 
       expect(@system.chef_status).to eq(:ERROR)
     end
@@ -348,121 +351,15 @@ describe System do
     end
   end
 
-  describe '#serf' do
-    it 'will fail when ip_address does not specified' do
-      @system.ip_address = nil
-      expect { @system.serf }.to raise_error('ip_address does not specified')
-    end
-
-    it 'return serf client when ip_address already specified' do
-      @system.ip_address = '127.0.0.1'
-      expect(@system.serf).to be_is_a Serf::Client
-    end
-  end
-
   describe '#consul' do
     it 'will fail when ip_address does not specified' do
       @system.ip_address = nil
       expect { @system.consul }.to raise_error('ip_address does not specified')
     end
 
-    it 'return serf client when ip_address already specified' do
+    it 'return consul client when ip_address already specified' do
       @system.ip_address = '127.0.0.1'
       expect(@system.consul).to be_is_a Consul::Client::Client
-    end
-  end
-
-  describe '#send_application_payload' do
-    before do
-      @system.applications.clear
-      @time = Time.now.strftime('%Y%m%d')
-
-      @consul_client = double(:consul_client)
-      allow(Consul::Client).to receive_message_chain(:connect, :kv).and_return @consul_client
-    end
-
-    it 'will send payload to consul' do
-      application = FactoryGirl.create(:application, name: 'dummy', system: @system)
-      application.histories << FactoryGirl.create(:application_history, application: application)
-      @system.applications << application
-
-      expected_payload = {
-        cloudconductor: {
-          applications: {
-            'dummy' => {
-              domain: 'example.com',
-              type: 'static',
-              version: "#{@time}-001",
-              protocol: 'http',
-              url: 'http://example.com/',
-              parameters: { dummy: 'value' }
-            }
-          }
-        }
-      }
-
-      expect(@consul_client).to receive(:merge).with(anything, expected_payload)
-
-      @system.send_application_payload
-    end
-
-    it 'will send payload belongs to multiple applications to consul' do
-      application1 = FactoryGirl.create(:application, name: 'dummy1', system: @system)
-      application2 = FactoryGirl.create(:application, name: 'dummy2', system: @system)
-      application1.histories << FactoryGirl.create(:application_history, application: application1)
-      application2.histories << FactoryGirl.create(:application_history, application: application2)
-      @system.applications << application1
-      @system.applications << application2
-
-      expected_payload = {
-        cloudconductor: {
-          applications: {
-            'dummy1' => {
-              domain: 'example.com',
-              type: 'static',
-              version: "#{@time}-001",
-              protocol: 'http',
-              url: 'http://example.com/',
-              parameters: { dummy: 'value' }
-            },
-            'dummy2' => {
-              domain: 'example.com',
-              type: 'static',
-              version: "#{@time}-001",
-              protocol: 'http',
-              url: 'http://example.com/',
-              parameters: { dummy: 'value' }
-            }
-          }
-        }
-      }
-
-      expect(@consul_client).to receive(:merge).with(anything, expected_payload)
-
-      @system.send_application_payload
-    end
-  end
-
-  describe '#deploy_applications' do
-    before do
-      @serf_client = double(:serf_client)
-      allow(@system).to receive(:serf).and_return(@serf_client)
-      @system.applications.clear
-    end
-
-    it 'will NOT request deploy event to serf when applications are empty' do
-      expect(@serf_client).not_to receive(:call)
-      @system.deploy_applications
-    end
-
-    it 'will request deploy event to serf' do
-      application = FactoryGirl.create(:application, name: 'dummy', system: @system)
-      application.histories << FactoryGirl.create(:application_history, application: application)
-      @system.applications << application
-
-      expect(@serf_client).to receive(:call).with('event', 'deploy')
-
-      @system.deploy_applications
     end
   end
 
