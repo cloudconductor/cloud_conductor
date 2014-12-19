@@ -149,10 +149,16 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       end
     end
 
+    parameters = {}
+    parameters[:repository_url] = url
+    parameters[:revision] = revision
+    parameters[:clouds] = clouds.map(&:name)
+    parameters[:operating_systems] = operating_systems.map(&:name)
+    parameters[:role] = role
+    parameters[:pattern_name] = pattern_name
+    parameters[:consul_security_key] = consul_security_key
 
-    cloud_names = clouds.map(&:name)
-    operating_system_names = operating_systems.map(&:name)
-    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, pattern_name, consul_security_key do |results|
+    CloudConductor::PackerClient.new.build parameters do |results|
       results.each do |key, result|
         cloud_name, os_name = key.split(BaseImage::SPLITTER)
         cloud = Cloud.where(name: cloud_name).first

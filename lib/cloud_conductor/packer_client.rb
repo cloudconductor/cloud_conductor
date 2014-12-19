@@ -36,12 +36,15 @@ module CloudConductor
       @vars = options[:variables]
     end
 
-    # rubocop:disable MethodLength, ParameterLists, LineLength
-    def build(repository_url, revision, clouds, operating_systems, role, pattern_name, consul_security_key)
-      only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}#{BaseImage::SPLITTER}#{operating_system}" }.join(',')
-      packer_json_path = create_json clouds
+    def build(parameters) # rubocop:disable MethodLength
+      clouds = parameters[:clouds]
+      operating_systems = parameters[:operating_systems]
 
-      command = build_command repository_url, revision, only, role, pattern_name, consul_security_key, packer_json_path
+      targets = clouds.product operating_systems
+      parameters[:only] = targets.map { |cloud, operating_system| "#{cloud}#{BaseImage::SPLITTER}#{operating_system}" }.join(',')
+      parameters[:packer_json_path] = create_json(clouds)
+
+      command = build_command parameters
       Thread.new do
         start = Time.now
         status, stdout, stderr = systemu(command)
@@ -56,35 +59,32 @@ module CloudConductor
 
         begin
           ActiveRecord::Base.connection_pool.with_connection do
-            yield parse(stdout, only) if block_given?
+            yield parse(stdout, parameters[:only]) if block_given?
           end
         rescue => e
           Log.error(e)
         ensure
-          FileUtils.rm packer_json_path
+          FileUtils.rm parameters[:packer_json_path]
         end
       end
     end
-    # rubocop:enable MethodLength, ParameterLists
 
     private
 
-    # rubocop:disable ParameterLists
-    def build_command(repository_url, revision, only, role, pattern_name, consul_security_key, packer_json_path)
-      @vars.update(repository_url: repository_url)
-      @vars.update(revision: revision)
+    def build_command(parameters)
+      @vars.update(repository_url: parameters[:repository_url])
+      @vars.update(revision: parameters[:revision])
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      vars_text << " -var 'role=#{role}'"
-      vars_text << " -var 'pattern_name=#{pattern_name}'"
-      vars_text << " -var 'image_name=#{role.gsub(/,\s*/, '-')}'"
+      vars_text << " -var 'role=#{parameters[:role]}'"
+      vars_text << " -var 'pattern_name=#{parameters[:pattern_name]}'"
+      vars_text << " -var 'image_name=#{parameters[:role].gsub(/,\s*/, '-')}'"
       vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
       vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
       vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
-      vars_text << " -var 'consul_security_key=#{consul_security_key}'"
+      vars_text << " -var 'consul_security_key=#{parameters[:consul_security_key]}'"
 
-      "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
+      "#{@packer_path} build -machine-readable #{vars_text} -only=#{parameters[:only]} #{parameters[:packer_json_path]}"
     end
-    # rubocop:enable ParameterLists
 
     def parse(stdout, only) # rubocop:disable MethodLength
       results = {}

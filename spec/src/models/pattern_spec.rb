@@ -382,15 +382,15 @@ describe Pattern do
       end
 
       it 'will call PackerClient#build with url, revision, name of clouds, operating_systems and role' do
-        args = []
-        args << @pattern.url
-        args << @pattern.revision
-        args << @pattern.clouds.map(&:name)
-        args << @operating_systems.map(&:name)
-        args << 'nginx'
-        args << 'dummy_platform'
-        args << 'dummy key'
-        expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(*args)
+        parameters = {}
+        parameters[:repository_url] = @pattern.url
+        parameters[:revision] = @pattern.revision
+        parameters[:clouds] = @pattern.clouds.map(&:name)
+        parameters[:operating_systems] = @operating_systems.map(&:name)
+        parameters[:role] = 'nginx'
+        parameters[:pattern_name] = 'dummy_platform'
+        parameters[:consul_security_key] = 'dummy key'
+        expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(parameters)
 
         @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
       end
