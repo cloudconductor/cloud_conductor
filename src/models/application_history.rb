@@ -80,10 +80,7 @@ class ApplicationHistory < ActiveRecord::Base
     }
 
     payload[:cloudconductor][:applications][application.name] = application_payload
-
-    consul = application.system.consul
-    event_id = consul.event.fire(:deploy, payload)
-    Timeout.timeout(100) { consul.event.get(event_id).finished? }
+    application.system.consul.event.sync_fire(:deploy, payload)
 
     self.status = :deployed
   end

@@ -24,7 +24,7 @@ describe ApplicationHistory do
     @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
-    @event = double(:event, fire: 1)
+    @event = double(:event, sync_fire: 1)
     @consul_client = double(:consul_client, event: @event)
     allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
     allow(@application.system).to receive(:consul).and_return(@consul_client)
@@ -124,7 +124,7 @@ describe ApplicationHistory do
           }
         }
 
-        expect(@event).to receive(:fire).with(:deploy, payload)
+        expect(@event).to receive(:sync_fire).with(:deploy, payload)
         @history.save!
       end
 
@@ -142,7 +142,7 @@ describe ApplicationHistory do
           )
         end
 
-        expect(@event).to receive(:fire).with(:deploy, expected_payload)
+        expect(@event).to receive(:sync_fire).with(:deploy, expected_payload)
         @history.save!
       end
     end

@@ -141,10 +141,8 @@ describe System do
     before do
       @system.ip_address = '192.168.0.1'
 
-      @event = double(:event, fire: 1)
+      @event = double(:event, sync_fire: 1)
       @consul_client = double(:consul_client, event: @event)
-      allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
-      allow(@event).to receive_message_chain(:get, :success?).and_return(true)
       allow(@system).to receive(:consul).and_return(@consul_client)
     end
 
@@ -166,13 +164,6 @@ describe System do
       expect(@system.chef_status).to eq(:PENDING)
     end
 
-    it 'return error when consul fire result is error' do
-      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@event).to receive_message_chain(:get, :success?).and_return(false)
-
-      expect(@system.chef_status).to eq(:ERROR)
-    end
-
     it 'return success when system status is create complete and consul fire result is success' do
       allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
 
@@ -181,7 +172,7 @@ describe System do
 
     it 'return error when some errors occurred' do
       allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@event).to receive(:fire).and_raise(StandardError)
+      allow(@event).to receive(:sync_fire).and_raise(StandardError)
 
       expect(@system.chef_status).to eq(:ERROR)
     end

@@ -112,14 +112,10 @@ module CloudConductor
     end
 
     def finish_system
-      event_id = @system.consul.event.fire(:configure, configure_payload(@system))
-      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
+      @system.consul.event.sync_fire(:configure, configure_payload(@system))
+      @system.consul.event.sync_fire(:restore, application_payload(@system))
+      @system.consul.event.sync_fire(:deploy, application_payload(@system))
 
-      event_id = @system.consul.event.fire(:restore, application_payload(@system))
-      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
-
-      event_id = @system.consul.event.fire(:deploy, application_payload(@system))
-      Timeout.timeout(100) { @system.consul.event.get(event_id).finished? }
       @system.applications.map(&:latest).compact.each do |history|
         history.status = :deployed
         history.save!

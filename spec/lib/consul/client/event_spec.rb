@@ -26,24 +26,81 @@ module Consul
           end
         end
 
+        @kv = double(:kv)
+        allow(@kv).to receive(:merge)
+        allow(Consul::Client::KV).to receive(:new).and_return(@kv)
+
         @client = Consul::Client::Event.new host: 'localhost'
       end
 
       describe '#fire' do
+        it 'call kv#merge' do
+          body = %({"ID":"12345678-1234-1234-1234-1234567890ab","Name":"configure","Payload":null,"NodeFilter":"","ServiceFilter":"","TagFilter":"","Version":1,"LTime":0})
+          expect(@kv).to receive(:merge).with(Consul::Client::Event::PAYLOAD_KEY, {})
+
+          @stubs.put('/v1/event/fire/configure') { [200, {}, body] }
+          @client.fire(:configure, {})
+        end
+
         it 'return nil if failed to request' do
-          @stubs.put('/v1/event/error') { [400, {}, ''] }
+          @stubs.put('/v1/event/fire/error') { [400, {}, ''] }
           expect(@client.fire(:error)).to be_nil
         end
 
         it 'return hash that contains ID and name' do
           body = %({"ID":"12345678-1234-1234-1234-1234567890ab","Name":"configure","Payload":null,"NodeFilter":"","ServiceFilter":"","TagFilter":"","Version":1,"LTime":0})
-          @stubs.put('/v1/event/configure') { [200, {}, body] }
+          @stubs.put('/v1/event/fire/configure') { [200, {}, body] }
 
           result = @client.fire(:configure)
           expect(result).to be_is_a Hash
           expect(result.keys).to match_array %w(ID Name Payload NodeFilter ServiceFilter TagFilter Version LTime)
           expect(result[:ID]).to match(/^[a-f0-9\-]{36}$/)
           expect(result[:Name]).to eq('configure')
+        end
+      end
+
+      describe '#sync_fire' do
+        before do
+          @results = double(:results)
+          allow(@results).to receive(:finished?).and_return(true)
+          allow(@results).to receive(:success?).and_return(true)
+          allow(@client).to receive(:fire).and_return(1)
+          allow(@client).to receive(:get).and_return(@results)
+        end
+
+        it 'call fire' do
+          expect(@client).to receive(:fire).with(:configure, {})
+
+          @client.sync_fire(:configure, {})
+        end
+
+        it 'call get' do
+          expect(@client).to receive(:get)
+
+          @client.sync_fire(:configure, {})
+        end
+
+        it 'call finished?' do
+          expect(@results).to receive(:finished?)
+          @client.sync_fire(:configure, {})
+        end
+
+        it 'call success?' do
+          expect(@results).to receive(:success?)
+
+          @client.sync_fire(:configure, {})
+        end
+
+        it 'fail if finished? method has timed out' do
+          allow(Timeout).to receive(:timeout).and_raise(Timeout::Error)
+
+          expect { @client.sync_fire(:error) }.to raise_error
+        end
+
+        it 'fail if success? method returns false' do
+          allow(@results).to receive(:success?).and_return(false)
+
+          expect { @client.sync_fire(:error) }.to raise_error
         end
       end
 

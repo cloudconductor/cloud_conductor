@@ -17,18 +17,32 @@ require_relative 'event_results'
 module Consul
   module Client
     class Event
+      PAYLOAD_KEY = 'cloudconductor/parameters'
+      TIMEOUT = 1800
+
       def initialize(options = {})
         @options = options
 
         url = URI::HTTP.build(host: options[:host], port: options[:port], path: '/v1')
         @faraday = Faraday.new url
+
+        @kv = KV.new options
       end
 
-      def fire(event, _payload = {})
-        response = @faraday.put("event/#{event}")
+      def fire(event, payload = {})
+        @kv.merge PAYLOAD_KEY, payload
+
+        response = @faraday.put("event/fire/#{event}")
         return nil unless response.success?
 
         JSON.parse(response.body).with_indifferent_access
+      end
+
+      def sync_fire(event, payload = {})
+        event_id = fire(event, payload)
+        Timeout.timeout(TIMEOUT) { get(event_id).finished? }
+        fail 'event failed' unless get(event_id).success?
+        event_id
       end
 
       def get(id)

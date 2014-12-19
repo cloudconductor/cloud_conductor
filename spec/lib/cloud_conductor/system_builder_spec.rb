@@ -175,7 +175,7 @@ module CloudConductor
         @optional_stack.status = :CREATE_COMPLETE
         @optional_stack.save!
 
-        @event = double(:event, fire: 1)
+        @event = double(:event, sync_fire: 1)
         @consul_client = double(:consul_client, event: @event)
 
         allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
@@ -185,17 +185,17 @@ module CloudConductor
       end
 
       it 'will request configure event to consul' do
-        expect(@event).to receive(:fire).with(:configure, {})
+        expect(@event).to receive(:sync_fire).with(:configure, {})
         @builder.send(:finish_system)
       end
 
       it 'will request restore event to consul' do
-        expect(@event).to receive(:fire).with(:restore, {})
+        expect(@event).to receive(:sync_fire).with(:restore, {})
         @builder.send(:finish_system)
       end
 
       it 'will request deploy event to consul' do
-        expect(@event).to receive(:fire).with(:deploy, {})
+        expect(@event).to receive(:sync_fire).with(:deploy, {})
         @builder.send(:finish_system)
       end
 
