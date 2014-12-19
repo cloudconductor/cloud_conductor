@@ -24,7 +24,7 @@ module Consul
               "LockIndex":0,
               "Key":"event/12345678-1234-1234-1234-1234567890ab/host1",
               "Flags":0,
-              "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAifQ=="
+              "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
             },
             {
               "CreateIndex":89,
@@ -32,7 +32,7 @@ module Consul
               "LockIndex":0,
               "Key":"event/12345678-1234-1234-1234-1234567890ab/host2",
               "Flags":0,
-              "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA4KzA5MDAifQ=="
+              "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
             }
           ]
         EOS
@@ -49,13 +49,14 @@ module Consul
           expect(inner_data.keys).to match_array %w(host1 host2)
 
           expect(inner_data['host1']).to be_is_a Hash
-          expect(inner_data['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime)
+          expect(inner_data['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime log)
           expect(inner_data['host1']).to eq(
             event_id: '4ee5d2a6-853a-21a9-7463-ef1866468b76',
             type: 'configure',
             result: 0,
             start_datetime: DateTime.new(2014, 12, 16, 14, 44, 7, 'JST'),
-            end_datetime: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST')
+            end_datetime: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST'),
+            log: 'Dummy consul event log'
           )
         end
       end
@@ -71,7 +72,7 @@ module Consul
         it 'return result of target host' do
           results = EventResults.parse(@json)
           expect(results['host1']).to be_is_a Hash
-          expect(results['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime)
+          expect(results['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime log)
         end
       end
 

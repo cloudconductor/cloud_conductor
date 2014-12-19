@@ -29,7 +29,8 @@ module Consul
             type: value['type'],
             result: value['result'] && value['result'].to_i,
             start_datetime: DateTime.parse(value['start_datetime']),
-            end_datetime: DateTime.parse(value['end_datetime'])
+            end_datetime: DateTime.parse(value['end_datetime']),
+            log: value['log']
           }
           @results[host_name] = result
         end
@@ -41,6 +42,10 @@ module Consul
 
       def [](host_name)
         @results[host_name]
+      end
+
+      def hostnames
+        @results.keys
       end
 
       def finished?

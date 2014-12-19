@@ -64,6 +64,8 @@ module Consul
           @results = double(:results)
           allow(@results).to receive(:finished?).and_return(true)
           allow(@results).to receive(:success?).and_return(true)
+          allow(@results).to receive(:hostnames).and_return(['dummy_host'])
+          allow(@results).to receive(:[]).and_return(log: 'dummy_log')
           allow(@client).to receive(:fire).and_return(1)
           allow(@client).to receive(:get).and_return(@results)
         end
@@ -100,7 +102,7 @@ module Consul
         it 'fail if success? method returns false' do
           allow(@results).to receive(:success?).and_return(false)
 
-          expect { @client.sync_fire(:error) }.to raise_error
+          expect { @client.sync_fire(:error) }.to raise_error('{"dummy_host":"dummy_log"}')
         end
       end
 
@@ -119,7 +121,7 @@ module Consul
                 "LockIndex":0,
                 "Key":"event/12345678-1234-1234-1234-1234567890ab/host1",
                 "Flags":0,
-                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAifQ=="
+                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
               },
               {
                 "CreateIndex":89,
@@ -127,7 +129,7 @@ module Consul
                 "LockIndex":0,
                 "Key":"event/12345678-1234-1234-1234-1234567890ab/host2",
                 "Flags":0,
-                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA4KzA5MDAifQ=="
+                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
               }
             ]
           EOS
