@@ -7,7 +7,8 @@
     "repository_url": null,
     "revision": null,
     "role": null,
-    "image_name": null
+    "image_name": null,
+    "consul_security_key": null
   },
   "builders": [
   ],
@@ -22,7 +23,7 @@
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
         "if [ -f ./bin/init.sh ]; then",
-        "  sudo ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} ./bin/init.sh || cat {{user `cloudconductor_root`}}/logs/event-handler.log",
+        "  sudo ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} CONSUL_SECURITY_KEY='{{user `consul_security_key`}}' ./bin/init.sh || cat {{user `cloudconductor_root`}}/logs/event-handler.log",
         "fi",
 
         "sync"

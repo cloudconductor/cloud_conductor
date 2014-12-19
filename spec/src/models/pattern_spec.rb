@@ -364,6 +364,8 @@ describe Pattern do
       before do
         allow_any_instance_of(CloudConductor::PackerClient).to receive(:build)
         @operating_systems = [FactoryGirl.create(:centos), FactoryGirl.create(:ubuntu)]
+
+        allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
       end
 
       it 'create image each cloud, operating_system and role' do
@@ -383,9 +385,16 @@ describe Pattern do
         args << @operating_systems.map(&:name)
         args << 'nginx'
         args << 'dummy_platform'
+        args << 'dummy key'
         expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(*args)
 
         @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+      end
+
+      it 'raise error when some errors occurred while execute `consul keygen` command' do
+        allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
+
+        expect { @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform') }.to raise_error
       end
 
       it 'update status of all images when call block' do

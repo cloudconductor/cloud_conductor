@@ -37,11 +37,11 @@ module CloudConductor
     end
 
     # rubocop:disable MethodLength, ParameterLists, LineLength
-    def build(repository_url, revision, clouds, operating_systems, role, pattern_name)
+    def build(repository_url, revision, clouds, operating_systems, role, pattern_name, consul_security_key)
       only = (clouds.product operating_systems).map { |cloud, operating_system| "#{cloud}#{BaseImage::SPLITTER}#{operating_system}" }.join(',')
       packer_json_path = create_json clouds
 
-      command = build_command repository_url, revision, only, role, pattern_name, packer_json_path
+      command = build_command repository_url, revision, only, role, pattern_name, consul_security_key, packer_json_path
       Thread.new do
         start = Time.now
         status, stdout, stderr = systemu(command)
@@ -70,7 +70,7 @@ module CloudConductor
     private
 
     # rubocop:disable ParameterLists
-    def build_command(repository_url, revision, only, role, pattern_name, packer_json_path)
+    def build_command(repository_url, revision, only, role, pattern_name, consul_security_key, packer_json_path)
       @vars.update(repository_url: repository_url)
       @vars.update(revision: revision)
       vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
@@ -80,6 +80,7 @@ module CloudConductor
       vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
       vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
       vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
+      vars_text << " -var 'consul_security_key=#{consul_security_key}'"
 
       "#{@packer_path} build -machine-readable #{vars_text} -only=#{only} #{packer_json_path}"
     end

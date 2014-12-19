@@ -61,20 +61,20 @@ module CloudConductor
       it 'will call #create_json to create json file' do
         allow(Thread).to receive(:new)
         expect(@client).to receive(:create_json).with(@clouds)
-        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', 'dummy key')
       end
 
       it 'will call #build_command to create packer command' do
         allow(Thread).to receive(:new)
-        expect(@client).to receive(:build_command).with('http://example.com', 'dummy_revision', 'aws----centos,openstack----centos', 'nginx', 'dummy_pattern_name', '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
-        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
+        expect(@client).to receive(:build_command).with('http://example.com', 'dummy_revision', 'aws----centos,openstack----centos', 'nginx', 'dummy_pattern_name', 'dummy key', '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', 'dummy key')
       end
 
       it 'will yield block' do
         threads = Thread.list
 
         expect do |b|
-          @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', &b)
+          @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', 'dummy key', &b)
           (Thread.list - threads).each(&:join)
         end.to yield_control
       end
@@ -83,7 +83,7 @@ module CloudConductor
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
-        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name')
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', 'dummy key')
         (Thread.list - threads).each(&:join)
       end
 
@@ -91,7 +91,7 @@ module CloudConductor
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         threads = Thread.list
-        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name') do
+        @client.build('http://example.com', 'dummy_revision', @clouds, @operating_systems, 'nginx', 'dummy_pattern_name', 'dummy key') do
           fail
         end
 
@@ -111,7 +111,7 @@ module CloudConductor
         vars << "-var 'repository_url=http://example.com'"
         vars << "-var 'revision=dummy_revision'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -119,7 +119,7 @@ module CloudConductor
         vars = []
         vars << "-var 'cloudconductor_root=/opt/cloudconductor'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -127,7 +127,7 @@ module CloudConductor
         vars = []
         vars << "-only=#{@only}"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -135,7 +135,7 @@ module CloudConductor
         vars = []
         vars << "-var 'role=nginx'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx', 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -143,7 +143,7 @@ module CloudConductor
         vars = []
         vars << "-var 'image_name=nginx-dummy'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx, dummy', 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, 'nginx, dummy', 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -152,7 +152,7 @@ module CloudConductor
         vars << "-var 'aws_access_key=dummy_access_key'"
         vars << "-var 'aws_secret_key=dummy_secret_key'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
@@ -163,20 +163,25 @@ module CloudConductor
         vars << "-var 'openstack_password=dummy_password'"
         vars << "-var 'openstack_tenant_id=dummy_tenant_id'"
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to include(*vars)
       end
 
       it 'return command with packer_path and packer_json_path option' do
         pattern = %r{^/opt/packer/packer.*/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json$}
 
-        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', @packer_json_path)
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', 'dummy key', @packer_json_path)
         expect(command).to match(pattern)
       end
 
       it 'doesn\'t occur any error when does NOT specified variables option' do
         client = PackerClient.new
-        client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', @packer_json_path)
+        client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', 'dummy key', @packer_json_path)
+      end
+
+      it 'return command with consul_security_key that is created by `consul keygen`' do
+        command = @client.send(:build_command, 'http://example.com', 'dummy_revision', @only, @role, 'dummy_pattern_name', 'dummy key', @packer_json_path)
+        expect(command).to include("-var 'consul_security_key=dummy key'")
       end
     end
 

@@ -145,9 +145,13 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       end
     end
 
+    status, stdout, stderr = systemu('consul keygen')
+    fail "consul keygen failed.\n#{stderr}" unless status.success?
+    consul_security_key = stdout
+
     cloud_names = clouds.map(&:name)
     operating_system_names = operating_systems.map(&:name)
-    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, pattern_name do |results|
+    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, pattern_name, consul_security_key do |results|
       results.each do |key, result|
         cloud_name, os_name = key.split(BaseImage::SPLITTER)
         cloud = Cloud.where(name: cloud_name).first
