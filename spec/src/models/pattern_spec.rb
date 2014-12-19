@@ -134,6 +134,7 @@ describe Pattern do
 
   describe '#before_save' do
     before do
+      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
       @path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
     end
 
@@ -143,8 +144,13 @@ describe Pattern do
       expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
       expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
       expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
-      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil)
+      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil, 'dummy key')
       @pattern.save!
+    end
+
+    it 'raise error when some errors occurred while execute `consul keygen` command' do
+      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
+      expect { @pattern.save! }.to raise_error
     end
 
     describe '#clone_repository' do
@@ -364,14 +370,12 @@ describe Pattern do
       before do
         allow_any_instance_of(CloudConductor::PackerClient).to receive(:build)
         @operating_systems = [FactoryGirl.create(:centos), FactoryGirl.create(:ubuntu)]
-
-        allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
       end
 
       it 'create image each cloud, operating_system and role' do
         count = Image.count
 
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
         @pattern.save!
 
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
@@ -388,13 +392,7 @@ describe Pattern do
         args << 'dummy key'
         expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(*args)
 
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
-      end
-
-      it 'raise error when some errors occurred while execute `consul keygen` command' do
-        allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
-
-        expect { @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform') }.to raise_error
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
       end
 
       it 'update status of all images when call block' do
@@ -412,7 +410,7 @@ describe Pattern do
           @pattern.save!
           block.call results
         end
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
 
         aws = Image.where(cloud: @cloud_aws, operating_system: @operating_systems.first, role: 'nginx').first
         expect(aws.status).to eq(:CREATE_COMPLETE)
