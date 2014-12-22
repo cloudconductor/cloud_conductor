@@ -22,10 +22,10 @@ module CloudConductor
     end
 
     def register(system)
-      host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
-      hostgroup_id = register_hostgroup(host_name)
+      hostname = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+      hostgroup_id = register_hostgroup(hostname)
       host_id = register_host(hostgroup_id, system.monitoring_host)
-      register_action("FailOver_#{host_name}", host_id, operation(system.id, CloudConductor::Config.cloudconductor.url))
+      register_action("FailOver_#{hostname}", host_id, operation(system.id, CloudConductor::Config.cloudconductor.url))
     end
 
     private
