@@ -22,7 +22,7 @@ module Consul
       def initialize(json)
         @results = {}
         JSON.parse(json).each do |parsed_result|
-          host_name = parsed_result['Key'].split('/').last
+          hostname = parsed_result['Key'].split('/').last
           value = JSON.parse(Base64.decode64(parsed_result['Value']))
           result = {
             event_id: value['event_id'],
@@ -32,7 +32,7 @@ module Consul
             end_datetime: DateTime.parse(value['end_datetime']),
             log: value['log']
           }
-          @results[host_name] = result
+          @results[hostname] = result
         end
       end
 
@@ -40,8 +40,8 @@ module Consul
         @results.size
       end
 
-      def [](host_name)
-        @results[host_name]
+      def [](hostname)
+        @results[hostname]
       end
 
       def hostnames
