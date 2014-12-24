@@ -152,7 +152,7 @@ describe Stack do
       @stack.status = :READY
       @stack.save!
 
-      expect(@stack.attributes['status']).to eq(:PROGRESS)
+      expect(@stack.attributes['status']).to eq('PROGRESS')
     end
 
     it 'update status to :ERROR if Client#create_stack raise error' do
@@ -160,7 +160,7 @@ describe Stack do
       @stack.status = :READY
       @stack.save!
 
-      expect(@stack.attributes['status']).to eq(:ERROR)
+      expect(@stack.attributes['status']).to eq('ERROR')
     end
   end
 
