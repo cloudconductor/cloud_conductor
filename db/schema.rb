@@ -13,7 +13,7 @@
 
 ActiveRecord::Schema.define(version: 20141203003236) do
 
-  create_table "application_histories", force: true do |t|
+  create_table "application_histories", force: :cascade do |t|
     t.integer  "application_id"
     t.string   "status"
     t.string   "domain"
@@ -29,21 +29,21 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "applications", force: true do |t|
+  create_table "applications", force: :cascade do |t|
     t.integer  "system_id"
     t.string   "name"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "base_images", force: true do |t|
+  create_table "base_images", force: :cascade do |t|
     t.integer "cloud_id"
     t.integer "operating_system_id"
     t.string  "source_image"
     t.string  "ssh_username"
   end
 
-  create_table "candidates", force: true do |t|
+  create_table "candidates", force: :cascade do |t|
     t.integer  "cloud_id"
     t.integer  "system_id"
     t.integer  "priority"
@@ -52,7 +52,7 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "clouds", force: true do |t|
+  create_table "clouds", force: :cascade do |t|
     t.string   "name"
     t.string   "type"
     t.string   "entry_point"
@@ -63,7 +63,7 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "images", force: true do |t|
+  create_table "images", force: :cascade do |t|
     t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.integer  "operating_system_id"
@@ -75,12 +75,12 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "operating_systems", force: true do |t|
+  create_table "operating_systems", force: :cascade do |t|
     t.string "name"
     t.string "version"
   end
 
-  create_table "patterns", force: true do |t|
+  create_table "patterns", force: :cascade do |t|
     t.string   "name"
     t.string   "description"
     t.string   "type"
@@ -92,14 +92,14 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "patterns_clouds", force: true do |t|
+  create_table "patterns_clouds", force: :cascade do |t|
     t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.datetime "created_at"
     t.datetime "updated_at"
   end
 
-  create_table "stacks", force: true do |t|
+  create_table "stacks", force: :cascade do |t|
     t.integer  "system_id"
     t.integer  "pattern_id"
     t.integer  "cloud_id"
@@ -111,7 +111,7 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.datetime "updated_at"
   end
 
-  create_table "systems", force: true do |t|
+  create_table "systems", force: :cascade do |t|
     t.string   "name"
     t.string   "monitoring_host"
     t.string   "ip_address"
