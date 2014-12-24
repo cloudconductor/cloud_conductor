@@ -49,26 +49,26 @@ module CloudConductor
 
     describe '#build' do
       before do
-        Stack.any_instance.stub(:outputs).and_return(key: 'dummy')
+        allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
 
-        @builder.stub(:wait_for_finished)
-        @builder.stub(:update_system)
-        @builder.stub(:finish_system)
-        @builder.stub(:reset_stacks)
+        allow(@builder).to receive(:wait_for_finished)
+        allow(@builder).to receive(:update_system)
+        allow(@builder).to receive(:finish_system)
+        allow(@builder).to receive(:reset_stacks)
       end
 
       it 'call every subsequence 1 time' do
-        @builder.should_receive(:wait_for_finished).with(@system.stacks[0], anything)
-        @builder.should_receive(:wait_for_finished).with(@system.stacks[1], anything)
-        @builder.should_receive(:update_system).with(key: 'dummy')
-        @builder.should_receive(:finish_system)
-        @builder.should_not_receive(:reset_stacks)
+        expect(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything)
+        expect(@builder).to receive(:wait_for_finished).with(@system.stacks[1], anything)
+        expect(@builder).to receive(:update_system).with(key: 'dummy')
+        expect(@builder).to receive(:finish_system)
+        expect(@builder).not_to receive(:reset_stacks)
         @builder.build
       end
 
       it 'call #reset_stacks when some method raise error' do
-        @builder.should_receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
-        @builder.should_receive(:reset_stacks)
+        expect(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        expect(@builder).to receive(:reset_stacks)
         @builder.build
       end
 
@@ -78,8 +78,8 @@ module CloudConductor
       end
 
       it 'set status of stacks to :ERROR when all candidates failed' do
-        @builder.should_receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
-        @builder.stub(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        expect(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        allow(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
         @builder.build
 
         expect(@system.stacks.all?(&:error?)).to be_truthy
@@ -88,16 +88,16 @@ module CloudConductor
 
     describe '#wait_for_finished' do
       before do
-        @builder.stub(:sleep)
+        allow(@builder).to receive(:sleep)
 
-        @platform_stack.stub(:status).and_return(:CREATE_COMPLETE)
-        @platform_stack.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+        allow(@platform_stack).to receive(:status).and_return(:CREATE_COMPLETE)
+        allow(@platform_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
-        @optional_stack.stub(:status).and_return(:CREATE_COMPLETE)
-        @optional_stack.stub(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+        allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
+        allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
-        Consul::Client.stub_chain(:connect, :running?).and_return true
-        Serf::Client.stub_chain(:new, :call, :success?).and_return true
+        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return true
+        allow(Serf::Client).to receive_message_chain(:new, :call, :success?).and_return true
       end
 
       it 'execute without error' do
@@ -114,32 +114,32 @@ module CloudConductor
       end
 
       it 'raise error when timeout' do
-        @platform_stack.stub(:status).and_return(:ERROR)
+        allow(@platform_stack).to receive(:status).and_return(:ERROR)
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
       it 'infinity loop and timeout while status still :CREATE_IN_PROGRESS' do
-        @platform_stack.stub(:status).and_return(:CREATE_IN_PROGRESS)
+        allow(@platform_stack).to receive(:status).and_return(:CREATE_IN_PROGRESS)
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
       it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
-        @platform_stack.stub(:outputs).and_return(dummy: 'value')
+        allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
       it 'return successfuly when outputs doesn\'t have FrontendAddress on optional stack' do
-        @optional_stack.stub(:outputs).and_return(dummy: 'value')
+        allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
         @builder.send(:wait_for_finished, @optional_stack, SystemBuilder::CHECK_PERIOD)
       end
 
       it 'infinity loop and timeout while consul doesn\'t running' do
-        Consul::Client.stub_chain(:connect, :running?).and_return false
+        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return false
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
       it 'infinity loop and timeout while serf doesn\'t running' do
-        Serf::Client.stub_chain(:new, :call, :success?).and_return false
+        allow(Serf::Client).to receive_message_chain(:new, :call, :success?).and_return false
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
     end
@@ -178,11 +178,11 @@ module CloudConductor
         @optional_stack.save!
 
         @serf_client = double(:serf_client, call: double('status', success?: true))
-        @system.stub(:serf).and_return(@serf_client)
-        @system.stub(:send_application_payload)
-        @system.stub(:deploy_applications)
+        allow(@system).to receive(:serf).and_return(@serf_client)
+        allow(@system).to receive(:send_application_payload)
+        allow(@system).to receive(:deploy_applications)
 
-        @builder.stub(:sleep)
+        allow(@builder).to receive(:sleep)
       end
 
       it 'will request configure event to serf with payload' do
@@ -204,28 +204,41 @@ module CloudConductor
           expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
         end
 
-        @serf_client.should_receive(:call).with('event', 'configure', expected_payload)
+        expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
 
         @builder.send(:finish_system)
       end
 
       it 'will call System#send_application_payload' do
-        @system.should_receive(:send_application_payload)
+        expect(@system).to receive(:send_application_payload)
         @builder.send(:finish_system)
       end
 
       it 'will call System#deploy_applications' do
-        @system.should_receive(:deploy_applications)
+        expect(@system).to receive(:deploy_applications)
         @builder.send(:finish_system)
       end
 
       it 'will request restore event to serf' do
-        @serf_client.should_receive(:call).with('event', 'restore', {})
+        expect(@serf_client).to receive(:call).with('event', 'restore', {})
         @builder.send(:finish_system)
       end
     end
 
     describe '#reset_stacks' do
+      before do
+        allow(@system).to receive(:destroy_stacks) do
+          @system.stacks.destroy_all
+        end
+      end
+
+      it 'destroy previous stacks and re-create stacks with PENDING status' do
+        expect(Stack.count).to eq(2)
+        @builder.send(:reset_stacks)
+        expect(Stack.count).to eq(2)
+        expect(Stack.all.all?(&:pending?)).to be_truthy
+      end
+
       it 'reset ip_address, monitoring_host and template_parameters in system' do
         @system.ip_address = '127.0.0.1'
         @system.monitoring_host = 'example.com'

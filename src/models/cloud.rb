@@ -19,12 +19,12 @@ class Cloud < ActiveRecord::Base
 
   self.inheritance_column = nil
 
-  has_many :targets, dependent: :destroy
-  has_many :operating_systems, through: :targets
+  has_many :base_images, dependent: :destroy
+  has_many :operating_systems, through: :base_images
 
   before_destroy :raise_error_in_use
 
-  validates :name, presence: true, format: /\A[^\-]+\Z/
+  validates :name, presence: true
   validates :entry_point, presence: true
   validates :key, presence: true
   validates :secret, presence: true

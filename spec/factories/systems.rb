@@ -18,19 +18,17 @@ FactoryGirl.define do
     domain 'example.com'
     template_parameters '{ "dummy": "value" }'
 
-    after(:build) do
+    before(:create) do |system|
       System.skip_callback :save, :before, :enable_monitoring
       System.skip_callback :save, :before, :update_dns
+
+      system.add_cloud create(:cloud_aws), 1
+      system.add_cloud create(:cloud_openstack), 2
     end
 
     after(:create) do
       System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
       System.set_callback :save, :before, :update_dns, if: -> { ip_address }
-    end
-
-    before(:create) do |system|
-      system.add_cloud create(:cloud_aws), 1
-      system.add_cloud create(:cloud_openstack), 2
     end
   end
 end

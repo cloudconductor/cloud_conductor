@@ -46,7 +46,7 @@ module CloudConductor
           add_security_rule(name, template, parameters, options)
         end
 
-        converter = Converters::OpenStackConverter.new
+        converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access

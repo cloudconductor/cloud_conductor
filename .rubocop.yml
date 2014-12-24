@@ -13,6 +13,9 @@ LineLength:
 MethodLength:
   Max: 20
 
+AbcSize:
+  Enabled: false
+
 AsciiComments:
   Enabled: false
 
@@ -21,3 +24,6 @@ Documentation:
 
 Style/RegexpLiteral:
   MaxSlashes: 0
+
+NumericLiterals:
+  MinDigits: 7

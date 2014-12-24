@@ -21,7 +21,7 @@ guard :rspec, cmd: "rspec --drb --drb-port #{RSPEC_PORT}" do
   watch('config.ru') { 'spec' }
 end
 
-guard 'spork', rspec_env: { 'RAILS_ENV' => 'test' }, rspec_port: RSPEC_PORT do
+guard :spork, rspec_env: { 'RAILS_ENV' => 'test' }, rspec_port: RSPEC_PORT do
   watch('config.ru')
   watch('Gemfile.lock')
   watch('spec/spec_helper.rb') { :rspec }

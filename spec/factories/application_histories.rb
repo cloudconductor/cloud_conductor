@@ -21,7 +21,7 @@ FactoryGirl.define do
     parameters '{ "dummy": "value" }'
   end
 
-  after(:build) do
+  before(:create) do
     ApplicationHistory.skip_callback :save, :before, :serf_request
   end
 

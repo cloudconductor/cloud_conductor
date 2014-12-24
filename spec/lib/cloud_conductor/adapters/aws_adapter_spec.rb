@@ -29,7 +29,7 @@ module CloudConductor
 
       describe '#create_stack' do
         before do
-          AWS::CloudFormation.stub_chain(:new, :stacks, :create)
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :create)
 
           @options = {}
           @options[:key] = '1234567890abcdef'
@@ -43,7 +43,7 @@ module CloudConductor
         it 'set credentials for aws-sdk' do
           @options[:dummy] = 'dummy'
 
-          AWS::CloudFormation.should_receive(:new)
+          expect(AWS::CloudFormation).to receive(:new)
             .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
@@ -51,15 +51,15 @@ module CloudConductor
 
         it 'set region for aws-sdk' do
           @options[:entry_point] = 'ap-northeast-1'
-          AWS::CloudFormation.should_receive(:new).with(hash_including(region: 'ap-northeast-1'))
+          expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
         end
 
         it 'call CloudFormation#create to create stack on aws' do
-          AWS::CloudFormation.stub_chain(:new, :stacks) do
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks) do
             double('stacks').tap do |stacks|
-              stacks.should_receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
+              expect(stacks).to receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
             end
           end
 
@@ -71,7 +71,7 @@ module CloudConductor
         before do
           @stack = double('stack', status: '')
           @stacks = double('stacks', :[] => @stack)
-          AWS::CloudFormation.stub_chain(:new, :stacks).and_return(@stacks)
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks).and_return(@stacks)
 
           @options = {}
           @options[:key] = '1234567890abcdef'
@@ -85,25 +85,30 @@ module CloudConductor
         it 'set credentials for aws-sdk' do
           @options[:dummy] = 'dummy'
 
-          AWS::CloudFormation.should_receive(:new)
+          expect(AWS::CloudFormation).to receive(:new)
             .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
 
           @adapter.get_stack_status 'stack_name', @options
         end
 
         it 'return stack status via aws-sdk' do
-          @stack.should_receive(:status).and_return('dummy_status')
-          @stacks.should_receive(:[]).with('stack_name').and_return(@stack)
+          expect(@stack).to receive(:status).and_return('dummy_status')
+          expect(@stacks).to receive(:[]).with('stack_name').and_return(@stack)
 
           status = @adapter.get_stack_status 'stack_name', @options
           expect(status).to eq(:dummy_status)
+        end
+
+        it 'raise error  when target stack does not exist' do
+          allow(@stacks).to receive(:[]).and_return nil
+          expect { @adapter.get_stack_status 'undefined_stack', @options }.to raise_error
         end
       end
 
       describe '#get_outputs' do
         before do
           @outputs = []
-          AWS::CloudFormation.stub_chain(:new, :stacks, :[], :outputs).and_return(@outputs)
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :outputs).and_return(@outputs)
 
           @options = {}
           @options[:key] = '1234567890abcdef'
@@ -117,7 +122,7 @@ module CloudConductor
         it 'set credentials for aws-sdk' do
           @options[:dummy] = 'dummy'
 
-          AWS::CloudFormation.should_receive(:new)
+          expect(AWS::CloudFormation).to receive(:new)
             .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
 
           @adapter.get_outputs 'stack_name', @options
@@ -135,7 +140,7 @@ module CloudConductor
 
       describe '#destroy_stack' do
         before do
-          AWS::CloudFormation.stub_chain(:new, :stacks, :[], :delete)
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :delete)
 
           @options = {}
           @options[:key] = '1234567890abcdef'
@@ -149,7 +154,7 @@ module CloudConductor
         it 'set credentials for aws-sdk' do
           @options[:dummy] = 'dummy'
 
-          AWS::CloudFormation.should_receive(:new)
+          expect(AWS::CloudFormation).to receive(:new)
             .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
 
           @adapter.destroy_stack 'stack_name', @options
@@ -157,15 +162,15 @@ module CloudConductor
 
         it 'set region for aws-sdk' do
           @options[:entry_point] = 'ap-northeast-1'
-          AWS::CloudFormation.should_receive(:new).with(hash_including(region: 'ap-northeast-1'))
+          expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
 
           @adapter.destroy_stack 'stack_name', @options
         end
 
         it 'call CloudFormation::Stack#delete to delete created stack on aws' do
-          AWS::CloudFormation.stub_chain(:new, :stacks, :[]) do
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[]) do
             double('stack').tap do |stack|
-              stack.should_receive(:delete)
+              expect(stack).to receive(:delete)
             end
           end
 

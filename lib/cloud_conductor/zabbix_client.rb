@@ -15,186 +15,126 @@
 module CloudConductor
   class ZabbixClient # rubocop: disable ClassLength
     def initialize
-      @zabbix = ZabbixApi.connect CloudConductor::Config.zabbix.configuration
-      @cc_api_url = CloudConductor::Config.cloudconductor.url
+      config = CloudConductor::Config.zabbix
+
+      @zabbix = ZabbixAPI.new config.url
+      @zabbix.login config.user, config.password
     end
 
-    def register(system) # rubocop: disable MethodLength
-      host_name = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
-      hostgroup_id = @zabbix.hostgroups.create_or_update name: host_name
-      template_id = @zabbix.templates.get_id host: CloudConductor::Config.zabbix.default_template_name
-      action_name = "FailOver_#{host_name}"
-      action_id = get_action(action_name: action_name)
-
-      if action_id.nil?
-        host_id = add_host system.monitoring_host, hostgroup_id, template_id
-        add_action(
-          host_id: host_id,
-          system_id: system.id,
-          action_name: action_name
-        )
-      else
-        update_action(
-          system_id: system.id,
-          action_name: action_name,
-          action_id: action_id
-        )
-      end
+    def register(system)
+      hostname = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+      hostgroup_id = register_hostgroup(hostname)
+      host_id = register_host(hostgroup_id, system.monitoring_host)
+      register_action("FailOver_#{hostname}", host_id, operation(system.id, CloudConductor::Config.cloudconductor.url))
     end
 
     private
 
-    def get_hostgroups(host_id)
-      params = {
-        method: 'host.get',
-        params: {
-          selectGroups: 'extend',
-          output: 'extend',
-          filter: {
-            hostid: [
-              host_id
-            ]
-          }
-        }
-      }
-      result = (@zabbix.client.api_request params).find { |host| host['hostid'] == host_id }
-      result['groups']
+    def register_hostgroup(name)
+      result = @zabbix.hostgroup.get filter: { name: name }
+      return result.first['groupid'].to_i unless result.empty?
+
+      result = @zabbix.hostgroup.create name: name
+      result['groupids'].first.to_i
     end
 
-    def update_host(host_id, hostgroup_id)
-      params = {
-        method: 'host.update',
-        params: {
-          hostid: host_id,
-          groups: [
-            { groupid: hostgroup_id }
-          ]
-        }
-      }
-      prev_hostgroups = get_hostgroups host_id
-      prev_hostgroups.each { |hostgroup| params[:params][:groups] << { groupid: hostgroup['groupid'] } }
-      @zabbix.client.api_request(params)
-      host_id
-    end
+    def register_host(group_id, host) # rubocop: disable MethodLength
+      result = @zabbix.host.get filter: { host: host }
+      return result.first['hostid'].to_i unless result.empty?
 
-    def get_host_id(target_host)
-      result = @zabbix.hosts.get(name: target_host).find { |host| host['host'] == target_host }
-      result ? result['hostid'] : nil
-    end
+      result = @zabbix.template.get filter: { name: CloudConductor::Config.zabbix.default_template_name }
+      template_id = result.first['templateid'].to_i
 
-    def add_host(target_host, hostgroup_id, template_id)
-      host_id = get_host_id(target_host)
-      return update_host(host_id, hostgroup_id) if host_id
-      params = {
-        host: target_host,
+      parameters = {
+        host: host,
         interfaces: [
           {
-            type: 1, # agent
-            main: 1, # default.
+            type: 1,
+            main: 1,
             ip: '',
-            dns: target_host,
-            port: 10_050,
-            useip: 0 # connect using host DNS name
+            dns: host,
+            port: 10050,
+            useip: 0
           }
         ],
-        groups: [groupid: hostgroup_id],
+        groups: [groupid: group_id],
         templates: [templateid: template_id]
       }
-      @zabbix.hosts.create_or_update params
+
+      result = @zabbix.host.create(parameters)
+      result['hostids'].first.to_i
     end
 
-    def recreate_system_command(system_id)
-      "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{@cc_api_url}"
+    def register_action(name, host_id, operation)
+      result = @zabbix.action.get filter: { name: name }
+      if result.empty?
+        insert_action(name, host_id, operation)
+      else
+        update_action(result.first['actionid'].to_i, operation)
+      end
     end
 
-    def add_action(parameters) # rubocop: disable MethodLength
-      host_id = parameters[:host_id]
-      system_id = parameters[:system_id]
-      action_name = parameters[:action_name]
-
+    def insert_action(name, host_id, operation) # rubocop: disable MethodLength
       params = {
-        method: 'action.create',
-        params: {
-          name: action_name,
-          eventsource: 0,
-          evaltype: 1, # AND
-          status: 0, # enabled
-          esc_period: 120,
-          def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
-          def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
-          conditions: [
-            {
-              conditiontype: 1, # host
-              operator: 0, # equal
-              value: host_id
-            },
-            {
-              conditiontype: 5, # trigger value
-              operator: 0, # equal
-              value: 1
-            }
-          ],
-          operations: [
-            {
-              operationtype: 1, # remote command
-              opcommand_hst: {
-                hostid: 0
-              },
-              opcommand: {
-                type: 0, # custom script
-                command: recreate_system_command(system_id),
-                execute_on: 1 # Zabbix server
-              }
-            }
-          ]
-        }
-      }
-      @zabbix.client.api_request params
-    end
-
-    def get_action(parameters)
-      action_name = parameters[:action_name]
-
-      params = {
-        method: 'action.get',
-        id: 1,
-        params: {
-          filter: {
-            name: action_name
+        name: name,
+        eventsource: 0,
+        evaltype: 1, # AND
+        status: 0, # enabled
+        esc_period: 120,
+        def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
+        def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
+        conditions: [
+          {
+            conditiontype: 1, # host
+            operator: 0, # equal
+            value: host_id
+          },
+          {
+            conditiontype: 5, # trigger value
+            operator: 0, # equal
+            value: 1
           }
-        }
+        ],
+        operations: [
+          {
+            operationtype: 1, # remote command
+            opcommand_hst: {
+              hostid: 0
+            },
+            opcommand: {
+              type: 0, # custom script
+              command: operation,
+              execute_on: 1 # Zabbix server
+            }
+          }
+        ]
       }
-      result = @zabbix.client.api_request(params).first
-      result['actionid'] if result
+
+      @zabbix.action.create(params)
     end
 
-    def update_action(parameters) # rubocop: disable MethodLength
-      system_id = parameters[:system_id]
-      action_name = parameters[:action_name]
-      action_id = parameters[:action_id]
-
+    def update_action(action_id, operation)
       params = {
-        method: 'action.update',
-        id: 1,
-        params: {
-          name: action_name,
-          actionid: action_id,
-          operations: [
-            {
-              operationtype: 1, # remote command
-              opcommand_hst: {
-                hostid: 0
-              },
-              opcommand: {
-                type: 0, # custom script
-                command: recreate_system_command(system_id),
-                execute_on: 1 # Zabbix server
-              }
+        actionid: action_id,
+        operations: [
+          {
+            operationtype: 1, # remote command
+            opcommand_hst: {
+              hostid: 0
+            },
+            opcommand: {
+              type: 0, # custom script
+              command: operation,
+              execute_on: 1 # Zabbix server
             }
-          ]
-        }
+          }
+        ]
       }
-      @zabbix.client.api_request params
+      @zabbix.action.update(params)
+    end
+
+    def operation(system_id, url)
+      "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{url}"
     end
   end
 end

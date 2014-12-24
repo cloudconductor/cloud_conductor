@@ -57,10 +57,20 @@ class Stack < ActiveRecord::Base
     common_parameters = JSON.parse(system.template_parameters, symbolize_names: true)
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
     client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
+  rescue Excon::Errors::SocketError
+    self.status = :ERROR
+    Log.warn "Failed to connect to #{cloud.name}"
+  rescue Excon::Errors::Unauthorized, AWS::CloudFormation::Errors::InvalidClientTokenId
+    self.status = :ERROR
+    Log.warn "Failed to authorize on #{cloud.name}"
+  rescue Net::OpenTimeout
+    self.status = :ERROR
+    Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
   rescue => e
     self.status = :ERROR
-    Log.info("Create stack on #{cloud.name} ... FAILED")
-    Log.error(e)
+    Log.warn("Create stack on #{cloud.name} ... FAILED")
+    Log.warn "Unexpected error has occurred while creating stack(#{name}) on #{cloud.name}"
+    Log.warn(e)
   else
     self.status = :PROGRESS
     Log.info("Create stack on #{cloud.name} ... SUCCESS")
@@ -82,6 +92,13 @@ class Stack < ActiveRecord::Base
 
   def optional?
     pattern && pattern.type == :optional
+  end
+
+  def exist?
+    cloud.client.get_stack_status name
+    true
+  rescue
+    false
   end
 
   %i(pending ready progress create_complete error).each do |method|
@@ -108,8 +125,8 @@ class Stack < ActiveRecord::Base
   def destroy_stack
     cloud.client.destroy_stack name
   rescue => e
-    Log.error "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
-    Log.error e
+    Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.warn "  #{e.message}"
   end
 
   def payload

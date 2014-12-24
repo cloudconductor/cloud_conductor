@@ -22,12 +22,12 @@ describe Pattern do
     @pattern.clouds << @cloud_aws
     @pattern.clouds << @cloud_openstack
 
-    @pattern.stub(:system).and_return(true)
-    Dir.stub(:chdir).and_yield
-    YAML.stub(:load_file).and_return({})
-    File.stub(:open).and_call_original
+    allow(@pattern).to receive(:system).and_return(true)
+    allow(Dir).to receive(:chdir).and_yield
+    allow(YAML).to receive(:load_file).and_return({})
+    allow(File).to receive(:open).and_call_original
     double = double('File', read: '{ "Parameters": {}, "Resources": {} }')
-    File.stub(:open).with(/template.json/).and_return double
+    allow(File).to receive(:open).with(/template.json/).and_return double
   end
 
   describe '#initialize' do
@@ -139,33 +139,37 @@ describe Pattern do
 
     it 'will call sub-routine' do
       path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
-      @pattern.should_receive(:clone_repository).and_yield(path_pattern)
-      @pattern.should_receive(:load_metadata).with(path_pattern).and_return({})
-      @pattern.should_receive(:load_roles).with(path_pattern).and_return(['dummy'])
-      @pattern.should_receive(:update_metadata).with(path_pattern, {})
-      @pattern.should_receive(:create_images).with(anything, 'dummy', nil)
+      expect(@pattern).to receive(:clone_repository).and_yield(path_pattern)
+      expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
+      expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
+      expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
+      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil)
       @pattern.save!
     end
 
     describe '#clone_repository' do
+      before do
+        allow(FileUtils).to receive(:rm_r)
+      end
+
       it 'will raise error when block does not given' do
         expect { @pattern.send(:clone_repository) }.to raise_error('Pattern#clone_repository needs block')
       end
 
       it 'will clone repository to temporary directory' do
         command = %r(git clone #{@pattern.url} .*tmp/patterns/[a-f0-9-]{36})
-        @pattern.should_receive(:system).with(command).and_return(true)
+        expect(@pattern).to receive(:system).with(command).and_return(true)
         @pattern.send(:clone_repository) {}
       end
 
       it 'will change current directory to cloned repoitory and restore current directory after exit' do
-        Dir.should_receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).and_yield
+        expect(Dir).to receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).and_yield
         @pattern.send(:clone_repository) {}
       end
 
       it 'will change branch to specified revision when revision has specified' do
         command = /git checkout dummy/
-        @pattern.should_receive(:system).with(command).and_return(true)
+        expect(@pattern).to receive(:system).with(command).and_return(true)
 
         @pattern.revision = 'dummy'
         @pattern.send(:clone_repository) {}
@@ -173,7 +177,7 @@ describe Pattern do
 
       it 'won\'t change branch when revision is nil' do
         command = /git checkout/
-        @pattern.should_not_receive(:system).with(command)
+        expect(@pattern).not_to receive(:system).with(command)
 
         @pattern.send(:clone_repository) {}
       end
@@ -183,8 +187,13 @@ describe Pattern do
       end
 
       it 'will remove cloned repository after yield block' do
-        FileUtils.should_receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
+        expect(FileUtils).to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
         @pattern.send(:clone_repository) {}
+      end
+
+      it 'will remove cloned repository when some errors occurred while yielding block' do
+        expect(FileUtils).to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
+        expect { @pattern.send(:clone_repository) { fail } }.to raise_error
       end
     end
 
@@ -192,7 +201,7 @@ describe Pattern do
       it 'will load metadata.yml in cloned repository' do
         metadata = { name: 'name' }
         path = %r(tmp/patterns/[a-f0-9-]{36}/metadata.yml)
-        YAML.should_receive(:load_file).with(path).and_return(metadata)
+        expect(YAML).to receive(:load_file).with(path).and_return(metadata)
 
         result = @pattern.send(:load_metadata, @path)
         expect(result).to eq(metadata.with_indifferent_access)
@@ -203,7 +212,7 @@ describe Pattern do
       it 'raise error when Resources does not exist' do
         template = '{}'
         double = double('File', read: template)
-        File.stub(:open).with(/template.json/).and_return(double)
+        allow(File).to receive(:open).with(/template.json/).and_return(double)
         expect { @pattern.send(:load_roles, @path) }.to raise_error('Resources was not found')
       end
 
@@ -236,7 +245,7 @@ describe Pattern do
           }
         EOS
         double = double('File', read: template)
-        File.stub(:open).with(/template.json/).and_return(double)
+        allow(File).to receive(:open).with(/template.json/).and_return(double)
 
         roles = %w(nginx rails Dummy4)
         expect(@pattern.send(:load_roles, @path)).to match_array(roles)
@@ -277,7 +286,7 @@ describe Pattern do
             }
           }
         EOS
-        File.stub(:open).with(/template.json/).and_return(double('File', read: template))
+        allow(File).to receive(:open).with(/template.json/).and_return(double('File', read: template))
         parameters = @pattern.send(:load_parameters, @path)
         expect(parameters).to be_instance_of Hash
         expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType webImageId)
@@ -287,7 +296,7 @@ describe Pattern do
 
     describe '#update_metadata' do
       before do
-        Dir.stub(:chdir).and_yield
+        allow(Dir).to receive(:chdir).and_yield
       end
 
       it 'update name attribute with name in metadata' do
@@ -312,8 +321,8 @@ describe Pattern do
       end
 
       it 'update parameters attribute with parameters in template' do
-        parameters = [{ keyname: 'key_name', type: 'String' }]
-        @pattern.stub(:load_parameters).with(@path).and_return(parameters)
+        parameters = { keyname: { Type: 'String' } }
+        allow(@pattern).to receive(:load_parameters).with(@path).and_return(parameters)
         @pattern.send(:update_metadata, @path, {})
         expect(@pattern.parameters).to eq(parameters.to_json)
       end
@@ -321,7 +330,7 @@ describe Pattern do
       it 'update revision attribute when revision is nil' do
         hash = SecureRandom.hex(20)
         command = /git log --pretty=format:%H --max-count=1$/
-        @pattern.should_receive(:`).with(command).and_return(hash)
+        expect(@pattern).to receive(:`).with(command).and_return(hash)
 
         @pattern.send(:update_metadata, @path, {})
 
@@ -331,7 +340,7 @@ describe Pattern do
       it 'update revision attribute when revision is branch/tag' do
         hash = SecureRandom.hex(20)
         command = /git log --pretty=format:%H --max-count=1$/
-        @pattern.should_receive(:`).with(command).and_return(hash)
+        expect(@pattern).to receive(:`).with(command).and_return(hash)
 
         @pattern.revision = 'dummy'
         @pattern.send(:update_metadata, @path, {})
@@ -342,7 +351,7 @@ describe Pattern do
       it 'update revision attribute when revision is hash' do
         hash = SecureRandom.hex(20)
         command = /git log --pretty=format:%H --max-count=1$/
-        @pattern.should_receive(:`).with(command).and_return(hash)
+        expect(@pattern).to receive(:`).with(command).and_return(hash)
 
         @pattern.revision = hash
         @pattern.send(:update_metadata, @path, {})
@@ -353,7 +362,7 @@ describe Pattern do
 
     describe '#create_images' do
       before do
-        CloudConductor::PackerClient.any_instance.stub(:build)
+        allow_any_instance_of(CloudConductor::PackerClient).to receive(:build)
         @operating_systems = [FactoryGirl.create(:centos), FactoryGirl.create(:ubuntu)]
       end
 
@@ -374,23 +383,23 @@ describe Pattern do
         args << @operating_systems.map(&:name)
         args << 'nginx'
         args << 'dummy_platform'
-        CloudConductor::PackerClient.any_instance.should_receive(:build).with(*args)
+        expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(*args)
 
         @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
       end
 
       it 'update status of all images when call block' do
         results = {
-          "#{@cloud_aws.name}-#{@operating_systems.first.name}" => {
+          "#{@cloud_aws.name}#{BaseImage::SPLITTER}#{@operating_systems.first.name}" => {
             status: :SUCCESS,
             image: 'ami-12345678'
           },
-          "#{@cloud_openstack.name}-#{@operating_systems.first.name}" => {
+          "#{@cloud_openstack.name}#{BaseImage::SPLITTER}#{@operating_systems.first.name}" => {
             status: :ERROR,
             message: 'dummy_message'
           }
         }
-        CloudConductor::PackerClient.stub_chain(:new, :build) do |*_, &block|
+        allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build) do |*_, &block|
           @pattern.save!
           block.call results
         end
@@ -405,6 +414,41 @@ describe Pattern do
         expect(openstack.status).to eq(:ERROR)
         expect(openstack.image).to be_nil
         expect(openstack.message).to eq('dummy_message')
+      end
+    end
+
+    describe '#parameters' do
+      before do
+        @pattern.parameters = <<-EOS
+          {
+            "KeyName" : {
+              "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
+              "Type" : "String"
+            },
+            "SSHLocation" : {
+              "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
+              "Type" : "String"
+            },
+            "webImageId" : {
+              "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
+              "Type" : "String"
+            },
+            "webInstanceType" : {
+              "Description" : "WebServer instance type",
+              "Type" : "String"
+            }
+          }
+        EOS
+      end
+
+      it 'return parameters without [computed] annotation' do
+        parameters = JSON.parse(@pattern.parameters)
+        expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType)
+      end
+
+      it 'return all parameters when specified option' do
+        parameters = JSON.parse(@pattern.parameters true)
+        expect(parameters.keys).to eq %w(KeyName SSHLocation webImageId webInstanceType)
       end
     end
   end

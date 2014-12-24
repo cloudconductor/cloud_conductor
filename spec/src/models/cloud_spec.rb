@@ -56,9 +56,9 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
     end
 
-    it 'returns false when name contains hyphen character' do
+    it 'returns true when name contains hyphen character' do
       @cloud.name = 'sample-name'
-      expect(@cloud.valid?).to be_falsey
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns false when entry_point is unset' do
@@ -109,7 +109,7 @@ describe Cloud do
   describe '#client' do
     it 'return instance of CloudConductor::Client that is initialized by cloud type' do
       client = double('client')
-      CloudConductor::Client.should_receive(:new).with(@cloud).and_return(client)
+      expect(CloudConductor::Client).to receive(:new).with(@cloud).and_return(client)
 
       expect(@cloud.client).to eq(client)
     end
@@ -143,7 +143,7 @@ describe Cloud do
 
   describe '#template' do
     it 'load templates.yml and return JSON string' do
-      YAML.should_receive(:load_file).and_return('aws' => { 'key' => 'value' })
+      expect(YAML).to receive(:load_file).and_return('aws' => { 'key' => 'value' })
       expect(@cloud.template).to eq('{"key":"value"}')
     end
   end

@@ -28,30 +28,30 @@ module Serf
       before do
         options = { format: 'text' }
         @client = Client.new host: 'localhost', options: options
-        @client.stub(:systemu).and_return([double('status', 'success?' => true), '{}'])
+        allow(@client).to receive(:systemu).and_return([double('status', 'success?' => true), '{}'])
 
         @kv_stub = double('KV', merge: nil)
-        Consul::Client.stub_chain(:connect, :kv).and_return @kv_stub
+        allow(Consul::Client).to receive_message_chain(:connect, :kv).and_return @kv_stub
       end
 
       it 'will execute serf with specified options' do
-        @client.should_receive(:systemu).with(include('-format=text'))
+        expect(@client).to receive(:systemu).with(include('-format=text'))
         @client.call('info')
       end
 
       it 'will execute serf with specified main command' do
-        @client.should_receive(:systemu).with(include('info'))
+        expect(@client).to receive(:systemu).with(include('info'))
         @client.call('info')
       end
 
       it 'will execute serf with specified sub command' do
-        @client.should_receive(:systemu).with(include('dummy'))
+        expect(@client).to receive(:systemu).with(include('dummy'))
         @client.call('info', 'dummy')
       end
 
       it 'will call Consul::Client::KV#merge with specified payload' do
         payload = { key: 'value' }
-        @kv_stub.should_receive(:merge).with('cloudconductor/parameters', payload)
+        expect(@kv_stub).to receive(:merge).with('cloudconductor/parameters', payload)
         @client.call('info', nil, payload)
       end
     end

@@ -25,13 +25,20 @@ describe ApplicationHistory do
     @history.parameters = '{ "dummy": "value" }'
 
     @serf_client = double('serf_client', call: nil)
-    @application.system.stub(:serf).and_return(@serf_client)
+    allow(@application.system).to receive(:serf).and_return(@serf_client)
     @today = Date.today.strftime('%Y%m%d')
   end
 
   describe '#initialize' do
     it 'set status to :not_yet' do
       expect(@history.status).to eq(:not_yet)
+    end
+  end
+
+  describe '#status' do
+    it 'returns application history status as symbol' do
+      @history.status = 'sample'
+      expect(@history.status).to eq(:sample)
     end
   end
 
@@ -69,21 +76,21 @@ describe ApplicationHistory do
 
     describe 'before_save' do
       it 'will call serf_request if system already created' do
-        @history.should_receive(:serf_request)
+        expect(@history).to receive(:serf_request)
         @history.save!
       end
 
       it 'will not call serf_request if system hasn\'t created' do
         @history.application.system.ip_address = nil
 
-        @history.should_not_receive(:serf_request)
+        expect(@history).not_to receive(:serf_request)
         @history.save!
       end
 
       it 'will not call serf_request if already deployed' do
         @history.status = :deployed
 
-        @history.should_not_receive(:serf_request)
+        expect(@history).not_to receive(:serf_request)
         @history.save!
       end
     end
@@ -115,7 +122,7 @@ describe ApplicationHistory do
           }
         }
 
-        @serf_client.should_receive(:call).with('event', 'deploy', payload)
+        expect(@serf_client).to receive(:call).with('event', 'deploy', payload)
         @history.save!
       end
 
@@ -133,7 +140,7 @@ describe ApplicationHistory do
           )
         end
 
-        @serf_client.should_receive(:call).with('event', 'deploy', expected_payload)
+        expect(@serf_client).to receive(:call).with('event', 'deploy', expected_payload)
         @history.save!
       end
     end

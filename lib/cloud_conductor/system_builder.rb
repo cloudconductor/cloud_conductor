@@ -26,6 +26,7 @@ module CloudConductor
       ActiveRecord::Base.connection_pool.with_connection do
         @clouds.each do |cloud|
           begin
+            Log.info "Start creating stacks of system(#{@system.name}) on #{cloud.name}"
             until @system.stacks.select(&:pending?).empty?
               platforms = @system.stacks.select(&:pending?).select(&:platform?)
               optionals = @system.stacks.select(&:pending?).select(&:optional?)
@@ -49,8 +50,8 @@ module CloudConductor
             Log.info "Created all stacks on system(#{@system.name}) on #{cloud.name}"
             break
           rescue => e
-            Log.error "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
-            Log.error e
+            Log.warn "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
+            Log.warn e.message
             reset_stacks
           end
         end
@@ -70,6 +71,7 @@ module CloudConductor
     def wait_for_finished(stack, timeout)
       elapsed_time = 0
 
+      Log.debug "Wait until status of stack has changed for #{stack.name}"
       loop do
         sleep CHECK_PERIOD
         elapsed_time += CHECK_PERIOD
@@ -78,7 +80,6 @@ module CloudConductor
         fail "Target stack(#{stack.name}) record is already deleted" unless Stack.where(id: stack.id).exists?
 
         status = stack.status
-        Log.debug "Checking status of stack for #{stack.name} ... #{status}"
 
         unless %i(CREATE_IN_PROGRESS CREATE_COMPLETE).include? stack.status
           fail "Unknown error has occurred while create stack(#{stack.status})"
@@ -142,7 +143,9 @@ module CloudConductor
       @system.ip_address = nil
       @system.monitoring_host = nil
       @system.template_parameters = '{}'
-      @system.stacks = @system.stacks.reload.map(&:dup)
+      stacks = @system.stacks.map(&:dup)
+      @system.destroy_stacks
+      @system.stacks = stacks
 
       @system.save!
     end

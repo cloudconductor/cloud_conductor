@@ -1,6 +1,23 @@
 CHANGELOG
 =========
 
+## version 0.3.2 (2014/12/24)
+  - Switch from zabbixapi to red-tux/zbxapi to support any versions of Zabbix.
+  - Reduce unnecessary logs.
+  - Remove chef_status from response of system list to improve latency.
+  - Remove computed parameter from response of `/systems/:id/parameters`.
+  - Remove composite primary key on candidates table.
+  - Ensure to remove temporary files.
+  - Brush up patches that is contained in OpenStack converter.
+  - Modify name of images that created on AWS or OpenStack.
+  - Fill base ami-id when create patterns automatically.
+  - Improve speed of specs on System model.
+  - Extract converter to cloudconductor/cfn-converter gem.
+  - Destroy stacks in order that prefer optional pattern to platform pattern.
+  - Use rspec3 instead of rspec2 when execute specs.
+  - Allow hyphen character in name of cloud.
+  - Rename table name from targets to base_images.
+
 ## version 0.3.0 (2014/10/31)
 
   - Redesigned of system provisioning architecture over patterns

@@ -37,9 +37,7 @@ class CloudsController < Sinatra::Base
 
   post '/' do
     cloud = Cloud.new cloud_permit_params
-    (params[:targets] || []).each do |target_params|
-      cloud.targets.build target_permit_params(target_params)
-    end
+    cloud.base_images.build source_image: params[:base_image_id]
     unless cloud.save
       status 400
       return json message: cloud.errors
@@ -85,9 +83,5 @@ class CloudsController < Sinatra::Base
 
   def cloud_permit_params
     ActionController::Parameters.new(params).permit(:name, :type, :entry_point, :key, :secret, :tenant_name)
-  end
-
-  def target_permit_params(target_params)
-    ActionController::Parameters.new(target_params).permit(:operating_system_id, :source_image, :ssh_username)
   end
 end

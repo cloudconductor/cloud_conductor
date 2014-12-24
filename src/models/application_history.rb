@@ -40,6 +40,10 @@ class ApplicationHistory < ActiveRecord::Base
     self.status ||= :not_yet
   end
 
+  def status
+    super && super.to_sym
+  end
+
   def allocate_version
     today = Date.today.strftime('%Y%m%d')
 

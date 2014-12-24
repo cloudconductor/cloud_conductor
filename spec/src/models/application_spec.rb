@@ -14,8 +14,8 @@
 # limitations under the License.
 describe Application do
   before do
-    @system = FactoryGirl.create(:system)
-    @system.stub(:serf).and_return(double('serf_client', call: nil))
+    @system = FactoryGirl.build(:system)
+    allow(@system).to receive(:serf).and_return(double('serf_client', call: nil))
 
     @application = Application.new
     @application.name = 'dummy'

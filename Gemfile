@@ -8,9 +8,8 @@ gem 'sinatra'
 gem 'sinatra-contrib'
 
 gem 'sqlite3'
-gem 'activerecord', '4.1.5'
+gem 'activerecord'
 gem 'activesupport', require: 'active_support/dependencies'
-gem 'composite_primary_keys'
 gem 'sinatra-activerecord'
 gem 'actionpack'
 
@@ -19,13 +18,16 @@ gem 'mixlib-log'
 
 gem 'aws-sdk'
 gem 'fog'
-gem 'zabbixapi'
+gem 'zbxapi', '0.3.8'
 
 gem 'systemu'
 
 gem 'faraday'
 gem 'rb-readline'
 gem 'unicorn'
+
+gem 'cfn_converter', git: 'https://github.com/cloudconductor/cfn_converter.git',
+                     branch: 'develop'
 
 group :development do
   gem 'guard'
@@ -37,14 +39,14 @@ group :development do
 end
 
 group :test do
-  gem 'rspec', '~>2'
+  gem 'rspec'
   gem 'rspec-mocks'
   gem 'rspec_junit_formatter'
   gem 'simplecov'
   gem 'simplecov-rcov'
   gem 'database_cleaner'
   gem 'guard-rspec', require: false
-  gem 'spork'
-  gem 'guard-spork'
   gem 'factory_girl'
+  gem 'spork', git: 'https://github.com/sporkrb/spork.git'
+  gem 'guard-spork', '~>2'
 end
