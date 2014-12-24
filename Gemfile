@@ -18,7 +18,8 @@ gem 'mixlib-log'
 
 gem 'aws-sdk'
 gem 'fog'
-gem 'zbxapi'
+gem 'zbxapi', git: 'https://github.com/cloudconductor-dev/zbxapi.git',
+              branch: 'skip-authentication'
 
 gem 'systemu'
 
