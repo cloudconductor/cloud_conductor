@@ -35,7 +35,7 @@ module Consul
         response = @faraday.put("event/fire/#{event}")
         return nil unless response.success?
 
-        JSON.parse(response.body).with_indifferent_access
+        JSON.parse(response.body)['ID']
       end
 
       def sync_fire(event, payload = {})

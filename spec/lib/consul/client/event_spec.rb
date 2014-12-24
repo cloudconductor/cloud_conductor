@@ -47,15 +47,13 @@ module Consul
           expect(@client.fire(:error)).to be_nil
         end
 
-        it 'return hash that contains ID and name' do
+        it 'return consul event ID' do
           body = %({"ID":"12345678-1234-1234-1234-1234567890ab","Name":"configure","Payload":null,"NodeFilter":"","ServiceFilter":"","TagFilter":"","Version":1,"LTime":0})
           @stubs.put('/v1/event/fire/configure') { [200, {}, body] }
 
           result = @client.fire(:configure)
-          expect(result).to be_is_a Hash
-          expect(result.keys).to match_array %w(ID Name Payload NodeFilter ServiceFilter TagFilter Version LTime)
-          expect(result[:ID]).to match(/^[a-f0-9\-]{36}$/)
-          expect(result[:Name]).to eq('configure')
+          expect(result).to be_is_a String
+          expect(result).to match(/^[a-f0-9\-]{36}$/)
         end
       end
 
