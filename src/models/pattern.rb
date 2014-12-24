@@ -56,7 +56,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
       status, stdout, stderr = systemu('consul keygen')
       fail "consul keygen failed.\n#{stderr}" unless status.success?
-      consul_security_key = stdout
+      consul_security_key = stdout.chomp
 
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
