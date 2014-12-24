@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 
-gem 'rack', '~> 1.5.2'
+gem 'rack'
 gem 'rack-parser'
 gem 'sinatra'
 gem 'sinatra-contrib'
