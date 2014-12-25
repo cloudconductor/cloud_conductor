@@ -40,8 +40,15 @@ module Consul
 
       def sync_fire(event, payload = {})
         event_id = fire(event, payload)
-        Timeout.timeout(TIMEOUT) { sleep 5 until get(event_id).finished? }
-        event_results = get(event_id)
+        event_results = nil
+        Timeout.timeout(TIMEOUT) do
+          while true
+            event_results = get(event_id)
+            break if event_results && event_results.finished?
+            sleep 5
+          end
+        end
+
         unless event_results.success?
           result_log = {}
           event_results.hostnames.each do |hostname|

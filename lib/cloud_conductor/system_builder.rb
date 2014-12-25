@@ -114,7 +114,7 @@ module CloudConductor
     def finish_system
       @system.consul.event.sync_fire(:configure, configure_payload(@system))
       @system.consul.event.sync_fire(:restore, application_payload(@system))
-      @system.consul.event.sync_fire(:deploy, application_payload(@system))
+      @system.consul.event.sync_fire(:deploy, application_payload(@system)) unless @system.applications.empty?
 
       @system.applications.map(&:latest).compact.each do |history|
         history.status = :deployed

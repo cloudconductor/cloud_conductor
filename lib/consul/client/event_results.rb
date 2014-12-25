@@ -28,8 +28,8 @@ module Consul
             event_id: value['event_id'],
             type: value['type'],
             result: value['result'] && value['result'].to_i,
-            start_datetime: DateTime.parse(value['start_datetime']),
-            end_datetime: DateTime.parse(value['end_datetime']),
+            start_datetime: value['start_datetime'] && DateTime.parse(value['start_datetime']),
+            end_datetime: value['end_datetime'] && DateTime.parse(value['end_datetime']),
             log: value['log']
           }
           @results[hostname] = result
