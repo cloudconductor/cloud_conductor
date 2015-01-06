@@ -42,7 +42,7 @@ module Consul
         event_id = fire(event, payload)
         event_results = nil
         Timeout.timeout(TIMEOUT) do
-          while true
+          loop do
             event_results = get(event_id)
             break if event_results && event_results.finished?
             sleep 5
