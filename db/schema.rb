@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141203003236) do
+ActiveRecord::Schema.define(version: 20150106012640) do
 
   create_table "application_histories", force: :cascade do |t|
     t.integer  "application_id"
@@ -90,6 +90,7 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.text     "parameters"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "consul_security_key"
   end
 
   create_table "patterns_clouds", force: :cascade do |t|

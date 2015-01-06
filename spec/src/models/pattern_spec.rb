@@ -381,7 +381,7 @@ describe Pattern do
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
       end
 
-      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems and role' do
+      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems, role, pattern_name and consul_security_key' do
         parameters = {}
         parameters[:repository_url] = @pattern.url
         parameters[:revision] = @pattern.revision
