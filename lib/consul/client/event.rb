@@ -20,19 +20,17 @@ module Consul
       PAYLOAD_KEY = 'cloudconductor/parameters'
       TIMEOUT = 1800
 
-      def initialize(options = {})
-        @options = options
+      def initialize(faraday, options = {})
+        @faraday = faraday
+        @token = options[:token]
 
-        url = URI::HTTP.build(host: options[:host], port: options[:port], path: '/v1')
-        @faraday = Faraday.new url
-
-        @kv = KV.new options
+        @kv = KV.new @faraday, options
       end
 
       def fire(event, payload = {})
         @kv.merge PAYLOAD_KEY, payload
 
-        response = @faraday.put("event/fire/#{event}")
+        response = @faraday.put("event/fire/#{event}", @token)
         return nil unless response.success?
 
         JSON.parse(response.body)['ID']

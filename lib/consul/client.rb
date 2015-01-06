@@ -29,20 +29,25 @@ module Consul
       def initialize(options = {})
         fail 'Consul::Client require host option' unless options[:host]
         @options = DEFAULT_OPTIONS.merge(options)
+
+        if @options[:ssl]
+          url = URI::HTTPS.build(host: @options[:host], port: @options[:port], path: '/v1')
+          @faraday = Faraday.new url, ssl: @options[:ssl_options]
+        else
+          url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/v1')
+          @faraday = Faraday.new url
+        end
       end
 
       def kv
-        Consul::Client::KV.new @options
+        Consul::Client::KV.new @faraday, @options
       end
 
       def event
-        Consul::Client::Event.new @options
+        Consul::Client::Event.new @faraday, @options
       end
 
       def running?
-        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/')
-        @faraday = Faraday.new url
-
         response = @faraday.get('/')
         response.success?
       rescue

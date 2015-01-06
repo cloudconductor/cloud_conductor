@@ -26,7 +26,8 @@ module Consul
           end
         end
 
-        @client = KV.new host: 'localhost'
+        @faraday = Faraday.new('http://localhost/v1')
+        @client = KV.new @faraday, token: 'dummy_token'
       end
 
       describe '#get' do
@@ -60,6 +61,13 @@ module Consul
           add_stub '/v1/kv/json', '{ "key": "value" }'
           expect(@client.get 'json').to eq('key' => 'value')
         end
+
+        it 'send GET request with token' do
+          @stubs.get('/v1/kv/json') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
+          end
+          @client.get 'json'
+        end
       end
 
       describe '#put' do
@@ -82,6 +90,13 @@ module Consul
         it 'will request PUT /v1/kv with JSON encoded value if value is Hash' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('{"key":"value"}')
+          end
+          @client.put 'dummy', key: 'value'
+        end
+
+        it 'send PUT request with token' do
+          @stubs.put('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
           end
           @client.put 'dummy', key: 'value'
         end

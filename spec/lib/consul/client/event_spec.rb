@@ -30,7 +30,8 @@ module Consul
         allow(@kv).to receive(:merge)
         allow(Consul::Client::KV).to receive(:new).and_return(@kv)
 
-        @client = Consul::Client::Event.new host: 'localhost'
+        @faraday = Faraday.new('http://localhost/v1')
+        @client = Consul::Client::Event.new @faraday, token: 'dummy_token'
       end
 
       describe '#fire' do
@@ -54,6 +55,13 @@ module Consul
           result = @client.fire(:configure)
           expect(result).to be_is_a String
           expect(result).to match(/^[a-f0-9\-]{36}$/)
+        end
+
+        it 'send PUT request with token' do
+          @stubs.put('/v1/event/fire/dummy') do |env|
+            expect(env.body).to eq('dummy_token')
+          end
+          @client.fire(:dummy)
         end
       end
 
