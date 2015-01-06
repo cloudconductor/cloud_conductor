@@ -118,7 +118,7 @@ module CloudConductor
     def finish_system
       payload = {
         cloudconductor: {
-          seed: SecureRandom.hex,
+          salt: SecureRandom.hex,
           patterns: {
           }
         }

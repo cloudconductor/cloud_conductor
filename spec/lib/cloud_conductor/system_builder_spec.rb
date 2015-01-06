@@ -185,9 +185,9 @@ module CloudConductor
         allow(@builder).to receive(:sleep)
       end
 
-      it 'will request configure event with random seed' do
+      it 'will request configure event with random salt' do
         expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:seed]).to match(/[0-9a-f]{32}/)
+          expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
         end
 
         expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
