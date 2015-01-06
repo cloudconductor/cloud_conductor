@@ -94,7 +94,7 @@ module CloudConductor
           ip_address = outputs['FrontendAddress']
           Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-          consul = Consul::Client.connect host: ip_address
+          consul = Consul::Client.connect Defines.consul.merge(host: ip_address)
           next unless consul.running?
         end
 
