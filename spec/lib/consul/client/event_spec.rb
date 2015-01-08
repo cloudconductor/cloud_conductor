@@ -28,6 +28,7 @@ module Consul
 
         @kv = double(:kv)
         allow(@kv).to receive(:merge)
+        allow(@kv).to receive(:get)
         allow(Consul::Client::KV).to receive(:new).and_return(@kv)
 
         @faraday = Faraday.new('http://localhost/v1')
@@ -119,30 +120,28 @@ module Consul
         end
 
         it 'return EventResults that is created from responsed json' do
-          body = <<-EOS
-            [
-              {
-                "CreateIndex":88,
-                "ModifyIndex":91,
-                "LockIndex":0,
-                "Key":"event/12345678-1234-1234-1234-1234567890ab/host1",
-                "Flags":0,
-                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
-              },
-              {
-                "CreateIndex":89,
-                "ModifyIndex":90,
-                "LockIndex":0,
-                "Key":"event/12345678-1234-1234-1234-1234567890ab/host2",
-                "Flags":0,
-                "Value":"eyJldmVudF9pZCI6IjRlZTVkMmE2LTg1M2EtMjFhOS03NDYzLWVmMTg2NjQ2OGI3NiIsInR5cGUiOiJjb25maWd1cmUiLCJyZXN1bHQiOiIwIiwic3RhcnRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA3KzA5MDAiLCJlbmRfZGF0ZXRpbWUiOiIyMDE0LTEyLTE2VDE0OjQ0OjA5KzA5MDAiLCJsb2ciOiJEdW1teSBjb25zdWwgZXZlbnQgbG9nIn0="
-              }
-            ]
-          EOS
+          value = {
+            'event/12345678-1234-1234-1234-1234567890ab/host1' => {
+              'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
+              'type' => 'configure',
+              'result' => '0',
+              'start_datetime' => '2014-12-16T14:44:07+0900',
+              'end_datetime' => '2014-12-16T14:44:09+0900',
+              'log' => 'Dummy consul event log1'
+            },
+            'event/12345678-1234-1234-1234-1234567890ab/host2' => {
+              'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
+              'type' => 'configure',
+              'result' => '0',
+              'start_datetime' => '2014-12-16T14:44:07+0900',
+              'end_datetime' => '2014-12-16T14:44:09+0900',
+              'log' => 'Dummy consul event log2'
+            }
+          }
 
-          @stubs.get('/v1/kv/event/12345678-1234-1234-1234-1234567890ab?recurse=') { [200, {}, body] }
+          allow(@kv).to receive(:get).and_return(value)
 
-          expect(EventResults).to receive(:parse).with(body).and_return(EventResults.new('[]'))
+          expect(EventResults).to receive(:new).with(value).and_return(EventResults.new(value))
           expect(@client.get('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventResults)
         end
       end

@@ -15,15 +15,10 @@
 module Consul
   module Client
     class EventResults
-      def self.parse(json)
-        new json
-      end
-
-      def initialize(json)
+      def initialize(response)
         @results = {}
-        JSON.parse(json).each do |parsed_result|
-          hostname = parsed_result['Key'].split('/').last
-          value = JSON.parse(Base64.decode64(parsed_result['Value']))
+        response.each do |key, value|
+          hostname = key.split('/').last
           result = {
             event_id: value['event_id'],
             type: value['type'],

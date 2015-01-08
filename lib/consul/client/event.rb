@@ -58,10 +58,10 @@ module Consul
       end
 
       def get(id)
-        response = @faraday.get("kv/event/#{id}?recurse")
-        return nil unless response.success?
+        response = @kv.get("event/#{id}", true)
+        return nil unless response
 
-        EventResults.parse(response.body)
+        EventResults.new(response)
       end
     end
   end
