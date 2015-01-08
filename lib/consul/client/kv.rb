@@ -20,15 +20,18 @@ module Consul
         @token = options[:token]
       end
 
-      def get(key)
-        response = @faraday.get("kv/#{key}?token=#{@token}")
+      def get(key, is_recurse = false)
+        query = "token=#{@token}"
+        query << '&recurse' if is_recurse
+        response = @faraday.get("kv/#{key}?#{query}")
         return nil unless response.success?
 
-        hash = JSON.parse(response.body).first.with_indifferent_access
-        value = Base64.decode64 hash[:Value]
-        JSON.parse(value).with_indifferent_access
-      rescue
-        value
+        result = {}
+        JSON.parse(response.body).each do |entry|
+          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value'])
+        end
+
+        is_recurse ? result : result.values.first
       end
 
       def put(key, value)
@@ -40,6 +43,14 @@ module Consul
         previous = get(key)
         value = previous.deep_merge value if previous.is_a? Hash
         put(key, value)
+      end
+
+      private
+
+      def safety_parse(value)
+        JSON.parse(value).with_indifferent_access
+      rescue
+        value
       end
     end
   end
