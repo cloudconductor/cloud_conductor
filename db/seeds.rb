@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-operating_system = OperatingSystem.new
-operating_system.name = 'centos'
-operating_system.version = '6.5'
-operating_system.save!
+if OperatingSystem.count == 0
+  operating_system = OperatingSystem.new
+  operating_system.name = 'centos'
+  operating_system.version = '6.5'
+  operating_system.save!
+end
