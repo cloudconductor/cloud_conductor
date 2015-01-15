@@ -26,17 +26,16 @@ module Consul
         end
       end
 
-      @client = Consul::Client.new host: 'localhost'
+      @client = Consul::Client.new 'localhost'
     end
 
     describe '#initialize' do
       it 'raise error when host does not specified' do
-        expect { Consul::Client.new }.to raise_error 'Consul::Client require host option'
+        expect { Consul::Client.new(nil) }.to raise_error 'Consul::Client require host option'
       end
 
       it 'does not occurred any error when specified valid options' do
-        options = { host: 'localhost' }
-        Consul::Client.new options
+        Consul::Client.new 'localhost'
       end
     end
 

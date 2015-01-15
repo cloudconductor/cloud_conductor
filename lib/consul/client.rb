@@ -17,26 +17,21 @@ require 'consul/client/event'
 
 module Consul
   class Client
-    DEFAULT_OPTIONS = {
-      port: 8500
-    }
-
     attr_reader :kv, :event
 
-    def initialize(options = {})
-      fail 'Consul::Client require host option' unless options[:host]
-      @options = DEFAULT_OPTIONS.merge(options)
+    def initialize(host, port = 8500, options = {})
+      fail 'Consul::Client require host option' unless host
 
-      if @options[:ssl]
-        url = URI::HTTPS.build(host: @options[:host], port: @options[:port], path: '/v1')
-        @faraday = Faraday.new url, ssl: @options[:ssl_options]
+      if options[:ssl]
+        url = URI::HTTPS.build(host: host, port: port, path: '/v1')
+        @faraday = Faraday.new url, ssl: options[:ssl_options]
       else
-        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/v1')
+        url = URI::HTTP.build(host: host, port: port, path: '/v1')
         @faraday = Faraday.new url
       end
 
-      @kv = Consul::Client::KV.new @faraday, @options
-      @event = Consul::Client::Event.new @faraday, @options
+      @kv = Consul::Client::KV.new @faraday, options
+      @event = Consul::Client::Event.new @faraday, options
     end
 
     def running?

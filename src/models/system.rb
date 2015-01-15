@@ -107,7 +107,10 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     fail 'ip_address does not specified' unless ip_address
 
     token = stacks.first.pattern.consul_security_key
-    Consul::Client.new(CloudConductor::Defines.consul.merge(options.merge(host: ip_address, token: token)))
+
+    options = CloudConductor::Defines.consul.merge(options.merge(token: token))
+    port = options.delete(:port)
+    Consul::Client.new(ip_address, port, options)
   end
 
   TIMEOUT = 1800
