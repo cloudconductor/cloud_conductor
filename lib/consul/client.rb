@@ -21,6 +21,8 @@ module Consul
       port: 8500
     }
 
+    attr_reader :kv, :event
+
     def initialize(options = {})
       fail 'Consul::Client require host option' unless options[:host]
       @options = DEFAULT_OPTIONS.merge(options)
@@ -32,14 +34,9 @@ module Consul
         url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/v1')
         @faraday = Faraday.new url
       end
-    end
 
-    def kv
-      Consul::Client::KV.new @faraday, @options
-    end
-
-    def event
-      Consul::Client::Event.new @faraday, @options
+      @kv = Consul::Client::KV.new @faraday, @options
+      @event = Consul::Client::Event.new @faraday, @options
     end
 
     def running?
