@@ -2,3 +2,6 @@ inherit_from: ../.rubocop.yml
 
 LineLength:
   Enabled: false
+
+ClassLength:
+  Enabled: false

@@ -100,7 +100,7 @@ module CloudConductor
         allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
         allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
-        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return true
+        allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
       end
 
       it 'execute without error' do
@@ -137,7 +137,7 @@ module CloudConductor
       end
 
       it 'infinity loop and timeout while consul doesn\'t running' do
-        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return false
+        allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
     end

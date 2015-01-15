@@ -350,7 +350,7 @@ describe System do
 
     it 'return consul client when ip_address already specified' do
       @system.ip_address = '127.0.0.1'
-      expect(@system.consul).to be_is_a Consul::Client::Client
+      expect(@system.consul).to be_is_a Consul::Client
     end
   end
 

@@ -15,7 +15,7 @@
 require_relative 'event_results'
 
 module Consul
-  module Client
+  class Client
     class Event
       PAYLOAD_KEY = 'cloudconductor/parameters'
       TIMEOUT = 1800

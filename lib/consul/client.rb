@@ -16,43 +16,37 @@ require 'consul/client/kv'
 require 'consul/client/event'
 
 module Consul
-  module Client
-    def self.connect(options = {})
-      Consul::Client::Client.new options
+  class Client
+    DEFAULT_OPTIONS = {
+      port: 8500
+    }
+
+    def initialize(options = {})
+      fail 'Consul::Client require host option' unless options[:host]
+      @options = DEFAULT_OPTIONS.merge(options)
+
+      if @options[:ssl]
+        url = URI::HTTPS.build(host: @options[:host], port: @options[:port], path: '/v1')
+        @faraday = Faraday.new url, ssl: @options[:ssl_options]
+      else
+        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/v1')
+        @faraday = Faraday.new url
+      end
     end
 
-    class Client
-      DEFAULT_OPTIONS = {
-        port: 8500
-      }
+    def kv
+      Consul::Client::KV.new @faraday, @options
+    end
 
-      def initialize(options = {})
-        fail 'Consul::Client require host option' unless options[:host]
-        @options = DEFAULT_OPTIONS.merge(options)
+    def event
+      Consul::Client::Event.new @faraday, @options
+    end
 
-        if @options[:ssl]
-          url = URI::HTTPS.build(host: @options[:host], port: @options[:port], path: '/v1')
-          @faraday = Faraday.new url, ssl: @options[:ssl_options]
-        else
-          url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/v1')
-          @faraday = Faraday.new url
-        end
-      end
-
-      def kv
-        Consul::Client::KV.new @faraday, @options
-      end
-
-      def event
-        Consul::Client::Event.new @faraday, @options
-      end
-
-      def running?
-        response = @faraday.get('/')
-        response.success?
-      rescue
-        false
-      end
+    def running?
+      response = @faraday.get('/')
+      response.success?
+    rescue
+      false
     end
   end
 end
