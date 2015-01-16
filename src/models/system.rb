@@ -103,14 +103,24 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     dns_client.update domain, ip_address
   end
 
-  def consul(options = {})
+  def consul
     fail 'ip_address does not specified' unless ip_address
 
     token = stacks.first.pattern.consul_security_key
 
-    options = CloudConductor::Defines.consul.merge(options.merge(token: token))
+    options = CloudConductor::Defines.consul.merge(token: token)
     port = options.delete(:port)
     Consul::Client.new(ip_address, port, options)
+  end
+
+  def event
+    fail 'ip_address does not specified' unless ip_address
+
+    token = stacks.first.pattern.consul_security_key
+
+    options = CloudConductor::Defines.consul.merge(token: token)
+    port = options.delete(:port)
+    CloudConductor::Event.new(ip_address, port, options)
   end
 
   TIMEOUT = 1800

@@ -31,7 +31,7 @@ module Consul
       end
 
       @kv = Consul::Client::KV.new @faraday, options
-      @event = Consul::Client::Event.new @faraday, options
+      @event = Consul::Client::Event.new @faraday
     end
 
     def running?

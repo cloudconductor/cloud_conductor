@@ -12,56 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require_relative 'event_results'
-
 module Consul
   class Client
     class Event
-      PAYLOAD_KEY = 'cloudconductor/parameters'
-      TIMEOUT = 1800
-
-      def initialize(faraday, options = {})
+      def initialize(faraday)
         @faraday = faraday
-        @token = options[:token]
-
-        @kv = KV.new @faraday, options
       end
 
-      def fire(event, payload = {})
-        @kv.merge PAYLOAD_KEY, payload
-
-        response = @faraday.put("event/fire/#{event}", @token)
+      def fire(event, payload = nil)
+        response = @faraday.put("event/fire/#{event}", payload)
         return nil unless response.success?
 
         JSON.parse(response.body)['ID']
-      end
-
-      def sync_fire(event, payload = {})
-        event_id = fire(event, payload)
-        event_results = nil
-        Timeout.timeout(TIMEOUT) do
-          loop do
-            event_results = get(event_id)
-            break if event_results && event_results.finished?
-            sleep 5
-          end
-        end
-
-        unless event_results.success?
-          result_log = {}
-          event_results.hostnames.each do |hostname|
-            result_log[hostname] = event_results[hostname][:log]
-          end
-          fail result_log.to_json
-        end
-        event_id
-      end
-
-      def get(id)
-        response = @kv.get("event/#{id}", true)
-        return nil unless response
-
-        EventResults.new(response)
       end
     end
   end

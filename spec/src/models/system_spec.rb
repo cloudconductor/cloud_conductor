@@ -354,6 +354,18 @@ describe System do
     end
   end
 
+  describe '#event' do
+    it 'will fail when ip_address does not specified' do
+      @system.ip_address = nil
+      expect { @system.event }.to raise_error('ip_address does not specified')
+    end
+
+    it 'return event client when ip_address already specified' do
+      @system.ip_address = '127.0.0.1'
+      expect(@system.event).to be_is_a CloudConductor::Event
+    end
+  end
+
   describe '#as_json' do
     before do
       @system.id = 1

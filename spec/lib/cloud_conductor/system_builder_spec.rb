@@ -176,10 +176,7 @@ module CloudConductor
         @optional_stack.save!
 
         @event = double(:event, sync_fire: 1)
-        @consul_client = double(:consul_client, event: @event)
-
-        allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
-        allow(@system).to receive(:consul).and_return(@consul_client)
+        allow(@system).to receive(:event).and_return(@event)
         allow(@builder).to receive(:configure_payload).and_return({})
         allow(@builder).to receive(:application_payload).and_return({})
       end
