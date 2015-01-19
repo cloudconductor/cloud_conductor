@@ -81,7 +81,7 @@ module CloudConductor
       vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
       vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
       vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
-      vars_text << " -var 'consul_security_key=#{parameters[:consul_security_key]}'"
+      vars_text << " -var 'consul_secret_key=#{parameters[:consul_secret_key]}'"
 
       "#{@packer_path} build -machine-readable #{vars_text} -only=#{parameters[:only]} #{parameters[:packer_json_path]}"
     end

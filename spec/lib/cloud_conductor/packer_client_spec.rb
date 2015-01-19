@@ -59,7 +59,7 @@ module CloudConductor
           operating_systems: @operating_systems,
           role: 'nginx',
           pattern_name: 'dummy_pattern_name',
-          consul_security_key: 'dummy key'
+          consul_secret_key: 'dummy key'
         }
 
         allow(@client).to receive(:create_json).and_return('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
@@ -196,11 +196,11 @@ module CloudConductor
         client.send(:build_command, @parameters)
       end
 
-      it 'return command with consul_security_key that is created by `consul keygen`' do
+      it 'return command with consul_secret_key that is created by `consul keygen`' do
         vars = []
-        vars << "-var 'consul_security_key=dummy key'"
+        vars << "-var 'consul_secret_key=dummy key'"
 
-        @parameters.merge!(consul_security_key: 'dummy key')
+        @parameters.merge!(consul_secret_key: 'dummy key')
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
       end

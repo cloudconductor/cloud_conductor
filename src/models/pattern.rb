@@ -56,11 +56,11 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
       status, stdout, stderr = systemu('consul keygen')
       fail "consul keygen failed.\n#{stderr}" unless status.success?
-      self.consul_security_key = stdout.chomp
+      self.consul_secret_key = stdout.chomp
 
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
-        create_images operating_systems, role, metadata[:name], consul_security_key
+        create_images operating_systems, role, metadata[:name], consul_secret_key
       end
     end
 
@@ -142,7 +142,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  def create_images(operating_systems, role, pattern_name, consul_security_key) # rubocop:disable MethodLength
+  def create_images(operating_systems, role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
     clouds.each do |cloud|
       operating_systems.each do |operating_system|
         images.build(cloud: cloud, operating_system: operating_system, role: role)
@@ -156,7 +156,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     parameters[:operating_systems] = operating_systems.map(&:name)
     parameters[:role] = role
     parameters[:pattern_name] = pattern_name
-    parameters[:consul_security_key] = consul_security_key
+    parameters[:consul_secret_key] = consul_secret_key
 
     CloudConductor::PackerClient.new.build parameters do |results|
       results.each do |key, result|

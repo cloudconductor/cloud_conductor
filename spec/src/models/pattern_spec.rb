@@ -381,7 +381,7 @@ describe Pattern do
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
       end
 
-      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems, role, pattern_name and consul_security_key' do
+      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems, role, pattern_name and consul_secret_key' do
         parameters = {}
         parameters[:repository_url] = @pattern.url
         parameters[:revision] = @pattern.revision
@@ -389,7 +389,7 @@ describe Pattern do
         parameters[:operating_systems] = @operating_systems.map(&:name)
         parameters[:role] = 'nginx'
         parameters[:pattern_name] = 'dummy_platform'
-        parameters[:consul_security_key] = 'dummy key'
+        parameters[:consul_secret_key] = 'dummy key'
         expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(parameters)
 
         @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')

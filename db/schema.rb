@@ -88,9 +88,9 @@ ActiveRecord::Schema.define(version: 20150106012640) do
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
-    t.string   "consul_security_key"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+    t.string   "consul_secret_key"
   end
 
   create_table "patterns_clouds", force: :cascade do |t|
