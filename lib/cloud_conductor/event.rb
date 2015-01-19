@@ -20,7 +20,7 @@ module CloudConductor
     TIMEOUT = 1800
 
     def initialize(host, port = 8500, options = {})
-      @token = options.delete(:token)
+      @token = options[:token]
       @client = Consul::Client.new(host, port, options)
     end
 
