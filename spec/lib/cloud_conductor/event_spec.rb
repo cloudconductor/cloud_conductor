@@ -54,9 +54,9 @@ module CloudConductor
       it 'return consul event ID' do
         allow(@client).to receive_message_chain(:event, :fire).and_return('12345678-1234-1234-1234-1234567890ab')
 
-        result = @event.fire(:configure)
-        expect(result).to be_is_a String
-        expect(result).to match(/^[a-f0-9\-]{36}$/)
+        event_id = @event.fire(:configure)
+        expect(event_id).to be_is_a String
+        expect(event_id).to match(/^[a-f0-9\-]{36}$/)
       end
     end
 
