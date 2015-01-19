@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require_relative 'event_results'
+require_relative 'event_log'
 
 module CloudConductor
   class Event
@@ -32,12 +32,12 @@ module CloudConductor
     def sync_fire(name, payload = {})
       event_id = fire(name, payload)
       wait(event_id)
-      event_results = find(event_id)
+      event_log = find(event_id)
 
-      unless event_results.success?
+      unless event_log.success?
         result_log = {}
-        event_results.hostnames.each do |hostname|
-          result_log[hostname] = event_results[hostname][:log]
+        event_log.hostnames.each do |hostname|
+          result_log[hostname] = event_log[hostname][:log]
         end
         fail result_log.to_json
       end
@@ -45,11 +45,11 @@ module CloudConductor
     end
 
     def wait(event_id)
-      event_results = nil
+      event_log = nil
       Timeout.timeout(TIMEOUT) do
         loop do
-          event_results = find(event_id)
-          break if event_results && event_results.finished?
+          event_log = find(event_id)
+          break if event_log && event_log.finished?
           sleep 5
         end
       end
@@ -59,7 +59,7 @@ module CloudConductor
       response = @client.kv.get("event/#{id}", true)
       return nil unless response
 
-      EventResults.new(response)
+      EventLog.new(response)
     end
   end
 end

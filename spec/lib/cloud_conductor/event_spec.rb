@@ -104,15 +104,15 @@ module CloudConductor
 
     describe '#wait' do
       it 'will return immediately if target event had finished' do
-        result = double(:event_result, finished?: true)
+        result = double(:event_log, finished?: true)
         allow(@event).to receive(:find).and_return(result)
         expect(@event).not_to receive(:sleep)
         @event.wait('dummy_event')
       end
 
       it 'will wait until target event are finished' do
-        unfinished_result = double(:event_result, finished?: false)
-        finished_result = double(:event_result, finished?: true)
+        unfinished_result = double(:event_log, finished?: false)
+        finished_result = double(:event_log, finished?: true)
         allow(@event).to receive(:find).and_return(nil, unfinished_result, finished_result)
         expect(@event).to receive(:sleep).twice
         @event.wait('dummy_event')
@@ -125,7 +125,7 @@ module CloudConductor
         expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_nil
       end
 
-      it 'return EventResults that is created from responsed json' do
+      it 'return EventLog that is created from responsed json' do
         value = {
           'event/12345678-1234-1234-1234-1234567890ab/host1' => {
             'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
@@ -147,8 +147,8 @@ module CloudConductor
 
         allow(@client).to receive_message_chain(:kv, :get).and_return(value)
 
-        expect(EventResults).to receive(:new).with(value).and_return(EventResults.new(value))
-        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventResults)
+        expect(EventLog).to receive(:new).with(value).and_return(EventLog.new(value))
+        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventLog)
       end
     end
   end
