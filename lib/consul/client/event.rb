@@ -19,8 +19,8 @@ module Consul
         @faraday = faraday
       end
 
-      def fire(event, payload = nil)
-        response = @faraday.put("event/fire/#{event}", payload)
+      def fire(name, payload = nil)
+        response = @faraday.put("event/fire/#{name}", payload)
         return nil unless response.success?
 
         JSON.parse(response.body)['ID']

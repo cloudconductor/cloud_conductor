@@ -24,13 +24,13 @@ module CloudConductor
       @client = Consul::Client.new(host, port, options)
     end
 
-    def fire(event, payload = {})
+    def fire(name, payload = {})
       @client.kv.merge PAYLOAD_KEY, payload
-      @client.event.fire event, @token
+      @client.event.fire name, @token
     end
 
-    def sync_fire(event, payload = {})
-      event_id = fire(event, payload)
+    def sync_fire(name, payload = {})
+      event_id = fire(name, payload)
       wait(event_id)
       event_results = get(event_id)
 
