@@ -32,7 +32,7 @@ module CloudConductor
     def sync_fire(name, payload = {})
       event_id = fire(name, payload)
       wait(event_id)
-      event_results = get(event_id)
+      event_results = find(event_id)
 
       unless event_results.success?
         result_log = {}
@@ -48,14 +48,14 @@ module CloudConductor
       event_results = nil
       Timeout.timeout(TIMEOUT) do
         loop do
-          event_results = get(event_id)
+          event_results = find(event_id)
           break if event_results && event_results.finished?
           sleep 5
         end
       end
     end
 
-    def get(id)
+    def find(id)
       response = @client.kv.get("event/#{id}", true)
       return nil unless response
 

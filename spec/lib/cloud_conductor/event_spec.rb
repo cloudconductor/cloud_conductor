@@ -68,7 +68,7 @@ module CloudConductor
         allow(@results).to receive(:[]).and_return(log: 'dummy_log')
         allow(@event).to receive(:fire).and_return(1)
         allow(@event).to receive(:wait).and_return('dummy_event')
-        allow(@event).to receive(:get).and_return(@results)
+        allow(@event).to receive(:find).and_return(@results)
       end
 
       it 'call fire' do
@@ -83,8 +83,8 @@ module CloudConductor
         @event.sync_fire(:configure, {})
       end
 
-      it 'call get' do
-        expect(@event).to receive(:get)
+      it 'call find' do
+        expect(@event).to receive(:find)
 
         @event.sync_fire(:configure, {})
       end
@@ -105,7 +105,7 @@ module CloudConductor
     describe '#wait' do
       it 'will return immediately if target event had finished' do
         result = double(:event_result, finished?: true)
-        allow(@event).to receive(:get).and_return(result)
+        allow(@event).to receive(:find).and_return(result)
         expect(@event).not_to receive(:sleep)
         @event.wait('dummy_event')
       end
@@ -113,16 +113,16 @@ module CloudConductor
       it 'will wait until target event are finished' do
         unfinished_result = double(:event_result, finished?: false)
         finished_result = double(:event_result, finished?: true)
-        allow(@event).to receive(:get).and_return(nil, unfinished_result, finished_result)
+        allow(@event).to receive(:find).and_return(nil, unfinished_result, finished_result)
         expect(@event).to receive(:sleep).twice
         @event.wait('dummy_event')
       end
     end
 
-    describe '#get' do
+    describe '#find' do
       it 'return nil if target event does not exist or request failed' do
         allow(@client).to receive_message_chain(:kv, :get).and_return(nil)
-        expect(@event.get('12345678-1234-1234-1234-1234567890ab')).to be_nil
+        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_nil
       end
 
       it 'return EventResults that is created from responsed json' do
@@ -148,7 +148,7 @@ module CloudConductor
         allow(@client).to receive_message_chain(:kv, :get).and_return(value)
 
         expect(EventResults).to receive(:new).with(value).and_return(EventResults.new(value))
-        expect(@event.get('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventResults)
+        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventResults)
       end
     end
   end
