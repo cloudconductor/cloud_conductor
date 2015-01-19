@@ -31,14 +31,8 @@ module CloudConductor
 
     def sync_fire(event, payload = {})
       event_id = fire(event, payload)
-      event_results = nil
-      Timeout.timeout(TIMEOUT) do
-        loop do
-          event_results = get(event_id)
-          break if event_results && event_results.finished?
-          sleep 5
-        end
-      end
+      wait(event_id)
+      event_results = get(event_id)
 
       unless event_results.success?
         result_log = {}
@@ -48,6 +42,17 @@ module CloudConductor
         fail result_log.to_json
       end
       event_id
+    end
+
+    def wait(event_id)
+      event_results = nil
+      Timeout.timeout(TIMEOUT) do
+        loop do
+          event_results = get(event_id)
+          break if event_results && event_results.finished?
+          sleep 5
+        end
+      end
     end
 
     def get(id)

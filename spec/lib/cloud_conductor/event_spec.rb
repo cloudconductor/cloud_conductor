@@ -63,16 +63,22 @@ module CloudConductor
     describe '#sync_fire' do
       before do
         @results = double(:results)
-        allow(@results).to receive(:finished?).and_return(true)
         allow(@results).to receive(:success?).and_return(true)
         allow(@results).to receive(:hostnames).and_return(['dummy_host'])
         allow(@results).to receive(:[]).and_return(log: 'dummy_log')
         allow(@event).to receive(:fire).and_return(1)
+        allow(@event).to receive(:wait).and_return('dummy_event')
         allow(@event).to receive(:get).and_return(@results)
       end
 
       it 'call fire' do
         expect(@event).to receive(:fire).with(:configure, {})
+
+        @event.sync_fire(:configure, {})
+      end
+
+      it 'call wait' do
+        expect(@event).to receive(:wait)
 
         @event.sync_fire(:configure, {})
       end
@@ -83,19 +89,8 @@ module CloudConductor
         @event.sync_fire(:configure, {})
       end
 
-      it 'call finished?' do
-        expect(@results).to receive(:finished?)
-        @event.sync_fire(:configure, {})
-      end
-
-      it 'call success?' do
-        expect(@results).to receive(:success?)
-
-        @event.sync_fire(:configure, {})
-      end
-
-      it 'fail if finished? method has timed out' do
-        allow(Timeout).to receive(:timeout).and_raise(Timeout::Error)
+      it 'fail if wait method has timed out' do
+        allow(@event).to receive(:wait).and_raise(Timeout::Error)
 
         expect { @event.sync_fire(:error) }.to raise_error
       end
@@ -104,6 +99,23 @@ module CloudConductor
         allow(@results).to receive(:success?).and_return(false)
 
         expect { @event.sync_fire(:error) }.to raise_error('{"dummy_host":"dummy_log"}')
+      end
+    end
+
+    describe '#wait' do
+      it 'will return immediately if target event had finished' do
+        result = double(:event_result, finished?: true)
+        allow(@event).to receive(:get).and_return(result)
+        expect(@event).not_to receive(:sleep)
+        @event.wait('dummy_event')
+      end
+
+      it 'will wait until target event are finished' do
+        unfinished_result = double(:event_result, finished?: false)
+        finished_result = double(:event_result, finished?: true)
+        allow(@event).to receive(:get).and_return(nil, unfinished_result, finished_result)
+        expect(@event).to receive(:sleep).twice
+        @event.wait('dummy_event')
       end
     end
 
