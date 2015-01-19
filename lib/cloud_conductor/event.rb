@@ -35,11 +35,12 @@ module CloudConductor
       event_log = find(event_id)
 
       unless event_log.success?
-        result_log = {}
-        event_log.hostnames.each do |hostname|
-          result_log[hostname] = event_log[hostname][:log]
+        messages = {}
+        event_log.nodes.each do |node|
+          messages[node[:hostname]] = node[:log_message]
         end
-        fail result_log.to_json
+
+        fail messages.to_json
       end
       event_id
     end

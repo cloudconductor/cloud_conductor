@@ -14,40 +14,30 @@
 # limitations under the License.
 module CloudConductor
   class EventLog
+    attr_reader :id, :name, :nodes
+
     def initialize(response)
-      @results = {}
-      response.each do |key, value|
+      @id = response.values.first['event_id']
+      @name = response.values.first['type']
+
+      @nodes = response.map do |key, value|
         hostname = key.split('/').last
-        result = {
-          event_id: value['event_id'],
-          type: value['type'],
-          result: value['result'] && value['result'].to_i,
-          start_datetime: value['start_datetime'] && DateTime.parse(value['start_datetime']),
-          end_datetime: value['end_datetime'] && DateTime.parse(value['end_datetime']),
-          log: value['log']
+        {
+          hostname: hostname,
+          return_code: value['result'] && value['result'].to_i,
+          started_at: value['start_datetime'] && DateTime.parse(value['start_datetime']),
+          finished_at: value['end_datetime'] && DateTime.parse(value['end_datetime']),
+          log_message: value['log']
         }
-        @results[hostname] = result
       end
     end
 
-    def size
-      @results.size
-    end
-
-    def [](hostname)
-      @results[hostname]
-    end
-
-    def hostnames
-      @results.keys
-    end
-
     def finished?
-      @results.values.all? { |result| result[:result] }
+      @nodes.all? { |node| node[:return_code] }
     end
 
     def success?
-      @results.values.all? { |result| result[:result] == 0 }
+      @nodes.all? { |node| node[:return_code] == 0 }
     end
   end
 end

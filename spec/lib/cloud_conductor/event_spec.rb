@@ -62,13 +62,14 @@ module CloudConductor
 
     describe '#sync_fire' do
       before do
-        @results = double(:results)
-        allow(@results).to receive(:success?).and_return(true)
-        allow(@results).to receive(:hostnames).and_return(['dummy_host'])
-        allow(@results).to receive(:[]).and_return(log: 'dummy_log')
+        nodes = [{ hostname: 'dummy_host', log_message: 'dummy_log' }]
+        @event_log = double(:event_log)
+        allow(@event_log).to receive(:success?).and_return(true)
+        allow(@event_log).to receive(:nodes).and_return(nodes)
+
         allow(@event).to receive(:fire).and_return(1)
         allow(@event).to receive(:wait).and_return('dummy_event')
-        allow(@event).to receive(:find).and_return(@results)
+        allow(@event).to receive(:find).and_return(@event_log)
       end
 
       it 'call fire' do
@@ -96,7 +97,7 @@ module CloudConductor
       end
 
       it 'fail if success? method returns false' do
-        allow(@results).to receive(:success?).and_return(false)
+        allow(@event_log).to receive(:success?).and_return(false)
 
         expect { @event.sync_fire(:error) }.to raise_error('{"dummy_host":"dummy_log"}')
       end
@@ -104,16 +105,16 @@ module CloudConductor
 
     describe '#wait' do
       it 'will return immediately if target event had finished' do
-        result = double(:event_log, finished?: true)
-        allow(@event).to receive(:find).and_return(result)
+        event_log = double(:event_log, finished?: true)
+        allow(@event).to receive(:find).and_return(event_log)
         expect(@event).not_to receive(:sleep)
         @event.wait('dummy_event')
       end
 
       it 'will wait until target event are finished' do
-        unfinished_result = double(:event_log, finished?: false)
-        finished_result = double(:event_log, finished?: true)
-        allow(@event).to receive(:find).and_return(nil, unfinished_result, finished_result)
+        unfinished_log = double(:event_log, finished?: false)
+        finished_log = double(:event_log, finished?: true)
+        allow(@event).to receive(:find).and_return(nil, unfinished_log, finished_log)
         expect(@event).to receive(:sleep).twice
         @event.wait('dummy_event')
       end

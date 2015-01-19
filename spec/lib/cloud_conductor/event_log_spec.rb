@@ -37,36 +37,30 @@ module CloudConductor
       @event_log = EventLog.new(response)
     end
 
-    describe '#initialize' do
-      it 'return instance that contains parsed results' do
-        inner_data = @event_log.instance_variable_get(:@results)
-        expect(inner_data).to be_is_a Hash
-        expect(inner_data.size).to eq(2)
-        expect(inner_data.keys).to match_array %w(host1 host2)
+    describe '#id' do
+      it 'return event id that is contained result' do
+        expect(@event_log.id).to eq('4ee5d2a6-853a-21a9-7463-ef1866468b76')
+      end
+    end
 
-        expect(inner_data['host1']).to be_is_a Hash
-        expect(inner_data['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime log)
-        expect(inner_data['host1']).to eq(
-          event_id: '4ee5d2a6-853a-21a9-7463-ef1866468b76',
-          type: 'configure',
-          result: 0,
-          start_datetime: DateTime.new(2014, 12, 16, 14, 44, 7, 'JST'),
-          end_datetime: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST'),
-          log: 'Dummy consul event log'
+    describe '#name' do
+      it 'return event name that is contained result' do
+        expect(@event_log.name).to eq('configure')
+      end
+    end
+
+    describe '#nodes' do
+      it 'return nodes that contain result of each host' do
+        nodes = @event_log.nodes
+        expect(nodes).to be_is_a(Array)
+        expect(nodes.size).to eq(2)
+        expect(nodes.first).to eq(
+          hostname: 'host1',
+          return_code: 0,
+          started_at: DateTime.new(2014, 12, 16, 14, 44, 7, 'JST'),
+          finished_at: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST'),
+          log_message: 'Dummy consul event log'
         )
-      end
-    end
-
-    describe '#size' do
-      it 'return size of results' do
-        expect(@event_log.size).to eq(2)
-      end
-    end
-
-    describe '#[]' do
-      it 'return result of target host' do
-        expect(@event_log['host1']).to be_is_a Hash
-        expect(@event_log['host1'].keys).to match_array %i(event_id type result start_datetime end_datetime log)
       end
     end
 
@@ -76,8 +70,7 @@ module CloudConductor
       end
 
       it 'return false if any event has not been finished' do
-        inner_data = @event_log.instance_variable_get(:@results)
-        inner_data['host1'][:result] = nil
+        @event_log.nodes.first[:return_code] = nil
 
         expect(@event_log.finished?).to be_falsey
       end
@@ -89,15 +82,13 @@ module CloudConductor
       end
 
       it 'return false if any event has not been finished' do
-        inner_data = @event_log.instance_variable_get(:@results)
-        inner_data['host1'][:result] = nil
+        @event_log.nodes.first[:return_code] = nil
 
         expect(@event_log.success?).to be_falsey
       end
 
       it 'return false if any event has occurred error' do
-        inner_data = @event_log.instance_variable_get(:@results)
-        inner_data['host2'][:result] = 1
+        @event_log.nodes.first[:return_code] = 1
 
         expect(@event_log.success?).to be_falsey
       end
