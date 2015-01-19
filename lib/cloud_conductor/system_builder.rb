@@ -94,8 +94,7 @@ module CloudConductor
           ip_address = outputs['FrontendAddress']
           Log.debug "  Outputs has FrontendAddress(#{ip_address})"
 
-          port = Defines.consul[:port]
-          consul = Consul::Client.new ip_address, port, Defines.consul
+          consul = Consul::Client.new ip_address, CloudConductor::Config.consul.port, CloudConductor::Config.consul.options.save
           next unless consul.running?
         end
 

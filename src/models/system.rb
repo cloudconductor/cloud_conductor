@@ -108,9 +108,8 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
 
     token = stacks.first.pattern.consul_secret_key
 
-    options = CloudConductor::Defines.consul.merge(token: token)
-    port = options.delete(:port)
-    Consul::Client.new(ip_address, port, options)
+    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   def event
@@ -118,9 +117,8 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
 
     token = stacks.first.pattern.consul_secret_key
 
-    options = CloudConductor::Defines.consul.merge(token: token)
-    port = options.delete(:port)
-    CloudConductor::Event.new(ip_address, port, options)
+    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   TIMEOUT = 1800

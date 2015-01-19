@@ -1,5 +1,0 @@
-consul:
-  port: 8501
-  ssl: true
-  ssl_options:
-    verify: false
