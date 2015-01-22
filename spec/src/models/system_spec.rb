@@ -65,6 +65,21 @@ describe System do
     expect(@system.candidates).to be_empty
   end
 
+  it 'delete system that has multiple stacks' do
+    threads = Thread.list
+
+    @system.stacks.each do |stack|
+      stack.status = :CREATE_COMPLETE
+      stack.save!
+    end
+    @system.save!
+    @system.stacks.last.pattern = FactoryGirl.build(:pattern, type: :optional)
+
+    @system.destroy
+
+    (Thread.list - threads).each(&:join)
+  end
+
   describe '#new' do
     it 'set empty JSON to template_parameters' do
       expect(@system.template_parameters).to eq('{}')
@@ -548,6 +563,7 @@ describe System do
     it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
       allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS)
 
+      expect(@system).to receive(:sleep).once.ordered
       expect(@system.stacks[0]).to receive(:destroy).ordered
       expect(@system.stacks[2]).to receive(:destroy).ordered
       expect(@system).to receive(:sleep).at_least(:once).ordered
@@ -559,6 +575,7 @@ describe System do
     it 'wait and destroy platform pattern when destroyed all optional patterns' do
       allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
 
+      expect(@system).to receive(:sleep).once.ordered
       expect(@system.stacks[0]).to receive(:destroy).ordered
       expect(@system.stacks[2]).to receive(:destroy).ordered
       expect(@system).to receive(:sleep).once.ordered
@@ -570,6 +587,7 @@ describe System do
     it 'wait and destroy platform pattern when failed to destroyed all optional patterns' do
       allow(@client).to receive(:get_stack_status).and_return(:DELETE_IN_PROGRESS, :DELETE_FAILED)
 
+      expect(@system).to receive(:sleep).once.ordered
       expect(@system.stacks[0]).to receive(:destroy).ordered
       expect(@system.stacks[2]).to receive(:destroy).ordered
       expect(@system).to receive(:sleep).once.ordered
@@ -582,6 +600,7 @@ describe System do
       allow(@client).to receive(:get_stack_status).with(@system.stacks[0].name).and_return(:DELETE_IN_PROGRESS, :DELETE_COMPLETE)
       allow(@system.stacks[2]).to receive(:exist?).and_return(false)
 
+      expect(@system).to receive(:sleep).once.ordered
       expect(@system.stacks[0]).to receive(:destroy).ordered
       expect(@system.stacks[2]).to receive(:destroy).ordered
       expect(@system).to receive(:sleep).once.ordered

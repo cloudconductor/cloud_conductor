@@ -149,6 +149,8 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
 
     Thread.new do
       begin
+        sleep 1
+        ActiveRecord::Base.connection_pool.disconnect!
         optionals.each(&:destroy)
 
         Timeout.timeout(TIMEOUT) do
