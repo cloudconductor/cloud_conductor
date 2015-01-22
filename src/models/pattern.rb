@@ -54,9 +54,13 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       roles = load_roles path
       update_metadata path, metadata
 
-      status, stdout, stderr = systemu('consul keygen')
-      fail "consul keygen failed.\n#{stderr}" unless status.success?
-      self.consul_secret_key = stdout.chomp
+      if CloudConductor::Config.consul.options.acl
+        status, stdout, stderr = systemu('consul keygen')
+        fail "consul keygen failed.\n#{stderr}" unless status.success?
+        self.consul_secret_key = stdout.chomp
+      else
+        self.consul_secret_key = ''
+      end
 
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|

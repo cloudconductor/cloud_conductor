@@ -138,7 +138,8 @@ describe Pattern do
       @path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
     end
 
-    it 'will call sub-routine' do
+    it 'will call sub-routine with secret key' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
       expect(@pattern).to receive(:clone_repository).and_yield(path_pattern)
       expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
@@ -148,7 +149,19 @@ describe Pattern do
       @pattern.save!
     end
 
+    it 'will call sub-routine without secret_key' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(false)
+      path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
+      expect(@pattern).to receive(:clone_repository).and_yield(path_pattern)
+      expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
+      expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
+      expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
+      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil, '')
+      @pattern.save!
+    end
+
     it 'raise error when some errors occurred while execute `consul keygen` command' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
       expect { @pattern.save! }.to raise_error
     end
