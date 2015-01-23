@@ -38,4 +38,5 @@ zabbix.default_template_name 'Template App HTTP Service'
 # consul settings
 consul.port 8501
 consul.options.ssl true
+consul.options.acl true
 consul.options.ssl_options.verify false
