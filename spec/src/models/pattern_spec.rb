@@ -28,6 +28,8 @@ describe Pattern do
     allow(File).to receive(:open).and_call_original
     double = double('File', read: '{ "Parameters": {}, "Resources": {} }')
     allow(File).to receive(:open).with(/template.json/).and_return double
+
+    allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
   end
 
   describe '#initialize' do
@@ -134,7 +136,6 @@ describe Pattern do
 
   describe '#before_save' do
     before do
-      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
       @path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
     end
 
