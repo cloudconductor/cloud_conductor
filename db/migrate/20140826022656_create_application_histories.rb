@@ -13,7 +13,7 @@ class CreateApplicationHistories < ActiveRecord::Migration
       t.string :post_deploy
 
       t.string :parameters
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

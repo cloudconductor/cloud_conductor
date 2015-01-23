@@ -8,7 +8,7 @@ class CreateImages < ActiveRecord::Migration
       t.string :image
       t.string :message
       t.string :status
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

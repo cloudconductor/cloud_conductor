@@ -52,13 +52,6 @@ wget https://dl.bintray.com/mitchellh/packer/packer_0.7.1_linux_amd64.zip
 unzip packer_0.7.1_linux_amd64.zip -d /opt/packer
 ```
 
-Install Serf (Please replace amd64 to 386 in case of working on 32bit operating systems)
-
-```bash
-wget https://dl.bintray.com/mitchellh/serf/0.6.3_linux_amd64.zip
-unzip 0.6.3_linux_amd64.zip -d /usr/bin
-```
-
 Clone repository
 
 ```bash

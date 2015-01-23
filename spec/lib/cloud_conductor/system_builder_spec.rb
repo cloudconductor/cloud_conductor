@@ -21,6 +21,10 @@ module CloudConductor
       @system = FactoryGirl.create(:system)
       @system.stacks << @platform_stack
       @system.stacks << @optional_stack
+      @system.applications << FactoryGirl.build(:application, system: @system)
+      @system.applications << FactoryGirl.build(:application, system: @system)
+      @system.applications[0].histories << FactoryGirl.build(:application_history)
+      @system.applications[1].histories << FactoryGirl.build(:application_history)
       @system.candidates[0].priority = 10
       @system.candidates[1].priority = 20
 
@@ -96,8 +100,7 @@ module CloudConductor
         allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
         allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
-        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return true
-        allow(Serf::Client).to receive_message_chain(:new, :call, :success?).and_return true
+        allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
       end
 
       it 'execute without error' do
@@ -134,12 +137,7 @@ module CloudConductor
       end
 
       it 'infinity loop and timeout while consul doesn\'t running' do
-        allow(Consul::Client).to receive_message_chain(:connect, :running?).and_return false
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
-      end
-
-      it 'infinity loop and timeout while serf doesn\'t running' do
-        allow(Serf::Client).to receive_message_chain(:new, :call, :success?).and_return false
+        allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
     end
@@ -171,67 +169,65 @@ module CloudConductor
 
     describe '#finish_system' do
       before do
+        @event = double(:event, sync_fire: 1)
+        allow(@system).to receive(:event).and_return(@event)
+        allow(@builder).to receive(:configure_payload).and_return({})
+        allow(@builder).to receive(:application_payload).and_return({})
+      end
+
+      it 'will request configure event to consul' do
+        expect(@event).to receive(:sync_fire).with(:configure, {})
+        @builder.send(:finish_system)
+      end
+
+      it 'will request restore event to consul' do
+        expect(@event).to receive(:sync_fire).with(:restore, {})
+        @builder.send(:finish_system)
+      end
+
+      it 'will request deploy event to consul' do
+        expect(@event).to receive(:sync_fire).with(:deploy, {})
+        @builder.send(:finish_system)
+      end
+
+      it 'change application history status if deploy event is finished' do
+        expect(@system.applications.map(&:latest).compact.any?(&:deployed?)).to be_falsey
+
+        @builder.send(:finish_system)
+
+        expect(@system.applications.map(&:latest).compact.all?(&:deployed?)).to be_truthy
+      end
+    end
+
+    describe '#configure_payload' do
+      it 'return payload that contains random salt' do
+        payload = @builder.send(:configure_payload, @system)
+        expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
+      end
+
+      it 'will request configure event to serf with payload' do
         @platform_stack.status = :CREATE_COMPLETE
         @platform_stack.save!
 
         @optional_stack.status = :CREATE_COMPLETE
         @optional_stack.save!
 
-        @serf_client = double(:serf_client, call: double('status', success?: true))
-        allow(@system).to receive(:serf).and_return(@serf_client)
-        allow(@system).to receive(:send_application_payload)
-        allow(@system).to receive(:deploy_applications)
+        payload = @builder.send(:configure_payload, @system)
+        expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
 
-        allow(@builder).to receive(:sleep)
-      end
+        payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
+        expect(payload1[:name]).to eq(@platform_stack.pattern.name)
+        expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
+        expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
+        expect(payload1[:url]).to eq(@platform_stack.pattern.url)
+        expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
 
-      it 'will request configure event with random salt' do
-        expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
-        end
-
-        expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
-
-        @builder.send(:finish_system)
-      end
-
-      it 'will request configure event to serf with payload' do
-        expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
-
-          payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
-          expect(payload1[:name]).to eq(@platform_stack.pattern.name)
-          expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
-          expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
-          expect(payload1[:url]).to eq(@platform_stack.pattern.url)
-          expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-
-          payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
-          expect(payload2[:name]).to eq(@optional_stack.pattern.name)
-          expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
-          expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
-          expect(payload2[:url]).to eq(@optional_stack.pattern.url)
-          expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-        end
-
-        expect(@serf_client).to receive(:call).with('event', 'configure', expected_payload)
-
-        @builder.send(:finish_system)
-      end
-
-      it 'will call System#send_application_payload' do
-        expect(@system).to receive(:send_application_payload)
-        @builder.send(:finish_system)
-      end
-
-      it 'will call System#deploy_applications' do
-        expect(@system).to receive(:deploy_applications)
-        @builder.send(:finish_system)
-      end
-
-      it 'will request restore event to serf' do
-        expect(@serf_client).to receive(:call).with('event', 'restore', {})
-        @builder.send(:finish_system)
+        payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
+        expect(payload2[:name]).to eq(@optional_stack.pattern.name)
+        expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
+        expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
+        expect(payload2[:url]).to eq(@optional_stack.pattern.url)
+        expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
       end
     end
 
@@ -259,6 +255,67 @@ module CloudConductor
         expect(@system.ip_address).to be_nil
         expect(@system.monitoring_host).to be_nil
         expect(@system.template_parameters).to eq('{}')
+      end
+    end
+
+    describe '#configure_payload' do
+      it 'return payload that used for configure event' do
+        allow(@system.stacks).to receive(:created).and_return([@platform_stack, @optional_stack])
+
+        expected_payload = satisfy do |payload|
+          expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
+
+          payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
+          expect(payload1[:name]).to eq(@platform_stack.pattern.name)
+          expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
+          expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
+          expect(payload1[:url]).to eq(@platform_stack.pattern.url)
+          expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
+
+          payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
+          expect(payload2[:name]).to eq(@optional_stack.pattern.name)
+          expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
+          expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
+          expect(payload2[:url]).to eq(@optional_stack.pattern.url)
+          expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
+        end
+
+        expect(@builder.send(:configure_payload, @system)).to expected_payload
+      end
+    end
+
+    describe '#application_payload' do
+      it 'return payload that used for deploy and restore event' do
+        history1 = @system.applications[0].histories.first
+        history2 = @system.applications[1].histories.first
+
+        expected_payload = satisfy do |payload|
+          expect(payload[:cloudconductor][:applications].keys).to eq([history1.application.name, history2.application.name])
+
+          payload1 = payload[:cloudconductor][:applications][history1.application.name]
+          expect(payload1[:domain]).to eq(history1.domain)
+          expect(payload1[:type]).to eq(history1.type)
+          expect(payload1[:version]).to eq(history1.version)
+          expect(payload1[:protocol]).to eq(history1.protocol)
+          expect(payload1[:url]).to eq(history1.url)
+          expect(payload1[:revision]).to eq(history1.revision)
+          expect(payload1[:pre_deploy]).to eq(history1.pre_deploy)
+          expect(payload1[:post_deploy]).to eq(history1.post_deploy)
+          expect(payload1[:parameters]).to eq(JSON.parse(history1.parameters, symbolize_names: true))
+
+          payload2 = payload[:cloudconductor][:applications][history2.application.name]
+          expect(payload2[:domain]).to eq(history2.domain)
+          expect(payload2[:type]).to eq(history2.type)
+          expect(payload2[:version]).to eq(history2.version)
+          expect(payload2[:protocol]).to eq(history2.protocol)
+          expect(payload2[:url]).to eq(history2.url)
+          expect(payload2[:revision]).to eq(history2.revision)
+          expect(payload2[:pre_deploy]).to eq(history2.pre_deploy)
+          expect(payload2[:post_deploy]).to eq(history2.post_deploy)
+          expect(payload2[:parameters]).to eq(JSON.parse(history2.parameters, symbolize_names: true))
+        end
+
+        expect(@builder.send(:application_payload, @system)).to expected_payload
       end
     end
   end

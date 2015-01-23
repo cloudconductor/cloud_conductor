@@ -8,7 +8,7 @@ class CreatePatterns < ActiveRecord::Migration
       t.string :url
       t.string :revision
       t.text :parameters
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

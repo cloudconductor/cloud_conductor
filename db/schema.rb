@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20141203003236) do
+ActiveRecord::Schema.define(version: 20150106012640) do
 
   create_table "application_histories", force: :cascade do |t|
     t.integer  "application_id"
@@ -25,15 +25,15 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "pre_deploy"
     t.string   "post_deploy"
     t.string   "parameters"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
   end
 
   create_table "applications", force: :cascade do |t|
     t.integer  "system_id"
     t.string   "name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "base_images", force: :cascade do |t|
@@ -48,8 +48,8 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.integer  "system_id"
     t.integer  "priority"
     t.boolean  "active"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "clouds", force: :cascade do |t|
@@ -59,8 +59,8 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "key"
     t.string   "secret"
     t.string   "tenant_name"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "images", force: :cascade do |t|
@@ -71,8 +71,8 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "image"
     t.string   "message"
     t.string   "status"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
   create_table "operating_systems", force: :cascade do |t|
@@ -88,15 +88,16 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+    t.string   "consul_secret_key"
   end
 
   create_table "patterns_clouds", force: :cascade do |t|
     t.integer  "pattern_id"
     t.integer  "cloud_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "stacks", force: :cascade do |t|
@@ -107,8 +108,8 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "status"
     t.text     "template_parameters"
     t.text     "parameters"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
   create_table "systems", force: :cascade do |t|
@@ -117,8 +118,8 @@ ActiveRecord::Schema.define(version: 20141203003236) do
     t.string   "ip_address"
     t.string   "domain"
     t.text     "template_parameters"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
   end
 
 end

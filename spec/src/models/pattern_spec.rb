@@ -134,17 +134,36 @@ describe Pattern do
 
   describe '#before_save' do
     before do
+      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
       @path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
     end
 
-    it 'will call sub-routine' do
+    it 'will call sub-routine with secret key' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
       expect(@pattern).to receive(:clone_repository).and_yield(path_pattern)
       expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
       expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
       expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
-      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil)
+      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil, 'dummy key')
       @pattern.save!
+    end
+
+    it 'will call sub-routine without secret_key' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(false)
+      path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
+      expect(@pattern).to receive(:clone_repository).and_yield(path_pattern)
+      expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
+      expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
+      expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
+      expect(@pattern).to receive(:create_images).with(anything, 'dummy', nil, '')
+      @pattern.save!
+    end
+
+    it 'raise error when some errors occurred while execute `consul keygen` command' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
+      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
+      expect { @pattern.save! }.to raise_error
     end
 
     describe '#clone_repository' do
@@ -369,23 +388,24 @@ describe Pattern do
       it 'create image each cloud, operating_system and role' do
         count = Image.count
 
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
         @pattern.save!
 
         expect(Image.count).to eq(count + @pattern.clouds.size * @operating_systems.size * 1)
       end
 
-      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems and role' do
-        args = []
-        args << @pattern.url
-        args << @pattern.revision
-        args << @pattern.clouds.map(&:name)
-        args << @operating_systems.map(&:name)
-        args << 'nginx'
-        args << 'dummy_platform'
-        expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(*args)
+      it 'will call PackerClient#build with url, revision, name of clouds, operating_systems, role, pattern_name and consul_secret_key' do
+        parameters = {}
+        parameters[:repository_url] = @pattern.url
+        parameters[:revision] = @pattern.revision
+        parameters[:clouds] = @pattern.clouds.map(&:name)
+        parameters[:operating_systems] = @operating_systems.map(&:name)
+        parameters[:role] = 'nginx'
+        parameters[:pattern_name] = 'dummy_platform'
+        parameters[:consul_secret_key] = 'dummy key'
+        expect_any_instance_of(CloudConductor::PackerClient).to receive(:build).with(parameters)
 
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
       end
 
       it 'update status of all images when call block' do
@@ -403,7 +423,7 @@ describe Pattern do
           @pattern.save!
           block.call results
         end
-        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform')
+        @pattern.send(:create_images, @operating_systems, 'nginx', 'dummy_platform', 'dummy key')
 
         aws = Image.where(cloud: @cloud_aws, operating_system: @operating_systems.first, role: 'nginx').first
         expect(aws.status).to eq(:CREATE_COMPLETE)

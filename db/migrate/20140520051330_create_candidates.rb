@@ -5,7 +5,7 @@ class CreateCandidates < ActiveRecord::Migration
       t.references :system
       t.integer :priority
       t.boolean :active
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

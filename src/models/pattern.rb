@@ -54,9 +54,17 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       roles = load_roles path
       update_metadata path, metadata
 
+      if CloudConductor::Config.consul.options.acl
+        status, stdout, stderr = systemu('consul keygen')
+        fail "consul keygen failed.\n#{stderr}" unless status.success?
+        self.consul_secret_key = stdout.chomp
+      else
+        self.consul_secret_key = ''
+      end
+
       operating_systems = OperatingSystem.candidates(metadata[:supports])
       roles.each do |role|
-        create_images operating_systems, role, metadata[:name]
+        create_images operating_systems, role, metadata[:name], consul_secret_key
       end
     end
 
@@ -138,16 +146,24 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  def create_images(operating_systems, role, pattern_name)
+  def create_images(operating_systems, role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
     clouds.each do |cloud|
       operating_systems.each do |operating_system|
         images.build(cloud: cloud, operating_system: operating_system, role: role)
       end
     end
 
-    cloud_names = clouds.map(&:name)
-    operating_system_names = operating_systems.map(&:name)
-    CloudConductor::PackerClient.new.build url, revision, cloud_names, operating_system_names, role, pattern_name do |results|
+    parameters = {
+      repository_url: url,
+      revision: revision,
+      clouds: clouds.map(&:name),
+      operating_systems: operating_systems.map(&:name),
+      role: role,
+      pattern_name: pattern_name,
+      consul_secret_key: consul_secret_key
+    }
+
+    CloudConductor::PackerClient.new.build(parameters) do |results|
       results.each do |key, result|
         cloud_name, os_name = key.split(BaseImage::SPLITTER)
         cloud = Cloud.where(name: cloud_name).first

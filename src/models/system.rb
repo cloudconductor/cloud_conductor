@@ -46,10 +46,7 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
   def chef_status
     return :ERROR if status == :ERROR
     return :PENDING if ip_address.blank? || status == :PROGRESS
-    _, results = serf(format: 'json').call('query', 'chef_status')
-    return :ERROR if JSON.parse(results)['Responses'].values.any? do |result|
-      JSON.parse(result)['status'] == 'ERROR'
-    end
+    consul.event.sync_fire(:chef_status)
     :SUCCESS
   rescue
     :ERROR
@@ -106,39 +103,22 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     dns_client.update domain, ip_address
   end
 
-  def serf(options = {})
+  def consul
     fail 'ip_address does not specified' unless ip_address
 
-    Serf::Client.new host: ip_address, options: options
+    token = stacks.first.pattern.consul_secret_key
+
+    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
-  def send_application_payload
-    return if applications.empty?
+  def event
+    fail 'ip_address does not specified' unless ip_address
 
-    payload = {
-      cloudconductor: {
-        applications: {
-        }
-      }
-    }
+    token = stacks.first.pattern.consul_secret_key
 
-    applications.map(&:latest).compact.reject(&:deployed?).each do |history|
-      payload[:cloudconductor][:applications][history.application.name] = history.application_payload
-    end
-
-    consul = Consul::Client.connect host: ip_address
-    consul.kv.merge Serf::Client::PAYLOAD_KEY, payload
-  end
-
-  def deploy_applications
-    return if applications.empty?
-
-    serf.call('event', 'deploy')
-
-    applications.map(&:latest).compact.reject(&:deployed?).each do |history|
-      history.status = :deployed
-      history.save!
-    end
+    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   TIMEOUT = 1800

@@ -12,20 +12,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-FactoryGirl.define do
-  factory :application_history, class: ApplicationHistory do
-    domain 'example.com'
-    type 'static'
-    protocol 'http'
-    url 'http://example.com/'
-    parameters '{ "dummy": "value" }'
-  end
+module Consul
+  class Client
+    class Event
+      def initialize(faraday)
+        @faraday = faraday
+      end
 
-  before(:create) do
-    ApplicationHistory.skip_callback :save, :before, :consul_request
-  end
+      def fire(name, payload = nil)
+        response = @faraday.put("event/fire/#{name}", payload)
+        return nil unless response.success?
 
-  after(:create) do
-    ApplicationHistory.set_callback :save, :before, :consul_request, if: -> { !deployed? && application.system.ip_address }
+        JSON.parse(response.body)['ID']
+      end
+    end
   end
 end

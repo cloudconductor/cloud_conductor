@@ -6,7 +6,7 @@ class CreateSystems < ActiveRecord::Migration
       t.string :ip_address
       t.string :domain
       t.text :template_parameters
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end

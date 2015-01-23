@@ -3,7 +3,7 @@ class CreateApplications < ActiveRecord::Migration
     create_table :applications do |t|
       t.references :system
       t.string :name
-      t.timestamps
+      t.timestamps null: false
     end
   end
 end
