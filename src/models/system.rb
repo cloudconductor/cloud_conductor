@@ -46,7 +46,7 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
   def chef_status
     return :ERROR if status == :ERROR
     return :PENDING if ip_address.blank? || status == :PROGRESS
-    consul.event.sync_fire(:chef_status)
+    event.sync_fire(:chef_status)
     :SUCCESS
   rescue
     :ERROR
