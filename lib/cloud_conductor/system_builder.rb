@@ -27,6 +27,9 @@ module CloudConductor
         @clouds.each do |cloud|
           begin
             Log.info "Start creating stacks of system(#{@system.name}) on #{cloud.name}"
+            @system.status = :PROGRESS
+            @system.save!
+
             until @system.stacks.select(&:pending?).empty?
               platforms = @system.stacks.select(&:pending?).select(&:platform?)
               optionals = @system.stacks.select(&:pending?).select(&:optional?)
@@ -120,10 +123,14 @@ module CloudConductor
         history.status = :deployed
         history.save!
       end
+
+      @system.status = :CREATE_COMPLETE
+      @system.save!
     end
 
     def reset_stacks
       Log.info 'Reset all stacks.'
+      @system.status = :ERROR
       @system.ip_address = nil
       @system.monitoring_host = nil
       @system.template_parameters = '{}'

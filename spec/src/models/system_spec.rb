@@ -80,9 +80,13 @@ describe System do
     (Thread.list - threads).each(&:join)
   end
 
-  describe '#new' do
+  describe '#initialize' do
     it 'set empty JSON to template_parameters' do
       expect(@system.template_parameters).to eq('{}')
+    end
+
+    it 'set PENDING status' do
+      expect(@system.status).to eq(:PENDING)
     end
   end
 
@@ -109,46 +113,6 @@ describe System do
       @system.clouds << @cloud_aws
       @system.clouds << @cloud_aws
       expect(@system.valid?).to be_falsey
-    end
-  end
-
-  describe '#status' do
-    it 'return status that integrated status over all stacks' do
-      @system.stacks[0].status = :PENDING
-      @system.stacks[1].status = :PENDING
-
-      expect(@system.status).to eq(:PROGRESS)
-    end
-
-    it 'return progress when least one stack has not create_complete status' do
-      @system.stacks[0].status = :CREATE_COMPLETE
-      @system.stacks[1].status = :READY
-
-      expect(@system.status).to eq(:PROGRESS)
-
-      @system.stacks[0].status = :CREATE_COMPLETE
-      @system.stacks[1].status = :PROGRESS
-
-      expect(@system.status).to eq(:PROGRESS)
-    end
-
-    it 'return create_complete when all stacks has create_complete status' do
-      @system.stacks[0].status = :CREATE_COMPLETE
-      @system.stacks[1].status = :CREATE_COMPLETE
-
-      expect(@system.status).to eq(:CREATE_COMPLETE)
-    end
-
-    it 'return error when one stack has error status' do
-      @system.stacks[0].status = :ERROR
-
-      expect(@system.status).to eq(:ERROR)
-    end
-
-    it 'return error when stacks is empty array' do
-      @system.stacks = []
-
-      expect(@system.status).to eq(:ERROR)
     end
   end
 

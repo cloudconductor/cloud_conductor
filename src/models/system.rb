@@ -35,12 +35,11 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
 
   after_initialize do
     self.template_parameters ||= '{}'
+    self.status ||= :PENDING
   end
 
   def status
-    return :ERROR if stacks.blank? | stacks.any?(&:error?)
-    return :CREATE_COMPLETE if stacks.all?(&:create_complete?)
-    :PROGRESS
+    super && super.to_sym
   end
 
   def as_json(options = {})

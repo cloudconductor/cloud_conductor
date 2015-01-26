@@ -59,6 +59,7 @@ module CloudConductor
         allow(@builder).to receive(:update_system)
         allow(@builder).to receive(:finish_system)
         allow(@builder).to receive(:reset_stacks)
+        allow(@system).to receive(:status).and_return(:CREATE_COMPLETE)
       end
 
       it 'call every subsequence 1 time' do
@@ -82,8 +83,7 @@ module CloudConductor
       end
 
       it 'set status of stacks to :ERROR when all candidates failed' do
-        expect(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
-        allow(@builder).to receive(:wait_for_finished).with(@system.stacks[0], anything).and_raise
+        allow(@system).to receive(:status).and_return(:ERROR)
         @builder.build
 
         expect(@system.stacks.all?(&:error?)).to be_truthy
@@ -255,6 +255,11 @@ module CloudConductor
         expect(@system.ip_address).to be_nil
         expect(@system.monitoring_host).to be_nil
         expect(@system.template_parameters).to eq('{}')
+      end
+
+      it 'change status of system to :ERROR when some error occurred' do
+        @builder.send(:reset_stacks)
+        expect(@system.status).to eq(:ERROR)
       end
     end
 
