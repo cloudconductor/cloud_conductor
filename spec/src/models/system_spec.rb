@@ -152,47 +152,6 @@ describe System do
     end
   end
 
-  describe '#chef_status' do
-    before do
-      @system.ip_address = '192.168.0.1'
-
-      @event = double(:event, sync_fire: 1)
-      @consul_client = double(:consul_client, event: @event)
-      allow(@system).to receive(:consul).and_return(@consul_client)
-    end
-
-    it 'return error when system status is error' do
-      allow(@system).to receive('status').and_return(:ERROR)
-
-      expect(@system.chef_status).to eq(:ERROR)
-    end
-
-    it 'return pending when system status is progress' do
-      allow(@system).to receive('status').and_return(:PROGRESS)
-
-      expect(@system.chef_status).to eq(:PENDING)
-    end
-
-    it 'return pending when system ip_address is nil' do
-      @system.ip_address = nil
-
-      expect(@system.chef_status).to eq(:PENDING)
-    end
-
-    it 'return success when system status is create complete and consul fire result is success' do
-      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-
-      expect(@system.chef_status).to eq(:SUCCESS)
-    end
-
-    it 'return error when some errors occurred' do
-      allow(@system).to receive('status').and_return(:CREATE_COMPLETE)
-      allow(@event).to receive(:sync_fire).and_raise(StandardError)
-
-      expect(@system.chef_status).to eq(:ERROR)
-    end
-  end
-
   describe '#enable_monitoring(before_save)' do
     before do
       @zabbix_client = double('zabbix_client', register: nil)
@@ -387,7 +346,6 @@ describe System do
       @system.monitoring_host = 'example.com'
       @system.ip_address = '127.0.0.1'
       allow(@system).to receive(:status).and_return(:PROGRESS)
-      allow(@system).to receive(:chef_status).and_return(:PENDING)
     end
 
     it 'return attributes as json format' do
@@ -399,17 +357,6 @@ describe System do
       expect(json['domain']).to eq(@system.domain)
       expect(json['template_parameters']).to eq(@system.template_parameters)
       expect(json['status']).to eq(@system.status)
-      expect(json['chef_status']).to eq(@system.chef_status)
-    end
-
-    it 'return attributes as json format without chef_status' do
-      json = @system.as_json except: :chef_status
-      expect(json['chef_status']).to be_nil
-    end
-
-    it 'return attributes as json format without chef_status as array' do
-      json = @system.as_json except: [:chef_status]
-      expect(json['chef_status']).to be_nil
     end
   end
 

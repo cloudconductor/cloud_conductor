@@ -43,19 +43,8 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
     :PROGRESS
   end
 
-  def chef_status
-    return :ERROR if status == :ERROR
-    return :PENDING if ip_address.blank? || status == :PROGRESS
-    event.sync_fire(:chef_status)
-    :SUCCESS
-  rescue
-    :ERROR
-  end
-
   def as_json(options = {})
-    methods = [:status]
-    methods << :chef_status unless Array(options[:except]).include? :chef_status
-    super options.merge(methods: methods)
+    super options.merge(methods: [:status])
   end
 
   def add_cloud(cloud, priority)
