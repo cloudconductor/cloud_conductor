@@ -100,7 +100,7 @@ module Consul
 
         it 'send GET request with recursive option and token' do
           @stubs.get('/v1/kv/json') do |env|
-            expect(env.url.query).to eq('recurse=&token=dummy_token')
+            expect(env.url.query).to eq('recurse=true&token=dummy_token')
           end
           @client.get 'json', true
         end
