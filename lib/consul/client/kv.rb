@@ -21,9 +21,9 @@ module Consul
       end
 
       def get(key, is_recurse = false)
-        query = "token=#{@token}"
-        query << '&recurse' if is_recurse
-        response = @faraday.get("kv/#{key}?#{query}")
+        query = { token: @token }
+        query[:recurse] = true if is_recurse
+        response = @faraday.get("kv/#{key}", query)
         return nil unless response.success?
 
         result = {}
