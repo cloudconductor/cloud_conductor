@@ -80,7 +80,7 @@ class ApplicationHistory < ActiveRecord::Base
     }
 
     payload[:cloudconductor][:applications][application.name] = application_payload
-    application.system.consul.event.sync_fire(:deploy, payload)
+    application.system.event.sync_fire(:deploy, payload)
 
     self.status = :deployed
   end

@@ -25,9 +25,8 @@ describe ApplicationHistory do
     @history.parameters = '{ "dummy": "value" }'
 
     @event = double(:event, sync_fire: 1)
-    @consul_client = double(:consul_client, event: @event)
-    allow(@event).to receive_message_chain(:get, :finished?).and_return(true)
-    allow(@application.system).to receive(:consul).and_return(@consul_client)
+    allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
+    allow(@application.system).to receive(:event).and_return(@event)
     @today = Date.today.strftime('%Y%m%d')
   end
 
