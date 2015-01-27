@@ -13,6 +13,28 @@
 
 ActiveRecord::Schema.define(version: 20150212004325) do
 
+  create_table "accounts", force: true do |t|
+    t.string   "email",                  default: "",    null: false
+    t.string   "encrypted_password",     default: "",    null: false
+    t.string   "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer  "sign_in_count",          default: 0,     null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string   "current_sign_in_ip"
+    t.string   "last_sign_in_ip"
+    t.string   "authentication_token"
+    t.string   "name",                   default: "",    null: false
+    t.boolean  "admin",                  default: false, null: false
+    t.datetime "created_at",                             null: false
+    t.datetime "updated_at",                             null: false
+  end
+
+  add_index "accounts", ["authentication_token"], name: "index_accounts_on_authentication_token", unique: true
+  add_index "accounts", ["email"], name: "index_accounts_on_email", unique: true
+  add_index "accounts", ["reset_password_token"], name: "index_accounts_on_reset_password_token", unique: true
+
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
     t.string   "status"
@@ -36,6 +58,16 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
+
+  create_table "assignments", force: true do |t|
+    t.integer  "project_id",             null: false
+    t.integer  "account_id",             null: false
+    t.integer  "role",       default: 1
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
+
+  add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true
 
   create_table "base_images", force: true do |t|
     t.integer "cloud_id"
@@ -62,7 +94,10 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "tenant_name"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.integer  "project_id"
   end
+
+  add_index "clouds", ["project_id"], name: "index_clouds_on_project_id"
 
   create_table "images", force: true do |t|
     t.integer  "pattern_id"
@@ -101,6 +136,13 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "projects", force: true do |t|
+    t.string   "name",        null: false
+    t.string   "description"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
+  end
+
   create_table "stacks", force: true do |t|
     t.integer  "system_id"
     t.integer  "pattern_id"
@@ -122,7 +164,10 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.text     "template_parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.integer  "project_id"
     t.string   "status"
   end
+
+  add_index "systems", ["project_id"], name: "index_systems_on_project_id"
 
 end

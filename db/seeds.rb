@@ -1,21 +1,14 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014 TIS Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+OperatingSystem.find_or_create_by(
+  name: 'centos',
+  version: '6.5'
+)
 
-if OperatingSystem.count == 0
-  operating_system = OperatingSystem.new
-  operating_system.name = 'centos'
-  operating_system.version = '6.5'
-  operating_system.save!
+if Rails.env == 'development'
+  Account.where(email: 'admin@example.com').first_or_create!(
+    email: 'admin@example.com',
+    name: 'Administrator',
+    password: 'password',
+    password_confirmation: 'password',
+    admin: true
+  )
 end
