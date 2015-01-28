@@ -83,6 +83,16 @@ describe Application do
     end
   end
 
+  describe '#status' do
+    it 'return latest ApplicationHistory status' do
+      @application.save!
+      @application.histories << FactoryGirl.build(:application_history)
+      @application.histories << FactoryGirl.build(:application_history, status: :deployed)
+
+      expect(@application.status).to eq(:deployed)
+    end
+  end
+
   describe '#dup' do
     it 'return duplicated application without system attributes' do
       application = @application.dup
