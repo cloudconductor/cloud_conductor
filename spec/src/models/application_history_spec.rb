@@ -24,9 +24,10 @@ describe ApplicationHistory do
     @history.url = 'http://example.com/'
     @history.parameters = '{ "dummy": "value" }'
 
-    @event = double(:event, sync_fire: 1)
+    @event = double(:event, fire: 1)
     allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
-    allow(@application.system).to receive(:event).and_return(@event)
+    allow(@event).to receive_message_chain(:find, :success?).and_return(true)
+    allow_any_instance_of(System).to receive(:event).and_return(@event)
     @today = Date.today.strftime('%Y%m%d')
   end
 
@@ -39,7 +40,45 @@ describe ApplicationHistory do
   describe '#status' do
     it 'returns application history status as symbol' do
       @history.status = 'sample'
+      expect(@event).not_to receive(:find)
       expect(@history.status).to eq(:sample)
+    end
+
+    it 'request status to consul when status is progress' do
+      @history.status = :progress
+      @history.event = 'dummy_event_id'
+      expect(@event).to receive(:find).with('dummy_event_id')
+      @history.status
+    end
+
+    it 'return :progress if event has\'nt finished' do
+      @history.status = :progress
+      @history.event = 'dummy_event_id'
+      allow(@event).to receive_message_chain(:find, :finished?).and_return(false)
+
+      expect(@history.status).to eq(:progress)
+    end
+
+    it 'return :success and save status if event has finished with success status' do
+      @history.status = :progress
+      @history.event = 'dummy_event_id'
+      allow(@event).to receive_message_chain(:find, :success?).and_return(true)
+
+      @history.save!
+
+      expect(@history.status).to eq(:deployed)
+      expect(ApplicationHistory.find(@history.id).status).to eq(:deployed)
+    end
+
+    it 'return :error and save status if event has finished without success status' do
+      @history.status = :progress
+      @history.event = 'dummy_event_id'
+      allow(@event).to receive_message_chain(:find, :success?).and_return(false)
+
+      @history.save!
+
+      expect(@history.status).to eq(:error)
+      expect(ApplicationHistory.find(@history.id).status).to eq(:error)
     end
   end
 
@@ -98,11 +137,13 @@ describe ApplicationHistory do
 
     describe '#consul_request' do
       it 'change status when call consul_request' do
-        expect(@history.status).to eq(:not_yet)
+        expect(@history.attributes['status']).to eq('not_yet')
+        expect(@history.event).to be_nil
 
         @history.save!
 
-        expect(@history.status).to eq(:deployed)
+        expect(@history.attributes['status']).to eq('progress')
+        expect(@history.event).not_to be_nil
       end
 
       it 'contains domain, type, version, protocol, url and parameters in payload when request to consul' do
@@ -123,7 +164,7 @@ describe ApplicationHistory do
           }
         }
 
-        expect(@event).to receive(:sync_fire).with(:deploy, payload)
+        expect(@event).to receive(:fire).with(:deploy, payload)
         @history.save!
       end
 
@@ -141,7 +182,7 @@ describe ApplicationHistory do
           )
         end
 
-        expect(@event).to receive(:sync_fire).with(:deploy, expected_payload)
+        expect(@event).to receive(:fire).with(:deploy, expected_payload)
         @history.save!
       end
     end

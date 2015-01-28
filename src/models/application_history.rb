@@ -19,6 +19,7 @@ class ApplicationHistory < ActiveRecord::Base
 
   before_save :allocate_version, unless: -> { version }
   before_save :consul_request, if: -> { !deployed? && application.system.ip_address }
+  before_save :update_status, if: -> { status == :progress }
 
   belongs_to :application
 
@@ -41,7 +42,20 @@ class ApplicationHistory < ActiveRecord::Base
   end
 
   def status
-    super && super.to_sym
+    status = super && super.to_sym
+    return status unless status == :progress
+
+    return :not_yet unless event
+
+    event_log = application.system.event.find(event)
+    return :progress unless event_log.finished?
+    return :deployed if event_log.success?
+
+    :error
+  end
+
+  def update_status
+    self.status = status
   end
 
   def allocate_version
@@ -80,9 +94,9 @@ class ApplicationHistory < ActiveRecord::Base
     }
 
     payload[:cloudconductor][:applications][application.name] = application_payload
-    application.system.event.sync_fire(:deploy, payload)
 
-    self.status = :deployed
+    self.status = :progress
+    self.event = application.system.event.fire(:deploy, payload)
   end
 
   def deployed?

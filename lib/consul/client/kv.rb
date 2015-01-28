@@ -21,9 +21,9 @@ module Consul
       end
 
       def get(key, is_recurse = false)
-        query = { token: @token }
-        query[:recurse] = true if is_recurse
-        response = @faraday.get("kv/#{key}", query)
+        @faraday.params[:token] = @token
+        @faraday.params[:recurse] = true if is_recurse
+        response = @faraday.get("kv/#{key}")
         return nil unless response.success?
 
         result = {}
@@ -36,7 +36,8 @@ module Consul
 
       def put(key, value)
         value = value.to_json if value.is_a? Hash
-        @faraday.put("kv/#{key}?token=#{@token}", value)
+        @faraday.params = { token: @token }
+        @faraday.put("kv/#{key}", value)
       end
 
       def merge(key, value)
