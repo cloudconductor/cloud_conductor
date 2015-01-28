@@ -87,9 +87,9 @@ describe Application do
     it 'return latest ApplicationHistory status' do
       @application.save!
       @application.histories << FactoryGirl.build(:application_history)
-      @application.histories << FactoryGirl.build(:application_history, status: :deployed)
+      @application.histories << FactoryGirl.build(:application_history, status: :DEPLOYED)
 
-      expect(@application.status).to eq(:deployed)
+      expect(@application.status).to eq(:DEPLOYED)
     end
   end
 

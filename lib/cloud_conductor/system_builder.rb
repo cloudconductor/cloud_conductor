@@ -120,7 +120,7 @@ module CloudConductor
       @system.event.sync_fire(:deploy, application_payload(@system)) unless @system.applications.empty?
 
       @system.applications.map(&:latest).compact.each do |history|
-        history.status = :deployed
+        history.status = :DEPLOYED
         history.save!
       end
 

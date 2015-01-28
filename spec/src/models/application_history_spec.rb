@@ -32,8 +32,8 @@ describe ApplicationHistory do
   end
 
   describe '#initialize' do
-    it 'set status to :not_yet' do
-      expect(@history.status).to eq(:not_yet)
+    it 'set status to :NOT_YET' do
+      expect(@history.status).to eq(:NOT_YET)
     end
   end
 
@@ -45,40 +45,40 @@ describe ApplicationHistory do
     end
 
     it 'request status to consul when status is progress' do
-      @history.status = :progress
+      @history.status = :PROGRESS
       @history.event = 'dummy_event_id'
       expect(@event).to receive(:find).with('dummy_event_id')
       @history.status
     end
 
-    it 'return :progress if event has\'nt finished' do
-      @history.status = :progress
+    it 'return :PROGRESS if event has\'nt finished' do
+      @history.status = :PROGRESS
       @history.event = 'dummy_event_id'
       allow(@event).to receive_message_chain(:find, :finished?).and_return(false)
 
-      expect(@history.status).to eq(:progress)
+      expect(@history.status).to eq(:PROGRESS)
     end
 
     it 'return :success and save status if event has finished with success status' do
-      @history.status = :progress
+      @history.status = :PROGRESS
       @history.event = 'dummy_event_id'
       allow(@event).to receive_message_chain(:find, :success?).and_return(true)
 
       @history.save!
 
-      expect(@history.status).to eq(:deployed)
-      expect(ApplicationHistory.find(@history.id).status).to eq(:deployed)
+      expect(@history.status).to eq(:DEPLOYED)
+      expect(ApplicationHistory.find(@history.id).status).to eq(:DEPLOYED)
     end
 
-    it 'return :error and save status if event has finished without success status' do
-      @history.status = :progress
+    it 'return :ERROR and save status if event has finished without success status' do
+      @history.status = :PROGRESS
       @history.event = 'dummy_event_id'
       allow(@event).to receive_message_chain(:find, :success?).and_return(false)
 
       @history.save!
 
-      expect(@history.status).to eq(:error)
-      expect(ApplicationHistory.find(@history.id).status).to eq(:error)
+      expect(@history.status).to eq(:ERROR)
+      expect(ApplicationHistory.find(@history.id).status).to eq(:ERROR)
     end
   end
 
@@ -128,7 +128,7 @@ describe ApplicationHistory do
       end
 
       it 'will not call consul_request if already deployed' do
-        @history.status = :deployed
+        @history.status = :DEPLOYED
 
         expect(@history).not_to receive(:consul_request)
         @history.save!
@@ -137,12 +137,12 @@ describe ApplicationHistory do
 
     describe '#consul_request' do
       it 'change status when call consul_request' do
-        expect(@history.attributes['status']).to eq('not_yet')
+        expect(@history.attributes['status']).to eq('NOT_YET')
         expect(@history.event).to be_nil
 
         @history.save!
 
-        expect(@history.attributes['status']).to eq('progress')
+        expect(@history.attributes['status']).to eq('PROGRESS')
         expect(@history.event).not_to be_nil
       end
 
@@ -248,9 +248,9 @@ describe ApplicationHistory do
 
   describe '#dup' do
     it 'copy attributes without status' do
-      @history.status = :deployed
+      @history.status = :DEPLOYED
       result = @history.dup
-      expect(result.status).to eq(:not_yet)
+      expect(result.status).to eq(:NOT_YET)
     end
   end
 end

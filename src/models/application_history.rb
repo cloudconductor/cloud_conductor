@@ -19,7 +19,7 @@ class ApplicationHistory < ActiveRecord::Base
 
   before_save :allocate_version, unless: -> { version }
   before_save :consul_request, if: -> { !deployed? && application.system.ip_address }
-  before_save :update_status, if: -> { status == :progress }
+  before_save :update_status, if: -> { status == :PROGRESS }
 
   belongs_to :application
 
@@ -38,20 +38,20 @@ class ApplicationHistory < ActiveRecord::Base
   end
 
   after_initialize do
-    self.status ||= :not_yet
+    self.status ||= :NOT_YET
   end
 
   def status
     status = super && super.to_sym
-    return status unless status == :progress
+    return status unless status == :PROGRESS
 
-    return :not_yet unless event
+    return :NOT_YET unless event
 
     event_log = application.system.event.find(event)
-    return :progress unless event_log.finished?
-    return :deployed if event_log.success?
+    return :PROGRESS unless event_log.finished?
+    return :DEPLOYED if event_log.success?
 
-    :error
+    :ERROR
   end
 
   def update_status
@@ -95,17 +95,17 @@ class ApplicationHistory < ActiveRecord::Base
 
     payload[:cloudconductor][:applications][application.name] = application_payload
 
-    self.status = :progress
+    self.status = :PROGRESS
     self.event = application.system.event.fire(:deploy, payload)
   end
 
   def deployed?
-    status == :deployed
+    status == :DEPLOYED
   end
 
   def dup
     history = super
-    history.status = :not_yet
+    history.status = :NOT_YET
     history
   end
 end
