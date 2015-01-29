@@ -26,6 +26,6 @@ FactoryGirl.define do
   end
 
   after(:create) do
-    ApplicationHistory.set_callback :save, :before, :consul_request, if: -> { !deployed? && application.system.ip_address }
+    ApplicationHistory.set_callback :save, :before, :consul_request, if: -> { status(false) == :NOT_YET && application.system.ip_address }
   end
 end

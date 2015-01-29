@@ -67,7 +67,7 @@ describe ApplicationHistory do
       @history.save!
 
       expect(@history.status).to eq(:DEPLOYED)
-      expect(ApplicationHistory.find(@history.id).status).to eq(:DEPLOYED)
+      expect(ApplicationHistory.find(@history.id).attributes['status']).to eq('DEPLOYED')
     end
 
     it 'return :ERROR and save status if event has finished without success status' do
@@ -78,7 +78,7 @@ describe ApplicationHistory do
       @history.save!
 
       expect(@history.status).to eq(:ERROR)
-      expect(ApplicationHistory.find(@history.id).status).to eq(:ERROR)
+      expect(ApplicationHistory.find(@history.id).attributes['status']).to eq('ERROR')
     end
   end
 
