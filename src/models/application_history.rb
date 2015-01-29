@@ -41,7 +41,7 @@ class ApplicationHistory < ActiveRecord::Base
     self.status ||= :NOT_YET
   end
 
-  def status(consul = true)
+  def status(consul = true) # rubocop:disable CyclomaticComplexity
     status = super() && super().to_sym
     return status unless status == :PROGRESS && consul
 
