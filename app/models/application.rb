@@ -1,9 +1,11 @@
 class Application < ActiveRecord::Base
   belongs_to :system
   has_many :histories, class_name: :ApplicationHistory, dependent: :destroy
+  accepts_nested_attributes_for :histories
 
-  validates :name, presence: true, uniqueness: { scope: :system_id }
-  validates :system, presence: true
+  validates_associated :system
+  validates_presence_of :name, :system
+  validates :name, uniqueness: { scope: :system_id }
 
   def latest
     histories.last

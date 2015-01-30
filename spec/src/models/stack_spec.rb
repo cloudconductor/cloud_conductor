@@ -14,7 +14,7 @@
 # limitations under the License.
 describe Stack do
   before do
-    @pattern = FactoryGirl.build(:pattern)
+    @pattern = FactoryGirl.create(:pattern)
     @image = FactoryGirl.build(:image)
     @image.status = :CREATE_COMPLETE
     @pattern.images.push(@image)

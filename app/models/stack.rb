@@ -3,9 +3,6 @@ class Stack < ActiveRecord::Base
   belongs_to :pattern
   belongs_to :cloud
 
-  before_destroy :destroy_stack, unless: -> { pending? }
-  before_save :create_stack, if: -> { ready? }
-
   scope :in_progress, -> { where(status: :PROGRESS) }
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
@@ -25,6 +22,9 @@ class Stack < ActiveRecord::Base
   validate do
     errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :CREATE_COMPLETE
   end
+
+  before_destroy :destroy_stack, unless: -> { pending? }
+  before_save :create_stack, if: -> { ready? }
 
   after_initialize do
     self.template_parameters ||= '{}'

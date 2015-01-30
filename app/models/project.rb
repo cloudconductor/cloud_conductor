@@ -6,9 +6,9 @@ class Project < ActiveRecord::Base
   # has_many :blueprints, dependent: :destroy
 
   attr_accessor :current_account
-  # before_create :assign_project_administrator
 
-  validates :name, presence: true, uniqueness: true
+  validates_presence_of :name
+  validates_uniqueness_of :name
 
   def assign_project_administrator(account)
     assignments.build(account: account, role: :administrator)

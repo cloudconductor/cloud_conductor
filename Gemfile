@@ -37,6 +37,8 @@ group :test do
   gem 'rspec-rails'
   gem 'rspec-mocks'
   gem 'rspec_junit_formatter'
+  # gem 'webmock', require: 'webmock/rspec'
+  # gem 'vcr'
   gem 'simplecov'
   gem 'simplecov-rcov'
   gem 'database_cleaner'

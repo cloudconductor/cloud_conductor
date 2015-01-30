@@ -74,13 +74,6 @@ describe Pattern do
       @pattern.clouds.delete_all
       expect(@pattern.valid?).to be_falsey
     end
-
-    it 'returns false when clouds collection has duplicate cloud' do
-      @pattern.clouds.delete_all
-      @pattern.clouds << @cloud_aws
-      @pattern.clouds << @cloud_aws
-      expect(@pattern.valid?).to be_falsey
-    end
   end
 
   describe '#status' do

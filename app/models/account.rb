@@ -8,9 +8,8 @@ class Account < ActiveRecord::Base
          :recoverable, :rememberable, :trackable, :validatable,
          :token_authenticatable
 
-  validates :email, presence: true, uniqueness: { case_sensitive: false }
-  validates :name, presence: true
-  # validates :admin, inclusion: { in: [true, false] }
+  # validates_presence_of :email, :name, :admin
+  # validates :email, uniqueness: { case_sensitive: false }
 
   BLACKLIST_FOR_SERIALIZATION << :authentication_token
 

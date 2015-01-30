@@ -1,18 +1,11 @@
 class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
-
-  before_save :allocate_version, unless: -> { version }
-  before_save :consul_request, if: -> { status(false) == :NOT_YET && application.system.ip_address }
-  before_save :update_status, if: -> { status(false) == :PROGRESS }
-
   belongs_to :application
 
-  validates :application, presence: true
-  validates :domain, presence: true
-  validates :type, presence: true
-  validates :protocol, presence: true, inclusion: { in: %w(http https git) }
-  validates :url, presence: true, format: { with: URI.regexp }
-
+  validates_associated :application
+  validates_presence_of :domain, :type, :protocol, :url
+  validates :protocol, inclusion: { in: %w(http https git) }
+  validates :url, format: { with: URI.regexp }
   validates_each :parameters do |record, attr, value|
     begin
       JSON.parse(value) unless value.nil?
@@ -20,6 +13,10 @@ class ApplicationHistory < ActiveRecord::Base
       record.errors.add(attr, 'is malformed or invalid json string')
     end
   end
+
+  before_save :allocate_version, unless: -> { version }
+  before_save :consul_request, if: -> { !deployed? && application.system.ip_address }
+  before_save :update_status, if: -> { status(false) == :PROGRESS }
 
   after_initialize do
     self.status ||= :NOT_YET

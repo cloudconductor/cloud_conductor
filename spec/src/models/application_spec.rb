@@ -14,7 +14,7 @@
 # limitations under the License.
 describe Application do
   before do
-    @system = FactoryGirl.build(:system)
+    @system = FactoryGirl.create(:system)
 
     @application = Application.new
     @application.name = 'dummy'

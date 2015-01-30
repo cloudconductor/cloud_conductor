@@ -1,24 +1,13 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014 TIS Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 FactoryGirl.define do
   factory :application_history, class: ApplicationHistory do
-    domain 'example.com'
-    type 'static'
-    protocol 'http'
-    url 'http://example.com/'
-    parameters '{ "dummy": "value" }'
+    domain 'app.example.com'
+    type 'dynamic'
+    protocol 'git'
+    url 'https://example.com/app_repository.git'
+    revision 'master'
+    pre_deploy 'echo "pre_deploy"'
+    post_deploy 'echo "post_deploy"'
+    parameters '{ "key": "value" }'
   end
 
   before(:create) do

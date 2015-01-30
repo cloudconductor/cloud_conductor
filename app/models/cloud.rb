@@ -1,25 +1,15 @@
 class Cloud < ActiveRecord::Base
-  TEMPLATE_PATH = File.expand_path('../../config/templates.yml', File.dirname(__FILE__))
-
   self.inheritance_column = nil
-
   has_many :base_images, dependent: :destroy
   has_many :operating_systems, through: :base_images
 
+  validates_presence_of :name, :entry_point, :key, :secret, :type
+  validates_presence_of :tenant_name, if: -> { type == :openstack }
+  validates :type, inclusion: { in: [:aws, :openstack, :dummy] }
+
   before_destroy :raise_error_in_use
 
-  validates :name, presence: true
-  validates :entry_point, presence: true
-  validates :key, presence: true
-  validates :secret, presence: true
-  validate do
-    unless %i(aws openstack dummy).include? type
-      errors.add(:type, ' must be "aws", "openstack" or "dummy"')
-    end
-    if type == :openstack
-      errors.add(:tenant_name, 'must not be blank in case that type is "openstack".') if tenant_name.blank?
-    end
-  end
+  TEMPLATE_PATH = File.expand_path('../../config/templates.yml', File.dirname(__FILE__))
 
   def type
     super && super.to_sym

@@ -1,5 +1,6 @@
 class OperatingSystem < ActiveRecord::Base
-  validates :name, presence: true, format: /\A[^\-]+\Z/
+  validates_presence_of :name
+  validates :name, format: /\A[^\-]+\Z/
 
   def self.candidates(supports)
     (supports || []).map do |support|

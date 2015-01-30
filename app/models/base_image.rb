@@ -2,9 +2,7 @@ class BaseImage < ActiveRecord::Base
   belongs_to :cloud
   belongs_to :operating_system
 
-  validates :operating_system, presence: true
-  validates :source_image, presence: true
-  validates :ssh_username, presence: true
+  validates_presence_of :operating_system, :source_image, :ssh_username
 
   cattr_accessor :images
 

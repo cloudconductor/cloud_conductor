@@ -4,18 +4,15 @@ class System < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :applications, dependent: :destroy
   has_many :stacks
 
-  before_destroy :destroy_stacks, unless: -> { stacks.empty? }
-
-  before_save :update_dns, if: -> { ip_address }
-  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
-
-  validates :name, presence: true, uniqueness: true
-  validates :clouds, presence: true
-
+  validates_presence_of :name, :clouds
+  validates :name, uniqueness: true
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
+  before_save :update_dns, if: -> { ip_address }
+  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
+  before_destroy :destroy_stacks, unless: -> { stacks.empty? }
   after_initialize do
     self.template_parameters ||= '{}'
     self.status ||= :PENDING

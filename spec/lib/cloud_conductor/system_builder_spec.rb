@@ -15,8 +15,8 @@
 module CloudConductor
   describe SystemBuilder do
     before do
-      @platform_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :platform))
-      @optional_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, type: :optional))
+      @platform_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern))
+      @optional_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, :optional))
 
       @system = FactoryGirl.create(:system)
       @system.stacks << @platform_stack

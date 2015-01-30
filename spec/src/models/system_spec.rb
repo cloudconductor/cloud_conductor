@@ -39,11 +39,13 @@ describe System do
     @system.stacks << FactoryGirl.build(:stack, status: :PENDING, system: @system, pattern: pattern, cloud: @cloud_aws)
 
     Stack.skip_callback :destroy, :before, :destroy_stack
+    Pattern.skip_callback :save, :before, :execute_packer
     ApplicationHistory.skip_callback :save, :before, :consul_request
   end
 
   after do
     Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
+    Pattern.skip_callback :save, :before, :execute_packer
     ApplicationHistory.set_callback :save, :before, :consul_request, if: -> { !deployed? && application.system.ip_address }
   end
 

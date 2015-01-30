@@ -1,21 +1,18 @@
 class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
-  before_save :execute_packer
   self.inheritance_column = nil
-
   has_many :patterns_clouds, dependent: :destroy
   has_many :clouds, through: :patterns_clouds
   has_many :images, dependent: :destroy
 
   validates :url, format: { with: URI.regexp }
-  validates :clouds, presence: true
-
-  validate do
-    errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
-  end
+  validates_presence_of :clouds
 
   after_initialize do
     self.protocol ||= 'git'
+    self.clouds = Cloud.all
   end
+
+  before_save :execute_packer
 
   def status
     return :ERROR if images.any? { |image| image.status == :ERROR }
