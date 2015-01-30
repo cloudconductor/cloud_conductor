@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
   devise_for :accounts, ActiveAdmin::Devise.config
-  mount API::Root => '/api'
+  # TODO: fix later
+  # mount API::Root => '/api'
+  mount API::V1::Root => '/'
 end
