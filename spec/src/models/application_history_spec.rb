@@ -137,12 +137,12 @@ describe ApplicationHistory do
 
     describe '#consul_request' do
       it 'change status when call consul_request' do
-        expect(@history.attributes['status']).to eq('NOT_YET')
+        expect(@history.attributes['status']).to eq(:NOT_YET)
         expect(@history.event).to be_nil
 
         @history.save!
 
-        expect(@history.attributes['status']).to eq('PROGRESS')
+        expect(@history.attributes['status']).to eq(:PROGRESS)
         expect(@history.event).not_to be_nil
       end
 
