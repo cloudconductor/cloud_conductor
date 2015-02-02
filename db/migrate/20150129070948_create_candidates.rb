@@ -1,10 +1,9 @@
 class CreateCandidates < ActiveRecord::Migration
   def change
-    create_table :candidates, id: false do |t|
+    create_table :candidates do |t|
       t.references :cloud
-      t.references :system
+      t.references :environment
       t.integer :priority
-      t.boolean :active
       t.timestamps null: false
     end
   end

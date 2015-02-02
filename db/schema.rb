@@ -46,10 +46,10 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "revision"
     t.string   "pre_deploy"
     t.string   "post_deploy"
+    t.string   "event"
     t.string   "parameters"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
-    t.string   "event"
   end
 
   create_table "applications", force: true do |t|
@@ -70,23 +70,35 @@ ActiveRecord::Schema.define(version: 20150212004325) do
   add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true
 
   create_table "base_images", force: true do |t|
-    t.integer "cloud_id"
-    t.integer "operating_system_id"
-    t.string  "source_image"
-    t.string  "ssh_username"
+    t.integer  "cloud_id"
+    t.string   "operating_system"
+    t.string   "source_image"
+    t.string   "ssh_username"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+  end
+
+  create_table "blueprints", force: true do |t|
+    t.integer  "project_id"
+    t.string   "name"
+    t.string   "description"
+    t.integer  "version"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "candidates", force: true do |t|
     t.integer  "cloud_id"
-    t.integer  "system_id"
+    t.integer  "environment_id"
     t.integer  "priority"
-    t.boolean  "active"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.datetime "created_at",     null: false
+    t.datetime "updated_at",     null: false
   end
 
   create_table "clouds", force: true do |t|
+    t.integer  "project_id"
     t.string   "name"
+    t.string   "description"
     t.string   "type"
     t.string   "entry_point"
     t.string   "key"
@@ -94,46 +106,51 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "tenant_name"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
-    t.integer  "project_id"
   end
 
-  add_index "clouds", ["project_id"], name: "index_clouds_on_project_id"
+  create_table "deployments", force: true do |t|
+    t.integer  "environment_id"
+    t.integer  "application_history_id"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
+  end
 
-  create_table "images", force: true do |t|
-    t.integer  "pattern_id"
-    t.integer  "cloud_id"
-    t.integer  "operating_system_id"
-    t.string   "role"
-    t.string   "image"
-    t.string   "message"
+  create_table "environments", force: true do |t|
+    t.integer  "system_id"
+    t.integer  "blueprint_id"
+    t.string   "name"
+    t.string   "description"
     t.string   "status"
+    t.string   "monitoring_host"
+    t.string   "ip_address"
+    t.string   "domain"
+    t.text     "template_parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
   end
 
-  create_table "operating_systems", force: true do |t|
-    t.string "name"
-    t.string "version"
+  create_table "images", force: true do |t|
+    t.integer  "pattern_id"
+    t.integer  "base_image_id"
+    t.string   "role"
+    t.string   "image"
+    t.string   "message"
+    t.string   "status"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
 
   create_table "patterns", force: true do |t|
+    t.integer  "blueprint_id"
     t.string   "name"
-    t.string   "description"
     t.string   "type"
     t.string   "protocol"
     t.string   "url"
     t.string   "revision"
+    t.string   "consul_secret_key"
     t.text     "parameters"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
-    t.string   "consul_secret_key"
-  end
-
-  create_table "patterns_clouds", force: true do |t|
-    t.integer  "pattern_id"
-    t.integer  "cloud_id"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
   end
 
   create_table "projects", force: true do |t|
@@ -144,7 +161,7 @@ ActiveRecord::Schema.define(version: 20150212004325) do
   end
 
   create_table "stacks", force: true do |t|
-    t.integer  "system_id"
+    t.integer  "environment_id"
     t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.string   "name"
@@ -157,17 +174,11 @@ ActiveRecord::Schema.define(version: 20150212004325) do
   end
 
   create_table "systems", force: true do |t|
-    t.string   "name"
-    t.string   "monitoring_host"
-    t.string   "ip_address"
-    t.string   "domain"
-    t.text     "template_parameters"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
     t.integer  "project_id"
-    t.string   "status"
+    t.string   "name"
+    t.string   "description"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
-
-  add_index "systems", ["project_id"], name: "index_systems_on_project_id"
 
 end

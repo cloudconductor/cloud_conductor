@@ -1,7 +1,7 @@
 class CreateStacks < ActiveRecord::Migration
   def change
     create_table :stacks do |t|
-      t.references :system
+      t.references :environment
       t.references :pattern
       t.references :cloud
       t.string :name

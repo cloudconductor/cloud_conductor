@@ -11,6 +11,7 @@ class CreateApplicationHistories < ActiveRecord::Migration
       t.string :revision
       t.string :pre_deploy
       t.string :post_deploy
+      t.string :event
 
       t.string :parameters
       t.timestamps null: false

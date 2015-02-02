@@ -1,7 +1,9 @@
 class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   self.inheritance_column = nil
-  has_many :patterns_clouds, dependent: :destroy
-  has_many :clouds, through: :patterns_clouds
+
+  belongs_to :blueprint
+  # has_many :patterns_clouds, dependent: :destroy
+  # has_many :clouds, through: :patterns_clouds
   has_many :images, dependent: :destroy
 
   validates :url, format: { with: URI.regexp }

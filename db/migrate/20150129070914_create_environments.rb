@@ -1,7 +1,11 @@
-class CreateSystems < ActiveRecord::Migration
+class CreateEnvironments < ActiveRecord::Migration
   def change
-    create_table :systems do |t|
+    create_table :environments do |t|
+      t.references :system
+      t.references :blueprint
       t.string :name
+      t.string :description
+      t.string :status
       t.string :monitoring_host
       t.string :ip_address
       t.string :domain

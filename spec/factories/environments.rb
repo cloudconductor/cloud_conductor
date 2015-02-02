@@ -13,7 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :system, class: System do
+  factory :environment, class: Environment do
     sequence(:name) { |n| "system-#{n}" }
+    domain 'example.com'
+    template_parameters '{ "dummy": "value" }'
+
+    before(:create) do |environment|
+      Environment.skip_callback :save, :before, :enable_monitoring
+      Environment.skip_callback :save, :before, :update_dns
+
+      environment.add_cloud create(:cloud_aws), 1
+      environment.add_cloud create(:cloud_openstack), 2
+    end
+
+    after(:create) do
+      Environment.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
+      Environment.set_callback :save, :before, :update_dns, if: -> { ip_address }
+    end
   end
 end

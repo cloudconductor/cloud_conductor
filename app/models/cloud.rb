@@ -1,7 +1,9 @@
 class Cloud < ActiveRecord::Base
   self.inheritance_column = nil
+
+  belongs_to :project
+  has_many :stacks
   has_many :base_images, dependent: :destroy
-  has_many :operating_systems, through: :base_images
 
   validates_presence_of :name, :entry_point, :key, :secret, :type
   validates_presence_of :tenant_name, if: -> { type == :openstack }

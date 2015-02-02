@@ -23,12 +23,14 @@ describe Cloud do
     @cloud.tenant_name = 'TestTenant'
   end
 
-  it 'create with valid parameters' do
-    count = Cloud.count
+  describe '#save' do
+    it 'create with valid parameters' do
+      count = Cloud.count
 
-    @cloud.save!
+      @cloud.save!
 
-    expect(Cloud.count).to eq(count + 1)
+      expect(Cloud.count).to eq(count + 1)
+    end
   end
 
   describe '#valid?' do
@@ -106,25 +108,14 @@ describe Cloud do
     end
   end
 
-  describe '#client' do
-    it 'return instance of CloudConductor::Client that is initialized by cloud type' do
-      client = double('client')
-      expect(CloudConductor::Client).to receive(:new).with(@cloud).and_return(client)
-
-      expect(@cloud.client).to eq(client)
-    end
-  end
-
-  describe '#destroy' do
+  describe '#destroy(raise_error_in_use)' do
     before do
       @cloud.save!
-      @system = FactoryGirl.create(:system)
       @count = Cloud.count
     end
 
     it 'raise error and cancel destroy when specified cloud is used in some systems' do
-      @system.add_cloud @cloud, 1
-
+      allow(@cloud).to receive(:used?).and_return(true)
       expect { @cloud.destroy }.to raise_error('Can\'t destroy cloud that is used in some systems.')
       expect(Cloud.count).to eq(@count)
     end
@@ -138,6 +129,27 @@ describe Cloud do
   describe '#type' do
     it 'return type as symbol' do
       expect(@cloud.type).to eq(:aws)
+    end
+  end
+
+  describe '#client' do
+    it 'return instance of CloudConductor::Client that is initialized by cloud type' do
+      client = double('client')
+      expect(CloudConductor::Client).to receive(:new).with(@cloud).and_return(client)
+
+      expect(@cloud.client).to eq(client)
+    end
+  end
+
+  describe '#used?' do
+    it 'return true when cloud is used by some systems' do
+      expect(Candidate).to receive_message_chain(:where, :count).and_return(1)
+      expect(@cloud.used?).to eq(true)
+    end
+
+    it 'return false when cloud is used by some systems' do
+      expect(Candidate).to receive_message_chain(:where, :count).and_return(0)
+      expect(@cloud.used?).to eq(false)
     end
   end
 

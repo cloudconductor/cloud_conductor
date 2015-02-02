@@ -1,7 +1,9 @@
 class CreateClouds < ActiveRecord::Migration
-  def up
+  def change
     create_table :clouds do |t|
+      t.references :project
       t.string :name
+      t.string :description
       t.string :type
       t.string :entry_point
       t.string :key
@@ -9,9 +11,5 @@ class CreateClouds < ActiveRecord::Migration
       t.string :tenant_name
       t.timestamps null: false
     end
-  end
-
-  def down
-    drop_table :clouds
   end
 end
