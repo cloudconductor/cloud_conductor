@@ -1,15 +1,10 @@
 class Stack < ActiveRecord::Base
-  belongs_to :system
+  belongs_to :environment
   belongs_to :pattern
   belongs_to :cloud
 
-  scope :in_progress, -> { where(status: :PROGRESS) }
-  scope :created, -> { where(status: :CREATE_COMPLETE) }
-
   validates :name, presence: true, uniqueness: { scope: :cloud_id }
-  validates :system, presence: true
-  validates :cloud, presence: true
-  validates :pattern, presence: true
+  validates_presence_of :environment, :pattern, :cloud
 
   validates_each :template_parameters, :parameters do |record, attr, value|
     begin
@@ -22,6 +17,9 @@ class Stack < ActiveRecord::Base
   validate do
     errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :CREATE_COMPLETE
   end
+
+  scope :in_progress, -> { where(status: :PROGRESS) }
+  scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   before_destroy :destroy_stack, unless: -> { pending? }
   before_save :create_stack, if: -> { ready? }
@@ -38,7 +36,7 @@ class Stack < ActiveRecord::Base
   end
 
   def create_stack
-    common_parameters = JSON.parse(system.template_parameters, symbolize_names: true)
+    common_parameters = JSON.parse(environment.template_parameters, symbolize_names: true)
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
     client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters), JSON.parse(instance_sizes)
   rescue Excon::Errors::SocketError
@@ -79,7 +77,7 @@ class Stack < ActiveRecord::Base
   end
 
   def exist?
-    cloud.client.get_stack_status name
+    client.get_stack_status name
     true
   rescue
     false
@@ -95,19 +93,19 @@ class Stack < ActiveRecord::Base
     status = super
     return status && status.to_sym unless status && status.to_sym == :PROGRESS
 
-    cloud.client.get_stack_status name if cloud.client
+    client.get_stack_status name if client
   rescue
     :ERROR
   end
 
   def outputs
-    cloud.client.get_outputs name
+    client.get_outputs name
   rescue
     {}
   end
 
   def destroy_stack
-    cloud.client.destroy_stack name
+    client.destroy_stack name
   rescue => e
     Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
     Log.warn "  #{e.message}"

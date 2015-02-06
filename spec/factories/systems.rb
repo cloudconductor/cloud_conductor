@@ -14,6 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :system, class: System do
+    project
     sequence(:name) { |n| "system-#{n}" }
   end
 end

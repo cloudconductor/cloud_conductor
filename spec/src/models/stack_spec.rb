@@ -14,53 +14,46 @@
 # limitations under the License.
 describe Stack do
   before do
-    @pattern = FactoryGirl.create(:pattern)
-    @image = FactoryGirl.build(:image)
-    @image.status = :CREATE_COMPLETE
-    @pattern.images.push(@image)
-    @cloud = FactoryGirl.create(:cloud_aws)
-
     @stack = Stack.new
     @stack.name = 'Test'
-    @stack.template_parameters = '{}'
-    @stack.instance_sizes = '{}'
-    @stack.parameters = '{ "key1": "value1" }'
-    @stack.pattern = @pattern
-    @stack.cloud = @cloud
-    @stack.system = FactoryGirl.build(:system)
-
-    @client = double('client', create_stack: nil, get_stack_status: :dummy, destroy_stack: nil)
-    allow(@stack.cloud).to receive(:client).and_return(@client)
+    @stack.pattern = FactoryGirl.create(:pattern, :platform)
+    @stack.cloud = FactoryGirl.create(:cloud_aws)
+    @stack.environment = FactoryGirl.build(:environment)
   end
 
-  describe '.created' do
-    it 'return created stacks' do
-      system = FactoryGirl.create(:system)
-      _stack1 = FactoryGirl.create(:stack, system: system, status: :PENDING)
-      stack2 = FactoryGirl.create(:stack, system: system, status: :CREATE_COMPLETE)
-      _stack3 = FactoryGirl.create(:stack, system: system, status: :PENDING)
-      stack4 = FactoryGirl.create(:stack, system: system, status: :CREATE_COMPLETE)
+  # rubocop:disable UselessAssignment
+  describe '.in_progress' do
+    it 'returns stacks in progress status' do
+      stack1 = FactoryGirl.create(:stack, status: :PENDING)
+      stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
+      stack3 = FactoryGirl.create(:stack, status: :READY)
+      stack4 = FactoryGirl.create(:stack, status: :ERROR)
+      stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+      stack6 = FactoryGirl.create(:stack, status: :PROGRESS)
 
-      _stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
-
-      expect(system.stacks.created).to eq([stack2, stack4])
+      expect(Stack.in_progress).to eq([stack2, stack6])
     end
   end
 
-  it 'create with valid parameters' do
-    count = Stack.count
+  describe '.created' do
+    it 'returns stacks in progress status' do
+      stack1 = FactoryGirl.create(:stack, status: :PENDING)
+      stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
+      stack3 = FactoryGirl.create(:stack, status: :READY)
+      stack4 = FactoryGirl.create(:stack, status: :ERROR)
+      stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+      stack6 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
 
-    @stack.save!
-
-    expect(Stack.count).to eq(count + 1)
+      expect(Stack.created).to eq([stack5, stack6])
+    end
   end
+  # rubocop:enable UselessAssignment
 
   describe '#initialize' do
     it 'set default values to status, template_parameters and parameters' do
-      stack = Stack.new
-      expect(stack.status).to eq(:PENDING)
-      expect(stack.template_parameters).to eq('{}')
-      expect(stack.parameters).to eq('{}')
+      expect(@stack.status).to eq(:PENDING)
+      expect(@stack.template_parameters).to eq('{}')
+      expect(@stack.parameters).to eq('{}')
     end
   end
 
@@ -77,28 +70,28 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'return false when name is not unique in Cloud' do
-      stack = Stack.new
-      stack.name = 'Test'
-      stack.template_parameters = '{}'
-      stack.instance_sizes = '{}'
-      stack.parameters = '{ "key1": "value1" }'
-      stack.pattern = @pattern
-      stack.system = FactoryGirl.create(:system)
-      stack.cloud = FactoryGirl.create(:cloud_openstack)
-      allow(stack.cloud).to receive(:client).and_return(@client)
-      stack.save!
-
+    it 'return true when name is not unique in two Clouds' do
+      FactoryGirl.create(:stack, name: 'Test', cloud: FactoryGirl.create(:cloud_openstack))
       expect(@stack.valid?).to be_truthy
+    end
 
-      stack.cloud = @cloud
-      allow(stack.cloud).to receive(:client).and_return(@client)
-      stack.save!
+    it 'return false when name is not unique in Cloud' do
+      FactoryGirl.create(:stack, name: 'Test', cloud: @stack.cloud)
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when system is unset' do
-      @stack.system = nil
+    it 'returns false when environment is unset' do
+      @stack.environment = nil
+      expect(@stack.valid?).to be_falsey
+    end
+
+    it 'returns false when pattern is unset' do
+      @stack.pattern = nil
+      expect(@stack.valid?).to be_falsey
+    end
+
+    it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
+      @stack.pattern.images << FactoryGirl.create(:image, status: :PROGRESS, pattern: @stack.pattern)
       expect(@stack.valid?).to be_falsey
     end
 
@@ -116,51 +109,52 @@ describe Stack do
       @stack.parameters = '{'
       expect(@stack.valid?).to be_falsey
     end
-
-    it 'returns false when pattern is unset' do
-      @stack.pattern = nil
-      expect(@stack.valid?).to be_falsey
-    end
-
-    it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
-      @image.status = :PROGRESS
-      expect(@stack.valid?).to be_falsey
-    end
   end
 
-  describe '#before_create' do
+  describe '#save' do
     before do
-      @template_parameters = JSON.parse @stack.template_parameters
+      allow(@stack).to receive(:create_stack)
     end
 
-    it 'call create_stack on cloud when ready status' do
-      expected_parameters = @template_parameters
-      expected_parameters.deep_merge!(dummy: 'value')
-      expect(@client).to receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters, {})
+    it 'create with valid parameters' do
+      expect { @stack.save! }.to change { Stack.count }.by(1)
+    end
 
+    it 'call #create_stack callback when status is ready' do
+      expect(@stack).to receive(:create_stack)
       @stack.status = :READY
       @stack.save!
     end
 
-    it 'doesn\'t call create_stack on cloud when pending status' do
-      expect(@client).not_to receive(:create_stack)
-
+    it 'doesn\'t call #create_stack callback when status isn\'t ready' do
+      expect(@stack).not_to receive(:create_stack)
       @stack.status = :PENDING
       @stack.save!
     end
+  end
+
+  describe '#create_stack' do
+    before do
+      allow(@stack).to receive_message_chain(:client, :create_stack)
+      # @template_parameters = JSON.parse @stack.template_parameters
+    end
+
+    it 'call Client#create_stack' do
+      expect(@stack).to receive_message_chain(:client, :create_stack)
+      @stack.create_stack
+    end
 
     it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
-      allow(@client).to receive(:create_stack)
       @stack.status = :READY
-      @stack.save!
+      @stack.create_stack
 
       expect(@stack.attributes['status']).to eq(:PROGRESS)
     end
 
     it 'update status to :ERROR if Client#create_stack raise error' do
-      allow(@client).to receive(:create_stack).and_raise
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_raise
       @stack.status = :READY
-      @stack.save!
+      @stack.create_stack
 
       expect(@stack.attributes['status']).to eq(:ERROR)
     end
@@ -181,6 +175,11 @@ describe Stack do
   end
 
   describe '#status' do
+    before do
+      @client = double(:client, get_stack_status: 'dummy')
+      allow(@stack).to receive(:client).and_return(@client)
+    end
+
     it 'return status without API request when status isn\'t progress' do
       expect(@client).not_to receive(:get_stack_status)
 
@@ -207,53 +206,38 @@ describe Stack do
 
   describe '#outputs' do
     it 'call get_outputs on adapter that related active cloud' do
-      @stack.save!
-
-      expect(@client).to receive(:get_outputs).with(@stack.name).and_return(key: 'value')
-
+      expect(@stack).to receive_message_chain(:client, :get_outputs).with(@stack.name).and_return(key: 'value')
       expect(@stack.outputs).to eq(key: 'value')
     end
   end
 
-  describe '.in_progress scope' do
-    it 'returns stacks in progress status' do
-      count = Stack.in_progress.count
-      @stack.status = :READY
-      @stack.save!
+  describe '#destroy' do
+    before do
+      allow(@stack).to receive(:destroy_stack)
+    end
 
-      expect(Stack.in_progress.count).to eq(count + 1)
-
+    it 'call #destroy_stack callback' do
+      expect(@stack).to receive(:destroy_stack)
       @stack.status = :CREATE_COMPLETE
-      @stack.save!
+      @stack.destroy
+    end
 
-      expect(Stack.in_progress.count).to eq(count)
+    it 'doesn\'t call #destroy_stack callback when status is pending' do
+      expect(@stack).not_to receive(:destroy_stack)
+      @stack.status = :PENDING
+      @stack.destroy
+    end
+
+    it 'delete stack record' do
+      @stack.save!
+      expect { @stack.destroy }.to change { Stack.count }.by(-1)
     end
   end
 
-  describe '#destroy' do
-    it 'will delete stack record' do
-      count = Stack.count
-      @stack.save!
-      @stack.destroy
-      expect(Stack.count).to eq(count)
-    end
-
-    it 'will call destroy_stack method on current adapter' do
-      @stack.status = :CREATE_COMPLETE
-      @stack.save!
-
-      expect(@client).to receive(:destroy_stack).with(@stack.name)
-
-      @stack.destroy
-    end
-
-    it 'won\'t call destroy_stack method on current adapter if stack has pending status' do
-      @stack.status = :PENDING
-      @stack.save!
-
-      expect(@client).not_to receive(:destroy_stack)
-
-      @stack.destroy
+  describe '#destroy_stack' do
+    it 'call Client#destroy_stack on current adapter' do
+      expect(@stack).to receive_message_chain(:client, :destroy_stack).with(@stack.name)
+      @stack.destroy_stack
     end
   end
 
@@ -339,12 +323,12 @@ describe Stack do
 
   describe '#exist?' do
     it 'return true when target stack has been exist' do
-      allow(@client).to receive(:get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
+      expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
       expect(@stack.exist?).to be_truthy
     end
 
     it 'return false when target stack has not been exist' do
-      allow(@client).to receive(:get_stack_status).with(@stack.name).and_raise
+      expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE).and_raise
       expect(@stack.exist?).to be_falsey
     end
   end

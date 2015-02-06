@@ -1,19 +1,19 @@
 require 'open-uri'
 
-class Environment < ActiveRecord::Base # rubocop:disable ClassLength
+class Environment < ActiveRecord::Base
   belongs_to :system
+  belongs_to :blueprint
   has_many :candidates, dependent: :destroy
   has_many :clouds, through: :candidates
-  #  has_many :applications, dependent: :destroy
   has_many :stacks
 
   before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
   before_save :update_dns, if: -> { ip_address }
-  before_save :enable_monitoring, if: -> { monitoring_host_changed? }
+  before_save :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
 
+  validates_presence_of :system, :clouds, :blueprint, :stacks
   validates :name, presence: true, uniqueness: true
-  validates :clouds, presence: true
 
   validate do
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
@@ -44,27 +44,21 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def dup
-    system = super
+    environment = super
 
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
-    system.name = "#{basename}-#{SecureRandom.uuid}"
-    system.ip_address = nil
-    system.monitoring_host = nil
-    system.template_parameters = '{}'
+    environment.name = "#{basename}-#{SecureRandom.uuid}"
+    environment.ip_address = nil
+    environment.monitoring_host = nil
+    environment.template_parameters = '{}'
 
     candidates.each do |candidate|
-      system.add_cloud candidate.cloud, candidate.priority
+      environment.add_cloud candidate.cloud, candidate.priority
     end
 
-    system.applications = applications.map do |application|
-      duplicated_application = application.dup
-      duplicated_application.histories = application.histories.map(&:dup)
-      duplicated_application
-    end
+    environment.stacks = stacks.map(&:dup)
 
-    system.stacks = stacks.map(&:dup)
-
-    system
+    environment
   end
 
   def enable_monitoring

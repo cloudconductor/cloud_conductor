@@ -16,22 +16,48 @@ describe Image do
   before do
     @image = Image.new
     @image.role = 'dummy'
+    @image.cloud = FactoryGirl.create(:cloud_aws)
+    @image.pattern = FactoryGirl.create(:pattern, :platform)
+    @image.base_image = FactoryGirl.create(:base_image, cloud: @image.cloud)
   end
 
-  it 'create with valid parameters' do
-    count = Image.count
+  describe '#initialize' do
+    it 'set default status' do
+      expect(@image.status).to eq(:PROGRESS)
+    end
+  end
 
-    @image.save!
+  describe '#save' do
+    it 'create with valid parameters' do
+      expect { @image.save! }.to change { Image.count }.by(1)
+    end
+  end
 
-    expect(Image.count).to eq(count + 1)
+  describe '#update_name' do
+    it 'update name by base_image and role' do
+      @image.send(:update_name)
+      expect(@image.name).to eq("#{@image.base_image.name}#{Image::SPLITTER}#{@image.role}")
+    end
   end
 
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@image.valid?).to be_truthy
+    end
 
-      @image.role = 'test'
-      expect(@image.valid?).to be_truthy
+    it 'returns false when pattern is unset' do
+      @image.pattern = nil
+      expect(@image.valid?).to be_falsey
+    end
+
+    it 'returns false when cloud is unset' do
+      @image.cloud = nil
+      expect(@image.valid?).to be_falsey
+    end
+
+    it 'returns false when base_image is unset' do
+      @image.base_image = nil
+      expect(@image.valid?).to be_falsey
     end
 
     it 'returns false when role is unset' do
@@ -52,13 +78,9 @@ describe Image do
   end
 
   describe '#status' do
-    it 'returns :PROGRESS status when initialized' do
-      expect(@image.status).to eq(:PROGRESS)
-    end
-
     it 'returns image status as symbol' do
       @image.status = 'sample'
-      expect(@image.status).to eq(:sample)
+      expect(@image.status).to be_a(Symbol)
     end
   end
 end

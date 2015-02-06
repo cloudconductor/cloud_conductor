@@ -2,16 +2,14 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   self.inheritance_column = nil
 
   belongs_to :blueprint
-  # has_many :patterns_clouds, dependent: :destroy
-  # has_many :clouds, through: :patterns_clouds
   has_many :images, dependent: :destroy
+  has_many :stacks
 
   validates :url, format: { with: URI.regexp }
-  validates_presence_of :clouds
+  validates_presence_of :blueprint
 
   after_initialize do
     self.protocol ||= 'git'
-    self.clouds = Cloud.all
   end
 
   before_save :execute_packer
@@ -28,29 +26,6 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
   def type
     super && super.to_sym
-  end
-
-  def execute_packer
-    clone_repository do |path|
-      metadata = load_metadata path
-      roles = load_roles path
-      update_metadata path, metadata
-
-      if CloudConductor::Config.consul.options.acl
-        status, stdout, stderr = systemu('consul keygen')
-        fail "consul keygen failed.\n#{stderr}" unless status.success?
-        self.consul_secret_key = stdout.chomp
-      else
-        self.consul_secret_key = ''
-      end
-
-      operating_systems = OperatingSystem.candidates(metadata[:supports])
-      roles.each do |role|
-        create_images operating_systems, role, metadata[:name], consul_secret_key
-      end
-    end
-
-    true
   end
 
   def clone_repository
@@ -82,6 +57,28 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   private
+
+  def execute_packer
+    clone_repository do |path|
+      metadata = load_metadata path
+      roles = load_roles path
+      update_metadata path, metadata
+
+      if CloudConductor::Config.consul.options.acl
+        status, stdout, stderr = systemu('consul keygen')
+        fail "consul keygen failed.\n#{stderr}" unless status.success?
+        self.consul_secret_key = stdout.chomp
+      else
+        self.consul_secret_key = ''
+      end
+
+      roles.each do |role|
+        create_images role, metadata[:name], consul_secret_key
+      end
+    end
+
+    true
+  end
 
   def type?(type)
     ->(_, resource) { resource[:Type] == type }
@@ -118,7 +115,6 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
   def update_metadata(path, metadata)
     self.name = metadata[:name]
-    self.description = metadata[:description]
     self.type = metadata[:type]
     self.parameters = load_parameters(path).to_json
 
@@ -128,29 +124,21 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  def create_images(operating_systems, role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
-    clouds.each do |cloud|
-      operating_systems.each do |operating_system|
-        images.build(cloud: cloud, operating_system: operating_system, role: role)
-      end
+  def create_images(role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
+    BaseImage.all.each do |base_image|
+      Image.create!(cloud: base_image.cloud, base_image: base_image, pattern: self, role: role)
     end
 
     parameters = {
       repository_url: url,
       revision: revision,
-      clouds: clouds.map(&:name),
-      operating_systems: operating_systems.map(&:name),
-      role: role,
       pattern_name: pattern_name,
       consul_secret_key: consul_secret_key
     }
 
     CloudConductor::PackerClient.new.build(parameters) do |results|
       results.each do |key, result|
-        cloud_name, os_name = key.split(BaseImage::SPLITTER)
-        cloud = Cloud.where(name: cloud_name).first
-        operating_system = OperatingSystem.where(name: os_name).first
-        image = images.where(cloud: cloud, operating_system: operating_system, role: role).first
+        image = images.where(name: key).first
         image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
         image.image = result[:image]
         image.message = result[:message]

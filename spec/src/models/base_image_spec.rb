@@ -14,65 +14,96 @@
 # limitations under the License.
 describe BaseImage do
   before do
-    BaseImage.images = nil
-    images = { 'ap-northeast-1' => 'ami-12345678' }
-    allow(YAML).to receive(:load_file).with(BaseImage::IMAGES_FILE_PATH).and_return(images)
+    BaseImage.ami_images = nil
+    ami_images = { 'ap-northeast-1' => 'ami-12345678' }
+    allow(YAML).to receive(:load_file).and_call_original
+    allow(YAML).to receive(:load_file).with(BaseImage::IMAGES_FILE_PATH).and_return(ami_images)
 
-    @cloud = FactoryGirl.create(:cloud_aws)
-    @operating_system = FactoryGirl.create(:operating_system)
-    @base_image = BaseImage.new
-    @base_image.cloud = @cloud
-    @base_image.operating_system = @operating_system
-    @base_image.source_image = 'dummy_image'
+    @cloud_aws = FactoryGirl.create(:cloud_aws)
+    @base_image = BaseImage.new(cloud: @cloud_aws, operating_system: 'dummy_os')
   end
 
-  describe 'after_initialize' do
-    it 'set default_value to operating_system and ssh_username' do
-      base_image = BaseImage.new(cloud: @cloud)
+  describe '#initialize' do
+    it 'set default to operating_system and ssh_username' do
+      base_image = BaseImage.new
 
-      expect(base_image.operating_system).to eq(@operating_system)
-      expect(base_image.ssh_username).to eq('ec2-user')
+      expect(base_image.operating_system).to eq(BaseImage::DEFAULT_OPERATING_SYSTEM)
+      expect(base_image.ssh_username).to eq(BaseImage::DEFAULT_SSH_USERNAME)
     end
 
-    it 'set user value to operating_system and ssh_username' do
-      operating_system = FactoryGirl.create(:operating_system)
-      base_image = BaseImage.new(cloud: @cloud, operating_system: operating_system, ssh_username: 'dummy_user')
+    it 'set specified value to operating_system and ssh_username' do
+      base_image = BaseImage.new(operating_system: 'dummy_os', ssh_username: 'dummy_user')
 
-      expect(base_image.operating_system).to eq(operating_system)
+      expect(base_image.operating_system).to eq('dummy_os')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
     it 'set source_image if cloud type equal aws and source_image is nil' do
-      base_image = BaseImage.new(cloud: @cloud)
+      base_image = BaseImage.new(cloud: @cloud_aws)
 
       expect(base_image.source_image).to eq('ami-12345678')
     end
 
-    it 'not set source_image if cloud type equal aws and source_image is not nil' do
-      base_image = BaseImage.new(cloud: @cloud, source_image: 'ami-xxxxxxxx')
+    it 'doesn\'t set source_image if cloud type equal aws and source_image is not nil' do
+      base_image = BaseImage.new(cloud: @cloud_aws, source_image: 'ami-xxxxxxxx')
 
       expect(base_image.source_image).to eq('ami-xxxxxxxx')
     end
 
-    it 'not set source_image if cloud type equal openstack' do
-      cloud = FactoryGirl.create(:cloud_openstack)
-      base_image = BaseImage.new(cloud: cloud, source_image: 'dummy_source_image')
+    it 'doesn\'t set source_image if cloud type equal openstack' do
+      cloud_openstack = FactoryGirl.create(:cloud_openstack)
+      base_image = BaseImage.new(cloud: cloud_openstack)
 
-      expect(base_image.source_image).to eq('dummy_source_image')
+      expect(base_image.source_image).to be_nil
     end
 
     it 'call YAML.load_file only once' do
       expect(YAML).to receive(:load_file).once
 
-      BaseImage.images = nil
-      BaseImage.new(cloud: @cloud)
-      BaseImage.new(cloud: @cloud)
+      BaseImage.ami_images = nil
+      BaseImage.new
+      BaseImage.new
+    end
+  end
+
+  describe '#valid?' do
+    it 'returns true when valid model' do
+      expect(@base_image.valid?).to be_truthy
+    end
+
+    it 'returns false when cloud is unset' do
+      @base_image.cloud = nil
+      expect(@base_image.valid?).to be_falsey
+    end
+
+    it 'returns false when operating_system is unset' do
+      @base_image.operating_system = nil
+      expect(@base_image.valid?).to be_falsey
+
+      @base_image.operating_system = ''
+      expect(@base_image.valid?).to be_falsey
+    end
+
+    it 'returns false when source_image is unset' do
+      @base_image.source_image = nil
+      expect(@base_image.valid?).to be_falsey
+
+      @base_image.source_image = ''
+      expect(@base_image.valid?).to be_falsey
+    end
+
+    it 'returns false when ssh_username is unset' do
+      @base_image.ssh_username = nil
+      expect(@base_image.valid?).to be_falsey
+
+      @base_image.ssh_username = ''
+      expect(@base_image.valid?).to be_falsey
     end
   end
 
   describe '#name' do
     it 'return string that joined cloud name and operating_system name with hyphen' do
-      expect(@base_image.name).to eq("#{@cloud.name}#{BaseImage::SPLITTER}#{@operating_system.name}")
+      expect(@base_image.name).to eq("#{@cloud_aws.name}#{BaseImage::SPLITTER}dummy_os")
     end
   end
 
@@ -93,14 +124,14 @@ describe BaseImage do
       allow(@base_image.cloud).to receive(:template).and_return <<-EOS
         {
           "cloud_name": "{{cloud `name`}}",
-          "operating_system_name": "{{operating_system `name`}}",
+          "operating_system_name": "{{base_image `operating_system`}}",
           "source_image": "{{base_image `source_image`}}"
         }
       EOS
 
       result = JSON.parse(@base_image.to_json).with_indifferent_access
-      expect(result[:cloud_name]).to eq(@cloud.name)
-      expect(result[:operating_system_name]).to eq(@operating_system.name)
+      expect(result[:cloud_name]).to eq(@cloud_aws.name)
+      expect(result[:operating_system_name]).to eq('dummy_os')
       expect(result[:source_image]).to eq(@base_image.source_image)
     end
 

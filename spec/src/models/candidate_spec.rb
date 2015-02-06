@@ -14,27 +14,27 @@
 # limitations under the License.
 describe Candidate do
   describe '.primary' do
-    it 'return single candidates that has highest priority on specified system' do
-      system = FactoryGirl.build(:system)
-      system.add_cloud FactoryGirl.create(:cloud_aws), 10
-      system.add_cloud FactoryGirl.create(:cloud_aws), 30
-      system.add_cloud FactoryGirl.create(:cloud_aws), 20
-      system.save!
+    it 'return single candidate that has highest priority on specified environment' do
+      environment = FactoryGirl.create(:environment)
+      environment.add_cloud FactoryGirl.create(:cloud_aws), 10
+      environment.add_cloud FactoryGirl.create(:cloud_aws), 30
+      environment.add_cloud FactoryGirl.create(:cloud_aws), 20
+      environment.save!
 
-      expect(system.candidates.primary).to eq(system.candidates[1])
+      expect(environment.candidates.primary).to eq(environment.candidates[1])
     end
 
-    it 'ignore candidates on other system' do
-      system1 = FactoryGirl.build(:system)
-      system1.add_cloud FactoryGirl.create(:cloud_aws), 30
-      system1.save!
+    it 'ignore candidates on other environment' do
+      environment1 = FactoryGirl.create(:environment)
+      environment1.add_cloud FactoryGirl.create(:cloud_aws), 30
+      environment1.save!
 
-      system2 = FactoryGirl.build(:system)
-      system2.add_cloud FactoryGirl.create(:cloud_aws), 10
-      system2.add_cloud FactoryGirl.create(:cloud_aws), 20
-      system2.save!
+      environment2 = FactoryGirl.create(:environment)
+      environment2.add_cloud FactoryGirl.create(:cloud_aws), 10
+      environment2.add_cloud FactoryGirl.create(:cloud_aws), 20
+      environment2.save!
 
-      expect(system2.candidates.primary).to eq(system2.candidates[1])
+      expect(environment2.candidates.primary).to eq(environment2.candidates[1])
     end
   end
 end

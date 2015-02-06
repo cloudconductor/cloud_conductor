@@ -3,7 +3,7 @@ class Project < ActiveRecord::Base
   has_many :accounts, through: :assignments
   has_many :clouds, dependent: :destroy
   has_many :systems, dependent: :destroy
-  # has_many :blueprints, dependent: :destroy
+  has_many :blueprints, dependent: :destroy
 
   attr_accessor :current_account
 

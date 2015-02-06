@@ -15,6 +15,7 @@
 describe Cloud do
   before do
     @cloud = Cloud.new
+    @cloud.project = FactoryGirl.create(:project)
     @cloud.name = 'Test'
     @cloud.type = 'aws'
     @cloud.entry_point = 'ap-northeast-1'
@@ -25,11 +26,7 @@ describe Cloud do
 
   describe '#save' do
     it 'create with valid parameters' do
-      count = Cloud.count
-
-      @cloud.save!
-
-      expect(Cloud.count).to eq(count + 1)
+      expect { @cloud.save! }.to change { Cloud.count }.by(1)
     end
   end
 
@@ -48,6 +45,11 @@ describe Cloud do
     it 'returns true when type is dummy' do
       @cloud.type = 'dummy'
       expect(@cloud.valid?).to be_truthy
+    end
+
+    it 'returns false when project is unset' do
+      @cloud.project = nil
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when name is unset' do
@@ -109,26 +111,31 @@ describe Cloud do
   end
 
   describe '#destroy(raise_error_in_use)' do
-    before do
+    it 'delete cloud record' do
       @cloud.save!
-      @count = Cloud.count
+      expect { @cloud.destroy }.to change { Cloud.count }.by(-1)
     end
 
-    it 'raise error and cancel destroy when specified cloud is used in some systems' do
+    it 'delete all base image records' do
+      FactoryGirl.create(:base_image, cloud: @cloud)
+      FactoryGirl.create(:base_image, cloud: @cloud)
+
+      expect(@cloud.base_images.size).to eq(2)
+      expect { @cloud.destroy }.to change { BaseImage.count }.by(-2)
+    end
+
+    it 'raise error and cancel destroy when specified cloud is used in some environments' do
       allow(@cloud).to receive(:used?).and_return(true)
-      expect { @cloud.destroy }.to raise_error('Can\'t destroy cloud that is used in some systems.')
-      expect(Cloud.count).to eq(@count)
-    end
 
-    it 'destroy cloud when specified cloud isn\'t used by any systems' do
-      @cloud.destroy
-      expect(Cloud.count).to eq(@count - 1)
+      expect do
+        expect { @cloud.destroy }.to(raise_error('Can\'t destroy cloud that is used in some systems.'))
+      end.not_to change { Cloud.count }
     end
   end
 
   describe '#type' do
     it 'return type as symbol' do
-      expect(@cloud.type).to eq(:aws)
+      expect(@cloud.type).to be_a(Symbol)
     end
   end
 

@@ -5,7 +5,7 @@ class Cloud < ActiveRecord::Base
   has_many :stacks
   has_many :base_images, dependent: :destroy
 
-  validates_presence_of :name, :entry_point, :key, :secret, :type
+  validates_presence_of :project, :name, :entry_point, :key, :secret, :type
   validates_presence_of :tenant_name, if: -> { type == :openstack }
   validates :type, inclusion: { in: [:aws, :openstack, :dummy] }
 

@@ -15,6 +15,7 @@
 describe System do
   before do
     @system = System.new
+    @system.project = FactoryGirl.create(:project)
     @system.name = 'test'
   end
 
@@ -30,26 +31,35 @@ describe System do
       expect { @system.destroy }.to change { System.count }.by(-1)
     end
 
-    it 'delete all applications record' do
-      @system.applications << FactoryGirl.create(:application, system: @system)
-      @system.applications << FactoryGirl.create(:application, system: @system)
-      @system.save!
+    it 'delete all application records' do
+      FactoryGirl.create(:application, system: @system)
+      FactoryGirl.create(:application, system: @system)
 
+      expect(@system.applications.size).to eq(2)
       expect { @system.destroy }.to change { Application.count }.by(-2)
     end
 
-    it 'delete all environments record' do
-      @system.environments << FactoryGirl.create(:environment, system: @system)
-      @system.environments << FactoryGirl.create(:environment, system: @system)
-      @system.save!
+    it 'delete all environment records' do
+      Environment.skip_callback :destroy, :before, :destroy_stacks
 
+      FactoryGirl.create(:environment, system: @system)
+      FactoryGirl.create(:environment, system: @system)
+
+      expect(@system.environments.size).to eq(2)
       expect { @system.destroy }.to change { Environment.count }.by(-2)
+
+      Environment.set_callback :destroy, :before, :destroy_stacks, unless: -> { stacks.empty? }
     end
   end
 
   describe '#valid?' do
     it 'returns true when valid model' do
       expect(@system.valid?).to be_truthy
+    end
+
+    it 'returns false when project is unset' do
+      @system.project = nil
+      expect(@system.valid?).to be_falsey
     end
 
     it 'returns false when name is unset' do

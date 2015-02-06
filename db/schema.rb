@@ -131,7 +131,9 @@ ActiveRecord::Schema.define(version: 20150212004325) do
 
   create_table "images", force: true do |t|
     t.integer  "pattern_id"
+    t.integer  "cloud_id"
     t.integer  "base_image_id"
+    t.string   "name"
     t.string   "role"
     t.string   "image"
     t.string   "message"

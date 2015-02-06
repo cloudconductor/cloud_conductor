@@ -30,11 +30,11 @@ describe Blueprint do
       expect { @blueprint.destroy }.to change { Blueprint.count }.by(-1)
     end
 
-    it 'delete all patterns record' do
-      @blueprint.patterns << FactoryGirl.create(:pattern, blueprint: @blueprint)
-      @blueprint.patterns << FactoryGirl.create(:pattern, blueprint: @blueprint)
-      @blueprint.save!
+    it 'delete all pattern records' do
+      FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
+      FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
 
+      expect(@blueprint.patterns.size).to eq(2)
       expect { @blueprint.destroy }.to change { Pattern.count }.by(-2)
     end
   end

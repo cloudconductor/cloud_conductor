@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-describe OperatingSystem do
+xdescribe OperatingSystem do
   before do
     @operating_system = OperatingSystem.new
     @operating_system.name = 'dummy_name'

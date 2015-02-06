@@ -14,6 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :cloud_aws, class: Cloud do
+    project
     sequence(:name) { |n| "cloud_aws_#{n}" }
     type 'aws'
     entry_point 'ap-northeast-1'
@@ -23,6 +24,7 @@ FactoryGirl.define do
   end
 
   factory :cloud_openstack, class: Cloud do
+    project
     sequence(:name) { |n| "cloud_openstack_#{n}" }
     type 'openstack'
     entry_point 'http://example.com/'
