@@ -19,19 +19,19 @@ module API
         end
       end
 
-      def authorize!(*args)
+      def authorize!(*_args)
         # TODO: Disable authorization temporarily. Fix later.
         # current_ability.authorize!(*args)
         true
       end
 
-      def can?(*args)
+      def can?(*_args)
         # TODO: Disable authorization temporarily. Fix later.
         # current_ability.can?(*args)
         true
       end
 
-      def cannot?(*args)
+      def cannot?(*_args)
         # TODO: Disable authorization temporarily. Fix later.
         # current_ability.cannot?(*args)
         false
