@@ -10,7 +10,7 @@ module CloudConductor
         super(*args)
         self.level = Rails.application.config.log_level
         logger.formatter = proc do |severity, time, _progname, msg|
-          sprintf("[%s] %5s -- %s\n", time.iso8601(3), severity, msg)
+          format("[%s] %5s -- %s\n", time.iso8601(3), severity, msg)
         end
         logger
       end

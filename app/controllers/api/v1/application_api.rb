@@ -90,16 +90,19 @@ module API
         def application_parameters
           declared(params.slice(:system_id, :name), include_missing: false).merge(
             histories_attributes: [
-              declared(params.slice(
-                :domain,
-                :url,
-                :type,
-                :protocol,
-                :revision,
-                :pre_deploy,
-                :post_deploy,
-                :parameters
-              ), include_missing: false)
+              declared(
+                params.slice(
+                  :domain,
+                  :url,
+                  :type,
+                  :protocol,
+                  :revision,
+                  :pre_deploy,
+                  :post_deploy,
+                  :parameters
+                ),
+                include_missing: false
+              )
             ]
           )
         end
