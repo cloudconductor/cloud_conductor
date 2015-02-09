@@ -18,7 +18,7 @@ module CloudConductor
   class PackerClient # rubocop:disable ClassLength
     DEFAULT_OPTIONS = {
       packer_path: '/opt/packer/packer',
-      template_path: File.expand_path('../../../config/packer.json', File.dirname(__FILE__)),
+      template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
       cloudconductor_root: '/opt/cloudconductor',
       cloudconductor_init_url: CloudConductor::Config.cloudconductor_init.url,
       cloudconductor_init_revision: CloudConductor::Config.cloudconductor_init.revision,
