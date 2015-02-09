@@ -135,11 +135,11 @@ module CloudConductor
     end
 
     def error2?(search_target)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{search_target}/ }
+      proc { |_timestamp, _target, type, subtype, data| type == 'ui' && subtype == 'error' && data =~ /^==>\s*#{search_target}/ }
     end
 
     def error3?(search_target)
-      proc { |_timestamp, _target, type, subtype, data | type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{search_target}/ }
+      proc { |_timestamp, _target, type, subtype, data| type == 'ui' && subtype == 'error' && data =~ /^-->\s*#{search_target}/ }
     end
     # rubocop:enable ParameterLists
 
