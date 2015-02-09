@@ -23,16 +23,6 @@ module CloudConductor
       @environment.stacks << @platform_stack
       @environment.stacks << @optional_stack
 
-#       @environment = FactoryGirl.create(:environment)
-#       @environment.stacks << @platform_stack
-#       @environment.stacks << @optional_stack
-#       @environment.applications << FactoryGirl.build(:application, environment: @environment)
-#       @environment.applications << FactoryGirl.build(:application, environment: @environment)
-#       @environment.applications[0].histories << FactoryGirl.build(:application_history)
-#       @environment.applications[1].histories << FactoryGirl.build(:application_history)
-#       @environment.candidates[0].priority = 10
-#       @environment.candidates[1].priority = 20
-
       @builder = SystemBuilder.new @environment
 
       Stack.skip_callback :save, :before, :create_stack

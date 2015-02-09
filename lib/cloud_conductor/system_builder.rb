@@ -117,12 +117,12 @@ module CloudConductor
     def finish_environment
       @environment.event.sync_fire(:configure, configure_payload(@environment))
       @environment.event.sync_fire(:restore, application_payload(@environment))
-      # todo: @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.applications.empty?
+      # TODO: @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.applications.empty?
 
-      # todo: @environment.applications.map(&:latest).compact.each do |history|
-      # todo:   history.status = :DEPLOYED
-      # todo:   history.save!
-      # todo: end
+      # TODO: @environment.applications.map(&:latest).compact.each do |history|
+      # TODO:   history.status = :DEPLOYED
+      # TODO:   history.save!
+      # TODO: end
 
       @environment.status = :CREATE_COMPLETE
       @environment.save!
