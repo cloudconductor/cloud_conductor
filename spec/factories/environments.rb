@@ -28,6 +28,7 @@ FactoryGirl.define do
       environment.add_cloud create(:cloud_openstack), 2
 
       environment.stacks << create(:stack, environment: environment)
+      environment.stacks << create(:stack, environment: environment)
     end
 
     after(:create) do

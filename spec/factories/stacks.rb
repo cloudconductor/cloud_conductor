@@ -21,7 +21,6 @@ FactoryGirl.define do
     sequence(:name) { |n| "stack-#{n}" }
     template_parameters '{}'
     parameters '{ "dummy": "value" }'
-    status nil
 
     before(:create) do
       Stack.skip_callback :save, :before, :create_stack

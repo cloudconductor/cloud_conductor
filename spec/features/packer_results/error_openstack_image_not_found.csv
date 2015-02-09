@@ -1,11 +1,11 @@
-1407203636,,ui,say,openstack-centos output will be in this color.
+1407203636,,ui,say,openstack----centos output will be in this color.
 1407203636,,ui,say,
-1407203636,,ui,say,==> openstack-centos: Creating temporary keypair for this instance...
-1407203637,,ui,error,==> openstack-centos: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n==> openstack-centos: {"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
-1407203637,,ui,say,==> openstack-centos: Deleting temporary keypair...
-1407203637,,ui,error,Build 'openstack-centos' errored: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
+1407203636,,ui,say,==> openstack----centos: Creating temporary keypair for this instance...
+1407203637,,ui,error,==> openstack----centos: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n==> openstack----centos: {"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
+1407203637,,ui,say,==> openstack----centos: Deleting temporary keypair...
+1407203637,,ui,error,Build 'openstack----centos' errored: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
 1407203637,,error-count,1
 1407203637,,ui,error,\n==> Some builds didn't complete successfully and had errors:
-1407203637,openstack-centos,error,Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
-1407203637,,ui,error,--> openstack-centos: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
+1407203637,openstack----centos,error,Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
+1407203637,,ui,error,--> openstack----centos: Error launching source server: Expected HTTP response code [202] when accessing URL(http://10.255.197.109:8774/v2/41acd44fb80544d39792509881c00724/servers); got 400 instead with the following body:\n{"badRequest": {"message": "Can not find requested image"%!(PACKER_COMMA) "code": 400}}
 1407203637,,ui,say,\n==> Builds finished but no artifacts were created.

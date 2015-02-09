@@ -5,11 +5,11 @@ aws:
   secret_key: "{{cloud `secret`}}"
   region: "{{cloud `entry_point`}}"
   instance_type: "c3.large"
-  ami_name: "{{user `pattern_name`}}-{{user `image_name`}}-{{operating_system `name`}}-{{uuid}}"
+  ami_name: "{{user `pattern_name`}}-{{user `image_name`}}-{{base_image `operating_system`}}-{{uuid}}"
   ssh_username: "{{base_image `ssh_username`}}"
   source_ami: "{{base_image `source_image`}}"
   tags: {
-    Name: "{{user `pattern_name`}}-{{user `image_name`}}-{{operating_system `name`}}"
+    Name: "{{user `pattern_name`}}-{{user `image_name`}}-{{base_image `operating_system`}}"
   }
   launch_block_device_mappings:
     - device_name: "/dev/sda1"
@@ -24,7 +24,7 @@ openstack:
   provider: "{{cloud `entry_point`}}v2.0/tokens"
   region: "RegionOne"
   flavor: "2"
-  image_name: "{{user `pattern_name`}}-{{user `image_name`}}-{{operating_system `name`}}-{{uuid}}"
+  image_name: "{{user `pattern_name`}}-{{user `image_name`}}-{{base_image `operating_system`}}-{{uuid}}"
   source_image: "{{base_image `source_image`}}"
   ssh_username: "{{base_image `ssh_username`}}"
   use_floating_ip: "true"

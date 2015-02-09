@@ -21,11 +21,6 @@ describe Pattern do
     @pattern.url = 'http://example.com/pattern.git'
 
     allow(@pattern).to receive(:execute_packer)
-    # allow(@pattern).to receive(:system).and_return(true)
-    # allow(YAML).to receive(:load_file).and_return({})
-    # allow(File).to receive(:open).and_call_original
-    # double = double('File', read: '{ "Parameters": {}, "Resources": {} }')
-    # allow(File).to receive(:open).with(/template.json/).and_return double
   end
 
   describe '#initialize' do
@@ -352,15 +347,14 @@ describe Pattern do
 
   describe '#create_images' do
     before do
-      @cloud_aws = FactoryGirl.create(:cloud_aws)
-      @cloud_openstack = FactoryGirl.create(:cloud_openstack)
-      FactoryGirl.create(:base_image, cloud: @cloud_aws)
-      FactoryGirl.create(:base_image, cloud: @cloud_openstack)
-      allow_any_instance_of(CloudConductor::PackerClient).to receive(:build)
+      FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_aws))
+      FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_openstack))
+      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
+      allow(@pattern).to receive(:update_images)
     end
 
     it 'create image each cloud and role' do
-      expect { @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key') }.to change { Image.count }.by(2)
+      expect { @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key') }.to change { @pattern.images.size }.by(2)
     end
 
     it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
@@ -375,26 +369,37 @@ describe Pattern do
       @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
     end
 
-    it 'update status of all images when call block' do
+    it 'call #update_images with packer results' do
+      expect(@pattern).to receive(:update_images).with('dummy' => {})
+      @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
+    end
+  end
+
+  describe '#update_images' do
+    it 'update status of all images' do
       results = {
-        "#{@cloud_aws.name}#{BaseImage::SPLITTER}CentOS-6.5#{Image::SPLITTER}nginx" => {
+        'aws----CentOS-6.5----nginx' => {
           status: :SUCCESS,
           image: 'ami-12345678'
         },
-        "#{@cloud_openstack.name}#{BaseImage::SPLITTER}CentOS-6.5#{Image::SPLITTER}nginx" => {
+        'openstack----CentOS-6.5----nginx' => {
           status: :ERROR,
           message: 'dummy_message'
         }
       }
-      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield(results)
-      @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
 
-      aws = Image.where(cloud: @cloud_aws, role: 'nginx').first
+      base_image_aws = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_aws, name: 'aws'))
+      base_image_openstack = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_openstack, name: 'openstack'))
+      FactoryGirl.create(:image, pattern: @pattern, base_image: base_image_aws, role: 'nginx')
+      FactoryGirl.create(:image, pattern: @pattern, base_image: base_image_openstack, role: 'nginx')
+      @pattern.send(:update_images, results)
+
+      aws = Image.where(name: 'aws----CentOS-6.5----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
       expect(aws.image).to eq('ami-12345678')
       expect(aws.message).to be_nil
 
-      openstack = Image.where(cloud: @cloud_openstack, role: 'nginx').first
+      openstack = Image.where(name: 'openstack----CentOS-6.5----nginx').first
       expect(openstack.status).to eq(:ERROR)
       expect(openstack.image).to be_nil
       expect(openstack.message).to eq('dummy_message')

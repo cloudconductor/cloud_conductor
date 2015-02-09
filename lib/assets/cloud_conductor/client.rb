@@ -47,9 +47,7 @@ module CloudConductor
       az_list = @adapter.get_availability_zones @cloud.attributes
       template = CloudConductor::Duplicators.increase_instance(template, instance_sizes, az_list)
 
-      operating_system = OperatingSystem.where(name: 'centos')
-      images = pattern.images.where(cloud: @cloud, operating_system: operating_system)
-      fail 'Appropriate image does not exist' if images.empty?
+      images = pattern.images.where(cloud: @cloud)
 
       images.each do |image|
         parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image

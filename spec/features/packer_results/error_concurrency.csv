@@ -1,63 +1,63 @@
-1407128079,,ui,say,openstack-centos output will be in this color.
-1407128079,,ui,say,aws-centos output will be in this color.
+1407128079,,ui,say,openstack----centos output will be in this color.
+1407128079,,ui,say,aws----centos output will be in this color.
 1407128079,,ui,say,
-1407128079,,ui,say,==> aws-centos: Inspecting the source AMI...
-1407128079,,ui,say,==> openstack-centos: Creating temporary keypair for this instance...
-1407128080,,ui,say,==> aws-centos: Creating temporary keypair: packer 53df120f-e22b-db62-1438-b0c07f4ab707
-1407128080,,ui,say,==> openstack-centos: Waiting for server (99e44ba8-0552-4e23-8cf3-515c697a28b8) to become ready...
-1407128082,,ui,say,==> aws-centos: Creating temporary security group for this instance...
-1407128082,,ui,say,==> aws-centos: Authorizing SSH access on the temporary security group...
-1407128082,,ui,say,==> aws-centos: Launching a source AWS instance...
-1407128084,,ui,message,    aws-centos: Instance ID: i-20bd1b39
-1407128084,,ui,say,==> aws-centos: Waiting for instance (i-20bd1b39) to become ready...
-1407128087,,ui,say,==> openstack-centos: Created temporary floating IP 10.255.205.169...
-1407128088,,ui,say,==> openstack-centos: Added floating IP 10.255.205.169 to instance...
-1407128088,,ui,say,==> openstack-centos: Waiting for SSH to become available...
-1407128106,,ui,say,==> aws-centos: Waiting for SSH to become available...
-1407128115,,ui,say,==> openstack-centos: Connected to SSH!
-1407128115,,ui,say,==> openstack-centos: Provisioning with shell script: /tmp/packer-shell662547437
-1407128115,,ui,message,    openstack-centos: + '[' -f /tmp/packer-create-image.sh ']'
-1407128115,,ui,message,    openstack-centos: + sudo /tmp/packer-create-image.sh
-1407128115,,ui,message,    openstack-centos: + cd /tmp
-1407128115,,ui,message,    openstack-centos: + git clones https://github.com/KondaTomoyuki/pattern.git pattern
-1407128116,,ui,message,    openstack-centos: git: 'clones' is not a git command. See 'git --help'.
-1407128116,,ui,message,    openstack-centos:
-1407128116,,ui,message,    openstack-centos: Did you mean this?
-1407128116,,ui,message,    openstack-centos: clone
-1407128116,,ui,message,    openstack-centos: + cd /tmp/pattern/resources/chef-repo
-1407128116,,ui,message,    openstack-centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repo: No such file or directory
-1407128116,,ui,message,    openstack-centos: + berks vendor cookbooks
-1407128120,,ui,message,    openstack-centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
-1407128120,,ui,message,    openstack-centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
-1407128122,,ui,message,    openstack-centos: [2014-08-04T13:55:48+09:00] FATAL: Failed to open or create log file at /tmp/pattern/resources/chef-repo/log/chef.log: Errno::ENOENT (No such file or directory @ rb_sysopen - /tmp/pattern/resources/chef-repo/log/chef.log)
-1407128122,,ui,message,    openstack-centos: [2014-08-04T13:55:48+09:00] FATAL: Aborting due to invalid 'log_location' configuration
-1407128122,,ui,say,==> openstack-centos: Terminating the source server...
-1407128126,,ui,say,==> openstack-centos: Deleting temporary keypair...
-1407128127,,ui,error,Build 'openstack-centos' errored: Script exited with non-zero exit status: 2
-1407128148,,ui,say,==> aws-centos: Connected to SSH!
-1407128148,,ui,say,==> aws-centos: Provisioning with shell script: /tmp/packer-shell638207557
-1407128150,,ui,message,    aws-centos: + '[' -f /tmp/packer-create-image.sh ']'
-1407128150,,ui,message,    aws-centos: + cd /tmp
-1407128150,,ui,message,    aws-centos: + git clones https://github.com/KondaTomoyuki/pattern.git pattern
-1407128151,,ui,message,    aws-centos: git: 'clones' is not a git command. See 'git --help'.
-1407128151,,ui,message,    aws-centos:
-1407128151,,ui,message,    aws-centos: Did you mean this?
-1407128151,,ui,message,    aws-centos: clone
-1407128151,,ui,message,    aws-centos: + cd /tmp/pattern/resources/chef-repo
-1407128151,,ui,message,    aws-centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repo: No such file or directory
-1407128151,,ui,message,    aws-centos: + berks vendor cookbooks
-1407128164,,ui,message,    aws-centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
-1407128164,,ui,message,    aws-centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
-1407128169,,ui,message,    aws-centos: [2014-08-04T04:56:37+00:00] FATAL: Failed to open or create log file at /tmp/pattern/resources/chef-repo/log/chef.log: Errno::ENOENT (No such file or directory @ rb_sysopen - /tmp/pattern/resources/chef-repo/log/chef.log)
-1407128169,,ui,message,    aws-centos: [2014-08-04T04:56:37+00:00] FATAL: Aborting due to invalid 'log_location' configuration
-1407128169,,ui,say,==> aws-centos: Terminating the source AWS instance...
-1407128222,,ui,say,==> aws-centos: Deleting temporary security group...
-1407128228,,ui,say,==> aws-centos: Deleting temporary keypair...
-1407128228,,ui,error,Build 'aws-centos' errored: Script exited with non-zero exit status: 2
+1407128079,,ui,say,==> aws----centos: Inspecting the source AMI...
+1407128079,,ui,say,==> openstack----centos: Creating temporary keypair for this instance...
+1407128080,,ui,say,==> aws----centos: Creating temporary keypair: packer 53df120f-e22b-db62-1438-b0c07f4ab707
+1407128080,,ui,say,==> openstack----centos: Waiting for server (99e44ba8-0552-4e23-8cf3-515c697a28b8) to become ready...
+1407128082,,ui,say,==> aws----centos: Creating temporary security group for this instance...
+1407128082,,ui,say,==> aws----centos: Authorizing SSH access on the temporary security group...
+1407128082,,ui,say,==> aws----centos: Launching a source AWS instance...
+1407128084,,ui,message,    aws----centos: Instance ID: i-20bd1b39
+1407128084,,ui,say,==> aws----centos: Waiting for instance (i-20bd1b39) to become ready...
+1407128087,,ui,say,==> openstack----centos: Created temporary floating IP 10.255.205.169...
+1407128088,,ui,say,==> openstack----centos: Added floating IP 10.255.205.169 to instance...
+1407128088,,ui,say,==> openstack----centos: Waiting for SSH to become available...
+1407128106,,ui,say,==> aws----centos: Waiting for SSH to become available...
+1407128115,,ui,say,==> openstack----centos: Connected to SSH!
+1407128115,,ui,say,==> openstack----centos: Provisioning with shell script: /tmp/packer-shell662547437
+1407128115,,ui,message,    openstack----centos: + '[' -f /tmp/packer-create-image.sh ']'
+1407128115,,ui,message,    openstack----centos: + sudo /tmp/packer-create-image.sh
+1407128115,,ui,message,    openstack----centos: + cd /tmp
+1407128115,,ui,message,    openstack----centos: + git clones https://github.com/KondaTomoyuki/pattern.git pattern
+1407128116,,ui,message,    openstack----centos: git: 'clones' is not a git command. See 'git --help'.
+1407128116,,ui,message,    openstack----centos:
+1407128116,,ui,message,    openstack----centos: Did you mean this?
+1407128116,,ui,message,    openstack----centos: clone
+1407128116,,ui,message,    openstack----centos: + cd /tmp/pattern/resources/chef-repo
+1407128116,,ui,message,    openstack----centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repo: No such file or directory
+1407128116,,ui,message,    openstack----centos: + berks vendor cookbooks
+1407128120,,ui,message,    openstack----centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
+1407128120,,ui,message,    openstack----centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407128122,,ui,message,    openstack----centos: [2014-08-04T13:55:48+09:00] FATAL: Failed to open or create log file at /tmp/pattern/resources/chef-repo/log/chef.log: Errno::ENOENT (No such file or directory @ rb_sysopen - /tmp/pattern/resources/chef-repo/log/chef.log)
+1407128122,,ui,message,    openstack----centos: [2014-08-04T13:55:48+09:00] FATAL: Aborting due to invalid 'log_location' configuration
+1407128122,,ui,say,==> openstack----centos: Terminating the source server...
+1407128126,,ui,say,==> openstack----centos: Deleting temporary keypair...
+1407128127,,ui,error,Build 'openstack----centos' errored: Script exited with non-zero exit status: 2
+1407128148,,ui,say,==> aws----centos: Connected to SSH!
+1407128148,,ui,say,==> aws----centos: Provisioning with shell script: /tmp/packer-shell638207557
+1407128150,,ui,message,    aws----centos: + '[' -f /tmp/packer-create-image.sh ']'
+1407128150,,ui,message,    aws----centos: + cd /tmp
+1407128150,,ui,message,    aws----centos: + git clones https://github.com/KondaTomoyuki/pattern.git pattern
+1407128151,,ui,message,    aws----centos: git: 'clones' is not a git command. See 'git --help'.
+1407128151,,ui,message,    aws----centos:
+1407128151,,ui,message,    aws----centos: Did you mean this?
+1407128151,,ui,message,    aws----centos: clone
+1407128151,,ui,message,    aws----centos: + cd /tmp/pattern/resources/chef-repo
+1407128151,,ui,message,    aws----centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repo: No such file or directory
+1407128151,,ui,message,    aws----centos: + berks vendor cookbooks
+1407128164,,ui,message,    aws----centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
+1407128164,,ui,message,    aws----centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407128169,,ui,message,    aws----centos: [2014-08-04T04:56:37+00:00] FATAL: Failed to open or create log file at /tmp/pattern/resources/chef-repo/log/chef.log: Errno::ENOENT (No such file or directory @ rb_sysopen - /tmp/pattern/resources/chef-repo/log/chef.log)
+1407128169,,ui,message,    aws----centos: [2014-08-04T04:56:37+00:00] FATAL: Aborting due to invalid 'log_location' configuration
+1407128169,,ui,say,==> aws----centos: Terminating the source AWS instance...
+1407128222,,ui,say,==> aws----centos: Deleting temporary security group...
+1407128228,,ui,say,==> aws----centos: Deleting temporary keypair...
+1407128228,,ui,error,Build 'aws----centos' errored: Script exited with non-zero exit status: 2
 1407128228,,error-count,2
 1407128228,,ui,error,\n==> Some builds didn't complete successfully and had errors:
-1407128228,openstack-centos,error,Script exited with non-zero exit status: 2
-1407128228,,ui,error,--> openstack-centos: Script exited with non-zero exit status: 2
-1407128228,aws-centos,error,Script exited with non-zero exit status: 2
-1407128228,,ui,error,--> aws-centos: Script exited with non-zero exit status: 2
+1407128228,openstack----centos,error,Script exited with non-zero exit status: 2
+1407128228,,ui,error,--> openstack----centos: Script exited with non-zero exit status: 2
+1407128228,aws----centos,error,Script exited with non-zero exit status: 2
+1407128228,,ui,error,--> aws----centos: Script exited with non-zero exit status: 2
 1407128228,,ui,say,\n==> Builds finished but no artifacts were created.
