@@ -16,7 +16,7 @@ gem 'actionpack'
 gem 'mixlib-config'
 gem 'mixlib-log'
 
-gem 'aws-sdk'
+gem 'aws-sdk', '~>1.0'
 gem 'fog'
 gem 'zbxapi', '0.3.8'
 
