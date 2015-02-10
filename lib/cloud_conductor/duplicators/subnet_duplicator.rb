@@ -15,7 +15,6 @@
 require 'netaddr'
 require_relative 'base_duplicator'
 
-
 module CloudConductor
   module Duplicators
     class SubnetDuplicator < BaseDuplicator
