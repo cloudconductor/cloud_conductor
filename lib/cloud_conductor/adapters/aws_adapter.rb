@@ -62,6 +62,18 @@ module CloudConductor
         outputs
       end
 
+      def get_availability_zones(options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        ec2 = AWS::EC2.new aws_options
+        ec2.availability_zones.map(&:name)
+      end
+
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
 
