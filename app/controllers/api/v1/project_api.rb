@@ -21,7 +21,7 @@ module API
         desc 'Create project'
         params do
           requires :name, type: String, desc: 'Project name'
-          optional :description, type: Integer, desc: 'Project description'
+          optional :description, type: String, desc: 'Project description'
         end
         post '/' do
           authorize!(:create, ::Project)
@@ -35,7 +35,7 @@ module API
         params do
           requires :id, type: Integer, desc: 'Project id'
           optional :name, type: String, desc: 'Project name'
-          optional :description, type: Integer, desc: 'Project description'
+          optional :description, type: String, desc: 'Project description'
         end
         put '/:id' do
           project = ::Project.find(params[:id])
