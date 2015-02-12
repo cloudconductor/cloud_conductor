@@ -16,9 +16,10 @@ describe Candidate do
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
       environment = FactoryGirl.create(:environment)
-      environment.add_cloud FactoryGirl.create(:cloud_aws), 10
-      environment.add_cloud FactoryGirl.create(:cloud_aws), 30
-      environment.add_cloud FactoryGirl.create(:cloud_aws), 20
+      environment.candidates.delete_all
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 10)
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 30)
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 20)
       environment.save!
 
       expect(environment.candidates.primary).to eq(environment.candidates[1])
@@ -26,12 +27,14 @@ describe Candidate do
 
     it 'ignore candidates on other environment' do
       environment1 = FactoryGirl.create(:environment)
-      environment1.add_cloud FactoryGirl.create(:cloud_aws), 30
+      environment1.candidates.delete_all
+      environment1.candidates << FactoryGirl.build(:candidate, environment: environment1, priority: 30)
       environment1.save!
 
       environment2 = FactoryGirl.create(:environment)
-      environment2.add_cloud FactoryGirl.create(:cloud_aws), 10
-      environment2.add_cloud FactoryGirl.create(:cloud_aws), 20
+      environment2.candidates.delete_all
+      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, priority: 10)
+      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, priority: 20)
       environment2.save!
 
       expect(environment2.candidates.primary).to eq(environment2.candidates[1])
