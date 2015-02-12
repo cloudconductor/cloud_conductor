@@ -32,9 +32,7 @@ module API
         end
         post '/' do
           authorize!(:create, ::Cloud)
-          cloud = ::Cloud.create!(declared_params)
-          status 200
-          cloud
+          ::Cloud.create!(declared_params)
         end
 
         desc 'Update cloud'
