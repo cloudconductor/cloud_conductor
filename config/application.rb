@@ -12,8 +12,6 @@ module CloudConductor
     config.autoload_paths += %W(#{config.root}/lib)
     config.autoload_paths += Dir["#{config.root}/lib/**/"]
 
-    require File.expand_path("#{config.root}/lib/cloud_conductor/logger")
-
     config.after_initialize do
       # config.application_logger = CloudConductor::Logger.new("#{config.root}/log/conductor_#{Rails.env}.log")
       config.application_logger = CloudConductor::Logger.init("#{config.root}/log/conductor_#{Rails.env}.log")
