@@ -3,19 +3,19 @@ class BaseImage < ActiveRecord::Base
   has_many :image
 
   validates_associated :cloud
-  validates_presence_of :cloud, :operating_system, :source_image, :ssh_username
+  validates_presence_of :cloud, :os, :source_image, :ssh_username
 
   cattr_accessor :ami_images
 
   SPLITTER = '----'
-  DEFAULT_OPERATING_SYSTEM = 'CentOS-6.5'
+  DEFAULT_OS = 'CentOS-6.5'
   DEFAULT_SSH_USERNAME = 'ec2-user'
-  ALLOW_RECEIVERS = %w(base_image cloud operating_system)
+  ALLOW_RECEIVERS = %w(base_image cloud os)
   IMAGES_FILE_PATH = File.expand_path('../../config/images.yml', File.dirname(__FILE__))
 
   after_initialize do
     self.ssh_username ||= DEFAULT_SSH_USERNAME
-    self.operating_system ||= DEFAULT_OPERATING_SYSTEM
+    self.os ||= DEFAULT_OS
 
     BaseImage.ami_images ||= YAML.load_file(IMAGES_FILE_PATH)
     if cloud && cloud.type == :aws && source_image.nil?
@@ -24,7 +24,7 @@ class BaseImage < ActiveRecord::Base
   end
 
   def name
-    "#{cloud.name}#{SPLITTER}#{operating_system}"
+    "#{cloud.name}#{SPLITTER}#{os}"
   end
 
   def to_json

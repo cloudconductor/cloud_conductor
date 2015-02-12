@@ -236,8 +236,8 @@ module CloudConductor
 
       it 'return success status and image of all builders when success all builders' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, operating_system: 'centos')
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
 
         result = @client.send(:parse, load_csv('success.csv'), base_images)
         expect(result.keys).to match_array(%w(aws----centos openstack----centos))
@@ -253,7 +253,7 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when source image does not exists while build on aws' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_aws_image_not_found.csv'), base_images)
         expect(result.keys).to match_array(%w(aws----centos))
@@ -266,7 +266,7 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when SSH connecetion failed while build on aws' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_aws_ssh_faild.csv'), base_images)
         expect(result.keys).to match_array(%w(aws----centos))
@@ -279,7 +279,7 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when an error has occurred while provisioning' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_aws_provisioners_faild.csv'), base_images)
         expect(result.keys).to match_array(%w(aws----centos))
@@ -292,7 +292,7 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when source image does not exists while build on openstack' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_openstack_image_not_found.csv'), base_images)
         expect(result.keys).to match_array(%w(openstack----centos))
@@ -305,7 +305,7 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when SSH connecetion failed while build on openstack' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_openstack_ssh_faild.csv'), base_images)
         expect(result.keys).to match_array(%w(openstack----centos))
@@ -318,7 +318,7 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when an error has occurred while provisioning' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_openstack_provisioners_faild.csv'), base_images)
         expect(result.keys).to match_array(%w(openstack----centos))
@@ -331,8 +331,8 @@ module CloudConductor
 
       it 'return error status and error message about all builders when multiple builders failed' do
         base_images = []
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, operating_system: 'centos')
-        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, operating_system: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
+        base_images << FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
 
         result = @client.send(:parse, load_csv('error_concurrency.csv'), base_images)
         expect(result.keys).to match_array(%w(aws----centos openstack----centos))

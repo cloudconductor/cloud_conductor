@@ -20,21 +20,21 @@ describe BaseImage do
     allow(YAML).to receive(:load_file).with(BaseImage::IMAGES_FILE_PATH).and_return(ami_images)
 
     @cloud_aws = FactoryGirl.create(:cloud_aws)
-    @base_image = BaseImage.new(cloud: @cloud_aws, operating_system: 'dummy_os')
+    @base_image = BaseImage.new(cloud: @cloud_aws, os: 'dummy_os')
   end
 
   describe '#initialize' do
-    it 'set default to operating_system and ssh_username' do
+    it 'set default to OS and ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.operating_system).to eq(BaseImage::DEFAULT_OPERATING_SYSTEM)
+      expect(base_image.os).to eq(BaseImage::DEFAULT_OS)
       expect(base_image.ssh_username).to eq(BaseImage::DEFAULT_SSH_USERNAME)
     end
 
-    it 'set specified value to operating_system and ssh_username' do
-      base_image = BaseImage.new(operating_system: 'dummy_os', ssh_username: 'dummy_user')
+    it 'set specified value to OS and ssh_username' do
+      base_image = BaseImage.new(os: 'dummy_os', ssh_username: 'dummy_user')
 
-      expect(base_image.operating_system).to eq('dummy_os')
+      expect(base_image.os).to eq('dummy_os')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
@@ -76,11 +76,11 @@ describe BaseImage do
       expect(@base_image.valid?).to be_falsey
     end
 
-    it 'returns false when operating_system is unset' do
-      @base_image.operating_system = nil
+    it 'returns false when OS is unset' do
+      @base_image.os = nil
       expect(@base_image.valid?).to be_falsey
 
-      @base_image.operating_system = ''
+      @base_image.os = ''
       expect(@base_image.valid?).to be_falsey
     end
 
@@ -102,7 +102,7 @@ describe BaseImage do
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and operating_system name with hyphen' do
+    it 'return string that joined cloud name and OS name with hyphen' do
       expect(@base_image.name).to eq("#{@cloud_aws.name}#{BaseImage::SPLITTER}dummy_os")
     end
   end
@@ -124,14 +124,14 @@ describe BaseImage do
       allow(@base_image.cloud).to receive(:template).and_return <<-EOS
         {
           "cloud_name": "{{cloud `name`}}",
-          "operating_system_name": "{{base_image `operating_system`}}",
+          "os_name": "{{base_image `os`}}",
           "source_image": "{{base_image `source_image`}}"
         }
       EOS
 
       result = JSON.parse(@base_image.to_json).with_indifferent_access
       expect(result[:cloud_name]).to eq(@cloud_aws.name)
-      expect(result[:operating_system_name]).to eq('dummy_os')
+      expect(result[:os_name]).to eq('dummy_os')
       expect(result[:source_image]).to eq(@base_image.source_image)
     end
 

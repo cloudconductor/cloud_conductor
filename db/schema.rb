@@ -71,11 +71,11 @@ ActiveRecord::Schema.define(version: 20150212004325) do
 
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
-    t.string   "operating_system"
+    t.string   "os"
     t.string   "source_image"
     t.string   "ssh_username"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
   end
 
   create_table "blueprints", force: true do |t|

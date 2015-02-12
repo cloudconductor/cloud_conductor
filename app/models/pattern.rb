@@ -125,7 +125,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_images(role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
-    BaseImage.where(operating_system: 'CentOS-6.5').each do |base_image|
+    BaseImage.where(os: 'CentOS-6.5').each do |base_image|
       images.build(cloud: base_image.cloud, base_image: base_image, pattern: self, role: role)
     end
 
