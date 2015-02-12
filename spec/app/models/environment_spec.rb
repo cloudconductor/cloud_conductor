@@ -19,12 +19,12 @@ describe Environment do
 
     @environment = Environment.new
     @environment.name = 'test'
-    @environment.add_cloud(@cloud_aws, 1)
-    @environment.add_cloud(@cloud_openstack, 2)
+    @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_aws, priority: 1)
+    @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_openstack, priority: 2)
     @environment.system = FactoryGirl.create(:system)
     @environment.blueprint = FactoryGirl.create(:blueprint)
 
-    @environment.stacks << FactoryGirl.create(:stack, environment: @environment)
+    @environment.stacks << FactoryGirl.build(:stack, environment: @environment)
   end
 
   describe '#save' do
@@ -66,20 +66,20 @@ describe Environment do
       expect(@environment.valid?).to be_falsey
     end
 
-    it 'returns false when clouds is empty' do
-      @environment.clouds.delete_all
+    it 'returns false when candidates is empty' do
+      @environment.candidates.delete_all
       expect(@environment.valid?).to be_falsey
     end
 
-    it 'returns false when stacks is empty' do
+    xit 'returns false when stacks is empty' do
       @environment.stacks.delete_all
       expect(@environment.valid?).to be_falsey
     end
 
     it 'returns false when clouds collection has duplicate cloud' do
-      @environment.clouds.delete_all
-      @environment.clouds << @cloud_aws
-      @environment.clouds << @cloud_aws
+      @environment.candidates.delete_all
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_aws)
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_aws)
       expect(@environment.valid?).to be_falsey
     end
   end
@@ -103,6 +103,8 @@ describe Environment do
     end
 
     it 'delete all relatioship between environment and cloud' do
+      @environment.save!
+
       expect(@environment.clouds.size).to eq(2)
       expect(@environment.candidates.size).to eq(2)
 
@@ -193,20 +195,6 @@ describe Environment do
     end
   end
 
-  describe '#add_cloud' do
-    it 'build relationship between environment and specified cloud via Candidate' do
-      @environment.clouds.delete_all
-      expect(@environment.clouds).to be_empty
-      expect(@environment.candidates).to be_empty
-
-      @environment.add_cloud(@cloud_aws, 45)
-      @environment.add_cloud(@cloud_openstack, 32)
-
-      expect(@environment.clouds).to eq([@cloud_aws, @cloud_openstack])
-      expect(@environment.candidates.map(&:priority)).to eq([45, 32])
-    end
-  end
-
   describe '#dup' do
     it 'duplicate all attributes in environment without name, ip_address and monitoring_host' do
       duplicated_environment = @environment.dup
@@ -235,13 +223,15 @@ describe Environment do
     end
 
     it 'duplicated associated clouds' do
-      duplicated_environment = @environment.dup
-      expect(duplicated_environment.clouds).to eq(@environment.clouds)
+      expect(@environment.dup.clouds).to eq(@environment.clouds)
+    end
 
-      original_clouds = @environment.candidates
-      duplicated_clouds = duplicated_environment.candidates
-      expect(duplicated_clouds.map(&:cloud)).to match_array(original_clouds.map(&:cloud))
-      expect(duplicated_clouds.map(&:priority)).to match_array(original_clouds.map(&:priority))
+    it 'duplicated candidates' do
+      candidates = @environment.dup.candidates
+      expect(candidates).not_to match_array(@environment.candidates)
+      expect(candidates.map(&:cloud)).to match_array(@environment.candidates.map(&:cloud))
+      expect(candidates.map(&:priority)).to match_array(@environment.candidates.map(&:priority))
+      expect(candidates).to be_all(&:new_record?)
     end
 
     it 'duplicate stacks without save' do
@@ -310,6 +300,7 @@ describe Environment do
 
       allow(Thread).to receive(:new).and_yield
       allow(@environment).to receive(:sleep)
+      allow_any_instance_of(Stack).to receive(:destroy)
 
       original_timeout = Timeout.method(:timeout)
       allow(Timeout).to receive(:timeout) do |_, &block|

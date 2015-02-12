@@ -24,11 +24,11 @@ FactoryGirl.define do
       Environment.skip_callback :save, :before, :enable_monitoring
       Environment.skip_callback :save, :before, :update_dns
 
-      environment.add_cloud create(:cloud_aws), 1
-      environment.add_cloud create(:cloud_openstack), 2
+      environment.candidates << build(:candidate, environment: environment)
+      environment.candidates << build(:candidate, environment: environment)
 
-      environment.stacks << create(:stack, environment: environment)
-      environment.stacks << create(:stack, environment: environment)
+      environment.stacks << build(:stack, environment: environment)
+      environment.stacks << build(:stack, environment: environment)
     end
 
     after(:create) do

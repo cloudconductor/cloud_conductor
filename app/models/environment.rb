@@ -3,19 +3,21 @@ require 'open-uri'
 class Environment < ActiveRecord::Base
   belongs_to :system
   belongs_to :blueprint
-  has_many :candidates, dependent: :destroy
+  has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
   has_many :stacks
+  accepts_nested_attributes_for :candidates
 
   before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
   before_save :update_dns, if: -> { ip_address }
   before_save :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
 
-  validates_presence_of :system, :clouds, :blueprint, :stacks
+  validates_presence_of :system, :candidates, :blueprint
   validates :name, presence: true, uniqueness: true
 
   validate do
+    clouds = candidates.map(&:cloud)
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
 
@@ -24,23 +26,18 @@ class Environment < ActiveRecord::Base
     self.status ||= :PENDING
   end
 
+  after_create do
+    blueprint.patterns.each do |pattern|
+      stacks.create!(name: pattern.name, pattern: pattern, cloud: candidates.primary.cloud)
+    end
+  end
+
   def status
     super && super.to_sym
   end
 
   def as_json(options = {})
     super options.merge(methods: [:status])
-  end
-
-  def add_cloud(cloud, priority)
-    clouds << cloud
-
-    candidate = candidates.find do |c|
-      c.cloud_id == cloud.id
-    end
-    candidate.priority = priority
-
-    clouds
   end
 
   def dup
@@ -52,10 +49,7 @@ class Environment < ActiveRecord::Base
     environment.monitoring_host = nil
     environment.template_parameters = '{}'
 
-    candidates.each do |candidate|
-      environment.add_cloud candidate.cloud, candidate.priority
-    end
-
+    environment.candidates = candidates.map(&:dup)
     environment.stacks = stacks.map(&:dup)
 
     environment

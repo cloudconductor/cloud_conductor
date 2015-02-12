@@ -8,6 +8,7 @@ module API
       mount API::V1::BaseImageAPI
       mount API::V1::BlueprintAPI
       mount API::V1::SystemAPI
+      mount API::V1::EnvironmentAPI
       mount API::V1::ApplicationAPI
     end
   end
