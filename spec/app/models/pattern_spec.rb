@@ -362,9 +362,10 @@ describe Pattern do
         repository_url: @pattern.url,
         revision: @pattern.revision,
         pattern_name: 'dummy_platform',
+        role: 'nginx',
         consul_secret_key: 'dummy key'
       }
-      expect(CloudConductor::PackerClient).to receive_message_chain(:new, :build).with(parameters)
+      expect(CloudConductor::PackerClient).to receive_message_chain(:new, :build).with(anything, parameters)
 
       @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
     end

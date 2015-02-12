@@ -36,8 +36,8 @@ module CloudConductor
       @vars = options[:variables]
     end
 
-    def build(base_images, parameters) # rubocop:disable MethodLength
-      parameters[:packer_json_path] = create_json(base_images)
+    def build(images, parameters) # rubocop:disable MethodLength
+      parameters[:packer_json_path] = create_json(images)
 
       command = build_command parameters
       Thread.new do
@@ -55,7 +55,7 @@ module CloudConductor
 
         begin
           ActiveRecord::Base.connection_pool.with_connection do
-            yield parse(stdout, parameters[:only]) if block_given?
+            yield parse(stdout, images) if block_given?
           end
         rescue => e
           Log.error(e)
@@ -67,7 +67,7 @@ module CloudConductor
 
     private
 
-    def create_json(base_images)
+    def create_json(images)
       temporary = File.expand_path('../../../tmp/packer/', File.dirname(__FILE__))
       FileUtils.mkdir_p temporary unless Dir.exist? temporary
 
@@ -75,7 +75,7 @@ module CloudConductor
       template_json = JSON.load(open(@template_path)).with_indifferent_access
 
       File.open(json_path, 'w') do |f|
-        base_images.each do |base_image|
+        images.map(&:base_image).each do |base_image|
           template_json[:builders].push JSON.parse(base_image.to_json)
         end
 
@@ -100,12 +100,12 @@ module CloudConductor
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
     end
 
-    def parse(stdout, base_images) # rubocop:disable MethodLength
+    def parse(stdout, images) # rubocop:disable MethodLength
       results = {}
       rows = CSV.parse(stdout, quote_char: "\0")
 
-      base_images.each do |base_image|
-        name = base_image.name
+      images.each do |image|
+        name = image.name
         results[name] = {}
 
         if (row = rows.find(&success?(name)))

@@ -1,7 +1,7 @@
 class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   self.inheritance_column = nil
 
-  belongs_to :blueprint
+  belongs_to :blueprint, inverse_of: :patterns
   has_many :images, dependent: :destroy
   has_many :stacks
 
@@ -133,10 +133,11 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       repository_url: url,
       revision: revision,
       pattern_name: pattern_name,
+      role: role,
       consul_secret_key: consul_secret_key
     }
 
-    CloudConductor::PackerClient.new.build(parameters) do |results|
+    CloudConductor::PackerClient.new.build(images, parameters) do |results|
       update_images(results)
     end
   end
