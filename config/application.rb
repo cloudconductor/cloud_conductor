@@ -13,6 +13,8 @@ module CloudConductor
     config.autoload_paths += Dir["#{config.root}/lib/**/"]
 
     config.after_initialize do
+      CloudConductor::Config.from_file "#{config.root}/config/config.rb"
+
       # config.application_logger = CloudConductor::Logger.new("#{config.root}/log/conductor_#{Rails.env}.log")
       config.application_logger = CloudConductor::Logger.init("#{config.root}/log/conductor_#{Rails.env}.log")
       # TODO: remove global constant
