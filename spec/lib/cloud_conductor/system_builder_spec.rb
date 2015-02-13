@@ -237,7 +237,7 @@ module CloudConductor
     describe '#reset_stacks' do
       before do
         allow(@environment).to receive(:destroy_stacks) do
-          @environment.stacks.destroy_all
+          @environment.stacks.each(&:delete)
         end
       end
 
