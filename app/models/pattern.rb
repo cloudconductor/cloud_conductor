@@ -125,7 +125,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_images(role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
-    BaseImage.where(os: 'CentOS-6.5').each do |base_image|
+    current_images = BaseImage.where(os: 'CentOS-6.5').map do |base_image|
       images.build(cloud: base_image.cloud, base_image: base_image, pattern: self, role: role)
     end
 
@@ -137,7 +137,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       consul_secret_key: consul_secret_key
     }
 
-    CloudConductor::PackerClient.new.build(images, parameters) do |results|
+    CloudConductor::PackerClient.new.build(current_images, parameters) do |results|
       update_images(results)
     end
   end
