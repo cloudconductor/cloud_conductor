@@ -57,10 +57,10 @@ class SystemsController < Sinatra::Base # rubocop:disable ClassLength
       end
 
       cloud = system.candidates.primary.cloud
-      instance_sizes = JSON.parse(params[:instance_sizes])
+      instance_sizes = JSON.parse(params[:instance_sizes] || '{}')
       (params[:stacks] || []).each do |stack|
         pattern = Pattern.find stack[:pattern_id]
-        system.stacks.create!(stack.merge(cloud: cloud, instance_sizes: instance_sizes[pattern.name].to_json))
+        system.stacks.create!(stack.merge(cloud: cloud, instance_sizes: (instance_sizes[pattern.name] || {}).to_json))
       end
     end
 
