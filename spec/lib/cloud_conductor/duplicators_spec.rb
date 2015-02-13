@@ -16,7 +16,7 @@ require 'cloud_conductor/duplicators'
 
 module CloudConductor
   module Duplicators
-    describe '#copy_template' do
+    describe '#increase_instance' do
       def load_json(file_name)
         dir_path = File.expand_path('../../features/duplicators', File.dirname(__FILE__))
         file_path = File.expand_path("#{file_name}.json", dir_path)
@@ -25,12 +25,12 @@ module CloudConductor
       end
 
       it 'return duplicated template' do
-        single_json = JSON.parse(load_json('single'))
-        multi_json = JSON.parse(load_json('multi'))
-        desired_size_json = { 'WebServer' => 2 }
+        single_json = load_json('single')
+        multi_json = load_json('multi')
+        instance_sizes = { 'WebServer' => 2 }
         availability_zones = ['ap-southeast-2a', 'ap-southeast-2b']
 
-        result = CloudConductor::Duplicators.copy_template(single_json.with_indifferent_access, desired_size_json, availability_zones)
+        result = CloudConductor::Duplicators.increase_instance(single_json, instance_sizes, availability_zones)
 
         expect(result['Resources']).to eq(multi_json['Resources'])
       end

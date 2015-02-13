@@ -23,6 +23,7 @@ describe Stack do
     @stack = Stack.new
     @stack.name = 'Test'
     @stack.template_parameters = '{}'
+    @stack.instance_sizes = '{}'
     @stack.parameters = '{ "key1": "value1" }'
     @stack.pattern = @pattern
     @stack.cloud = @cloud
@@ -80,6 +81,7 @@ describe Stack do
       stack = Stack.new
       stack.name = 'Test'
       stack.template_parameters = '{}'
+      stack.instance_sizes = '{}'
       stack.parameters = '{ "key1": "value1" }'
       stack.pattern = @pattern
       stack.system = FactoryGirl.create(:system)
@@ -134,7 +136,7 @@ describe Stack do
     it 'call create_stack on cloud when ready status' do
       expected_parameters = @template_parameters
       expected_parameters.deep_merge!(dummy: 'value')
-      expect(@client).to receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters)
+      expect(@client).to receive(:create_stack).with(@stack.name, @stack.pattern, expected_parameters, {})
 
       @stack.status = :READY
       @stack.save!

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'cloud_conductor/adapters'
+require 'cloud_conductor/duplicators'
 
 module CloudConductor
   class Client
@@ -37,11 +38,14 @@ module CloudConductor
       @adapter = Adapters.const_get(adapter_name).new
     end
 
-    def create_stack(name, pattern, parameters)
+    def create_stack(name, pattern, parameters, instance_sizes)
       template = ''
       pattern.clone_repository do |path|
         template = open(File.expand_path('template.json', path)).read
       end
+
+      az_list = @adapter.get_availability_zones @cloud.attributes
+      template = CloudConductor::Duplicators.increase_instance(template, instance_sizes, az_list)
 
       operating_system = OperatingSystem.where(name: 'centos')
       images = pattern.images.where(cloud: @cloud, operating_system: operating_system)

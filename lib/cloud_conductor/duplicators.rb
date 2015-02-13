@@ -18,19 +18,21 @@ require_relative 'duplicators/network_interface_duplicator'
 
 module CloudConductor
   module Duplicators
-    def self.copy_template(template, desired_size_json = {}, availability_zones = [])
+    def self.increase_instance(template_json, instance_sizes = {}, availability_zones = [])
       options = { AvailabilityZone: availability_zones }
 
-      desired_size_json.each do |target_name, size|
-        next unless template['Resources'][target_name]
+      template = JSON.parse(template_json).with_indifferent_access
+      instance_sizes.each do |target_name, size|
+        resources = template['Resources']
+        next unless resources[target_name]
         (2..size).each do |n|
           options.merge! CopyNum: n
 
-          duplicator = InstanceDuplicator.new(template['Resources'], options)
+          duplicator = InstanceDuplicator.new(resources, options)
           duplicator.copy(target_name, n, {}, options)
         end
       end
-      template
+      template.to_json
     end
   end
 end
