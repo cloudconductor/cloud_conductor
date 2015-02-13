@@ -35,5 +35,55 @@ module CloudConductor
         expect(result['Resources']).to eq(multi_json['Resources'])
       end
     end
+
+    describe '#remove_metadata_for_copied' do
+      it 'remove copied in metadata resource' do
+        template = {
+          'Resources' => {
+            'Instance' => {
+              'Metadata' => {
+                'Role' => 'spec',
+                'Copied' => 'true'
+              }
+            }
+          }
+        }
+        expected_template = {
+          'Resources' => {
+            'Instance' => {
+              'Metadata' => {
+                'Role' => 'spec'
+              }
+            }
+          }
+        }
+
+        result_template = CloudConductor::Duplicators.remove_metadata_for_copied template
+        expect(result_template).to eq(expected_template)
+      end
+
+      it 'remove metadata resource when metadata resource is empty' do
+        template = {
+          'Resources' => {
+            'Instance' => {
+              'Metadata' => {
+                'Copied' => 'true'
+              },
+              'DummyKey' => 'DummyValue'
+            }
+          }
+        }
+        expected_template = {
+          'Resources' => {
+            'Instance' => {
+              'DummyKey' => 'DummyValue'
+            }
+          }
+        }
+
+        result_template = CloudConductor::Duplicators.remove_metadata_for_copied template
+        expect(result_template).to eq(expected_template)
+      end
+    end
   end
 end

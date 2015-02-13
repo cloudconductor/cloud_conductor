@@ -32,7 +32,17 @@ module CloudConductor
           duplicator.copy(target_name, n, {}, options)
         end
       end
-      template.to_json
+      remove_metadata_for_copied(template).to_json
+    end
+
+    def self.remove_metadata_for_copied(template)
+      template['Resources'].map do |_, resource|
+        next unless resource['Metadata'] && resource['Metadata']['Copied']
+
+        resource['Metadata'].delete 'Copied'
+        resource.delete 'Metadata' if resource['Metadata'].empty?
+      end
+      template
     end
   end
 end

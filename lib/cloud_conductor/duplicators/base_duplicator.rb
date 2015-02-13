@@ -55,6 +55,7 @@ module CloudConductor
 
         change(copied_resource, name_map)
         changed_resource = post(copied_resource)
+        # add metadata for check to copied resource
         changed_resource['Metadata'] = {} unless changed_resource['Metadata']
         changed_resource['Metadata']['Copied'] = 'true'
         @resources.merge!(new_name => changed_resource)
