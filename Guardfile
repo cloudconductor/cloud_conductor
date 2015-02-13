@@ -17,7 +17,6 @@ guard :rspec, cmd: "rspec --drb --drb-port #{RSPEC_PORT}" do
   watch(%r{^lib/(.+)\.rb$})     { |m| "spec/lib/#{m[1]}_spec.rb" }
 
   watch('spec/spec_helper.rb')   { 'spec' }
-  watch('src/helpers/loader.rb') { 'spec' }
   watch('config.ru') { 'spec' }
 end
 
