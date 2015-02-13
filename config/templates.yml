@@ -1,5 +1,5 @@
 aws:
-  name: "{{base_image `name`}}"
+  name: "{{base_image `name`}}----{{user `role`}}"
   type: "amazon-ebs"
   access_key: "{{cloud `key`}}"
   secret_key: "{{cloud `secret`}}"
@@ -16,7 +16,7 @@ aws:
       delete_on_termination: true
 
 openstack:
-  name: "{{base_image `name`}}"
+  name: "{{base_image `name`}}----{{user `role`}}"
   type: "openstack"
   username: "{{cloud `key`}}"
   password: "{{cloud `secret`}}"
