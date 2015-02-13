@@ -1,6 +1,6 @@
 class BaseImage < ActiveRecord::Base
   belongs_to :cloud
-  has_many :image
+  has_many :images
 
   validates_associated :cloud
   validates_presence_of :cloud, :os, :source_image, :ssh_username
