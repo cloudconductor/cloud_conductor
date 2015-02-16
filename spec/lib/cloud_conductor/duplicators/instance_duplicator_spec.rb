@@ -15,7 +15,7 @@
 module CloudConductor
   module Duplicators
     describe InstanceDuplicator do
-      describe '#post' do
+      describe '#change_for_properties' do
         before do
           @resources = {
             'NIC1' => {
@@ -59,7 +59,7 @@ module CloudConductor
           resources = @resources.merge instance
           instance_duplicator = InstanceDuplicator.new(resources.with_indifferent_access, @options)
 
-          instance_duplicator.post(instance['Instance1'])
+          instance_duplicator.change_for_properties(instance['Instance1'])
           expect(instance['Instance1']['Properties']['NetworkInterfaces'].first['PrivateIpAddress']).to eq('10.0.1.2')
         end
 
@@ -84,7 +84,7 @@ module CloudConductor
           resources = @resources.merge instance
           instance_duplicator = InstanceDuplicator.new(resources.with_indifferent_access, @options)
 
-          instance_duplicator.post(instance['Instance1'])
+          instance_duplicator.change_for_properties(instance['Instance1'])
           addresses = instance['Instance1']['Properties']['NetworkInterfaces'].first['PrivateIpAddresses']
           expect(addresses.first['PrivateIpAddress']).to eq('10.0.1.3')
           expect(addresses.last['PrivateIpAddress']).to eq('10.0.1.4')
@@ -105,7 +105,7 @@ module CloudConductor
           resources = @resources.merge instance
           instance_duplicator = InstanceDuplicator.new(resources.with_indifferent_access, @options)
 
-          posted_resource = instance_duplicator.post(instance['Instance1'])
+          posted_resource = instance_duplicator.change_for_properties(instance['Instance1'])
           expect(posted_resource).to eq(instance['Instance1'])
         end
       end

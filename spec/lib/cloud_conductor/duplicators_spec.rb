@@ -36,7 +36,7 @@ module CloudConductor
       end
     end
 
-    describe '#remove_metadata_for_copied' do
+    describe '#remove_metadata_for_check' do
       it 'remove copied in metadata resource' do
         template = {
           'Resources' => {
@@ -58,7 +58,7 @@ module CloudConductor
           }
         }
 
-        result_template = CloudConductor::Duplicators.remove_metadata_for_copied template
+        result_template = CloudConductor::Duplicators.remove_metadata_for_check template
         expect(result_template).to eq(expected_template)
       end
 
@@ -81,7 +81,7 @@ module CloudConductor
           }
         }
 
-        result_template = CloudConductor::Duplicators.remove_metadata_for_copied template
+        result_template = CloudConductor::Duplicators.remove_metadata_for_check template
         expect(result_template).to eq(expected_template)
       end
     end

@@ -33,37 +33,39 @@ module CloudConductor
         @options = options
       end
 
-      def post(resource)
-        resource
+      def change_for_properties(copied_resource)
+        copied_resource
       end
 
       # rubocop:disable CyclomaticComplexity, PerceivedComplexity
-      def copy(source_name, copy_num, name_map = {}, options = {})
+      # old_and_new_name_list = { old_name: new_name, ... }
+      def copy(source_name, copy_num, old_and_new_name_list = {}, options = {})
         new_name = "#{source_name}#{copy_num}"
-        return if name_map.keys.include? source_name
-        return if name_map.values.include? source_name
+        return if old_and_new_name_list.keys.include? source_name
+        return if old_and_new_name_list.values.include? source_name
         return if @resources[source_name]['Metadata'] && @resources[source_name]['Metadata']['Copied']
 
-        name_map[source_name] = new_name
+        old_and_new_name_list[source_name] = new_name
         copied_resource = @resources[source_name].deep_dup
 
-        collect(copied_resource).each do |name, resource|
+        collect_association(copied_resource).each do |name, resource|
           duplicator = create_duplicator(resource['Type'])
 
-          duplicator.copy(name, copy_num, name_map, options) if duplicator.copy?(resource)
+          duplicator.copy(name, copy_num, old_and_new_name_list, options) if duplicator.copy?(resource)
         end
 
-        change(copied_resource, name_map)
-        changed_resource = post(copied_resource)
+        change_of_association(old_and_new_name_list, copied_resource)
+        changed_resource = change_for_properties(copied_resource)
+
         # add metadata for check to copied resource
         changed_resource['Metadata'] = {} unless changed_resource['Metadata']
         changed_resource['Metadata']['Copied'] = 'true'
         @resources.merge!(new_name => changed_resource)
 
-        @resources.select(&contain?(source_name)).each do |name, resource|
+        @resources.select(&contain_association?(source_name)).each do |name, resource|
           duplicator = create_duplicator(resource['Type'])
 
-          duplicator.copy(name, copy_num, name_map, options) if duplicator.copy?(resource)
+          duplicator.copy(name, copy_num, old_and_new_name_list, options) if duplicator.copy?(resource)
         end
       end
 
@@ -73,139 +75,139 @@ module CloudConductor
 
       private
 
-      def create_duplicator(type)
-        duplicator_name = "#{type.split('::').last}Duplicator"
+      def create_duplicator(resource_type)
+        duplicator_name = "#{resource_type.split('::').last}Duplicator"
         duplicator_name = 'BaseDuplicator' unless Duplicators.const_defined? duplicator_name
         Duplicators.const_get(duplicator_name).new(@resources, @options)
       end
 
-      def contain_ref(obj, name)
-        return false unless obj.respond_to?(:each)
+      def contain_ref(source_name, resource)
+        return false unless resource.respond_to?(:each)
 
-        return true if obj.is_a?(Hash) && name == obj[:Ref]
+        return true if resource.is_a?(Hash) && source_name == resource[:Ref]
 
-        obj = obj.values if obj.respond_to?(:values)
-        obj.any? do |node|
-          contain_ref(node, name)
+        resource = resource.values if resource.respond_to?(:values)
+        resource.any? do |child_resource|
+          contain_ref(source_name, child_resource)
         end
       end
 
-      def contain_att(obj, name)
-        return false unless obj.respond_to?(:each)
+      def contain_get_att(source_name, resource)
+        return false unless resource.respond_to?(:each)
 
-        if obj.is_a?(Hash) && obj[:'Fn::GetAtt']
-          return true if name == obj[:'Fn::GetAtt'].first
+        if resource.is_a?(Hash) && resource[:'Fn::GetAtt']
+          return true if source_name == resource[:'Fn::GetAtt'].first
         end
 
-        obj = obj.values if obj.respond_to?(:values)
-        obj.any? do |node|
-          contain_att(node, name)
+        resource = resource.values if resource.respond_to?(:values)
+        resource.any? do |child_resource|
+          contain_get_att(source_name, child_resource)
         end
       end
 
-      def contain_depends(resource, name)
-        resource[:DependsOn] && resource[:DependsOn].include?(name)
+      def contain_depends_on(source_name, resource)
+        resource[:DependsOn] && resource[:DependsOn].include?(source_name)
       end
 
-      def contain?(name)
+      def contain_association?(source_name)
         lambda do |_, resource|
-          return true if contain_ref(resource, name)
-          return true if contain_att(resource, name)
-          return true if contain_depends(resource, name)
+          return true if contain_ref(source_name, resource)
+          return true if contain_get_att(source_name, resource)
+          return true if contain_depends_on(source_name, resource)
           false
         end
       end
 
-      def collect_ref(obj)
-        return [] unless obj.respond_to?(:each)
+      def collect_ref(copied_resource)
+        return [] unless copied_resource.respond_to?(:each)
 
-        names = obj.inject([]) do |s, child|
+        names = copied_resource.inject([]) do |s, child|
           s + collect_ref(child)
         end
 
-        names << obj['Ref'] if obj.is_a?(Hash) && obj.keys.first == 'Ref'
+        names << copied_resource['Ref'] if copied_resource.is_a?(Hash) && copied_resource.keys.first == 'Ref'
         names
       end
 
-      def collect_att(obj)
-        return [] unless obj.respond_to?(:each)
+      def collect_get_att(copied_resource)
+        return [] unless copied_resource.respond_to?(:each)
 
-        names = obj.inject([]) do |s, child|
-          s + collect_att(child)
+        names = copied_resource.inject([]) do |s, child|
+          s + collect_get_att(child)
         end
 
-        names << obj['Fn::GetAtt'].first if obj.is_a?(Hash) && obj.keys.first == 'Fn::GetAtt'
+        names << copied_resource['Fn::GetAtt'].first if copied_resource.is_a?(Hash) && copied_resource.keys.first == 'Fn::GetAtt'
         names
       end
 
-      def collect_depends(obj)
-        return [] unless obj.respond_to?(:each)
+      def collect_depends_on(copied_resource)
+        return [] unless copied_resource.respond_to?(:each)
 
-        names = obj.inject([]) do |s, child|
-          s + collect_depends(child)
+        names = copied_resource.inject([]) do |s, child|
+          s + collect_depends_on(child)
         end
 
-        names << obj['DependsOn'] if obj.is_a?(Hash) && obj.keys.include?('DependsOn')
+        names << copied_resource['DependsOn'] if copied_resource.is_a?(Hash) && copied_resource.keys.include?('DependsOn')
         names.flatten
       end
 
-      def collect(resource)
+      def collect_association(copied_resource)
         names = []
-        names << collect_ref(resource)
-        names << collect_att(resource)
-        names << collect_depends(resource)
+        names << collect_ref(copied_resource)
+        names << collect_get_att(copied_resource)
+        names << collect_depends_on(copied_resource)
         @resources.slice(*names.flatten.uniq)
       end
 
-      def change_ref(obj, old_key, new_key)
-        return false unless obj.respond_to?(:each)
+      def change_for_ref(old_name, new_name, copied_resource)
+        return false unless copied_resource.respond_to?(:each)
 
-        obj['Ref'] = new_key if obj.is_a?(Hash) && obj['Ref'] == old_key
+        copied_resource['Ref'] = new_name if copied_resource.is_a?(Hash) && copied_resource['Ref'] == old_name
 
-        obj = obj.values if obj.respond_to?(:values)
-        obj.any? do |node|
-          change_ref(node, old_key, new_key)
+        copied_resource = copied_resource.values if copied_resource.respond_to?(:values)
+        copied_resource.any? do |child_resource|
+          change_for_ref(old_name, new_name, child_resource)
         end
       end
 
-      def change_att(obj, old_key, new_key)
-        return false unless obj.respond_to?(:each)
+      def change_for_get_att(old_name, new_name, copied_resource)
+        return false unless copied_resource.respond_to?(:each)
 
-        if obj.is_a?(Hash) && obj['Fn::GetAtt']
-          new_get_att = obj['Fn::GetAtt'].map do |get_att|
-            (get_att == old_key && new_key) || get_att
+        if copied_resource.is_a?(Hash) && copied_resource['Fn::GetAtt']
+          new_get_att = copied_resource['Fn::GetAtt'].map do |get_att|
+            (get_att == old_name && new_name) || get_att
           end
-          obj['Fn::GetAtt'] = new_get_att
+          copied_resource['Fn::GetAtt'] = new_get_att
           return true
         end
 
-        obj = obj.values if obj.respond_to?(:values)
-        obj.any? do |node|
-          change_att(node, old_key, new_key)
+        copied_resource = copied_resource.values if copied_resource.respond_to?(:values)
+        copied_resource.any? do |child_resource|
+          change_for_get_att(old_name, new_name, child_resource)
         end
       end
 
-      def change_depends(resource, old_key, new_key)
-        depends = resource['DependsOn']
+      def change_for_depends_on(old_name, new_name, copied_resource)
+        depends = copied_resource['DependsOn']
 
         return unless depends
 
         if depends.is_a? String
-          resource['DependsOn'] = new_key if depends == old_key
+          copied_resource['DependsOn'] = new_name if depends == old_name
           return
         end
 
         new_depends = depends.map do |depend|
-          (depend == old_key && new_key) || depend
+          (depend == old_name && new_name) || depend
         end
-        resource['DependsOn'] = new_depends
+        copied_resource['DependsOn'] = new_depends
       end
 
-      def change(resource, name_map)
-        name_map.each do |old_key, new_key|
-          change_ref(resource, old_key, new_key)
-          change_att(resource, old_key, new_key)
-          change_depends(resource, old_key, new_key)
+      def change_for_association(old_and_new_name_list, copied_resource)
+        old_and_new_name_list.each do |old_name, new_name|
+          change_for_ref(old_name, new_name, copied_resource)
+          change_for_get_att(old_name, new_name, copied_resource)
+          change_for_depends_on(old_name, new_name, copied_resource)
         end
       end
     end

@@ -20,12 +20,12 @@ module CloudConductor
     class NetworkInterfaceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def post(resource)
-        subnet = @resources[resource['Properties']['SubnetId']['Ref']]
+      def change_for_properties(copied_resource)
+        subnet = @resources[copied_resource['Properties']['SubnetId']['Ref']]
         cidr = NetAddr::CIDR.create(subnet['Properties']['CidrBlock'])
         allocatable_addresses = get_allocatable_addresses(@resources, cidr)
 
-        properties = resource['Properties']
+        properties = copied_resource['Properties']
         if properties['PrivateIpAddress']
           properties['PrivateIpAddress'] = allocatable_addresses.first
         elsif properties['PrivateIpAddresses']
@@ -34,7 +34,7 @@ module CloudConductor
           end
         end
 
-        resource
+        copied_resource
       end
     end
   end

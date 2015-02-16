@@ -20,20 +20,20 @@ module CloudConductor
     class SubnetDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def post(resource)
+      def change_for_properties(copied_resource)
         used_availability_zones = @resources.select(&type?('AWS::EC2::Subnet')).map do |_, value|
           value['Properties']['AvailabilityZone']
         end
         new_availavility_zone = (@options[:AvailabilityZone] - used_availability_zones).first
-        resource['Properties']['AvailabilityZone'] = new_availavility_zone
+        copied_resource['Properties']['AvailabilityZone'] = new_availavility_zone
 
-        cidr = NetAddr::CIDR.create(resource['Properties']['CidrBlock'])
+        cidr = NetAddr::CIDR.create(copied_resource['Properties']['CidrBlock'])
         new_cidr = (@options[:CopyNum] - 1).times.inject(cidr) do |s, _|
           s.succ
         end
-        resource['Properties']['CidrBlock'] = new_cidr.to_s
+        copied_resource['Properties']['CidrBlock'] = new_cidr.to_s
 
-        resource
+        copied_resource
       end
 
       def copy(source_name, copy_num, name_map = {}, options = {})

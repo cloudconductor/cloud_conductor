@@ -19,10 +19,10 @@ module CloudConductor
     class InstanceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def post(resource)
-        return resource unless resource['Properties']['NetworkInterfaces']
+      def change_for_properties(copied_resource)
+        return copied_resource unless copied_resource['Properties']['NetworkInterfaces']
 
-        resource['Properties']['NetworkInterfaces'].each do |network_interface|
+        copied_resource['Properties']['NetworkInterfaces'].each do |network_interface|
           next if network_interface['NetworkInterfaceId']
 
           subnet = @resources[network_interface['SubnetId']['Ref']]
@@ -38,7 +38,7 @@ module CloudConductor
           end
         end
 
-        resource
+        copied_resource
       end
     end
   end

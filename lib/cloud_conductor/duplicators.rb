@@ -30,10 +30,10 @@ module CloudConductor
           duplicator.copy(target_name, n, {}, options)
         end
       end
-      remove_metadata_for_copied(template).to_json
+      remove_metadata_for_check(template).to_json
     end
 
-    def self.remove_metadata_for_copied(template)
+    def self.remove_metadata_for_check(template)
       template['Resources'].map do |_, resource|
         next unless resource['Metadata'] && resource['Metadata']['Copied']
 

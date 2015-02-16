@@ -33,14 +33,14 @@ module CloudConductor
         @subnet_duplicator = SubnetDuplicator.new(@resource.with_indifferent_access, @options)
       end
 
-      describe '#post' do
+      describe '#change_for_properties' do
         it 'return template to updated for AvailabilityZone property and CidrBlock property' do
           resource = @resource.deep_dup
 
           expect(resource['Subnet1']['Properties']['AvailabilityZone']).to eq('ap-southeast-2a')
           expect(resource['Subnet1']['Properties']['CidrBlock']).to eq('10.0.1.0/24')
 
-          @subnet_duplicator.post(resource.values.first)
+          @subnet_duplicator.change_for_properties(resource.values.first)
 
           expect(resource['Subnet1']['Properties']['AvailabilityZone']).to eq('ap-southeast-2b')
           expect(resource['Subnet1']['Properties']['CidrBlock']).to eq('10.0.2.0/24')
