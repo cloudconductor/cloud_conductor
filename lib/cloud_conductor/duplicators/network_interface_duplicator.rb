@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'netaddr'
-require_relative 'base_duplicator'
+require 'cloud_conductor/duplicators/base_duplicator'
 
 module CloudConductor
   module Duplicators

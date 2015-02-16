@@ -12,9 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require_relative 'duplicators/instance_duplicator'
-require_relative 'duplicators/subnet_duplicator'
-require_relative 'duplicators/network_interface_duplicator'
+require 'cloud_conductor/duplicators'
 
 module CloudConductor
   module Duplicators
