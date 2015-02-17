@@ -83,7 +83,7 @@ module CloudConductor
           }
 
           @base_duplicator = BaseDuplicator.new(resources, options)
-          @base_duplicator.copy('FrontendEIP', 2, {}, options)
+          @base_duplicator.copy('FrontendEIP', {}, options)
 
           expect(resources).to eq(result_resource)
         end
@@ -98,6 +98,90 @@ module CloudConductor
         it 'return true when resource not exist in the COPYABLE_RESOURCES ' do
           resource = { 'Type' => 'AWS::EC2::VPC' }
           expect(@base_duplicator.send(:copy?, resource)).to be_falsey
+        end
+      end
+
+      describe '#check_whether_copied' do
+        it 'return true when old_name_list contained source_name' do
+          old_and_new_name_list = {
+            'old_name' => 'new_name'
+          }
+          source_name = 'old_name'
+
+          expect(@base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+        end
+
+        it 'return true when new_name_list contained source_name' do
+          old_and_new_name_list = {
+            'old_name' => 'new_name'
+          }
+          source_name = 'new_name'
+
+          expect(@base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+        end
+
+        it 'return true when resource contained copied in metadata' do
+          old_and_new_name_list = {
+            'old_name' => 'new_name'
+          }
+          source_name = 'dummy_name'
+          resources = {
+            'dummy_name' => {
+              'Type' => 'AWS::EC2::Instance',
+              'Properties' => {
+                'Domain' => 'vpc'
+              },
+              'Metadata' => {
+                'Copied' => 'true'
+              }
+            }
+          }
+          base_duplicator = BaseDuplicator.new(resources, @options)
+
+          expect(base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+        end
+
+        it 'return false when does not match to any' do
+          old_and_new_name_list = {
+            'old_name' => 'new_name'
+          }
+          source_name = 'dummy_name'
+          resources = {
+            'dummy_name' => {
+              'Type' => 'AWS::EC2::Instance',
+              'Properties' => {
+                'Domain' => 'vpc'
+              }
+            }
+          }
+          base_duplicator = BaseDuplicator.new(resources, @options)
+
+          expect(base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_falsey
+        end
+      end
+
+      describe '#add_metadata_for_check' do
+        it 'add flag for checking whether resource has already been copied in metadata' do
+          resource = {
+            'Type' => 'AWS::EC2::EIP',
+            'Properties' => {
+              'Domain' => 'vpc'
+            }
+          }
+
+          result_resource = {
+            'Type' => 'AWS::EC2::EIP',
+            'Properties' => {
+              'Domain' => 'vpc'
+            },
+            'Metadata' => {
+              'Copied' => 'true'
+            }
+          }
+
+          @base_duplicator.send(:add_metadata_for_check, resource)
+
+          expect(resource).to eq(result_resource)
         end
       end
 

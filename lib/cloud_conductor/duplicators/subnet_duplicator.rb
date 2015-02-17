@@ -36,15 +36,15 @@ module CloudConductor
         copied_resource
       end
 
-      def copy(source_name, copy_num, name_map = {}, options = {})
-        subnets = @resources.select(&type?('AWS::EC2::Subnet')).keys
-        return super if subnets.size < @options[:AvailabilityZone].size
+      def copy(source_name, old_and_new_name_list = {}, options = {})
+        subnet_names = @resources.select(&type?('AWS::EC2::Subnet')).keys
+        return super if subnet_names.size < @options[:AvailabilityZone].size
 
-        return if name_map.keys.include? source_name
+        return if old_and_new_name_list.keys.include? source_name
 
-        old_index = subnets.index(source_name)
-        new_index = (old_index + @options[:CopyNum] - 1) % subnets.size
-        name_map[source_name] = subnets[new_index]
+        old_index = subnet_names.index(source_name)
+        new_index = (old_index + @options[:CopyNum] - 1) % subnet_names.size
+        old_and_new_name_list[source_name] = subnet_names[new_index]
       end
     end
   end

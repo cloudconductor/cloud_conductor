@@ -29,7 +29,7 @@ module CloudConductor
           options.merge! CopyNum: n
 
           duplicator = InstanceDuplicator.new(resources, options)
-          duplicator.copy(target_name, n, {}, options)
+          duplicator.copy(target_name, {}, options)
         end
       end
       remove_metadata_for_check(template).to_json

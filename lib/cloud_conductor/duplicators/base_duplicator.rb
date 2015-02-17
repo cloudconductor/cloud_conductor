@@ -37,35 +37,29 @@ module CloudConductor
         copied_resource
       end
 
-      # rubocop:disable CyclomaticComplexity, PerceivedComplexity
       # old_and_new_name_list = { old_name: new_name, ... }
-      def copy(source_name, copy_num, old_and_new_name_list = {}, options = {})
-        new_name = "#{source_name}#{copy_num}"
-        return if old_and_new_name_list.keys.include? source_name
-        return if old_and_new_name_list.values.include? source_name
-        return if @resources[source_name]['Metadata'] && @resources[source_name]['Metadata']['Copied']
+      def copy(source_name, old_and_new_name_list = {}, options = {})
+        return if check_whether_copied source_name, old_and_new_name_list
 
+        new_name = "#{source_name}#{@options[:CopyNum]}"
         old_and_new_name_list[source_name] = new_name
+
         copied_resource = @resources[source_name].deep_dup
 
         collect_association(copied_resource).each do |name, resource|
           duplicator = create_duplicator(resource['Type'])
-
-          duplicator.copy(name, copy_num, old_and_new_name_list, options) if duplicator.copy?(resource)
+          duplicator.copy(name, old_and_new_name_list, options) if duplicator.copy?(resource)
         end
 
-        change_of_association(old_and_new_name_list, copied_resource)
-        changed_resource = change_for_properties(copied_resource)
+        copied_resource = change_for_association(old_and_new_name_list, copied_resource)
+        copied_resource = change_for_properties(copied_resource)
+        copied_resource = add_metadata_for_check(copied_resource)
 
-        # add metadata for check to copied resource
-        changed_resource['Metadata'] = {} unless changed_resource['Metadata']
-        changed_resource['Metadata']['Copied'] = 'true'
-        @resources.merge!(new_name => changed_resource)
+        @resources.merge!(new_name => copied_resource)
 
         @resources.select(&contain_association?(source_name)).each do |name, resource|
           duplicator = create_duplicator(resource['Type'])
-
-          duplicator.copy(name, copy_num, old_and_new_name_list, options) if duplicator.copy?(resource)
+          duplicator.copy(name, old_and_new_name_list, options) if duplicator.copy?(resource)
         end
       end
 
@@ -74,6 +68,20 @@ module CloudConductor
       end
 
       private
+
+      def check_whether_copied(source_name, old_and_new_name_list)
+        return true if old_and_new_name_list.keys.include? source_name
+        return true if old_and_new_name_list.values.include? source_name
+        return true if @resources[source_name]['Metadata'] && @resources[source_name]['Metadata']['Copied']
+        false
+      end
+
+      def add_metadata_for_check(copied_resource)
+        copied_resource['Metadata'] = {} unless copied_resource['Metadata']
+        copied_resource['Metadata']['Copied'] = 'true'
+
+        copied_resource
+      end
 
       def create_duplicator(resource_type)
         duplicator_name = "#{resource_type.split('::').last}Duplicator"
@@ -118,36 +126,36 @@ module CloudConductor
         end
       end
 
-      def collect_ref(copied_resource)
-        return [] unless copied_resource.respond_to?(:each)
+      def collect_ref(resource)
+        return [] unless resource.respond_to?(:each)
 
-        names = copied_resource.inject([]) do |s, child|
-          s + collect_ref(child)
+        names = resource.inject([]) do |s, child_resource|
+          s + collect_ref(child_resource)
         end
 
-        names << copied_resource['Ref'] if copied_resource.is_a?(Hash) && copied_resource.keys.first == 'Ref'
+        names << resource['Ref'] if resource.is_a?(Hash) && resource.keys.first == 'Ref'
         names
       end
 
-      def collect_get_att(copied_resource)
-        return [] unless copied_resource.respond_to?(:each)
+      def collect_get_att(resource)
+        return [] unless resource.respond_to?(:each)
 
-        names = copied_resource.inject([]) do |s, child|
-          s + collect_get_att(child)
+        names = resource.inject([]) do |s, child_resource|
+          s + collect_get_att(child_resource)
         end
 
-        names << copied_resource['Fn::GetAtt'].first if copied_resource.is_a?(Hash) && copied_resource.keys.first == 'Fn::GetAtt'
+        names << resource['Fn::GetAtt'].first if resource.is_a?(Hash) && resource.keys.first == 'Fn::GetAtt'
         names
       end
 
-      def collect_depends_on(copied_resource)
-        return [] unless copied_resource.respond_to?(:each)
+      def collect_depends_on(resource)
+        return [] unless resource.respond_to?(:each)
 
-        names = copied_resource.inject([]) do |s, child|
-          s + collect_depends_on(child)
+        names = resource.inject([]) do |s, child_resource|
+          s + collect_depends_on(child_resource)
         end
 
-        names << copied_resource['DependsOn'] if copied_resource.is_a?(Hash) && copied_resource.keys.include?('DependsOn')
+        names << resource['DependsOn'] if resource.is_a?(Hash) && resource.keys.include?('DependsOn')
         names.flatten
       end
 
@@ -159,48 +167,50 @@ module CloudConductor
         @resources.slice(*names.flatten.uniq)
       end
 
-      def change_for_ref(old_name, new_name, copied_resource)
-        return false unless copied_resource.respond_to?(:each)
+      def change_for_ref(old_name, new_name, resource)
+        return unless resource.respond_to?(:each)
 
-        copied_resource['Ref'] = new_name if copied_resource.is_a?(Hash) && copied_resource['Ref'] == old_name
+        resource['Ref'] = new_name if resource.is_a?(Hash) && resource['Ref'] == old_name
 
-        copied_resource = copied_resource.values if copied_resource.respond_to?(:values)
-        copied_resource.any? do |child_resource|
+        resource = resource.values if resource.respond_to?(:values)
+        resource.any? do |child_resource|
           change_for_ref(old_name, new_name, child_resource)
         end
       end
 
-      def change_for_get_att(old_name, new_name, copied_resource)
-        return false unless copied_resource.respond_to?(:each)
+      # rubocop:disable CyclomaticComplexity
+      def change_for_get_att(old_name, new_name, resource)
+        return unless resource.respond_to?(:each)
 
-        if copied_resource.is_a?(Hash) && copied_resource['Fn::GetAtt']
-          new_get_att = copied_resource['Fn::GetAtt'].map do |get_att|
+        if resource.is_a?(Hash) && resource['Fn::GetAtt']
+          new_get_att = resource['Fn::GetAtt'].map do |get_att|
             (get_att == old_name && new_name) || get_att
           end
-          copied_resource['Fn::GetAtt'] = new_get_att
-          return true
+          resource['Fn::GetAtt'] = new_get_att
+          return
         end
 
-        copied_resource = copied_resource.values if copied_resource.respond_to?(:values)
-        copied_resource.any? do |child_resource|
+        resource = resource.values if resource.respond_to?(:values)
+        resource.any? do |child_resource|
           change_for_get_att(old_name, new_name, child_resource)
         end
       end
+      # rubocop:enable CyclomaticComplexity
 
-      def change_for_depends_on(old_name, new_name, copied_resource)
-        depends = copied_resource['DependsOn']
+      def change_for_depends_on(old_name, new_name, resource)
+        depends = resource['DependsOn']
 
         return unless depends
 
         if depends.is_a? String
-          copied_resource['DependsOn'] = new_name if depends == old_name
+          resource['DependsOn'] = new_name if depends == old_name
           return
         end
 
         new_depends = depends.map do |depend|
           (depend == old_name && new_name) || depend
         end
-        copied_resource['DependsOn'] = new_depends
+        resource['DependsOn'] = new_depends
       end
 
       def change_for_association(old_and_new_name_list, copied_resource)
@@ -209,6 +219,8 @@ module CloudConductor
           change_for_get_att(old_name, new_name, copied_resource)
           change_for_depends_on(old_name, new_name, copied_resource)
         end
+
+        copied_resource
       end
     end
   end

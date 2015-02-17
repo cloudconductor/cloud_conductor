@@ -57,11 +57,11 @@ module CloudConductor
         it 'call BaseDuplicator#copy method if Subnet can copy' do
           allow_any_instance_of(BaseDuplicator).to receive(:copy)
 
-          expect(@subnet_duplicator.copy('dummy_name', 2, @name_map, {}))
+          expect(@subnet_duplicator.copy('dummy_name', @name_map, {}))
         end
 
         it 'do not do anything if Subnet have already been copied' do
-          expect(@subnet_duplicator.copy('old_dummy_name', 2, @name_map, {})).to eq(nil)
+          expect(@subnet_duplicator.copy('old_dummy_name', @name_map, {})).to eq(nil)
         end
 
         it 'update name_map' do
@@ -88,7 +88,7 @@ module CloudConductor
 
           name_map = {}
 
-          subnet_duplicator.copy('Subnet1', 2, name_map, {})
+          subnet_duplicator.copy('Subnet1', name_map, {})
           expect(name_map['Subnet1']).to eq('Subnet2')
         end
       end
