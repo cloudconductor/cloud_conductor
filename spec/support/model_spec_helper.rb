@@ -10,5 +10,7 @@ class ModelSpecHelper
     let(:environment) { FactoryGirl.create(:environment, system: system, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
     let(:stack) { environment.stacks.first }
     let(:candidate) { environment.candidates.first }
+    let(:application) { FactoryGirl.create(:application, system: system) }
+    let(:application_history) { FactoryGirl.create(:application_history, application: application) }
   end
 end

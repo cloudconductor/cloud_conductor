@@ -10,6 +10,7 @@ module API
       mount API::V1::SystemAPI
       mount API::V1::EnvironmentAPI
       mount API::V1::ApplicationAPI
+      mount API::V1::ApplicationHistoryAPI
     end
   end
 end

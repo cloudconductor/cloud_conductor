@@ -3,7 +3,7 @@ class ApplicationHistory < ActiveRecord::Base
   belongs_to :application
 
   validates_associated :application
-  validates_presence_of :domain, :type, :protocol, :url
+  validates_presence_of :application, :domain, :type, :protocol, :url
   validates :protocol, inclusion: { in: %w(http https git) }
   validates :url, format: { with: URI.regexp }
   validates_each :parameters do |record, attr, value|
@@ -15,29 +15,6 @@ class ApplicationHistory < ActiveRecord::Base
   end
 
   before_save :allocate_version, unless: -> { version }
-  before_save :consul_request, if: -> { !deployed? && application.system.ip_address }
-  before_save :update_status, if: -> { status(false) == :PROGRESS }
-
-  after_initialize do
-    self.status ||= :NOT_YET
-  end
-
-  def status(consul = true) # rubocop:disable CyclomaticComplexity
-    status = super() && super().to_sym
-    return status unless status == :PROGRESS && consul
-
-    return :NOT_YET unless event
-
-    event_log = application.system.event.find(event)
-    return :PROGRESS unless event_log.finished?
-    return :DEPLOYED if event_log.success?
-
-    :ERROR
-  end
-
-  def update_status
-    self.status = status
-  end
 
   def allocate_version
     today = Date.today.strftime('%Y%m%d')
@@ -50,23 +27,7 @@ class ApplicationHistory < ActiveRecord::Base
     end
   end
 
-  def application_payload
-    payload = {}
-    payload[:domain] = domain
-    payload[:type] = type
-    payload[:version] = version
-    payload[:protocol] = protocol
-    payload[:url] = url
-    payload[:revision] = revision if revision
-    payload[:pre_deploy] = pre_deploy if pre_deploy
-    payload[:post_deploy] = post_deploy if post_deploy
-
-    payload[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
-
-    payload
-  end
-
-  def consul_request
+  def payload
     payload = {
       cloudconductor: {
         applications: {
@@ -74,19 +35,18 @@ class ApplicationHistory < ActiveRecord::Base
       }
     }
 
+    application_payload = {}
+    application_payload[:domain] = domain
+    application_payload[:type] = type
+    application_payload[:version] = version
+    application_payload[:protocol] = protocol
+    application_payload[:url] = url
+    application_payload[:revision] = revision if revision
+    application_payload[:pre_deploy] = pre_deploy if pre_deploy
+    application_payload[:post_deploy] = post_deploy if post_deploy
+    application_payload[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
+
     payload[:cloudconductor][:applications][application.name] = application_payload
-
-    self.status = :PROGRESS
-    self.event = application.system.event.fire(:deploy, payload)
-  end
-
-  def deployed?
-    status == :DEPLOYED
-  end
-
-  def dup
-    history = super
-    history.status = :NOT_YET
-    history
+    payload
   end
 end

@@ -37,7 +37,6 @@ ActiveRecord::Schema.define(version: 20150212004325) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
-    t.string   "status"
     t.string   "domain"
     t.string   "type"
     t.string   "version"
@@ -46,7 +45,6 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "revision"
     t.string   "pre_deploy"
     t.string   "post_deploy"
-    t.string   "event"
     t.string   "parameters"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
@@ -55,8 +53,9 @@ ActiveRecord::Schema.define(version: 20150212004325) do
   create_table "applications", force: true do |t|
     t.integer  "system_id"
     t.string   "name"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
+    t.string   "description"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "assignments", force: true do |t|
@@ -111,6 +110,8 @@ ActiveRecord::Schema.define(version: 20150212004325) do
   create_table "deployments", force: true do |t|
     t.integer  "environment_id"
     t.integer  "application_history_id"
+    t.string   "status"
+    t.string   "event"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end

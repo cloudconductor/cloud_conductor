@@ -12,33 +12,18 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-xdescribe Application do
-  before do
-    @system = FactoryGirl.create(:system)
+describe Application do
+  include_context 'default_resources'
 
+  before do
     @application = Application.new
     @application.name = 'dummy'
-    @application.system = @system
-    @application.histories << FactoryGirl.build(:application_history)
+    @application.system = system
   end
 
   describe '#save' do
     it 'create with valid parameters' do
-      count = Application.count
-
-      @application.save!
-
-      expect(Application.count).to eq(count + 1)
-    end
-  end
-
-  describe '#delete' do
-    it 'delete all relational history' do
-      @application.save!
-
-      count = ApplicationHistory.count
-      @application.destroy
-      expect(ApplicationHistory.count).to eq(count - 1)
+      expect { @application.save! }.to change { Application.count }.by(1)
     end
   end
 
@@ -61,12 +46,27 @@ xdescribe Application do
     end
   end
 
+  describe '#destroy' do
+    it 'delete application record' do
+      @application.save!
+      expect { @application.destroy }.to change { Application.count }.by(-1)
+    end
+
+    it 'delete all relational history' do
+      @application.histories << FactoryGirl.create(:application_history, application: @application)
+      @application.histories << FactoryGirl.create(:application_history, application: @application)
+      @application.save!
+      expect { @application.destroy }.to change { ApplicationHistory.count }.by(-2)
+    end
+  end
+
   describe '#latest' do
     it 'return latest ApplicationHistory' do
-      @application.save!
-      @application.histories << FactoryGirl.build(:application_history)
-      latest = FactoryGirl.build(:application_history)
+      @application.histories << FactoryGirl.create(:application_history, application: @application)
+
+      latest = FactoryGirl.create(:application_history, application: @application)
       @application.histories << latest
+      @application.save!
 
       expect(@application.latest).to eq(latest)
     end
@@ -74,21 +74,11 @@ xdescribe Application do
 
   describe '#latest_version' do
     it 'return latest ApplicationHistory version' do
+      @application.histories << FactoryGirl.create(:application_history, application: @application)
+      @application.histories << FactoryGirl.create(:application_history, application: @application)
       @application.save!
-      @application.histories << FactoryGirl.build(:application_history)
-      @application.histories << FactoryGirl.build(:application_history)
 
       expect(@application.latest_version).to match(/\d{8}-\d{3}/)
-    end
-  end
-
-  describe '#status' do
-    it 'return latest ApplicationHistory status' do
-      @application.save!
-      @application.histories << FactoryGirl.build(:application_history)
-      @application.histories << FactoryGirl.build(:application_history, status: :DEPLOYED)
-
-      expect(@application.status).to eq(:DEPLOYED)
     end
   end
 

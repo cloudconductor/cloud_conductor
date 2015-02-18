@@ -2,7 +2,6 @@ class CreateApplicationHistories < ActiveRecord::Migration
   def change
     create_table :application_histories do |t|
       t.references :application
-      t.string :status
       t.string :domain
       t.string :type
       t.string :version
@@ -11,7 +10,6 @@ class CreateApplicationHistories < ActiveRecord::Migration
       t.string :revision
       t.string :pre_deploy
       t.string :post_deploy
-      t.string :event
 
       t.string :parameters
       t.timestamps null: false

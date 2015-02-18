@@ -1,7 +1,6 @@
 class Application < ActiveRecord::Base
   belongs_to :system
   has_many :histories, class_name: :ApplicationHistory, dependent: :destroy
-  accepts_nested_attributes_for :histories
 
   validates_associated :system
   validates_presence_of :name, :system
