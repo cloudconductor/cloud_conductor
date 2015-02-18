@@ -20,13 +20,13 @@ FactoryGirl.define do
     revision 'master'
 
     trait :platform do
-      name 'sample_platform_pattern'
+      sequence(:name) { |n| "platform_pattern-#{n}" }
       url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
       type :platform
     end
 
     trait :optional do
-      name 'sample_optional_pattern'
+      sequence(:name) { |n| "optional_pattern-#{n}" }
       url 'https://example.com/cloudconductor-dev/sample_optional_pattern.git'
       type :optional
     end
