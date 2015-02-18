@@ -325,7 +325,7 @@ module CloudConductor
           expect(@rules).not_to receive(:new)
           expect(@rules).not_to receive(:save)
 
-          @template = {}
+          @template = '{ "Resources": {} }'
           @adapter.add_security_rule(@name, @template, @parameters, @options)
         end
 
