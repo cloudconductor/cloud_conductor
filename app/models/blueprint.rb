@@ -3,5 +3,5 @@ class Blueprint < ActiveRecord::Base
   has_many :patterns, dependent: :destroy, inverse_of: :blueprint
   accepts_nested_attributes_for :patterns
 
-  validates :name, presence: true
+  validates_presence_of :name, :project, :patterns
 end

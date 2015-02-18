@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Blueprint do
+  include_context 'default_resources'
+
   before do
     @blueprint = Blueprint.new
     @blueprint.name = 'test'
+    @blueprint.project = project
+    @blueprint.patterns << pattern
   end
 
   describe '#save' do
@@ -31,8 +35,9 @@ describe Blueprint do
     end
 
     it 'delete all pattern records' do
-      FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
-      FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
+      @blueprint.patterns.delete_all
+      @blueprint.patterns << FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
+      @blueprint.patterns << FactoryGirl.create(:pattern, :platform, blueprint: @blueprint)
 
       expect(@blueprint.patterns.size).to eq(2)
       expect { @blueprint.destroy }.to change { Pattern.count }.by(-2)
@@ -49,6 +54,16 @@ describe Blueprint do
       expect(@blueprint.valid?).to be_falsey
 
       @blueprint.name = ''
+      expect(@blueprint.valid?).to be_falsey
+    end
+
+    it 'returns false when project is unset' do
+      @blueprint.project = nil
+      expect(@blueprint.valid?).to be_falsey
+    end
+
+    it 'returns false when patterns is empty' do
+      @blueprint.patterns = []
       expect(@blueprint.valid?).to be_falsey
     end
   end

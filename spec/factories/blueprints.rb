@@ -1,6 +1,15 @@
 FactoryGirl.define do
   factory :blueprint, class: Blueprint do
+    project
     sequence(:name) { |n| "blueprint-#{n}" }
+
+    transient do
+      patterns_count 2
+    end
+
+    after(:build) do |blueprint, evaluator|
+      blueprint.patterns = create_list(:pattern, evaluator.patterns_count, :platform, blueprint: blueprint) if blueprint.patterns.empty?
+    end
 
     before(:create) do
       Pattern.skip_callback :save, :before, :execute_packer
