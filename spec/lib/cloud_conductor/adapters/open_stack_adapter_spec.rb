@@ -261,20 +261,20 @@ module CloudConductor
       describe '#add_security_rule' do
         before do
           @template = <<-EOS
-{
-  "Resources": {
-    "SharedSecurityGroupInboundRule":{
-      "Type":"AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "IpProtocol":"tcp",
-        "FromPort":"10050",
-        "ToPort":"10050",
-        "CidrIp":"10.0.0.0/16",
-        "GroupId":{"Ref":"SharedSecurityGroup"}
-      }
-    }
-  }
-}
+            {
+              "Resources": {
+                "SharedSecurityGroupInboundRule":{
+                  "Type":"AWS::EC2::SecurityGroupIngress",
+                  "Properties":{
+                    "IpProtocol":"tcp",
+                    "FromPort":"10050",
+                    "ToPort":"10050",
+                    "CidrIp":"10.0.0.0/16",
+                    "GroupId":{"Ref":"SharedSecurityGroup"}
+                  }
+                }
+              }
+            }
           EOS
           @name = 'DummyStackName'
           @parameters = { SharedSecurityGroup: 'dummy_id' }.with_indifferent_access
@@ -353,20 +353,20 @@ module CloudConductor
           expect(@compute.security_group_rules).to receive(:new).with(rule)
 
           template = <<-EOS
-{
-  "Resources": {
-    "SharedSecurityGroupInboundRule":{
-      "Type":"AWS::EC2::SecurityGroupIngress",
-      "Properties":{
-        "IpProtocol":"tcp",
-        "FromPort":"10050",
-        "ToPort":"10050",
-        "CidrIp":"10.0.0.0/16",
-        "SourceSecurityGroupId":{"Ref":"DummySourceGroup"}
-      }
-    }
-  }
-}
+            {
+              "Resources": {
+                "SharedSecurityGroupInboundRule":{
+                  "Type":"AWS::EC2::SecurityGroupIngress",
+                  "Properties":{
+                    "IpProtocol":"tcp",
+                    "FromPort":"10050",
+                    "ToPort":"10050",
+                    "CidrIp":"10.0.0.0/16",
+                    "SourceSecurityGroupId":{"Ref":"DummySourceGroup"}
+                  }
+                }
+              }
+            }
           EOS
           @adapter.add_security_rule(@name, template, @parameters, @options)
         end
