@@ -36,7 +36,7 @@ FactoryGirl.define do
     end
 
     after(:create) do
-      Pattern.set_callback :save, :before, :execute_packer
+      Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
     end
   end
 end

@@ -12,7 +12,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     self.protocol ||= 'git'
   end
 
-  before_save :execute_packer
+  before_save :execute_packer, if: -> { url_changed? || revision_changed? }
 
   def status
     return :ERROR if images.any? { |image| image.status == :ERROR }
