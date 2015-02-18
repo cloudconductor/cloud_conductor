@@ -14,11 +14,12 @@
 # limitations under the License.
 module CloudConductor
   describe Client do
+    include_context 'default_resources'
+
     before do
       allow_any_instance_of(Adapters::AWSAdapter).to receive(:get_availability_zones).and_return(['ap-southeast-2a'])
       allow_any_instance_of(Adapters::OpenStackAdapter).to receive(:get_availability_zones).and_return(['nova'])
-      @cloud = FactoryGirl.create(:cloud_aws)
-      @client = Client.new @cloud
+      @client = Client.new cloud
     end
 
     describe '#new' do
@@ -39,25 +40,23 @@ module CloudConductor
 
     describe '#create_stack' do
       before do
-        @pattern = FactoryGirl.create(:pattern, :platform)
-
-        allow(@pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
         expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
-        @client.create_stack 'stack_name', @pattern, {}
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'call adapter#create_stack with template.json in repository' do
         expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
-        @client.create_stack 'stack_name', @pattern, {}
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
-        image1 = FactoryGirl.create(:image, pattern: @pattern, cloud: @cloud)
-        image2 = FactoryGirl.create(:image, pattern: @pattern, cloud: @cloud)
+        image1 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
 
@@ -70,7 +69,7 @@ module CloudConductor
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        FactoryGirl.create(:image, pattern: @pattern, cloud: @cloud, role: 'web, ap, db')
+        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys).to be_include('webapdbImageId')
         end

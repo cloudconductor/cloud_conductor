@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Candidate do
+  include_context 'default_resources'
+
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
       environment = FactoryGirl.create(:environment)

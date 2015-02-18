@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Cloud do
+  include_context 'default_resources'
+
   before do
     @cloud = Cloud.new
-    @cloud.project = FactoryGirl.create(:project)
+    @cloud.project = project
     @cloud.name = 'Test'
     @cloud.type = 'aws'
     @cloud.entry_point = 'ap-northeast-1'
@@ -117,8 +119,8 @@ describe Cloud do
     end
 
     it 'delete all base image records' do
-      FactoryGirl.create(:base_image, cloud: @cloud)
-      FactoryGirl.create(:base_image, cloud: @cloud)
+      @cloud.base_images << FactoryGirl.create(:base_image, cloud: @cloud)
+      @cloud.base_images << FactoryGirl.create(:base_image, cloud: @cloud)
 
       expect(@cloud.base_images.size).to eq(2)
       expect { @cloud.destroy }.to change { BaseImage.count }.by(-2)

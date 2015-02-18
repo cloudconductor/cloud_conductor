@@ -13,14 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe BaseImage do
+  include_context 'default_resources'
+
   before do
     BaseImage.ami_images = nil
     ami_images = { 'ap-northeast-1' => 'ami-12345678' }
     allow(YAML).to receive(:load_file).and_call_original
     allow(YAML).to receive(:load_file).with(BaseImage::IMAGES_FILE_PATH).and_return(ami_images)
 
-    @cloud_aws = FactoryGirl.create(:cloud_aws)
-    @base_image = BaseImage.new(cloud: @cloud_aws, os: 'dummy_os')
+    @base_image = BaseImage.new(cloud: cloud, os: 'dummy_os', source_image: 'dummy_image')
   end
 
   describe '#initialize' do
@@ -39,20 +40,19 @@ describe BaseImage do
     end
 
     it 'set source_image if cloud type equal aws and source_image is nil' do
-      base_image = BaseImage.new(cloud: @cloud_aws)
+      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_aws))
 
       expect(base_image.source_image).to eq('ami-12345678')
     end
 
     it 'doesn\'t set source_image if cloud type equal aws and source_image is not nil' do
-      base_image = BaseImage.new(cloud: @cloud_aws, source_image: 'ami-xxxxxxxx')
+      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_aws), source_image: 'ami-xxxxxxxx')
 
       expect(base_image.source_image).to eq('ami-xxxxxxxx')
     end
 
     it 'doesn\'t set source_image if cloud type equal openstack' do
-      cloud_openstack = FactoryGirl.create(:cloud_openstack)
-      base_image = BaseImage.new(cloud: cloud_openstack)
+      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_openstack))
 
       expect(base_image.source_image).to be_nil
     end
@@ -103,7 +103,7 @@ describe BaseImage do
 
   describe '#name' do
     it 'return string that joined cloud name and OS name with hyphen' do
-      expect(@base_image.name).to eq("#{@cloud_aws.name}#{BaseImage::SPLITTER}dummy_os")
+      expect(@base_image.name).to eq("#{cloud.name}#{BaseImage::SPLITTER}dummy_os")
     end
   end
 
@@ -130,7 +130,7 @@ describe BaseImage do
       EOS
 
       result = JSON.parse(@base_image.to_json).with_indifferent_access
-      expect(result[:cloud_name]).to eq(@cloud_aws.name)
+      expect(result[:cloud_name]).to eq(cloud.name)
       expect(result[:os_name]).to eq('dummy_os')
       expect(result[:source_image]).to eq(@base_image.source_image)
     end

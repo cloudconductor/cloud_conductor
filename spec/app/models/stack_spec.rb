@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Stack do
+  include_context 'default_resources'
+
   before do
     @stack = Stack.new
     @stack.name = 'Test'
-    @stack.pattern = FactoryGirl.create(:pattern, :platform)
-    @stack.cloud = FactoryGirl.create(:cloud_aws)
-    @stack.environment = FactoryGirl.build(:environment)
+    @stack.pattern = pattern
+    @stack.cloud = cloud
+    @stack.environment = environment
   end
 
   # rubocop:disable UselessAssignment

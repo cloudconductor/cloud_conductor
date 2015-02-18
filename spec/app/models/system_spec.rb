@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe System do
+  include_context 'default_resources'
+
   before do
     @system = System.new
-    @system.project = FactoryGirl.create(:project)
+    @system.project = project
     @system.name = 'test'
   end
 
@@ -32,8 +34,8 @@ describe System do
     end
 
     it 'delete all application records' do
-      FactoryGirl.create(:application, system: @system)
-      FactoryGirl.create(:application, system: @system)
+      @system.applications << FactoryGirl.create(:application, system: @system)
+      @system.applications << FactoryGirl.create(:application, system: @system)
 
       expect(@system.applications.size).to eq(2)
       expect { @system.destroy }.to change { Application.count }.by(-2)
@@ -42,8 +44,8 @@ describe System do
     it 'delete all environment records' do
       Environment.skip_callback :destroy, :before, :destroy_stacks
 
-      FactoryGirl.create(:environment, system: @system)
-      FactoryGirl.create(:environment, system: @system)
+      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.environments << FactoryGirl.create(:environment, system: @system)
 
       expect(@system.environments.size).to eq(2)
       expect { @system.destroy }.to change { Environment.count }.by(-2)

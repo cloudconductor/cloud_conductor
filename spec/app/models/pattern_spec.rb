@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Pattern do
+  include_context 'default_resources'
+
   let(:cloned_path) { File.expand_path("./tmp/patterns/#{SecureRandom.uuid}") }
 
   before do
     @pattern = Pattern.new
-    @pattern.blueprint = FactoryGirl.create(:blueprint)
+    @pattern.blueprint = blueprint
     @pattern.url = 'http://example.com/pattern.git'
 
     allow(@pattern).to receive(:execute_packer)
@@ -47,8 +49,8 @@ describe Pattern do
     end
 
     it 'delete all image records' do
-      FactoryGirl.create(:image, pattern: @pattern)
-      FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
 
       expect(@pattern.images.size).to eq(2)
       expect { @pattern.destroy }.to change { Image.count }.by(-2)
@@ -78,9 +80,9 @@ describe Pattern do
 
   describe '#status' do
     before do
-      FactoryGirl.create(:image, pattern: @pattern)
-      FactoryGirl.create(:image, pattern: @pattern)
-      FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
     end
 
     it 'return status that integrated status over all images' do
@@ -347,8 +349,8 @@ describe Pattern do
 
   describe '#create_images' do
     before do
-      FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_aws))
-      FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_openstack))
+      FactoryGirl.create(:base_image, cloud: cloud)
+      FactoryGirl.create(:base_image, cloud: cloud)
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
       allow(@pattern).to receive(:update_images)
     end

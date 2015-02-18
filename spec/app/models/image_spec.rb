@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Image do
+  include_context 'default_resources'
+
   before do
     @image = Image.new
     @image.role = 'dummy'
-    @image.cloud = FactoryGirl.create(:cloud_aws)
-    @image.pattern = FactoryGirl.create(:pattern, :platform)
-    @image.base_image = FactoryGirl.create(:base_image, cloud: @image.cloud)
+    @image.cloud = cloud
+    @image.pattern = pattern
+    @image.base_image = base_image
   end
 
   describe '#initialize' do

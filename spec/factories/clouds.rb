@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
+  factory :cloud do
+    project
+    sequence(:name) { |n| "cloud_dummy_#{n}" }
+    type 'dummy'
+    entry_point 'entry_point'
+    key '1234567890abcdef'
+    secret 'fedcba9876543210'
+    tenant_name 'dummy_tenant'
+  end
+
   factory :cloud_aws, class: Cloud do
     project
     sequence(:name) { |n| "cloud_aws_#{n}" }
