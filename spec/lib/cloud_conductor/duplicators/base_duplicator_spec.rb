@@ -33,7 +33,7 @@ module CloudConductor
       describe '#copy' do
         it 'duplicate resource' do
           resources = {
-            'FrontendEIP' => {
+            'webFrontendEIP' => {
               'Type' => 'AWS::EC2::EIP',
               'Properties' => {
                 'Domain' => 'vpc'
@@ -41,6 +41,9 @@ module CloudConductor
             },
             'WebSecurityGroup' => {
               'Type' => 'AWS::EC2::SecurityGroup',
+              'Metadata' => {
+                'Role' => 'web'
+              },
               'Properties' => {
                 'VpcId' => { 'Ref' => 'VPC' },
                 'SecurityGroupIngress' => [
@@ -51,7 +54,7 @@ module CloudConductor
           }
 
           result_resource = {
-            'FrontendEIP' => {
+            'webFrontendEIP' => {
               'Type' => 'AWS::EC2::EIP',
               'Properties' => {
                 'Domain' => 'vpc'
@@ -59,6 +62,9 @@ module CloudConductor
             },
             'WebSecurityGroup' => {
               'Type' => 'AWS::EC2::SecurityGroup',
+              'Metadata' => {
+                'Role' => 'web'
+              },
               'Properties' => {
                 'VpcId' => { 'Ref' => 'VPC' },
                 'SecurityGroupIngress' => [
@@ -66,7 +72,7 @@ module CloudConductor
                 ]
               }
             },
-            'FrontendEIP2' => {
+            'webFrontendEIP2' => {
               'Type' => 'AWS::EC2::EIP',
               'Properties' => {
                 'Domain' => 'vpc'
@@ -79,11 +85,12 @@ module CloudConductor
 
           options = {
             AvailabilityZone: ['ap-southeast-2a', 'ap-southeast-2b'],
-            CopyNum: 2
+            CopyNum: 2,
+            Role: 'web'
           }
 
           @base_duplicator = BaseDuplicator.new(resources, options)
-          @base_duplicator.copy('FrontendEIP', {}, options)
+          @base_duplicator.copy('webFrontendEIP', {}, options)
 
           expect(resources).to eq(result_resource)
         end

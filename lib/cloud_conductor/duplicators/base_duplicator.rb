@@ -45,8 +45,10 @@ module CloudConductor
         old_and_new_name_list[source_name] = new_name
 
         copied_resource = @resources[source_name].deep_dup
+        roles = @options[:Role].split(',') + ['all']
 
         collect_association(copied_resource).each do |name, resource|
+          next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
           duplicator.copy(name, old_and_new_name_list, options) if duplicator.copy?(resource)
         end
@@ -58,6 +60,7 @@ module CloudConductor
         @resources.merge!(new_name => copied_resource)
 
         @resources.select(&contain_association?(source_name)).each do |name, resource|
+          next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
           duplicator.copy(name, old_and_new_name_list, options) if duplicator.copy?(resource)
         end

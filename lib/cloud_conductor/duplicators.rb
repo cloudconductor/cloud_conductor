@@ -27,6 +27,7 @@ module CloudConductor
         next unless resources[target_name]
         (2..size).each do |n|
           options.merge! CopyNum: n
+          options.merge! Role: resources[target_name]['Metadata']['Role']
 
           duplicator = InstanceDuplicator.new(resources, options)
           duplicator.copy(target_name, {}, options)
