@@ -2,9 +2,7 @@ module API
   module V1
     module Helpers
       def require_no_authentication
-        # TODO: Disable authentication temporarily. Fix later.
-        # env['api.endpoint'].namespace == '/tokens'
-        true
+        env['api.endpoint'].namespace == '/tokens'
       end
 
       def authenticate_account_from_token!
@@ -19,22 +17,16 @@ module API
         end
       end
 
-      def authorize!(*_args)
-        # TODO: Disable authorization temporarily. Fix later.
-        # current_ability.authorize!(*args)
-        true
+      def authorize!(*args)
+        current_ability.authorize!(*args)
       end
 
-      def can?(*_args)
-        # TODO: Disable authorization temporarily. Fix later.
-        # current_ability.can?(*args)
-        true
+      def can?(*args)
+        current_ability.can?(*args)
       end
 
-      def cannot?(*_args)
-        # TODO: Disable authorization temporarily. Fix later.
-        # current_ability.cannot?(*args)
-        false
+      def cannot?(*args)
+        current_ability.cannot?(*args)
       end
 
       def current_ability

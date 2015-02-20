@@ -1,4 +1,2 @@
 --color
 --require spec_helper
-# TODO: Disable request specs temporarily. Fix later
---exclude-pattern "spec/requests/**/*_spec.rb"
