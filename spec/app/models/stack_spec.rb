@@ -163,16 +163,15 @@ describe Stack do
   end
 
   describe '#dup' do
-    it 'duplicate all attributes in stack without name' do
+    it 'duplicate all attributes in stack' do
       duplicated_stack = @stack.dup
       expect(duplicated_stack.template_parameters).to eq(@stack.template_parameters)
       expect(duplicated_stack.parameters).to eq(@stack.parameters)
     end
 
-    it 'duplicate name with uuid to avoid unique constraint' do
+    it 'reset status to :PENDING' do
       duplicated_stack = @stack.dup
-      expect(duplicated_stack.name).not_to eq(@stack.name)
-      expect(duplicated_stack.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+      expect(duplicated_stack.status).to eq(:PENDING)
     end
   end
 
