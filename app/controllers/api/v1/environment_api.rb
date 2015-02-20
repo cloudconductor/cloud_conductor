@@ -27,11 +27,15 @@ module API
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
           requires :domain, type: String, desc: 'Domain name to designate this environment'
+          optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
           requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment. First cloud is primary.' do
             requires :cloud_id, type: String, desc: 'Cloud id'
             optional :priority, type: Integer, desc: 'Cloud priority(prefer cloud that has higher value)'
           end
-          optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
+          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack' do
+            requires :name, type: String, desc: 'Stack name'
+            optional :parameters, type: String, desc: 'Parameters is used when some event in created stack'
+          end
         end
         post '/' do
           authorize!(:create, ::Environment)

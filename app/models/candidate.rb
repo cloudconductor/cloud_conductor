@@ -10,4 +10,8 @@ class Candidate < ActiveRecord::Base
   end
 
   scope :sorted, -> { order(priority: :desc) }
+
+  def <=>(other)
+    other.priority <=> priority
+  end
 end

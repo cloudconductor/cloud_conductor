@@ -29,3 +29,6 @@ Style/RegexpLiteral:
 
 NumericLiterals:
   MinDigits: 7
+
+ShadowingOuterLocalVariable:
+  Enabled: false

@@ -14,14 +14,20 @@
 # limitations under the License.
 module CloudConductor
   describe SystemBuilder do
-    before do
-      @environment = FactoryGirl.create(:environment)
+    include_context 'default_resources'
 
-      @platform_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, :platform))
-      @optional_stack = FactoryGirl.create(:stack, pattern: FactoryGirl.create(:pattern, :optional))
+    before do
+      platform_pattern = FactoryGirl.create(:pattern, :platform)
+      optional_pattern = FactoryGirl.create(:pattern, :optional)
+      blueprint = FactoryGirl.create(:blueprint, patterns: [platform_pattern, optional_pattern])
+      @environment = FactoryGirl.build(:environment, blueprint: blueprint)
+
+      @platform_stack = FactoryGirl.build(:stack, pattern: platform_pattern, name: platform_pattern.name, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern: optional_pattern, name: optional_pattern.name, environment: @environment)
       @environment.stacks.delete_all
       @environment.stacks << @platform_stack
       @environment.stacks << @optional_stack
+      @environment.save!
 
       @builder = SystemBuilder.new @environment
 

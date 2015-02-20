@@ -5,11 +5,13 @@ class Environment < ActiveRecord::Base
   belongs_to :blueprint
   has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
-  has_many :stacks
+  has_many :stacks, validate: false
   accepts_nested_attributes_for :candidates
+  accepts_nested_attributes_for :stacks
 
   before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
+  before_save :create_stacks
   before_save :update_dns, if: -> { ip_address }
   before_save :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
 
@@ -26,10 +28,21 @@ class Environment < ActiveRecord::Base
     self.status ||= :PENDING
   end
 
-  after_create do
-    blueprint.patterns.each do |pattern|
-      stacks.create!(name: pattern.name, pattern: pattern, cloud: candidates.primary.cloud)
+  def create_stacks
+    primary_cloud = candidates.sort.first.cloud
+
+    self.stacks = blueprint.patterns.map do |pattern|
+      stack = stacks.find { |stack| stack.name == pattern.name }
+      unless stack
+        stack = Stack.new(environment: self, name: pattern.name)
+        stacks << stack
+      end
+
+      stack.pattern = pattern
+      stack.cloud = primary_cloud
+      stack
     end
+    true
   end
 
   def status

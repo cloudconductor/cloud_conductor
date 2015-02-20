@@ -24,12 +24,17 @@ describe Environment do
     @environment.system = FactoryGirl.create(:system)
     @environment.blueprint = FactoryGirl.create(:blueprint)
 
-    @environment.stacks << FactoryGirl.build(:stack, environment: @environment)
+    allow(@environment).to receive(:create_stacks)
   end
 
   describe '#save' do
     it 'create with valid parameters' do
       expect { @environment.save! }.to change { Environment.count }.by(1)
+    end
+
+    it 'call #create_stacks' do
+      expect(@environment).to receive(:create_stacks)
+      @environment.save!
     end
   end
 
@@ -68,11 +73,6 @@ describe Environment do
 
     it 'returns false when candidates is empty' do
       @environment.candidates.delete_all
-      expect(@environment.valid?).to be_falsey
-    end
-
-    xit 'returns false when stacks is empty' do
-      @environment.stacks.delete_all
       expect(@environment.valid?).to be_falsey
     end
 
@@ -115,12 +115,12 @@ describe Environment do
     end
 
     it 'call #destroy_stacks callback' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment)
       expect(@environment).to receive(:destroy_stacks)
       @environment.destroy
     end
 
     it 'doesn\'t call #destroy_stacks callback when empty stacks' do
-      @environment.stacks.delete_all
       expect(@environment).not_to receive(:destroy_stacks)
       @environment.destroy
     end
@@ -138,6 +138,56 @@ describe Environment do
       @environment.destroy
 
       (Thread.list - threads).each(&:join)
+    end
+  end
+
+  describe '#create_stacks' do
+    before do
+      allow(@environment).to receive(:create_stacks).and_call_original
+    end
+
+    it 'create stacks from patterns that belongs to blueprint' do
+      expect(@environment.stacks).to be_empty
+      @environment.send(:create_stacks)
+      expect(@environment.stacks).not_to be_empty
+
+      expect(@environment.stacks.size).to eq(2)
+    end
+
+    it 'update pattern of existing stack' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, name: @environment.blueprint.patterns[1].name)
+      @environment.send(:create_stacks)
+
+      expect(@environment.stacks.size).to eq(2)
+      expect(@environment.stacks[0].pattern).to eq(@environment.blueprint.patterns[1])
+      expect(@environment.stacks[1].pattern).to eq(@environment.blueprint.patterns[0])
+    end
+
+    it 'update cloud to primary cloud that has highest priority' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, name: @environment.blueprint.patterns[1].name)
+      @environment.send(:create_stacks)
+
+      expect(@environment.stacks.size).to eq(2)
+      expect(@environment.stacks[0].cloud).to eq(@environment.candidates.last.cloud)
+      expect(@environment.stacks[1].cloud).to eq(@environment.candidates.last.cloud)
+    end
+
+    it 'keep parameters that was contained by stack' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, name: @environment.blueprint.patterns[1].name, parameters: '{ "dummy": "value" }')
+      @environment.send(:create_stacks)
+
+      expect(@environment.stacks.size).to eq(2)
+      expect(@environment.stacks[0].parameters).to eq('{ "dummy": "value" }')
+      expect(@environment.stacks[1].parameters).to eq('{}')
+    end
+
+    it 'delete unassignment stack with pattern' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, name: 'dummy')
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, name: @environment.blueprint.patterns[1].name)
+      @environment.send(:create_stacks)
+
+      expect(@environment.stacks.map(&:name)).not_to be_include('dummy')
+      expect(@environment.stacks.size).to eq(2)
     end
   end
 
@@ -248,6 +298,7 @@ describe Environment do
     end
 
     it 'return consul client when ip_address already specified' do
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment)
       @environment.ip_address = '127.0.0.1'
       expect(@environment.consul).to be_a Consul::Client
     end
@@ -260,6 +311,7 @@ describe Environment do
     end
 
     it 'return event client when ip_address already specified' do
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment)
       @environment.ip_address = '127.0.0.1'
       expect(@environment.event).to be_is_a CloudConductor::Event
     end
