@@ -28,7 +28,7 @@ class Environment < ActiveRecord::Base
 
   after_create do
     blueprint.patterns.each do |pattern|
-      stacks.create!(name: pattern.name.gsub('_', '-'), pattern: pattern, cloud: candidates.primary.cloud)
+      stacks.create!(name: pattern.name, pattern: pattern, cloud: candidates.primary.cloud)
     end
   end
 
