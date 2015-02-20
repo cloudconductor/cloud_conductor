@@ -81,18 +81,14 @@ class Environment < ActiveRecord::Base
   def consul
     fail 'ip_address does not specified' unless ip_address
 
-    token = stacks.first.pattern.consul_secret_key
-
-    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
     Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   def event
     fail 'ip_address does not specified' unless ip_address
 
-    token = stacks.first.pattern.consul_secret_key
-
-    options = CloudConductor::Config.consul.options.save.merge(token: token)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
     CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 

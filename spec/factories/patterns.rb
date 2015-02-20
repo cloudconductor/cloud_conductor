@@ -16,7 +16,6 @@ FactoryGirl.define do
   factory :pattern do
     blueprint
     protocol :git
-    consul_secret_key ''
     revision 'master'
 
     trait :platform do

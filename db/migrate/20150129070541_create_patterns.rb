@@ -7,7 +7,6 @@ class CreatePatterns < ActiveRecord::Migration
       t.string :protocol
       t.string :url
       t.string :revision
-      t.string :consul_secret_key
       t.text :parameters
       t.timestamps null: false
     end

@@ -64,16 +64,8 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       roles = load_roles path
       update_metadata path, metadata
 
-      if CloudConductor::Config.consul.options.acl
-        status, stdout, stderr = systemu('consul keygen')
-        fail "consul keygen failed.\n#{stderr}" unless status.success?
-        self.consul_secret_key = stdout.chomp
-      else
-        self.consul_secret_key = ''
-      end
-
       roles.each do |role|
-        create_images role, metadata[:name], consul_secret_key
+        create_images role, metadata[:name], blueprint.consul_secret_key
       end
     end
 

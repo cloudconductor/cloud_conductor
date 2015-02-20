@@ -298,7 +298,6 @@ describe Environment do
     end
 
     it 'return consul client when ip_address already specified' do
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment)
       @environment.ip_address = '127.0.0.1'
       expect(@environment.consul).to be_a Consul::Client
     end
@@ -311,7 +310,6 @@ describe Environment do
     end
 
     it 'return event client when ip_address already specified' do
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment)
       @environment.ip_address = '127.0.0.1'
       expect(@environment.event).to be_is_a CloudConductor::Event
     end

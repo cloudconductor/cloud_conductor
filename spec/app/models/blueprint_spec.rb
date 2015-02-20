@@ -20,11 +20,18 @@ describe Blueprint do
     @blueprint.name = 'test'
     @blueprint.project = project
     @blueprint.patterns << pattern
+
+    allow(@blueprint).to receive(:update_consul_secret_key)
   end
 
   describe '#save' do
     it 'create with valid parameters' do
       expect { @blueprint.save! }.to change { Blueprint.count }.by(1)
+    end
+
+    it 'call #update_consul_secret_key callback' do
+      expect(@blueprint).to receive(:update_consul_secret_key)
+      @blueprint.save!
     end
   end
 
@@ -65,6 +72,29 @@ describe Blueprint do
     it 'returns false when patterns is empty' do
       @blueprint.patterns = []
       expect(@blueprint.valid?).to be_falsey
+    end
+  end
+
+  describe '#update_consul_secret_key' do
+    before do
+      allow(@blueprint).to receive(:update_consul_secret_key).and_call_original
+      allow(@blueprint).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
+    end
+
+    it 'create consul_secret_key if enabled ACL' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
+
+      expect(@blueprint.consul_secret_key).to be_nil
+      @blueprint.send(:update_consul_secret_key)
+      expect(@blueprint.consul_secret_key).to eq('dummy key')
+    end
+
+    it 'set empty string to consul_secret_key if disabled ACL' do
+      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(false)
+
+      expect(@blueprint.consul_secret_key).to be_nil
+      @blueprint.send(:update_consul_secret_key)
+      expect(@blueprint.consul_secret_key).to be_empty
     end
   end
 end

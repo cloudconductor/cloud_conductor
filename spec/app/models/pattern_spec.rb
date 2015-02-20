@@ -121,41 +121,23 @@ describe Pattern do
     before do
       allow(@pattern).to receive(:execute_packer).and_call_original
 
-      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       allow(@pattern).to receive(:load_metadata).and_return({})
       allow(@pattern).to receive(:load_roles).and_return(['dummy'])
       allow(@pattern).to receive(:update_metadata)
-      allow(@pattern).to receive(:systemu).and_return([double('status', 'success?' => true), 'dummy key', ''])
       allow(@pattern).to receive(:create_images)
     end
 
     it 'will call sub-routine with secret key' do
       path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
 
-      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       expect(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
       expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
       expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
-      expect(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => true), 'dummy key', ''])
-      expect(@pattern).to receive(:create_images).with('dummy', nil, 'dummy key')
+      expect(@pattern).to receive(:create_images).with('dummy', nil, @pattern.blueprint.consul_secret_key)
 
       @pattern.send(:execute_packer)
-    end
-
-    it 'will call sub-routine without secret_key' do
-      allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(false)
-      expect(@pattern).not_to receive(:systemu).with('consul keygen')
-      expect(@pattern).to receive(:create_images).with('dummy', nil, '')
-
-      @pattern.send(:execute_packer)
-    end
-
-    it 'raise error when some errors occurred while execute `consul keygen` command' do
-      allow(@pattern).to receive(:systemu).with('consul keygen').and_return([double('status', 'success?' => false), '', 'error'])
-
-      expect { @pattern.send(:execute_packer) }.to raise_error
     end
   end
 
