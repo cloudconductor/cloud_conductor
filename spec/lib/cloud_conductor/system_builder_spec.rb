@@ -194,17 +194,24 @@ module CloudConductor
         @builder.send(:finish_environment)
       end
 
-      xit 'will request deploy event to consul' do
+      it 'won\'t request deploy event to consul when create new environment' do
+        expect(@event).not_to receive(:sync_fire).with(:deploy, anything)
+        @builder.send(:finish_environment)
+      end
+
+      it 'will request deploy event to consul when create already deploymented environment' do
+        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
         expect(@event).to receive(:sync_fire).with(:deploy, {})
         @builder.send(:finish_environment)
       end
 
-      xit 'change application history status if deploy event is finished' do
-        expect(@environment.applications.map(&:latest).compact.any?(&:deployed?)).to be_falsey
+      it 'change application history status if deploy event is finished' do
+        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        expect(@environment.deployments.first.status).to eq(:NOT_YET)
 
         @builder.send(:finish_environment)
 
-        expect(@environment.applications.map(&:latest).compact.all?(&:deployed?)).to be_truthy
+        expect(@environment.deployments.first.status).to eq(:DEPLOYED)
       end
     end
 
@@ -301,35 +308,21 @@ module CloudConductor
       end
     end
 
-    xdescribe '#application_payload' do
-      it 'return payload that used for deploy and restore event' do
-        history1 = @environment.applications[0].histories.first
-        history2 = @environment.applications[1].histories.first
+    describe '#application_payload' do
+      it 'return empty payload when deployments are empty' do
+        expect(@builder.send(:application_payload, @environment)).to eq({})
+      end
 
+      it 'return merged payload that contains all deployments' do
+        application1 = FactoryGirl.create(:application, name: 'application1')
+        application2 = FactoryGirl.create(:application, name: 'application2')
+        history1 = FactoryGirl.create(:application_history, application: application1)
+        history2 = FactoryGirl.create(:application_history, application: application2)
+
+        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
+        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
         expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:applications].keys).to eq([history1.application.name, history2.application.name])
-
-          payload1 = payload[:cloudconductor][:applications][history1.application.name]
-          expect(payload1[:domain]).to eq(history1.domain)
-          expect(payload1[:type]).to eq(history1.type)
-          expect(payload1[:version]).to eq(history1.version)
-          expect(payload1[:protocol]).to eq(history1.protocol)
-          expect(payload1[:url]).to eq(history1.url)
-          expect(payload1[:revision]).to eq(history1.revision)
-          expect(payload1[:pre_deploy]).to eq(history1.pre_deploy)
-          expect(payload1[:post_deploy]).to eq(history1.post_deploy)
-          expect(payload1[:parameters]).to eq(JSON.parse(history1.parameters, symbolize_names: true))
-
-          payload2 = payload[:cloudconductor][:applications][history2.application.name]
-          expect(payload2[:domain]).to eq(history2.domain)
-          expect(payload2[:type]).to eq(history2.type)
-          expect(payload2[:version]).to eq(history2.version)
-          expect(payload2[:protocol]).to eq(history2.protocol)
-          expect(payload2[:url]).to eq(history2.url)
-          expect(payload2[:revision]).to eq(history2.revision)
-          expect(payload2[:pre_deploy]).to eq(history2.pre_deploy)
-          expect(payload2[:post_deploy]).to eq(history2.post_deploy)
-          expect(payload2[:parameters]).to eq(JSON.parse(history2.parameters, symbolize_names: true))
+          expect(payload[:cloudconductor][:applications].keys).to eq(%w(application1 application2))
         end
 
         expect(@builder.send(:application_payload, @environment)).to expected_payload

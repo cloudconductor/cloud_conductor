@@ -59,6 +59,16 @@ module API
           history
         end
 
+        desc 'Deploy application on environment'
+        params do
+          requires :application_history_id, type: Integer, desc: 'Application history id'
+          requires :environment_id, type: Integer, desc: 'Target environment id'
+        end
+        post '/:application_history_id/deploy' do
+          authorize!(:create, ::Deployment)
+          Deployment.create!(declared_params)
+        end
+
         desc 'Destroy application history'
         params do
           requires :id, type: Integer, desc: 'Application history id'

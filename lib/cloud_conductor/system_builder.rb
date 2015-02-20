@@ -117,12 +117,12 @@ module CloudConductor
     def finish_environment
       @environment.event.sync_fire(:configure, configure_payload(@environment))
       @environment.event.sync_fire(:restore, application_payload(@environment))
-      # TODO: @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.applications.empty?
+      @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.deployments.empty?
 
-      # TODO: @environment.applications.map(&:latest).compact.each do |history|
-      # TODO:   history.status = :DEPLOYED
-      # TODO:   history.save!
-      # TODO: end
+      @environment.deployments.each do |deployment|
+        deployment.status = :DEPLOYED
+        deployment.save!
+      end
 
       @environment.status = :CREATE_COMPLETE
       @environment.save!
@@ -160,20 +160,9 @@ module CloudConductor
     end
 
     def application_payload(environment)
-      return {} if environment.applications.empty?
+      return {} if environment.deployments.empty?
 
-      payload = {
-        cloudconductor: {
-          applications: {
-          }
-        }
-      }
-
-      environment.applications.map(&:latest).compact.each do |history|
-        payload[:cloudconductor][:applications][history.application.name] = history.application_payload
-      end
-
-      payload
+      environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
     end
   end
 end

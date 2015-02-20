@@ -6,6 +6,8 @@ class Environment < ActiveRecord::Base
   has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
   has_many :stacks, validate: false
+  has_many :deployments, dependent: :destroy, inverse_of: :environment
+  has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
   accepts_nested_attributes_for :stacks
 
