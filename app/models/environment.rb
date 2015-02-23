@@ -13,7 +13,7 @@ class Environment < ActiveRecord::Base
 
   before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
-  before_save :create_stacks
+  before_save :create_stacks, if: -> { blueprint_id_changed? }
   before_save :update_dns, if: -> { ip_address }
   before_save :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
 
