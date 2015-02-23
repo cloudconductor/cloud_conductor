@@ -32,4 +32,11 @@ class Deployment < ActiveRecord::Base
   def update_status
     self.status = status
   end
+
+  def dup
+    deployment = super
+    deployment.environment = nil
+    deployment.status = :NOT_YET
+    deployment
+  end
 end

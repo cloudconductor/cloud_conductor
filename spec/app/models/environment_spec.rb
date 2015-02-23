@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 describe Environment do
+  include_context 'default_resources'
+
   before do
     @cloud_aws = FactoryGirl.create(:cloud_aws)
     @cloud_openstack = FactoryGirl.create(:cloud_openstack)
@@ -236,6 +238,14 @@ describe Environment do
       stacks = @environment.dup.stacks
       expect(stacks.size).to eq(@environment.stacks.size)
       expect(stacks).to be_all(&:new_record?)
+    end
+
+    it 'duplicate deployments without save' do
+      @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history, status: :DEPLOYED)
+
+      deployments = @environment.dup.deployments
+      expect(deployments.size).to eq(@environment.deployments.size)
+      expect(deployments).to be_all(&:new_record?)
     end
   end
 

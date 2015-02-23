@@ -148,4 +148,15 @@ describe Deployment do
       expect(@deployment.attributes['status']).to eq(:DEPLOYED)
     end
   end
+
+  describe '#dup' do
+    it 'clear environment' do
+      expect(@deployment.dup.environment).to be_nil
+    end
+
+    it 'clear status to :NOT_YET' do
+      @deployment.status = :DEPLOYED
+      expect(@deployment.dup.status).to eq(:NOT_YET)
+    end
+  end
 end

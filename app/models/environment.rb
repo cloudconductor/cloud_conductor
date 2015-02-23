@@ -68,6 +68,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
     environment.candidates = candidates.map(&:dup)
     environment.stacks = stacks.map(&:dup)
+    environment.deployments = deployments.map(&:dup)
 
     environment
   end
