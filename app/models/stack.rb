@@ -58,8 +58,14 @@ class Stack < ActiveRecord::Base
     Log.info("Create stack on #{cloud.name} ... SUCCESS")
   end
 
+  def basename
+    name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+  end
+
   def dup
     stack = super
+
+    stack.name = "#{basename}-#{SecureRandom.uuid}"
     stack.status = :PENDING
     stack
   end

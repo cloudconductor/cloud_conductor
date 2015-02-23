@@ -63,6 +63,29 @@ module API
           environment
         end
 
+        desc 'Rebuild environment'
+        params do
+          requires :id, type: Integer, desc: 'Environment id'
+          optional :blueprint_id, type: Integer, desc: 'Blueprint id'
+          optional :description, type: String, desc: 'Environment description'
+          optional :domain, type: String, desc: 'Domain name to designate this environment'
+          optional :switch, type: String, desc: 'Switch primary environment automatically'
+        end
+        post '/:id/rebuild' do
+          authorize!(:create, ::Environment)
+          environment = ::Environment.find(params[:id])
+          authorize!(:read, environment)
+
+          new_environment = environment.dup
+          new_environment.update_attributes(declared_params.except(:id))
+
+          Thread.new do
+            CloudConductor::SystemBuilder.new(new_environment).build
+          end
+
+          new_environment
+        end
+
         desc 'Destroy environment'
         params do
           requires :id, type: Integer, desc: 'Environment id'

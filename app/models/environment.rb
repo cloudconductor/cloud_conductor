@@ -1,6 +1,6 @@
 require 'open-uri'
 
-class Environment < ActiveRecord::Base
+class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :system
   belongs_to :blueprint
   has_many :candidates, dependent: :destroy, inverse_of: :environment
@@ -34,7 +34,7 @@ class Environment < ActiveRecord::Base
     primary_cloud = candidates.sort.first.cloud
 
     self.stacks = blueprint.patterns.map do |pattern|
-      stack = stacks.find { |stack| stack.name == pattern.name }
+      stack = stacks.find { |stack| stack.basename == pattern.name }
       unless stack
         stack = Stack.new(environment: self, name: pattern.name)
         stacks << stack
@@ -51,6 +51,10 @@ class Environment < ActiveRecord::Base
     super && super.to_sym
   end
 
+  def basename
+    name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+  end
+
   def as_json(options = {})
     super options.merge(methods: [:status])
   end
@@ -63,6 +67,7 @@ class Environment < ActiveRecord::Base
     environment.ip_address = nil
     environment.monitoring_host = nil
     environment.template_parameters = '{}'
+    environment.status = :PENDING
 
     environment.candidates = candidates.map(&:dup)
     environment.stacks = stacks.map(&:dup)

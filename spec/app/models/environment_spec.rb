@@ -272,6 +272,11 @@ describe Environment do
       expect(@environment.dup.template_parameters).to eq('{}')
     end
 
+    it 'clear status to :PENDING' do
+      @environment.status = :CREATE_COMPLETE
+      expect(@environment.dup.status).to eq(:PENDING)
+    end
+
     it 'duplicated associated clouds' do
       expect(@environment.dup.clouds).to eq(@environment.clouds)
     end
@@ -312,6 +317,18 @@ describe Environment do
     it 'return event client when ip_address already specified' do
       @environment.ip_address = '127.0.0.1'
       expect(@environment.event).to be_is_a CloudConductor::Event
+    end
+  end
+
+  describe '#basename' do
+    it 'return name without UUID' do
+      @environment.name = "dummy-#{SecureRandom.uuid}"
+      expect(@environment.basename).to eq('dummy')
+    end
+
+    it 'return original name when name hasn\'t UUID' do
+      @environment.name = 'dummy'
+      expect(@environment.basename).to eq('dummy')
     end
   end
 
