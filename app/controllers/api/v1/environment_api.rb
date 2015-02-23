@@ -66,7 +66,7 @@ module API
           requires :id, type: Integer, desc: 'Environment id'
           optional :blueprint_id, type: Integer, desc: 'Blueprint id'
           optional :description, type: String, desc: 'Environment description'
-          optional :switch, type: String, desc: 'Switch primary environment automatically'
+          optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
         end
         post '/:id/rebuild' do
           authorize!(:create, ::Environment)
@@ -74,10 +74,11 @@ module API
           authorize!(:read, environment)
 
           new_environment = environment.dup
-          new_environment.update_attributes(declared_params.except(:id))
+          new_environment.update_attributes(declared_params.except(:id, :switch))
 
           Thread.new do
             CloudConductor::SystemBuilder.new(new_environment).build
+            new_environment.system.update_attributes!(primary_environment: new_environment) if declared_params[:switch]
           end
 
           new_environment
