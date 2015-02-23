@@ -123,9 +123,7 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "name"
     t.string   "description"
     t.string   "status"
-    t.string   "monitoring_host"
     t.string   "ip_address"
-    t.string   "domain"
     t.text     "template_parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
@@ -178,10 +176,13 @@ ActiveRecord::Schema.define(version: 20150212004325) do
 
   create_table "systems", force: true do |t|
     t.integer  "project_id"
+    t.integer  "primary_environment_id"
     t.string   "name"
     t.string   "description"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.string   "domain"
+    t.string   "monitoring_host"
+    t.datetime "created_at",             null: false
+    t.datetime "updated_at",             null: false
   end
 
 end

@@ -191,64 +191,12 @@ describe Environment do
     end
   end
 
-  describe '#enable_monitoring' do
-    it 'is called from save callback' do
-      expect(@environment).to receive(:enable_monitoring)
-      @environment.monitoring_host = 'example.com'
-      @environment.save!
-    end
-
-    it 'isn\'t called from save callback when monitoring_host isn\'t changed' do
-      allow(@environment).to receive(:enable_monitoring)
-      @environment.monitoring_host = 'example.com'
-      @environment.save!
-
-      expect(@environment).not_to receive(:enable_monitoring)
-      @environment.monitoring_host = 'example.com'
-      @environment.save!
-    end
-
-    it 'isn\'t called from save callback when monitoring_host is nil' do
-      allow(@environment).to receive(:enable_monitoring)
-      @environment.monitoring_host = 'example.com'
-      @environment.save!
-
-      expect(@environment).not_to receive(:enable_monitoring)
-      @environment.monitoring_host = nil
-      @environment.save!
-    end
-
-    it 'call ZabbixClient#register' do
-      expect(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)
-      @environment.monitoring_host = 'example.com'
-      @environment.send(:enable_monitoring)
-    end
-  end
-
-  describe '#update_dns' do
-    it 'is called from save callback' do
-      expect(@environment).to receive(:update_dns)
-      @environment.ip_address = '127.0.0.1'
-      @environment.save!
-    end
-
-    it 'isn\'t called from save callback when ip_address is nil' do
-      expect(@environment).not_to receive(:update_dns)
-      @environment.ip_address = nil
-      @environment.save!
-    end
-
-    it 'call DNSClient#update when ip_address isn\'t nil' do
-      @environment.ip_address = '127.0.0.1'
-      expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@environment.domain, @environment.ip_address)
-      @environment.send(:update_dns)
-    end
-  end
-
   describe '#dup' do
-    it 'duplicate all attributes in environment without name, ip_address and monitoring_host' do
+    it 'duplicate all attributes in environment without name and ip_address' do
       duplicated_environment = @environment.dup
-      expect(duplicated_environment.domain).to eq(@environment.domain)
+      expect(duplicated_environment.system).to eq(@environment.system)
+      expect(duplicated_environment.blueprint).to eq(@environment.blueprint)
+      expect(duplicated_environment.description).to eq(@environment.description)
     end
 
     it 'duplicate name with uuid to avoid unique constraint' do
@@ -260,11 +208,6 @@ describe Environment do
     it 'clear ip_address' do
       @environment.ip_address = '192.168.0.1'
       expect(@environment.dup.ip_address).to be_nil
-    end
-
-    it 'clear monitoring_host' do
-      @environment.monitoring_host = 'example.com'
-      expect(@environment.dup.monitoring_host).to be_nil
     end
 
     it 'clear template_parameters' do
@@ -335,7 +278,6 @@ describe Environment do
   describe '#as_json' do
     before do
       @environment.id = 1
-      @environment.monitoring_host = 'example.com'
       @environment.ip_address = '127.0.0.1'
       allow(@environment).to receive(:status).and_return(:PROGRESS)
     end
@@ -344,9 +286,7 @@ describe Environment do
       json = @environment.as_json
       expect(json['id']).to eq(@environment.id)
       expect(json['name']).to eq(@environment.name)
-      expect(json['monitoring_host']).to eq(@environment.monitoring_host)
       expect(json['ip_address']).to eq(@environment.ip_address)
-      expect(json['domain']).to eq(@environment.domain)
       expect(json['template_parameters']).to eq(@environment.template_parameters)
       expect(json['status']).to eq(@environment.status)
     end

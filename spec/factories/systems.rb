@@ -15,6 +15,17 @@
 FactoryGirl.define do
   factory :system, class: System do
     project
+    domain 'example.com'
     sequence(:name) { |n| "system-#{n}" }
+
+    before(:create) do
+      System.skip_callback :save, :before, :enable_monitoring
+      System.skip_callback :save, :before, :update_dns
+    end
+
+    after(:create) do
+      System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && primary_environment_id_changed? }
+      System.set_callback :save, :before, :update_dns, if: -> { primary_environment && primary_environment_id_changed? }
+    end
   end
 end

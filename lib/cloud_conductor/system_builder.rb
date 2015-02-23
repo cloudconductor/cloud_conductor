@@ -109,7 +109,6 @@ module CloudConductor
     def update_environment(outputs)
       Log.info 'Platform stack has created. CloudConductor will register host to zabbix/DNS.'
       @environment.ip_address = outputs['FrontendAddress']
-      @environment.monitoring_host = @environment.domain
       @environment.template_parameters = outputs.except('FrontendAddress').to_json
       @environment.save!
     end
@@ -132,7 +131,6 @@ module CloudConductor
       Log.info 'Reset all stacks.'
       @environment.status = :ERROR
       @environment.ip_address = nil
-      @environment.monitoring_host = nil
       @environment.template_parameters = '{}'
       stacks = @environment.stacks.map(&:dup)
       @environment.destroy_stacks

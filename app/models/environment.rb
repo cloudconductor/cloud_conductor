@@ -14,8 +14,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   before_destroy :destroy_stacks, unless: -> { stacks.empty? }
 
   before_save :create_stacks, if: -> { blueprint_id_changed? }
-  before_save :update_dns, if: -> { ip_address }
-  before_save :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
 
   validates_presence_of :system, :candidates, :blueprint
   validates :name, presence: true, uniqueness: true
@@ -65,7 +63,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     environment.name = "#{basename}-#{SecureRandom.uuid}"
     environment.ip_address = nil
-    environment.monitoring_host = nil
     environment.template_parameters = '{}'
     environment.status = :PENDING
 
@@ -73,16 +70,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     environment.stacks = stacks.map(&:dup)
 
     environment
-  end
-
-  def enable_monitoring
-    zabbix_client = CloudConductor::ZabbixClient.new
-    zabbix_client.register self
-  end
-
-  def update_dns
-    dns_client = CloudConductor::DNSClient.new
-    dns_client.update domain, ip_address
   end
 
   def consul

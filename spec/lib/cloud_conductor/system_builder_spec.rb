@@ -152,16 +152,6 @@ module CloudConductor
     end
 
     describe '#update_environment' do
-      before do
-        Environment.skip_callback :save, :before, :enable_monitoring
-        Environment.skip_callback :save, :before, :update_dns
-      end
-
-      after do
-        Environment.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
-        Environment.set_callback :save, :before, :update_dns, if: -> { ip_address }
-      end
-
       it 'update environment when outputs exists' do
         outputs = {
           'FrontendAddress' => '127.0.0.1',
@@ -171,7 +161,6 @@ module CloudConductor
         @builder.send(:update_environment, outputs)
 
         expect(@environment.ip_address).to eq('127.0.0.1')
-        expect(@environment.monitoring_host).to eq('example.com')
         expect(@environment.template_parameters).to eq('{"dummy":"value"}')
       end
     end
@@ -264,15 +253,13 @@ module CloudConductor
         expect(Stack.all.all?(&:pending?)).to be_truthy
       end
 
-      it 'reset ip_address, monitoring_host and template_parameters in environment' do
+      it 'reset ip_address and template_parameters in environment' do
         @environment.ip_address = '127.0.0.1'
-        @environment.monitoring_host = 'example.com'
         @environment.template_parameters = '{ "key": "dummy" }'
 
         @builder.send(:reset_stacks)
 
         expect(@environment.ip_address).to be_nil
-        expect(@environment.monitoring_host).to be_nil
         expect(@environment.template_parameters).to eq('{}')
       end
 

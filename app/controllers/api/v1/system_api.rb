@@ -25,6 +25,7 @@ module API
           requires :project_id, type: Integer, desc: 'Project id'
           requires :name, type: String, desc: 'System name'
           optional :description, type: String, desc: 'System description'
+          optional :domain, type: String, desc: 'System domain name'
         end
         post '/' do
           authorize!(:create, ::System)
@@ -36,12 +37,29 @@ module API
           requires :id, type: Integer, desc: 'System id'
           optional :name, type: String, desc: 'System name'
           optional :description, type: String, desc: 'System description'
+          optional :domain, type: String, desc: 'System domain name'
         end
         put '/:id' do
           system = ::System.find(params[:id])
           authorize!(:update, system)
           system.update_attributes!(declared_params)
           system
+        end
+
+        desc 'Switch primary environment'
+        params do
+          requires :id, type: Integer, desc: 'System id'
+          requires :environment_id, type: Integer, desc: 'Environment id'
+        end
+        put '/:id/switch' do
+          system = ::System.find(params[:id])
+          authorize!(:update, system)
+
+          environment = system.environments.find(params[:environment_id])
+          authorize!(:read, environment)
+
+          system.primary_environment = environment
+          system.save!
         end
 
         desc 'Destroy system'

@@ -19,11 +19,38 @@ describe System do
     @system = System.new
     @system.project = project
     @system.name = 'test'
+
+    allow(@system).to receive(:update_dns)
+    allow(@system).to receive(:enable_monitoring)
   end
 
   describe '#save' do
     it 'create with valid parameters' do
       expect { @system.save! }.to change { System.count }.by(1)
+    end
+
+    it 'call #update_dns callback if system has primary environment' do
+      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.primary_environment = @system.environments.first
+
+      expect(@system).to receive(:update_dns)
+      @system.save!
+    end
+
+    it 'call #enable_monitoring callback if system has primary environment' do
+      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.primary_environment = @system.environments.first
+
+      expect(@system).to receive(:enable_monitoring)
+      @system.save!
+    end
+
+    it 'doesn\'t call #update_dns and #enable_monitoring callback if system hasn\'t primary environment' do
+      @system.environments << FactoryGirl.create(:environment, system: @system)
+
+      expect(@system).not_to receive(:update_dns)
+      expect(@system).not_to receive(:enable_monitoring)
+      @system.save!
     end
   end
 
@@ -70,6 +97,30 @@ describe System do
 
       @system.name = ''
       expect(@system.valid?).to be_falsey
+    end
+  end
+
+  describe '#update_dns' do
+    it 'call DNSClient#update when ip_address isn\'t nil' do
+      allow(@system).to receive(:update_dns).and_call_original
+
+      @system.environments << FactoryGirl.create(:environment, system: @system, ip_address: '127.0.0.1')
+      @system.primary_environment = @system.environments.first
+
+      expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
+      @system.send(:update_dns)
+    end
+  end
+
+  describe '#enable_monitoring' do
+    it 'call ZabbixClient#register' do
+      allow(@system).to receive(:enable_monitoring).and_call_original
+
+      @system.environments << FactoryGirl.create(:environment, system: @system, ip_address: '127.0.0.1')
+      @system.primary_environment = @system.environments.first
+
+      expect(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)
+      @system.send(:enable_monitoring)
     end
   end
 end

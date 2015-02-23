@@ -26,7 +26,6 @@ module API
           requires :blueprint_id, type: Integer, desc: 'Blueprint id'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          requires :domain, type: String, desc: 'Domain name to designate this environment'
           requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment. First cloud is primary.' do
             requires :cloud_id, type: String, desc: 'Cloud id'
             optional :priority, type: Integer, desc: 'Cloud priority(prefer cloud that has higher value)'
@@ -52,7 +51,6 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Environment name'
-          optional :domain, type: String, desc: 'Domain name to designate this environment'
           optional :clouds, type: Array, desc: 'Cloud ids to build environment. First cloud is primary.'
           optional :stacks, type: Array, desc: 'Pattern parameters to build environment'
         end
@@ -68,7 +66,6 @@ module API
           requires :id, type: Integer, desc: 'Environment id'
           optional :blueprint_id, type: Integer, desc: 'Blueprint id'
           optional :description, type: String, desc: 'Environment description'
-          optional :domain, type: String, desc: 'Domain name to designate this environment'
           optional :switch, type: String, desc: 'Switch primary environment automatically'
         end
         post '/:id/rebuild' do

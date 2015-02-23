@@ -15,7 +15,6 @@
 FactoryGirl.define do
   factory :environment, class: Environment do
     sequence(:name) { |n| "system-#{n}" }
-    domain 'example.com'
     template_parameters '{ "dummy": "value" }'
     system
     blueprint
@@ -30,14 +29,10 @@ FactoryGirl.define do
 
     before(:create) do
       Environment.skip_callback :save, :before, :create_stacks
-      Environment.skip_callback :save, :before, :enable_monitoring
-      Environment.skip_callback :save, :before, :update_dns
     end
 
     after(:create) do
       Environment.set_callback :save, :before, :create_stacks
-      Environment.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host && monitoring_host_changed? }
-      Environment.set_callback :save, :before, :update_dns, if: -> { ip_address }
     end
   end
 end

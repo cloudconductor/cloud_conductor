@@ -45,23 +45,17 @@ module CloudConductor
         allow(@client).to receive(:register_action).and_return(3)
         allow(@client).to receive(:operation).and_return('dummy command')
 
-        @environment = FactoryGirl.create(:environment, name: 'example', monitoring_host: 'example.com')
+        @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
       end
 
       it 'register hostgroup' do
         expect(@client).to receive(:register_hostgroup).with('example')
-        @client.register(@environment)
-      end
-
-      it 'use Environment#name without UUID' do
-        @environment.name = 'example-6b6ee787-25ad-4245-a370-5e1a6c30d7d2'
-        expect(@client).to receive(:register_hostgroup).with('example')
-        @client.register(@environment)
+        @client.register(@system)
       end
 
       it 'register host with hostgroup_id and monitoring host' do
         expect(@client).to receive(:register_host).with(1, 'example.com')
-        @client.register(@environment)
+        @client.register(@system)
       end
     end
 
