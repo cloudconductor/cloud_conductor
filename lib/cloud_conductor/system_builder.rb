@@ -107,7 +107,7 @@ module CloudConductor
     # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
     def update_environment(outputs)
-      Log.info 'Platform stack has created. CloudConductor will register host to zabbix/DNS.'
+      Log.info 'Platform stack has created.'
       @environment.ip_address = outputs['FrontendAddress']
       @environment.template_parameters = outputs.except('FrontendAddress').to_json
       @environment.save!

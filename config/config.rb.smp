@@ -14,7 +14,7 @@ when :test
 end
 
 # cloudconductor server settings
-cloudconductor.url 'http://your-cloudconductor-server.example.com/systems'
+cloudconductor.url 'http://your-cloudconductor-server.example.com/environments'
 
 # cloudconductor_init settings
 cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
