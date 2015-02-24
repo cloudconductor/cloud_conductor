@@ -78,7 +78,7 @@ module CloudConductor
                 'Domain' => 'vpc'
               },
               'Metadata' => {
-                'Copied' => 'true'
+                'Copied' => true
               }
             }
           }
@@ -96,26 +96,26 @@ module CloudConductor
         end
       end
 
-      describe '#copy?' do
+      describe '#need_to_copy?' do
         it 'return true when resource exist in the COPYABLE_RESOURCES ' do
           resource = { 'Type' => 'AWS::EC2::Instance' }
-          expect(@base_duplicator.send(:copy?, resource)).to be_truthy
+          expect(@base_duplicator.send(:need_to_copy?, resource)).to be_truthy
         end
 
         it 'return true when resource not exist in the COPYABLE_RESOURCES ' do
           resource = { 'Type' => 'AWS::EC2::VPC' }
-          expect(@base_duplicator.send(:copy?, resource)).to be_falsey
+          expect(@base_duplicator.send(:need_to_copy?, resource)).to be_falsey
         end
       end
 
-      describe '#check_whether_copied' do
+      describe '#been_copied?' do
         it 'return true when old_name_list contained source_name' do
           old_and_new_name_list = {
             'old_name' => 'new_name'
           }
           source_name = 'old_name'
 
-          expect(@base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+          expect(@base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
         end
 
         it 'return true when new_name_list contained source_name' do
@@ -124,7 +124,7 @@ module CloudConductor
           }
           source_name = 'new_name'
 
-          expect(@base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+          expect(@base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
         end
 
         it 'return true when resource contained copied in metadata' do
@@ -139,13 +139,13 @@ module CloudConductor
                 'Domain' => 'vpc'
               },
               'Metadata' => {
-                'Copied' => 'true'
+                'Copied' => true
               }
             }
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_truthy
+          expect(base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
         end
 
         it 'return false when does not match to any' do
@@ -163,7 +163,7 @@ module CloudConductor
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:check_whether_copied, source_name, old_and_new_name_list)).to be_falsey
+          expect(base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_falsey
         end
       end
 
@@ -182,7 +182,7 @@ module CloudConductor
               'Domain' => 'vpc'
             },
             'Metadata' => {
-              'Copied' => 'true'
+              'Copied' => true
             }
           }
 
@@ -214,87 +214,87 @@ module CloudConductor
         end
       end
 
-      describe '#contain_ref' do
+      describe '#contain_ref?' do
         it 'return true when template has Ref entry with specified resource' do
           resource = { Ref: 'Route' }
-          expect(@base_duplicator.send(:contain_ref, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_ref?, 'Route', resource)).to be_truthy
         end
 
         it 'return true when deep hash has Ref entry' do
           resource = { Dummy: { Ref: 'Route' } }
-          expect(@base_duplicator.send(:contain_ref, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_ref?, 'Route', resource)).to be_truthy
         end
 
         it 'return true when deep array has Ref entry' do
           resource = { Dummy: [{ Ref: 'Route' }] }
-          expect(@base_duplicator.send(:contain_ref, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_ref?, 'Route', resource)).to be_truthy
         end
 
         it 'return false when template hasn\'t Ref entry' do
           resource = { Dummy: [{ Hoge: 'Route' }] }
-          expect(@base_duplicator.send(:contain_ref, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_ref?, 'Route', resource)).to be_falsey
         end
 
         it 'return false when template hasn\'t Ref entry with specified resource' do
           resource = { Dummy: [{ Ref: 'Hoge' }] }
-          expect(@base_duplicator.send(:contain_ref, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_ref?, 'Route', resource)).to be_falsey
         end
       end
 
-      describe '#contain_get_att' do
+      describe '#contain_get_att?' do
         it 'return true when template has GetAtt entry with specified resource' do
           resource = { :'Fn::GetAtt' => %w(Route Dummy) }
-          expect(@base_duplicator.send(:contain_get_att, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_get_att?, 'Route', resource)).to be_truthy
         end
 
         it 'return true when deep hash has GetAtt entry' do
           resource = { Dummy: { :'Fn::GetAtt' => %w(Route Dummy) } }
-          expect(@base_duplicator.send(:contain_get_att, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_get_att?, 'Route', resource)).to be_truthy
         end
 
         it 'return true when deep array has GetAtt entry' do
           resource = { Dummy: [{ :'Fn::GetAtt' => %w(Route Dummy) }] }
-          expect(@base_duplicator.send(:contain_get_att, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_get_att?, 'Route', resource)).to be_truthy
         end
 
         it 'return false when template hasn\'t Ref entry' do
           resource = { Dummy: [{ Dummy: %w(Route Dummy) }] }
-          expect(@base_duplicator.send(:contain_get_att, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_get_att?, 'Route', resource)).to be_falsey
         end
 
         it 'return false when template hasn\'t Ref entry with specified resource' do
           resource = { Dummy: [{ :'Fn::GetAtt' => %w(Hoge Dummy) }] }
-          expect(@base_duplicator.send(:contain_get_att, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_get_att?, 'Route', resource)).to be_falsey
         end
       end
 
-      describe '#contain_depends_on' do
+      describe '#contain_depends_on?' do
         it 'return true when template has DependsOn entry with specified resource' do
           resource = { DependsOn: 'Route' }
-          expect(@base_duplicator.send(:contain_depends_on, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_depends_on?, 'Route', resource)).to be_truthy
         end
 
         it 'return true when template has DependsOn entry with specified resource' do
           resource = { DependsOn: %w(Route dummy) }
-          expect(@base_duplicator.send(:contain_depends_on, 'Route', resource)).to be_truthy
+          expect(@base_duplicator.send(:contain_depends_on?, 'Route', resource)).to be_truthy
         end
 
         it 'return false when template hasn\'t DependsOn entry' do
           resource = { Dummy: 'Route' }
-          expect(@base_duplicator.send(:contain_depends_on, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_depends_on?, 'Route', resource)).to be_falsey
         end
 
         it 'return false when template hasn\'t DependsOn entry with specified resource' do
           resource = { DependsOn: 'Hoge' }
-          expect(@base_duplicator.send(:contain_depends_on, 'Route', resource)).to be_falsey
+          expect(@base_duplicator.send(:contain_depends_on?, 'Route', resource)).to be_falsey
         end
       end
 
       describe '#contain_association?' do
         before do
-          allow(@base_duplicator).to receive(:contain_ref).and_return(false)
-          allow(@base_duplicator).to receive(:contain_get_att).and_return(false)
-          allow(@base_duplicator).to receive(:contain_depends_on).and_return(false)
+          allow(@base_duplicator).to receive(:contain_ref?).and_return(false)
+          allow(@base_duplicator).to receive(:contain_get_att?).and_return(false)
+          allow(@base_duplicator).to receive(:contain_depends_on?).and_return(false)
 
           @contain_sample = @base_duplicator.send(:contain_association?, 'Route')
         end
