@@ -138,7 +138,7 @@ module CloudConductor
         element['Ref'] = new_name if element.is_a?(Hash) && element['Ref'] == old_name
 
         element = element.values if element.respond_to?(:values)
-        element.any? do |child_element|
+        element.each do |child_element|
           change_for_ref(old_name, new_name, child_element)
         end
       end
@@ -156,7 +156,7 @@ module CloudConductor
         end
 
         element = element.values if element.respond_to?(:values)
-        element.any? do |child_element|
+        element.each do |child_element|
           change_for_get_att(old_name, new_name, child_element)
         end
       end
