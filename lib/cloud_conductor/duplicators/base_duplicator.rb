@@ -59,7 +59,7 @@ module CloudConductor
 
         @resources.merge!(new_name => copied_resource)
 
-        @resources.select(&contain_association?(source_name)).each do |name, resource|
+        @resources.select(&contain?(source_name)).each do |name, resource|
           next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
           duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
@@ -92,41 +92,25 @@ module CloudConductor
         Duplicators.const_get(duplicator_name).new(@resources, @options)
       end
 
-      def contain_ref?(source_name, resource)
-        return false unless resource.respond_to?(:each)
+      # rubocop:disable CyclomaticComplexity, PerceivedComplexity
+      def contain_name_in_element?(source_name, element)
+        return false unless element.respond_to?(:each)
 
-        return true if resource.is_a?(Hash) && source_name == resource[:Ref]
+        if element.is_a?(Hash)
+          return true if source_name == element[:Ref]
+          return true if element[:'Fn::GetAtt'] && source_name == element[:'Fn::GetAtt'].first
+          return true if element[:DependsOn] && element[:DependsOn].include?(source_name)
+        end
 
-        resource = resource.values if resource.respond_to?(:values)
-        resource.any? do |child_resource|
-          contain_ref?(source_name, child_resource)
+        element = element.values if element.respond_to?(:values)
+        element.any? do |child_element|
+          contain_name_in_element?(source_name, child_element)
         end
       end
+      # rubocop:enable CyclomaticComplexity, PerceivedComplexity
 
-      def contain_get_att?(source_name, resource)
-        return false unless resource.respond_to?(:each)
-
-        if resource.is_a?(Hash) && resource[:'Fn::GetAtt']
-          return true if source_name == resource[:'Fn::GetAtt'].first
-        end
-
-        resource = resource.values if resource.respond_to?(:values)
-        resource.any? do |child_resource|
-          contain_get_att?(source_name, child_resource)
-        end
-      end
-
-      def contain_depends_on?(source_name, resource)
-        resource[:DependsOn] && resource[:DependsOn].include?(source_name)
-      end
-
-      def contain_association?(source_name)
-        lambda do |_, resource|
-          return true if contain_ref?(source_name, resource)
-          return true if contain_get_att?(source_name, resource)
-          return true if contain_depends_on?(source_name, resource)
-          false
-        end
+      def contain?(source_name)
+        ->(_, resource) { contain_name_in_element?(source_name, resource) }
       end
 
       def collect_names_associated_with(element)
