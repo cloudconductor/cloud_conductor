@@ -300,68 +300,64 @@ module CloudConductor
         end
       end
 
-      describe '#collect_ref' do
+      describe '#collect_names_associated_with' do
         it 'return Ref value when template has Ref entry with specified resource' do
           resource = { 'Ref' => 'Route' }
-          expect(@base_duplicator.send(:collect_ref, resource)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, resource)).to eq(['Route'])
         end
 
         it 'return Ref value when deep hash has Ref entry' do
           resource = { Dummy: { 'Ref' => 'Route' } }
-          expect(@base_duplicator.send(:collect_ref, resource)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, resource)).to eq(['Route'])
         end
 
         it 'return Ref value when deep array has Ref entry' do
           resource = { Dummy: [{ 'Ref' => 'Route' }] }
-          expect(@base_duplicator.send(:collect_ref, resource)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, resource)).to eq(['Route'])
         end
 
         it 'not return Ref value when template hasn\'t Ref entry' do
           resource = { Dummy: [{ Hoge: 'Route' }] }
-          expect(@base_duplicator.send(:collect_ref, resource)).to eq([])
+          expect(@base_duplicator.send(:collect_names_associated_with, resource)).to eq([])
         end
-      end
 
-      describe '#collect_get_att' do
         it 'return GetAtt value when template has GetAtt entry with specified resource' do
           obj = { 'Fn::GetAtt' => %w(Route Dummy) }
-          expect(@base_duplicator.send(:collect_get_att, obj)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq(['Route'])
         end
 
         it 'return GetAtt value when deep hash has GetAtt entry' do
           obj = { Dummy: { 'Fn::GetAtt' => %w(Route Dummy) } }
-          expect(@base_duplicator.send(:collect_get_att, obj)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq(['Route'])
         end
 
         it 'return GetAtt value when deep array has GetAtt entry' do
           obj = { Dummy: [{ 'Fn::GetAtt' => %w(Route Dummy) }] }
-          expect(@base_duplicator.send(:collect_get_att, obj)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq(['Route'])
         end
 
         it 'not return GetAtt value when template hasn\'t Ref entry' do
           obj = { Dummy: [{ Dummy: %w(Route Dummy) }] }
-          expect(@base_duplicator.send(:collect_get_att, obj)).to eq([])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq([])
         end
-      end
 
-      describe '#collect_depends_on' do
         it 'return DependsOn value when template has DependsOn entry with specified resource' do
           obj = { 'DependsOn' => 'Route' }
-          expect(@base_duplicator.send(:collect_depends_on, obj)).to eq(['Route'])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq(['Route'])
         end
 
         it 'return DependsOn value when template has DependsOn entry with specified resource' do
           obj = { 'DependsOn' => %w(Route Dummy) }
-          expect(@base_duplicator.send(:collect_depends_on, obj)).to eq(%w(Route Dummy))
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq(%w(Route Dummy))
         end
 
         it 'not return DependsOn value when template hasn\'t DependsOn entry' do
           obj = { Dummy: 'Route' }
-          expect(@base_duplicator.send(:collect_depends_on, obj)).to eq([])
+          expect(@base_duplicator.send(:collect_names_associated_with, obj)).to eq([])
         end
       end
 
-      describe 'collect_association' do
+      describe 'collect_resources_associated_with' do
         before do
           resources = {
             'Instance1' => {
@@ -405,21 +401,17 @@ module CloudConductor
           }
 
           @base_duplicator = BaseDuplicator.new(resources, @options)
-          allow(@base_duplicator).to receive(:collect_ref).and_return('Instance1')
-          allow(@base_duplicator).to receive(:collect_get_att).and_return('Subnet1')
-          allow(@base_duplicator).to receive(:collect_depends_on).and_return('WaitCondition1')
+          allow(@base_duplicator).to receive(:collect_names_associated_with).and_return(%w(Instance1 Subnet1 WaitCondition1))
         end
 
         it 'call collect_ref, collect_get_att, collect_depends_on' do
-          expect(@base_duplicator).to receive(:collect_ref).with(@resource)
-          expect(@base_duplicator).to receive(:collect_get_att).with(@resource)
-          expect(@base_duplicator).to receive(:collect_depends_on).with(@resource)
+          expect(@base_duplicator).to receive(:collect_names_associated_with).with(@resource)
 
-          @base_duplicator.send(:collect_association, @resource)
+          @base_duplicator.send(:collect_resources_associated_with, @resource)
         end
 
         it 'return resource that match from the resource to returned value' do
-          collect_result =  @base_duplicator.send(:collect_association, @resource)
+          collect_result =  @base_duplicator.send(:collect_resources_associated_with, @resource)
 
           expect(collect_result.include?('Instance1')).to be_truthy
           expect(collect_result.include?('Subnet1')).to be_truthy

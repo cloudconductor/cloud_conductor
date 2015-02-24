@@ -47,7 +47,7 @@ module CloudConductor
         copied_resource = @resources[source_name].deep_dup
         roles = @options[:Role].split(',') + ['all']
 
-        collect_association(copied_resource).each do |name, resource|
+        collect_resources_associated_with(copied_resource).each do |name, resource|
           next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
           duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
@@ -129,45 +129,23 @@ module CloudConductor
         end
       end
 
-      def collect_ref(resource)
-        return [] unless resource.respond_to?(:each)
+      def collect_names_associated_with(element)
+        return [] unless element.respond_to?(:each)
 
-        names = resource.inject([]) do |s, child_resource|
-          s + collect_ref(child_resource)
+        names = element.inject([]) do |s, child_element|
+          s + collect_names_associated_with(child_element)
         end
 
-        names << resource['Ref'] if resource.is_a?(Hash) && resource.keys.first == 'Ref'
-        names
-      end
-
-      def collect_get_att(resource)
-        return [] unless resource.respond_to?(:each)
-
-        names = resource.inject([]) do |s, child_resource|
-          s + collect_get_att(child_resource)
+        if element.is_a?(Hash)
+          names << element['Ref'] if element.keys.first == 'Ref'
+          names << element['Fn::GetAtt'].first if element.keys.first == 'Fn::GetAtt'
+          names << element['DependsOn'] if element.keys.include?('DependsOn')
         end
-
-        names << resource['Fn::GetAtt'].first if resource.is_a?(Hash) && resource.keys.first == 'Fn::GetAtt'
-        names
-      end
-
-      def collect_depends_on(resource)
-        return [] unless resource.respond_to?(:each)
-
-        names = resource.inject([]) do |s, child_resource|
-          s + collect_depends_on(child_resource)
-        end
-
-        names << resource['DependsOn'] if resource.is_a?(Hash) && resource.keys.include?('DependsOn')
         names.flatten
       end
 
-      def collect_association(copied_resource)
-        names = []
-        names << collect_ref(copied_resource)
-        names << collect_get_att(copied_resource)
-        names << collect_depends_on(copied_resource)
-        @resources.slice(*names.flatten.uniq)
+      def collect_resources_associated_with(copied_resource)
+        @resources.slice(*collect_names_associated_with(copied_resource).flatten.uniq)
       end
 
       def change_for_ref(old_name, new_name, element)
