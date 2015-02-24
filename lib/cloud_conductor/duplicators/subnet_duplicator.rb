@@ -40,11 +40,12 @@ module CloudConductor
         subnet_names = @resources.select(&type?('AWS::EC2::Subnet')).keys
         return super if subnet_names.size < @options[:AvailabilityZone].size
 
-        return if old_and_new_name_list.keys.include? source_name
+        return { source_name => @resources[source_name] } if old_and_new_name_list.keys.include? source_name
 
         old_index = subnet_names.index(source_name)
         new_index = (old_index + @options[:CopyNum] - 1) % subnet_names.size
         old_and_new_name_list[source_name] = subnet_names[new_index]
+        { subnet_names[new_index] => @resources[subnet_names[new_index]] }
       end
     end
   end

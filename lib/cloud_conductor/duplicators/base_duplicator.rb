@@ -39,31 +39,22 @@ module CloudConductor
 
       # old_and_new_name_list = { old_name: new_name, ... }
       def copy(source_name, old_and_new_name_list = {}, options = {})
-        return if been_copied? source_name, old_and_new_name_list
+        return { source_name => @resources[source_name] } if been_copied? source_name, old_and_new_name_list
 
         new_name = "#{source_name}#{@options[:CopyNum]}"
         old_and_new_name_list[source_name] = new_name
 
         copied_resource = @resources[source_name].deep_dup
         roles = @options[:Role].split(',') + ['all']
+        association_resources = collect_resources_associated_with(copied_resource).merge @resources.select(&contain?(source_name))
 
-        collect_resources_associated_with(copied_resource).each do |name, resource|
+        association_resources.each do |name, resource|
           next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
-          duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
+          @resources.merge! duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
         end
 
-        copied_resource = change_for_association(old_and_new_name_list, copied_resource)
-        copied_resource = change_for_properties(copied_resource)
-        copied_resource = add_metadata_for_check(copied_resource)
-
-        @resources.merge!(new_name => copied_resource)
-
-        @resources.select(&contain?(source_name)).each do |name, resource|
-          next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
-          duplicator = create_duplicator(resource['Type'])
-          duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
-        end
+        { new_name => copy_post_processing(old_and_new_name_list, copied_resource) }
       end
 
       def need_to_copy?(resource)
@@ -83,6 +74,13 @@ module CloudConductor
         copied_resource['Metadata'] = {} unless copied_resource['Metadata']
         copied_resource['Metadata']['Copied'] = true
 
+        copied_resource
+      end
+
+      def copy_post_processing(old_and_new_name_list, copied_resource)
+        copied_resource = change_for_association(old_and_new_name_list, copied_resource)
+        copied_resource = change_for_properties(copied_resource)
+        copied_resource = add_metadata_for_check(copied_resource)
         copied_resource
       end
 

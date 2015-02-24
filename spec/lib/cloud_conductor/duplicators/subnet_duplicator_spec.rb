@@ -61,7 +61,7 @@ module CloudConductor
         end
 
         it 'do not do anything if Subnet have already been copied' do
-          expect(@subnet_duplicator.copy('old_dummy_name', @name_map, {})).to eq(nil)
+          expect(@subnet_duplicator.copy('old_dummy_name', @name_map, {})).to eq('old_dummy_name' => nil)
         end
 
         it 'update name_map' do

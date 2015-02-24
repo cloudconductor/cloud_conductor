@@ -30,7 +30,7 @@ module CloudConductor
           options.merge! Role: resources[target_name]['Metadata']['Role']
 
           duplicator = InstanceDuplicator.new(resources, options)
-          duplicator.copy(target_name, {}, options)
+          template['Resources'].merge! duplicator.copy(target_name, {}, options)
         end
       end
       remove_metadata_for_check(template).to_json

@@ -90,7 +90,7 @@ module CloudConductor
           }
 
           @base_duplicator = BaseDuplicator.new(resources, options)
-          @base_duplicator.copy('webFrontendEIP', {}, options)
+          resources.merge! @base_duplicator.copy('webFrontendEIP', {}, options)
 
           expect(resources).to eq(result_resource)
         end
@@ -189,6 +189,29 @@ module CloudConductor
           @base_duplicator.send(:add_metadata_for_check, resource)
 
           expect(resource).to eq(result_resource)
+        end
+      end
+
+      describe '#copy_post_processing' do
+        it 'call change_for_association, change_for_properties, add_metadata_for_check methods' do
+          old_and_new_name_list = {
+            'old_name' => 'new_name'
+          }
+          resource = {
+            'Type' => 'AWS::EC2::EIP',
+            'Properties' => {
+              'Domain' => 'vpc'
+            }
+          }
+
+          allow(@base_duplicator).to receive(:change_for_association).and_return(resource)
+          allow(@base_duplicator).to receive(:change_for_properties).and_return(resource)
+          allow(@base_duplicator).to receive(:add_metadata_for_check).and_return(resource)
+
+          expect(@base_duplicator).to receive(:change_for_association).with(old_and_new_name_list, resource)
+          expect(@base_duplicator).to receive(:change_for_properties).with(resource)
+          expect(@base_duplicator).to receive(:add_metadata_for_check).with(resource)
+          @base_duplicator.send(:copy_post_processing, old_and_new_name_list, resource)
         end
       end
 
