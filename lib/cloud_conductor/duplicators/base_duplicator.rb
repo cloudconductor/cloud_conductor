@@ -33,16 +33,16 @@ module CloudConductor
         @options = options
       end
 
-      def change_for_properties(copied_resource)
-        copied_resource
+      def change_properties(resource)
+        resource
       end
 
-      # old_and_new_name_list = { old_name: new_name, ... }
-      def copy(source_name, old_and_new_name_list = {}, options = {})
-        return { source_name => @resources[source_name] } if been_copied? source_name, old_and_new_name_list
+      # old_and_new_name_map = { old_name: new_name, ... }
+      def copy(source_name, old_and_new_name_map = {}, options = {})
+        return { source_name => @resources[source_name] } if already_copied? source_name, old_and_new_name_map
 
         new_name = "#{source_name}#{@options[:CopyNum]}"
-        old_and_new_name_list[source_name] = new_name
+        old_and_new_name_map[source_name] = new_name
 
         copied_resource = @resources[source_name].deep_dup
         roles = @options[:Role].split(',') + ['all']
@@ -51,37 +51,37 @@ module CloudConductor
         association_resources.each do |name, resource|
           next unless roles.any? { |role| name.upcase.starts_with? role.upcase }
           duplicator = create_duplicator(resource['Type'])
-          @resources.merge! duplicator.copy(name, old_and_new_name_list, options) if duplicator.need_to_copy?(resource)
+          @resources.merge! duplicator.copy(name, old_and_new_name_map, options) if duplicator.copyable?(resource)
         end
 
-        { new_name => copy_post_processing(old_and_new_name_list, copied_resource) }
+        { new_name => post_copy(old_and_new_name_map, copied_resource) }
       end
 
-      def need_to_copy?(resource)
+      def copyable?(resource)
         COPYABLE_RESOURCES.include? resource['Type']
       end
 
       private
 
-      def been_copied?(source_name, old_and_new_name_list)
-        return true if old_and_new_name_list.keys.include? source_name
-        return true if old_and_new_name_list.values.include? source_name
+      def already_copied?(source_name, old_and_new_name_map)
+        return true if old_and_new_name_map.keys.include? source_name
+        return true if old_and_new_name_map.values.include? source_name
         return true if @resources[source_name]['Metadata'] && @resources[source_name]['Metadata']['Copied']
         false
       end
 
-      def add_metadata_for_check(copied_resource)
-        copied_resource['Metadata'] = {} unless copied_resource['Metadata']
-        copied_resource['Metadata']['Copied'] = true
+      def add_copied_flag(resource)
+        resource['Metadata'] = {} unless resource['Metadata']
+        resource['Metadata']['Copied'] = true
 
-        copied_resource
+        resource
       end
 
-      def copy_post_processing(old_and_new_name_list, copied_resource)
-        copied_resource = change_for_association(old_and_new_name_list, copied_resource)
-        copied_resource = change_for_properties(copied_resource)
-        copied_resource = add_metadata_for_check(copied_resource)
-        copied_resource
+      def post_copy(old_and_new_name_map, resource)
+        resource = change_association(old_and_new_name_map, resource)
+        resource = change_properties(resource)
+        resource = add_copied_flag(resource)
+        resource
       end
 
       def create_duplicator(resource_type)
@@ -126,23 +126,23 @@ module CloudConductor
         names.flatten
       end
 
-      def collect_resources_associated_with(copied_resource)
-        @resources.slice(*collect_names_associated_with(copied_resource).flatten.uniq)
+      def collect_resources_associated_with(resource)
+        @resources.slice(*collect_names_associated_with(resource).flatten.uniq)
       end
 
-      def change_for_ref(old_name, new_name, element)
+      def change_ref(old_name, new_name, element)
         return unless element.respond_to?(:each)
 
         element['Ref'] = new_name if element.is_a?(Hash) && element['Ref'] == old_name
 
         element = element.values if element.respond_to?(:values)
         element.each do |child_element|
-          change_for_ref(old_name, new_name, child_element)
+          change_ref(old_name, new_name, child_element)
         end
       end
 
       # rubocop:disable CyclomaticComplexity
-      def change_for_get_att(old_name, new_name, element)
+      def change_get_att(old_name, new_name, element)
         return unless element.respond_to?(:each)
 
         if element.is_a?(Hash) && element['Fn::GetAtt']
@@ -155,12 +155,12 @@ module CloudConductor
 
         element = element.values if element.respond_to?(:values)
         element.each do |child_element|
-          change_for_get_att(old_name, new_name, child_element)
+          change_get_att(old_name, new_name, child_element)
         end
       end
       # rubocop:enable CyclomaticComplexity
 
-      def change_for_depends_on(old_name, new_name, element)
+      def change_depends_on(old_name, new_name, element)
         depends = element['DependsOn']
 
         return unless depends
@@ -176,14 +176,14 @@ module CloudConductor
         element['DependsOn'] = new_depends
       end
 
-      def change_for_association(old_and_new_name_list, copied_resource)
-        old_and_new_name_list.each do |old_name, new_name|
-          change_for_ref(old_name, new_name, copied_resource)
-          change_for_get_att(old_name, new_name, copied_resource)
-          change_for_depends_on(old_name, new_name, copied_resource)
+      def change_association(old_and_new_name_map, resource)
+        old_and_new_name_map.each do |old_name, new_name|
+          change_ref(old_name, new_name, resource)
+          change_get_att(old_name, new_name, resource)
+          change_depends_on(old_name, new_name, resource)
         end
 
-        copied_resource
+        resource
       end
     end
   end

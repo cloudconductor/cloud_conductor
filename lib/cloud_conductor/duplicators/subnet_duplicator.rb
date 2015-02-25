@@ -12,28 +12,25 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'netaddr'
-require 'cloud_conductor/duplicators/base_duplicator'
-
 module CloudConductor
   module Duplicators
     class SubnetDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_for_properties(copied_resource)
+      def change_properties(resource)
         used_availability_zones = @resources.select(&type?('AWS::EC2::Subnet')).map do |_, value|
           value['Properties']['AvailabilityZone']
         end
         new_availavility_zone = (@options[:AvailabilityZone] - used_availability_zones).first
-        copied_resource['Properties']['AvailabilityZone'] = new_availavility_zone
+        resource['Properties']['AvailabilityZone'] = new_availavility_zone
 
-        cidr = NetAddr::CIDR.create(copied_resource['Properties']['CidrBlock'])
+        cidr = NetAddr::CIDR.create(resource['Properties']['CidrBlock'])
         new_cidr = (@options[:CopyNum] - 1).times.inject(cidr) do |s, _|
           s.succ
         end
-        copied_resource['Properties']['CidrBlock'] = new_cidr.to_s
+        resource['Properties']['CidrBlock'] = new_cidr.to_s
 
-        copied_resource
+        resource
       end
 
       def copy(source_name, old_and_new_name_list = {}, options = {})

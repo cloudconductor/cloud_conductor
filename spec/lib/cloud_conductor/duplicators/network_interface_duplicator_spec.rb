@@ -15,7 +15,7 @@
 module CloudConductor
   module Duplicators
     describe NetworkInterfaceDuplicator do
-      describe '#change_for_properties' do
+      describe '#change_properties' do
         before do
           @resources = {
             'Instance1' => {
@@ -56,7 +56,7 @@ module CloudConductor
           resources = @resources.merge nic_resource
           nic_duplicator = NetworkInterfaceDuplicator.new(resources.with_indifferent_access, @options)
 
-          nic_duplicator.change_for_properties(nic_resource['NIC1'])
+          nic_duplicator.change_properties(nic_resource['NIC1'])
           expect(nic_resource['NIC1']['Properties']['PrivateIpAddress']).to eq('10.0.1.2')
         end
 
@@ -83,7 +83,7 @@ module CloudConductor
           resources = @resources.merge nic_resource
           nic_duplicator = NetworkInterfaceDuplicator.new(resources.with_indifferent_access, @options)
 
-          nic_duplicator.change_for_properties(nic_resource['NIC2'])
+          nic_duplicator.change_properties(nic_resource['NIC2'])
           expect(nic_resource['NIC2']['Properties']['PrivateIpAddresses'].first['PrivateIpAddress']).to eq('10.0.1.3')
           expect(nic_resource['NIC2']['Properties']['PrivateIpAddresses'].last['PrivateIpAddress']).to eq('10.0.1.4')
         end

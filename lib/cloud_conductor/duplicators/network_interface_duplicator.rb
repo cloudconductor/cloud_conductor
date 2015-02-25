@@ -12,20 +12,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'netaddr'
-require 'cloud_conductor/duplicators/base_duplicator'
-
 module CloudConductor
   module Duplicators
     class NetworkInterfaceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_for_properties(copied_resource)
-        subnet = @resources[copied_resource['Properties']['SubnetId']['Ref']]
+      def change_properties(resource)
+        subnet = @resources[resource['Properties']['SubnetId']['Ref']]
         cidr = NetAddr::CIDR.create(subnet['Properties']['CidrBlock'])
         allocatable_addresses = get_allocatable_addresses(@resources, cidr)
 
-        properties = copied_resource['Properties']
+        properties = resource['Properties']
         if properties['PrivateIpAddress']
           properties['PrivateIpAddress'] = allocatable_addresses.first
         elsif properties['PrivateIpAddresses']
@@ -34,7 +31,7 @@ module CloudConductor
           end
         end
 
-        copied_resource
+        resource
       end
     end
   end

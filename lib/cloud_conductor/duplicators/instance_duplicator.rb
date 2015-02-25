@@ -12,17 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'cloud_conductor/duplicators/base_duplicator'
-
 module CloudConductor
   module Duplicators
     class InstanceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_for_properties(copied_resource)
-        return copied_resource unless copied_resource['Properties']['NetworkInterfaces']
+      def change_properties(resource)
+        return resource unless resource['Properties']['NetworkInterfaces']
 
-        copied_resource['Properties']['NetworkInterfaces'].each do |network_interface|
+        resource['Properties']['NetworkInterfaces'].each do |network_interface|
           next if network_interface['NetworkInterfaceId']
 
           subnet = @resources[network_interface['SubnetId']['Ref']]
@@ -38,7 +36,7 @@ module CloudConductor
           end
         end
 
-        copied_resource
+        resource
       end
     end
   end

@@ -23,10 +23,10 @@ module CloudConductor
         @base_duplicator = BaseDuplicator.new(@resources, @options)
       end
 
-      describe '#change_for_properties' do
+      describe '#change_properties' do
         it 'return the argument as it is' do
           resource = { 'Type' => 'AWS::EC2::Instance' }
-          expect(@base_duplicator.send(:change_for_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
+          expect(@base_duplicator.send(:change_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
         end
       end
 
@@ -96,39 +96,39 @@ module CloudConductor
         end
       end
 
-      describe '#need_to_copy?' do
+      describe '#copyable?' do
         it 'return true when resource exist in the COPYABLE_RESOURCES ' do
           resource = { 'Type' => 'AWS::EC2::Instance' }
-          expect(@base_duplicator.send(:need_to_copy?, resource)).to be_truthy
+          expect(@base_duplicator.send(:copyable?, resource)).to be_truthy
         end
 
         it 'return true when resource not exist in the COPYABLE_RESOURCES ' do
           resource = { 'Type' => 'AWS::EC2::VPC' }
-          expect(@base_duplicator.send(:need_to_copy?, resource)).to be_falsey
+          expect(@base_duplicator.send(:copyable?, resource)).to be_falsey
         end
       end
 
-      describe '#been_copied?' do
+      describe '#already_copied?' do
         it 'return true when old_name_list contained source_name' do
-          old_and_new_name_list = {
+          old_and_new_name_map = {
             'old_name' => 'new_name'
           }
           source_name = 'old_name'
 
-          expect(@base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
+          expect(@base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
         end
 
         it 'return true when new_name_list contained source_name' do
-          old_and_new_name_list = {
+          old_and_new_name_map = {
             'old_name' => 'new_name'
           }
           source_name = 'new_name'
 
-          expect(@base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
+          expect(@base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
         end
 
         it 'return true when resource contained copied in metadata' do
-          old_and_new_name_list = {
+          old_and_new_name_map = {
             'old_name' => 'new_name'
           }
           source_name = 'dummy_name'
@@ -145,11 +145,11 @@ module CloudConductor
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_truthy
+          expect(base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
         end
 
         it 'return false when does not match to any' do
-          old_and_new_name_list = {
+          old_and_new_name_map = {
             'old_name' => 'new_name'
           }
           source_name = 'dummy_name'
@@ -163,11 +163,11 @@ module CloudConductor
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:been_copied?, source_name, old_and_new_name_list)).to be_falsey
+          expect(base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_falsey
         end
       end
 
-      describe '#add_metadata_for_check' do
+      describe '#add_copied_flag' do
         it 'add flag for checking whether resource has already been copied in metadata' do
           resource = {
             'Type' => 'AWS::EC2::EIP',
@@ -186,15 +186,15 @@ module CloudConductor
             }
           }
 
-          @base_duplicator.send(:add_metadata_for_check, resource)
+          @base_duplicator.send(:add_copied_flag, resource)
 
           expect(resource).to eq(result_resource)
         end
       end
 
-      describe '#copy_post_processing' do
-        it 'call change_for_association, change_for_properties, add_metadata_for_check methods' do
-          old_and_new_name_list = {
+      describe '#post_copy' do
+        it 'call change_association, change_properties, add_copied_flag methods' do
+          old_and_new_name_map = {
             'old_name' => 'new_name'
           }
           resource = {
@@ -204,14 +204,14 @@ module CloudConductor
             }
           }
 
-          allow(@base_duplicator).to receive(:change_for_association).and_return(resource)
-          allow(@base_duplicator).to receive(:change_for_properties).and_return(resource)
-          allow(@base_duplicator).to receive(:add_metadata_for_check).and_return(resource)
+          allow(@base_duplicator).to receive(:change_association).and_return(resource)
+          allow(@base_duplicator).to receive(:change_properties).and_return(resource)
+          allow(@base_duplicator).to receive(:add_copied_flag).and_return(resource)
 
-          expect(@base_duplicator).to receive(:change_for_association).with(old_and_new_name_list, resource)
-          expect(@base_duplicator).to receive(:change_for_properties).with(resource)
-          expect(@base_duplicator).to receive(:add_metadata_for_check).with(resource)
-          @base_duplicator.send(:copy_post_processing, old_and_new_name_list, resource)
+          expect(@base_duplicator).to receive(:change_association).with(old_and_new_name_map, resource)
+          expect(@base_duplicator).to receive(:change_properties).with(resource)
+          expect(@base_duplicator).to receive(:add_copied_flag).with(resource)
+          @base_duplicator.send(:post_copy, old_and_new_name_map, resource)
         end
       end
 
@@ -451,7 +451,7 @@ module CloudConductor
         end
       end
 
-      describe '#change_for_ref' do
+      describe '#change_ref' do
         it 'change Ref property in single hierarchy' do
           resource = {
             'Ref' => 'DummyProperty'
@@ -459,7 +459,7 @@ module CloudConductor
           old_name = 'DummyProperty'
           new_name = 'TestProperty'
 
-          @base_duplicator.send(:change_for_ref, old_name, new_name, resource)
+          @base_duplicator.send(:change_ref, old_name, new_name, resource)
           expect(resource['Ref']).to eq('TestProperty')
         end
 
@@ -475,12 +475,12 @@ module CloudConductor
           old_name = 'DummyProperty'
           new_name = 'TestProperty'
 
-          @base_duplicator.send(:change_for_ref, old_name, new_name, resource)
+          @base_duplicator.send(:change_ref, old_name, new_name, resource)
           expect(resource['EIPAssociation1']['Properties']['NetworkInterfaceId']['Ref']).to eq('TestProperty')
         end
       end
 
-      describe '#change_for_get_att' do
+      describe '#change_get_att' do
         it 'change Fn::GetAtt property in single hierarchy' do
           resource = {
             'Fn::GetAtt' => %w(DummyProperty AllocationId)
@@ -488,7 +488,7 @@ module CloudConductor
           old_name = 'DummyProperty'
           new_name = 'TestProperty'
 
-          @base_duplicator.send(:change_for_get_att, old_name, new_name, resource)
+          @base_duplicator.send(:change_get_att, old_name, new_name, resource)
           expect(resource['Fn::GetAtt']).to eq(%w(TestProperty AllocationId))
         end
 
@@ -505,18 +505,18 @@ module CloudConductor
           old_name = 'DummyProperty'
           new_name = 'TestProperty'
 
-          @base_duplicator.send(:change_for_get_att, old_name, new_name, resource)
+          @base_duplicator.send(:change_get_att, old_name, new_name, resource)
           expect(resource['EIPAssociation1']['Properties']['AllocationId']['Fn::GetAtt']).to eq(%w(TestProperty AllocationId))
         end
       end
 
-      describe '#change_for_depends_on' do
+      describe '#change_depends_on' do
         it 'change DependsOn property if DependsOn property is string' do
           resource = { 'DependsOn' => 'dummy_name' }
           old_name = 'dummy_name'
           new_name = 'test_name'
 
-          @base_duplicator.send(:change_for_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
           expect(resource['DependsOn']).to eq('test_name')
         end
 
@@ -525,41 +525,41 @@ module CloudConductor
           old_name = 'dummy_name'
           new_name = 'test_name'
 
-          @base_duplicator.send(:change_for_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
           expect(resource['DependsOn']).to eq(%w(test_name dummy_depends))
 
           resource = { 'DependsOn' => %w(dummy_depends dummy_name) }
 
-          @base_duplicator.send(:change_for_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
           expect(resource['DependsOn']).to eq(%w(dummy_depends test_name))
         end
       end
 
-      describe 'change_for_association' do
+      describe 'change_association' do
         before do
-          allow(@base_duplicator).to receive(:change_for_ref)
-          allow(@base_duplicator).to receive(:change_for_get_att)
-          allow(@base_duplicator).to receive(:change_for_depends_on)
+          allow(@base_duplicator).to receive(:change_ref)
+          allow(@base_duplicator).to receive(:change_get_att)
+          allow(@base_duplicator).to receive(:change_depends_on)
 
           @resource = {}
-          @old_and_new_name_list = { old_name1: 'new_name1' }
+          @old_and_new_name_map = { old_name1: 'new_name1' }
         end
 
-        it 'call change_for_ref, change_for_get_att, change_for_depends_on' do
-          expect(@base_duplicator).to receive(:change_for_ref).with(:old_name1, 'new_name1', @resource)
-          expect(@base_duplicator).to receive(:change_for_get_att).with(:old_name1, 'new_name1', @resource)
-          expect(@base_duplicator).to receive(:change_for_depends_on).with(:old_name1, 'new_name1', @resource)
+        it 'call change_ref, change_get_att, change_depends_on' do
+          expect(@base_duplicator).to receive(:change_ref).with(:old_name1, 'new_name1', @resource)
+          expect(@base_duplicator).to receive(:change_get_att).with(:old_name1, 'new_name1', @resource)
+          expect(@base_duplicator).to receive(:change_depends_on).with(:old_name1, 'new_name1', @resource)
 
-          @base_duplicator.send(:change_for_association, @old_and_new_name_list, @resource)
+          @base_duplicator.send(:change_association, @old_and_new_name_map, @resource)
         end
 
-        it 'call change_for_ref, change_for_get_att, change_for_depends_on for the size of old_and_new_name_list' do
-          expect(@base_duplicator).to receive(:change_for_ref).twice
-          expect(@base_duplicator).to receive(:change_for_get_att).twice
-          expect(@base_duplicator).to receive(:change_for_depends_on).twice
+        it 'call change_ref, change_get_att, change_depends_on for the size of old_and_new_name_map' do
+          expect(@base_duplicator).to receive(:change_ref).twice
+          expect(@base_duplicator).to receive(:change_get_att).twice
+          expect(@base_duplicator).to receive(:change_depends_on).twice
 
-          old_and_new_name_list = { old_name1: 'new_name1', old_name2: 'new_name2' }
-          @base_duplicator.send(:change_for_association, old_and_new_name_list, @resource)
+          old_and_new_name_map = { old_name1: 'new_name1', old_name2: 'new_name2' }
+          @base_duplicator.send(:change_association, old_and_new_name_map, @resource)
         end
       end
     end

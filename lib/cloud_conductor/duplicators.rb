@@ -33,10 +33,10 @@ module CloudConductor
           template['Resources'].merge! duplicator.copy(target_name, {}, options)
         end
       end
-      remove_metadata_for_check(template).to_json
+      remove_copied_flag(template).to_json
     end
 
-    def self.remove_metadata_for_check(template)
+    def self.remove_copied_flag(template)
       template['Resources'].map do |_, resource|
         next unless resource['Metadata'] && resource['Metadata']['Copied']
 
