@@ -42,6 +42,8 @@ module API
 
           Thread.new do
             CloudConductor::SystemBuilder.new(environment).build
+            system = environment.system
+            system.update_attributes!(primary_environment: environment) unless system.primary_environment
           end
 
           environment
