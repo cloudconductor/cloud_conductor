@@ -7,7 +7,7 @@ class System < ActiveRecord::Base
   validates :project, presence: true
   validates :name, presence: true, uniqueness: true
 
-  before_save :update_dns, if: -> { primary_environment && primary_environment_id_changed? }
+  before_save :update_dns, if: -> { primary_environment && domain }
   before_save :enable_monitoring, if: -> { primary_environment && primary_environment_id_changed? }
 
   def update_dns

@@ -25,7 +25,7 @@ FactoryGirl.define do
 
     after(:create) do
       System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && primary_environment_id_changed? }
-      System.set_callback :save, :before, :update_dns, if: -> { primary_environment && primary_environment_id_changed? }
+      System.set_callback :save, :before, :update_dns, if: -> { primary_environment && domain }
     end
   end
 end

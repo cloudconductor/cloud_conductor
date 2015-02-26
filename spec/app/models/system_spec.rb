@@ -19,6 +19,7 @@ describe System do
     @system = System.new
     @system.project = project
     @system.name = 'test'
+    @system.domain = 'example.com'
 
     allow(@system).to receive(:update_dns)
     allow(@system).to receive(:enable_monitoring)
@@ -50,6 +51,13 @@ describe System do
 
       expect(@system).not_to receive(:update_dns)
       expect(@system).not_to receive(:enable_monitoring)
+      @system.save!
+    end
+
+    it 'doesn\'t call #update_dns callback if system hasn\'t domain' do
+      @system.domain = nil
+
+      expect(@system).not_to receive(:update_dns)
       @system.save!
     end
   end
