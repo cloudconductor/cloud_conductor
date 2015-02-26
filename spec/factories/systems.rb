@@ -19,13 +19,13 @@ FactoryGirl.define do
     sequence(:name) { |n| "system-#{n}" }
 
     before(:create) do
-      System.skip_callback :save, :before, :enable_monitoring
       System.skip_callback :save, :before, :update_dns
+      System.skip_callback :save, :before, :enable_monitoring
     end
 
     after(:create) do
-      System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && primary_environment_id_changed? }
       System.set_callback :save, :before, :update_dns, if: -> { primary_environment && domain }
+      System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
     end
   end
 end

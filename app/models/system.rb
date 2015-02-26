@@ -8,7 +8,7 @@ class System < ActiveRecord::Base
   validates :name, presence: true, uniqueness: true
 
   before_save :update_dns, if: -> { primary_environment && domain }
-  before_save :enable_monitoring, if: -> { primary_environment && primary_environment_id_changed? }
+  before_save :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
 
   def update_dns
     dns_client = CloudConductor::DNSClient.new

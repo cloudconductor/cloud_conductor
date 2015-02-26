@@ -23,6 +23,7 @@ describe System do
 
     allow(@system).to receive(:update_dns)
     allow(@system).to receive(:enable_monitoring)
+    allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)
   end
 
   describe '#save' do
@@ -54,10 +55,11 @@ describe System do
       @system.save!
     end
 
-    it 'doesn\'t call #update_dns callback if system hasn\'t domain' do
+    it 'doesn\'t call #update_dns and #enable_monitoring callback if system hasn\'t domain' do
       @system.domain = nil
 
       expect(@system).not_to receive(:update_dns)
+      expect(@system).not_to receive(:enable_monitoring)
       @system.save!
     end
   end
