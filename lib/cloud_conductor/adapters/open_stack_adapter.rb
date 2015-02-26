@@ -52,10 +52,11 @@ module CloudConductor
         options = options.with_indifferent_access
         orc = create_orchestration options
         stack_params = {
+          stack_name: name,
           template: converted_template,
           parameters: parameters
         }
-        orc.create_stack name, stack_params
+        orc.create_stack stack_params
       end
 
       def get_stack_status(name, options = {})

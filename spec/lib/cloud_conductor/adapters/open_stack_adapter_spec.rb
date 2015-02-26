@@ -63,7 +63,7 @@ module CloudConductor
         it 'call Fog::Orchestration#create_stack to create stack on openstack' do
           allow(::Fog::Orchestration).to receive_message_chain(:new) do
             double('newfog').tap do |newfog|
-              expect(newfog).to receive(:create_stack).with('stack_name', hash_including(template: '{}', parameters: {}))
+              expect(newfog).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: '{}', parameters: {}))
             end
           end
 
@@ -81,7 +81,7 @@ module CloudConductor
           allow(@converter_stub).to receive(:convert).and_return converted_template
 
           orc_stub = double('orc')
-          expect(orc_stub).to receive(:create_stack).with('stack_name', hash_including(template: converted_template, parameters: {}))
+          expect(orc_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
           allow(::Fog::Orchestration).to receive(:new).and_return(orc_stub)
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
