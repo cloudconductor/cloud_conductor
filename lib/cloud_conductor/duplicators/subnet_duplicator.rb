@@ -17,7 +17,7 @@ module CloudConductor
     class SubnetDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_properties(resource)
+      def replace_properties(resource)
         used_availability_zones = @resources.select(&type?('AWS::EC2::Subnet')).map do |_, value|
           value['Properties']['AvailabilityZone']
         end
@@ -33,15 +33,15 @@ module CloudConductor
         resource
       end
 
-      def copy(source_name, old_and_new_name_list = {}, options = {})
+      def copy(source_name, copied_resource_mapping_table = {}, options = {})
         subnet_names = @resources.select(&type?('AWS::EC2::Subnet')).keys
         return super if subnet_names.size < @options[:AvailabilityZone].size
 
-        return { source_name => @resources[source_name] } if old_and_new_name_list.keys.include? source_name
+        return { source_name => @resources[source_name] } if copied_resource_mapping_table.keys.include? source_name
 
         old_index = subnet_names.index(source_name)
         new_index = (old_index + @options[:CopyNum] - 1) % subnet_names.size
-        old_and_new_name_list[source_name] = subnet_names[new_index]
+        copied_resource_mapping_table[source_name] = subnet_names[new_index]
         { subnet_names[new_index] => @resources[subnet_names[new_index]] }
       end
     end

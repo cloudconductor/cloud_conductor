@@ -33,14 +33,14 @@ module CloudConductor
         @subnet_duplicator = SubnetDuplicator.new(@resource.with_indifferent_access, @options)
       end
 
-      describe '#change_properties' do
+      describe '#replace_properties' do
         it 'return template to updated for AvailabilityZone property and CidrBlock property' do
           resource = @resource.deep_dup
 
           expect(resource['Subnet1']['Properties']['AvailabilityZone']).to eq('ap-southeast-2a')
           expect(resource['Subnet1']['Properties']['CidrBlock']).to eq('10.0.1.0/24')
 
-          @subnet_duplicator.change_properties(resource.values.first)
+          @subnet_duplicator.replace_properties(resource.values.first)
 
           expect(resource['Subnet1']['Properties']['AvailabilityZone']).to eq('ap-southeast-2b')
           expect(resource['Subnet1']['Properties']['CidrBlock']).to eq('10.0.2.0/24')
@@ -49,7 +49,7 @@ module CloudConductor
 
       describe '#copy' do
         before do
-          @name_map = {
+          @copied_resource_mapping_table = {
             'old_dummy_name' => 'new_old_name'
           }
         end
@@ -57,14 +57,14 @@ module CloudConductor
         it 'call BaseDuplicator#copy method if Subnet can copy' do
           allow_any_instance_of(BaseDuplicator).to receive(:copy)
 
-          expect(@subnet_duplicator.copy('dummy_name', @name_map, {}))
+          expect(@subnet_duplicator.copy('dummy_name', @copied_resource_mapping_table, {}))
         end
 
         it 'do not do anything if Subnet have already been copied' do
-          expect(@subnet_duplicator.copy('old_dummy_name', @name_map, {})).to eq('old_dummy_name' => nil)
+          expect(@subnet_duplicator.copy('old_dummy_name', @copied_resource_mapping_table, {})).to eq('old_dummy_name' => nil)
         end
 
-        it 'update name_map' do
+        it 'update copied_resource_mapping_table' do
           resources = {
             'Subnet1' => {
               'Type' => 'AWS::EC2::Subnet',
@@ -86,10 +86,10 @@ module CloudConductor
 
           subnet_duplicator = SubnetDuplicator.new(resources.with_indifferent_access, @options)
 
-          name_map = {}
+          copied_resource_mapping_table = {}
 
-          subnet_duplicator.copy('Subnet1', name_map, {})
-          expect(name_map['Subnet1']).to eq('Subnet2')
+          subnet_duplicator.copy('Subnet1', copied_resource_mapping_table, {})
+          expect(copied_resource_mapping_table['Subnet1']).to eq('Subnet2')
         end
       end
     end

@@ -23,10 +23,10 @@ module CloudConductor
         @base_duplicator = BaseDuplicator.new(@resources, @options)
       end
 
-      describe '#change_properties' do
+      describe '#replace_properties' do
         it 'return the argument as it is' do
           resource = { 'Type' => 'AWS::EC2::Instance' }
-          expect(@base_duplicator.send(:change_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
+          expect(@base_duplicator.send(:replace_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
         end
       end
 
@@ -109,27 +109,27 @@ module CloudConductor
       end
 
       describe '#already_copied?' do
-        it 'return true when old_name_list contained source_name' do
-          old_and_new_name_map = {
-            'old_name' => 'new_name'
+        it 'return true when copied_resource_mapping_table keys contained source_name' do
+          copied_resource_mapping_table = {
+            'original_name' => 'copy_name'
           }
-          source_name = 'old_name'
+          source_name = 'original_name'
 
-          expect(@base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
+          expect(@base_duplicator.send(:already_copied?, source_name, copied_resource_mapping_table)).to be_truthy
         end
 
-        it 'return true when new_name_list contained source_name' do
-          old_and_new_name_map = {
-            'old_name' => 'new_name'
+        it 'return true when copied_resource_mapping_table values contained source_name' do
+          copied_resource_mapping_table = {
+            'original_name' => 'copy_name'
           }
-          source_name = 'new_name'
+          source_name = 'copy_name'
 
-          expect(@base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
+          expect(@base_duplicator.send(:already_copied?, source_name, copied_resource_mapping_table)).to be_truthy
         end
 
         it 'return true when resource contained copied in metadata' do
-          old_and_new_name_map = {
-            'old_name' => 'new_name'
+          copied_resource_mapping_table = {
+            'original_name' => 'copy_name'
           }
           source_name = 'dummy_name'
           resources = {
@@ -145,12 +145,12 @@ module CloudConductor
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_truthy
+          expect(base_duplicator.send(:already_copied?, source_name, copied_resource_mapping_table)).to be_truthy
         end
 
         it 'return false when does not match to any' do
-          old_and_new_name_map = {
-            'old_name' => 'new_name'
+          copied_resource_mapping_table = {
+            'original_name' => 'copy_name'
           }
           source_name = 'dummy_name'
           resources = {
@@ -163,7 +163,7 @@ module CloudConductor
           }
           base_duplicator = BaseDuplicator.new(resources, @options)
 
-          expect(base_duplicator.send(:already_copied?, source_name, old_and_new_name_map)).to be_falsey
+          expect(base_duplicator.send(:already_copied?, source_name, copied_resource_mapping_table)).to be_falsey
         end
       end
 
@@ -193,9 +193,9 @@ module CloudConductor
       end
 
       describe '#post_copy' do
-        it 'call change_association, change_properties, add_copied_flag methods' do
-          old_and_new_name_map = {
-            'old_name' => 'new_name'
+        it 'call replace_associated_resources, replace_properties, add_copied_flag methods' do
+          copied_resource_mapping_table = {
+            'original_name' => 'copy_name'
           }
           resource = {
             'Type' => 'AWS::EC2::EIP',
@@ -204,14 +204,14 @@ module CloudConductor
             }
           }
 
-          allow(@base_duplicator).to receive(:change_association).and_return(resource)
-          allow(@base_duplicator).to receive(:change_properties).and_return(resource)
+          allow(@base_duplicator).to receive(:replace_associated_resources).and_return(resource)
+          allow(@base_duplicator).to receive(:replace_properties).and_return(resource)
           allow(@base_duplicator).to receive(:add_copied_flag).and_return(resource)
 
-          expect(@base_duplicator).to receive(:change_association).with(old_and_new_name_map, resource)
-          expect(@base_duplicator).to receive(:change_properties).with(resource)
+          expect(@base_duplicator).to receive(:replace_associated_resources).with(resource, copied_resource_mapping_table)
+          expect(@base_duplicator).to receive(:replace_properties).with(resource)
           expect(@base_duplicator).to receive(:add_copied_flag).with(resource)
-          @base_duplicator.send(:post_copy, old_and_new_name_map, resource)
+          @base_duplicator.send(:post_copy, copied_resource_mapping_table, resource)
         end
       end
 
@@ -451,19 +451,19 @@ module CloudConductor
         end
       end
 
-      describe '#change_ref' do
-        it 'change Ref property in single hierarchy' do
+      describe '#replace_ref' do
+        it 'replace Ref property in single hierarchy' do
           resource = {
             'Ref' => 'DummyProperty'
           }
-          old_name = 'DummyProperty'
-          new_name = 'TestProperty'
+          original_name = 'DummyProperty'
+          copy_name = 'TestProperty'
 
-          @base_duplicator.send(:change_ref, old_name, new_name, resource)
+          @base_duplicator.send(:replace_ref, original_name, copy_name, resource)
           expect(resource['Ref']).to eq('TestProperty')
         end
 
-        it 'change Ref property in single hierarchy' do
+        it 'replace Ref property in single hierarchy' do
           resource = {
             'EIPAssociation1' => {
               'Type' => 'AWS::EC2::EIPAssociation',
@@ -472,27 +472,27 @@ module CloudConductor
               }
             }
           }
-          old_name = 'DummyProperty'
-          new_name = 'TestProperty'
+          original_name = 'DummyProperty'
+          copy_name = 'TestProperty'
 
-          @base_duplicator.send(:change_ref, old_name, new_name, resource)
+          @base_duplicator.send(:replace_ref, original_name, copy_name, resource)
           expect(resource['EIPAssociation1']['Properties']['NetworkInterfaceId']['Ref']).to eq('TestProperty')
         end
       end
 
-      describe '#change_get_att' do
-        it 'change Fn::GetAtt property in single hierarchy' do
+      describe '#replace_get_att' do
+        it 'replace Fn::GetAtt property in single hierarchy' do
           resource = {
             'Fn::GetAtt' => %w(DummyProperty AllocationId)
           }
-          old_name = 'DummyProperty'
-          new_name = 'TestProperty'
+          original_name = 'DummyProperty'
+          copy_name = 'TestProperty'
 
-          @base_duplicator.send(:change_get_att, old_name, new_name, resource)
+          @base_duplicator.send(:replace_get_att, original_name, copy_name, resource)
           expect(resource['Fn::GetAtt']).to eq(%w(TestProperty AllocationId))
         end
 
-        it 'change Fn::GetAtt property in multi hierarchy' do
+        it 'replace Fn::GetAtt property in multi hierarchy' do
           resource = {
             'EIPAssociation1' => {
               'Type' => 'AWS::EC2::EIPAssociation',
@@ -502,64 +502,64 @@ module CloudConductor
               }
             }
           }
-          old_name = 'DummyProperty'
-          new_name = 'TestProperty'
+          original_name = 'DummyProperty'
+          copy_name = 'TestProperty'
 
-          @base_duplicator.send(:change_get_att, old_name, new_name, resource)
+          @base_duplicator.send(:replace_get_att, original_name, copy_name, resource)
           expect(resource['EIPAssociation1']['Properties']['AllocationId']['Fn::GetAtt']).to eq(%w(TestProperty AllocationId))
         end
       end
 
-      describe '#change_depends_on' do
-        it 'change DependsOn property if DependsOn property is string' do
+      describe '#replace_depends_on' do
+        it 'replace DependsOn property if DependsOn property is string' do
           resource = { 'DependsOn' => 'dummy_name' }
-          old_name = 'dummy_name'
-          new_name = 'test_name'
+          original_name = 'dummy_name'
+          copy_name = 'test_name'
 
-          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:replace_depends_on, original_name, copy_name, resource)
           expect(resource['DependsOn']).to eq('test_name')
         end
 
-        it 'change DependsOn property if DependsOn property is array' do
+        it 'replace DependsOn property if DependsOn property is array' do
           resource = { 'DependsOn' => %w(dummy_name dummy_depends) }
-          old_name = 'dummy_name'
-          new_name = 'test_name'
+          original_name = 'dummy_name'
+          copy_name = 'test_name'
 
-          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:replace_depends_on, original_name, copy_name, resource)
           expect(resource['DependsOn']).to eq(%w(test_name dummy_depends))
 
           resource = { 'DependsOn' => %w(dummy_depends dummy_name) }
 
-          @base_duplicator.send(:change_depends_on, old_name, new_name, resource)
+          @base_duplicator.send(:replace_depends_on, original_name, copy_name, resource)
           expect(resource['DependsOn']).to eq(%w(dummy_depends test_name))
         end
       end
 
-      describe 'change_association' do
+      describe 'replace_associated_resources' do
         before do
-          allow(@base_duplicator).to receive(:change_ref)
-          allow(@base_duplicator).to receive(:change_get_att)
-          allow(@base_duplicator).to receive(:change_depends_on)
+          allow(@base_duplicator).to receive(:replace_ref)
+          allow(@base_duplicator).to receive(:replace_get_att)
+          allow(@base_duplicator).to receive(:replace_depends_on)
 
           @resource = {}
-          @old_and_new_name_map = { old_name1: 'new_name1' }
+          @copied_resource_mapping_table = { original_name1: 'copy_name1' }
         end
 
-        it 'call change_ref, change_get_att, change_depends_on' do
-          expect(@base_duplicator).to receive(:change_ref).with(:old_name1, 'new_name1', @resource)
-          expect(@base_duplicator).to receive(:change_get_att).with(:old_name1, 'new_name1', @resource)
-          expect(@base_duplicator).to receive(:change_depends_on).with(:old_name1, 'new_name1', @resource)
+        it 'call replace_ref, replace_get_att, replace_depends_on' do
+          expect(@base_duplicator).to receive(:replace_ref).with(:original_name1, 'copy_name1', @resource)
+          expect(@base_duplicator).to receive(:replace_get_att).with(:original_name1, 'copy_name1', @resource)
+          expect(@base_duplicator).to receive(:replace_depends_on).with(:original_name1, 'copy_name1', @resource)
 
-          @base_duplicator.send(:change_association, @old_and_new_name_map, @resource)
+          @base_duplicator.send(:replace_associated_resources, @resource, @copied_resource_mapping_table)
         end
 
-        it 'call change_ref, change_get_att, change_depends_on for the size of old_and_new_name_map' do
-          expect(@base_duplicator).to receive(:change_ref).twice
-          expect(@base_duplicator).to receive(:change_get_att).twice
-          expect(@base_duplicator).to receive(:change_depends_on).twice
+        it 'call replace_ref, replace_get_att, replace_depends_on for the size of copied_resource_mapping_table' do
+          expect(@base_duplicator).to receive(:replace_ref).twice
+          expect(@base_duplicator).to receive(:replace_get_att).twice
+          expect(@base_duplicator).to receive(:replace_depends_on).twice
 
-          old_and_new_name_map = { old_name1: 'new_name1', old_name2: 'new_name2' }
-          @base_duplicator.send(:change_association, old_and_new_name_map, @resource)
+          copied_resource_mapping_table = { original_name1: 'copy_name1', original_name2: 'copy_name2' }
+          @base_duplicator.send(:replace_associated_resources, @resource, copied_resource_mapping_table)
         end
       end
     end

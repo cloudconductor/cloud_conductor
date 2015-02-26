@@ -17,7 +17,7 @@ module CloudConductor
     class InstanceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_properties(resource)
+      def replace_properties(resource)
         return resource unless resource['Properties']['NetworkInterfaces']
 
         resource['Properties']['NetworkInterfaces'].each do |network_interface|

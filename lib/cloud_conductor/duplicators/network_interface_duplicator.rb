@@ -17,7 +17,7 @@ module CloudConductor
     class NetworkInterfaceDuplicator < BaseDuplicator
       include DuplicatorUtils
 
-      def change_properties(resource)
+      def replace_properties(resource)
         subnet = @resources[resource['Properties']['SubnetId']['Ref']]
         cidr = NetAddr::CIDR.create(subnet['Properties']['CidrBlock'])
         allocatable_addresses = get_allocatable_addresses(@resources, cidr)
