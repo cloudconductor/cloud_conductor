@@ -45,7 +45,7 @@ module CloudConductor
         allow(@client).to receive(:register_action).and_return(3)
         allow(@client).to receive(:operation).and_return('dummy command')
 
-        @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
+        @system = FactoryGirl.create(:system, name: 'example')
         @system.environments << FactoryGirl.create(:environment, ip_address: '127.0.0.1')
         @system.primary_environment = @system.environments.first
       end

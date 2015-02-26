@@ -180,7 +180,6 @@ ActiveRecord::Schema.define(version: 20150129071733) do
     t.string   "name"
     t.string   "description"
     t.string   "domain"
-    t.string   "monitoring_host"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end

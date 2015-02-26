@@ -24,7 +24,7 @@ module CloudConductor
     def register(system)
       hostname = system.name
       hostgroup_id = register_hostgroup(hostname)
-      host_id = register_host(hostgroup_id, system.monitoring_host)
+      host_id = register_host(hostgroup_id, system.domain)
       environment_id = system.primary_environment.id
       register_action("FailOver_#{hostname}", host_id, operation(environment_id, CloudConductor::Config.cloudconductor.url))
     end

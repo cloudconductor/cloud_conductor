@@ -6,7 +6,6 @@ class CreateSystems < ActiveRecord::Migration
       t.string :name
       t.string :description
       t.string :domain
-      t.string :monitoring_host
       t.timestamps null: false
     end
   end
