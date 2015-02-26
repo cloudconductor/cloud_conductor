@@ -1,0 +1,241 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description" : "CloudConductor pattern template",
+
+  "Resources" : {
+    "VPC" : {
+      "Type" : "AWS::EC2::VPC",
+      "Properties" : {
+        "CidrBlock" : "10.0.0.0/16"
+      }
+    },
+
+    "InternetGateway" : {
+      "Type" : "AWS::EC2::InternetGateway"
+    },
+    "VPCGatewayAttachment" : {
+      "Type" : "AWS::EC2::VPCGatewayAttachment",
+      "Properties" : {
+        "InternetGatewayId" : { "Ref" : "InternetGateway" },
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+
+    "RouteTable" : {
+      "Type" : "AWS::EC2::RouteTable",
+      "Properties" : {
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+    "RouteToInternetGateway" : {
+      "Type" : "AWS::EC2::Route",
+      "Properties" : {
+        "DestinationCidrBlock" : "0.0.0.0/0",
+        "GatewayId" : { "Ref" : "InternetGateway" },
+        "RouteTableId" : { "Ref" : "RouteTable" }
+      }
+    },
+
+    "WebServer" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Role" : "web"
+      },
+      "Properties" : {
+        "ImageId" : { "Ref" : "webImageId" },
+        "InstanceType" : { "Ref" : "webInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [{
+           "DeviceIndex" : "0",
+           "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface" }
+        }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/sh -v\n",
+          "# Helper function\n",
+          "function error_exit\n",
+          "{\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WebWaitHandle" }, "'\n",
+          "  exit 1\n",
+          "}\n",
+          "# Set Parameters\n",
+          "/bin/echo 'ROLE=web' > /opt/cloudconductor/config\n",
+          "/bin/echo 'JOIN_ADDRESS=", {"Fn::GetAtt": ["WebNetworkInterface", "PrimaryPrivateIpAddress"]}, "' >> /opt/cloudconductor/config\n",
+          "# Send success signal\n",
+          "/opt/aws/bin/cfn-signal -e 0 -r 'WebServer Setup complete' '", { "Ref" : "WebWaitHandle" }, "'\n"
+        ]]}}
+      }
+    },
+    "Subnet" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "ap-southeast-2a",
+        "CidrBlock" : "10.0.1.0/24",
+        "VpcId" : { "Ref" : "VPC" }
+      }
+    },
+    "SubnetRouteTableAssociation" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet" },
+        "RouteTableId" : { "Ref" : "RouteTable" }
+      }
+    },
+    "WebNetworkInterface" : {
+      "Type" : "AWS::EC2::NetworkInterface",
+      "Properties" : {
+        "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "WebSecurityGroup"}],
+        "SubnetId" : { "Ref" : "Subnet" }
+      }
+    },
+    "FrontendEIP" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["VPCGatewayAttachment", "SubnetRouteTableAssociation"],
+      "Properties" : {
+        "Domain" : "vpc"
+      }
+    },
+    "EIPAssociation" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : [ "FrontendEIP", "AllocationId" ]},
+        "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface" }
+      }
+    },
+
+    "WebServer2" : {
+      "Type" : "AWS::EC2::Instance",
+      "Metadata" : {
+        "Role" : "web",
+        "Copied": "true"
+      },
+      "Properties" : {
+        "ImageId" : { "Ref" : "webImageId" },
+        "InstanceType" : { "Ref" : "webInstanceType" },
+        "KeyName" : { "Ref" : "KeyName" },
+        "NetworkInterfaces" : [{
+           "DeviceIndex" : "0",
+           "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface2" }
+        }],
+        "UserData" : { "Fn::Base64" : { "Fn::Join" : ["", [
+          "#!/bin/sh -v\n",
+          "# Helper function\n",
+          "function error_exit\n",
+          "{\n",
+          "  /opt/aws/bin/cfn-signal -e 1 -r \"$1\" '", { "Ref" : "WebWaitHandle2" }, "'\n",
+          "  exit 1\n",
+          "}\n",
+          "# Set Parameters\n",
+          "/bin/echo 'ROLE=web' > /opt/cloudconductor/config\n",
+          "/bin/echo 'JOIN_ADDRESS=", {"Fn::GetAtt": ["WebNetworkInterface2", "PrimaryPrivateIpAddress"]}, "' >> /opt/cloudconductor/config\n",
+          "# Send success signal\n",
+          "/opt/aws/bin/cfn-signal -e 0 -r 'WebServer Setup complete' '", { "Ref" : "WebWaitHandle2" }, "'\n"
+        ]]}}
+      }
+    },
+    "Subnet2" : {
+      "Type" : "AWS::EC2::Subnet",
+      "Properties" : {
+        "AvailabilityZone" : "ap-southeast-2b",
+        "CidrBlock" : "10.0.2.0/24",
+        "VpcId" : { "Ref" : "VPC" }
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+    "SubnetRouteTableAssociation2" : {
+      "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+      "Properties" : {
+        "SubnetId" : { "Ref" : "Subnet2" },
+        "RouteTableId" : { "Ref" : "RouteTable" }
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+    "WebNetworkInterface2" : {
+      "Type" : "AWS::EC2::NetworkInterface",
+      "Properties" : {
+        "GroupSet" : [{"Ref": "SharedSecurityGroup"}, {"Ref": "WebSecurityGroup"}],
+        "SubnetId" : { "Ref" : "Subnet2" }
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+    "FrontendEIP2" : {
+      "Type" : "AWS::EC2::EIP",
+      "DependsOn" : ["VPCGatewayAttachment", "SubnetRouteTableAssociation2"],
+      "Properties" : {
+        "Domain" : "vpc"
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+    "EIPAssociation2" : {
+      "Type" : "AWS::EC2::EIPAssociation",
+      "Properties" : {
+        "AllocationId" : { "Fn::GetAtt" : [ "FrontendEIP2", "AllocationId" ]},
+        "NetworkInterfaceId" : { "Ref" : "WebNetworkInterface2" }
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+
+    "SharedSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Shared security group over all instances in platform/optional pattern",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "22", "ToPort" : "22", "CidrIp" : { "Ref" : "SSHLocation" }},
+          {"IpProtocol" : "tcp", "FromPort" : "7373", "ToPort" : "7373", "CidrIp" : { "Ref" : "CloudConductorLocation" }},
+          {"IpProtocol" : "tcp", "FromPort" : "7946", "ToPort" : "7946", "CidrIp" : "10.0.0.0/16"},
+          {"IpProtocol" : "tcp", "FromPort" : "8500", "ToPort" : "8500", "CidrIp" : { "Ref" : "CloudConductorLocation" }},
+          {"IpProtocol" : "tcp", "FromPort" : "8300", "ToPort" : "8302", "CidrIp" : "10.0.0.0/16"}
+        ]
+      }
+    },
+    "WebSecurityGroup" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Enable SSH access, HTTP access via port 80 and Serf RPC access via port 7373",
+        "VpcId" : { "Ref" : "VPC" },
+        "SecurityGroupIngress" : [
+          {"IpProtocol" : "tcp", "FromPort" : "80", "ToPort" : "80", "CidrIp" : "0.0.0.0/0"}
+        ]
+      }
+    },
+
+    "WebWaitHandle" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle"
+    },
+    "WebWaitCondition" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "WebServer",
+      "Properties" : {
+        "Handle" : { "Ref" : "WebWaitHandle" },
+        "Timeout" : "600"
+      }
+    },
+    "WebWaitHandle2" : {
+      "Type" : "AWS::CloudFormation::WaitConditionHandle",
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    },
+    "WebWaitCondition2" : {
+      "Type" : "AWS::CloudFormation::WaitCondition",
+      "DependsOn" : "WebServer2",
+      "Properties" : {
+        "Handle" : { "Ref" : "WebWaitHandle2" },
+        "Timeout" : "600"
+      },
+      "Metadata" : {
+        "Copied" : "true"
+      }
+    }
+  }
+}

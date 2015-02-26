@@ -14,6 +14,11 @@
 # limitations under the License.
 module CloudConductor
   describe Client do
+    before do
+      allow_any_instance_of(Adapters::AWSAdapter).to receive(:get_availability_zones).and_return(['ap-southeast-2a'])
+      allow_any_instance_of(Adapters::OpenStackAdapter).to receive(:get_availability_zones).and_return(['nova'])
+    end
+
     describe '#new' do
       it 'returns initialized client with aws adapter' do
         cloud_aws = FactoryGirl.create(:cloud_aws)
@@ -38,6 +43,7 @@ module CloudConductor
         @pattern = FactoryGirl.create(:pattern)
 
         @parameters = {}
+        @instance_sizes = {}
         @client = Client.new @cloud
 
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
@@ -48,20 +54,21 @@ module CloudConductor
         allow(@client).to receive_message_chain(:open, :read).and_return(@template_content)
 
         allow_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
+        allow(CloudConductor::Duplicators).to receive(:increase_instance).and_return(@template_content)
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
         expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
           .with(kind_of(String), anything, kind_of(Hash), kind_of(Hash))
 
-        @client.create_stack @name, @pattern, @parameters
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'will clone repository' do
         path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
         expect(@pattern).to receive(:clone_repository).and_yield(path)
 
-        @client.create_stack @name, @pattern, @parameters
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'will load template.json in repository' do
@@ -73,11 +80,17 @@ module CloudConductor
           end
         end
 
-        @client.create_stack @name, @pattern, @parameters
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
+      end
+
+      it 'call CloudConductor::Duplicators#increase_instance with same arguments' do
+        expect(CloudConductor::Duplicators).to receive(:increase_instance).with(@template_content, kind_of(Hash), kind_of(Array))
+
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'will get images to suit conditions that has been registered in pattern' do
-        @client.create_stack @name, @pattern, @parameters
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
         result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
         expect(result.size).to eq(1)
       end
@@ -87,7 +100,7 @@ module CloudConductor
 
         client = Client.new @cloud
         allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+        client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
@@ -103,7 +116,7 @@ module CloudConductor
 
         client = Client.new @cloud
         allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+        client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
@@ -116,14 +129,14 @@ module CloudConductor
 
         client = Client.new @cloud
         allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+        client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
 
       it 'will call create_stack with content of template.json' do
         expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
           .with(anything, @template_content, anything, anything)
 
-        @client.create_stack @name, @pattern, @parameters
+        @client.create_stack @name, @pattern, @parameters, @instance_sizes
       end
     end
 

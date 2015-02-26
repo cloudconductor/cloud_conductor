@@ -46,6 +46,7 @@ class Stack < ActiveRecord::Base
   after_initialize do
     self.template_parameters ||= '{}'
     self.parameters ||= '{}'
+    self.instance_sizes ||= '{}'
     self.status ||= :PENDING
   end
 
@@ -56,7 +57,7 @@ class Stack < ActiveRecord::Base
   def create_stack
     common_parameters = JSON.parse(system.template_parameters, symbolize_names: true)
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
-    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
+    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters), JSON.parse(instance_sizes)
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"

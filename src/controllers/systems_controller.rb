@@ -11,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-class SystemsController < Sinatra::Base
+class SystemsController < Sinatra::Base # rubocop:disable ClassLength
   register Sinatra::Namespace, ConfigLoader
 
   namespace '/:system_id/applications' do
@@ -57,8 +57,10 @@ class SystemsController < Sinatra::Base
       end
 
       cloud = system.candidates.primary.cloud
+      instance_sizes = JSON.parse(params[:instance_sizes] || '{}')
       (params[:stacks] || []).each do |stack|
-        system.stacks.create!(stack.merge(cloud: cloud))
+        pattern = Pattern.find stack[:pattern_id]
+        system.stacks.create!(stack.merge(cloud: cloud, instance_sizes: (instance_sizes[pattern.name] || {}).to_json))
       end
     end
 

@@ -89,6 +89,12 @@ module CloudConductor
         outputs
       end
 
+      def get_availability_zones(options = {})
+        options = options.with_indifferent_access
+        compute = create_compute(options)
+        compute.hosts.map(&:zone).uniq
+      end
+
       def add_security_rule(name, template, parameters, options = {}) # rubocop:disable MethodLength
         return if parameters[:SharedSecurityGroup].blank?
 

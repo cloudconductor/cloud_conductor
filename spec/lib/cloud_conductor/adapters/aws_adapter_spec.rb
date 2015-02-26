@@ -138,6 +138,40 @@ module CloudConductor
         end
       end
 
+      describe '#get_availability_zones' do
+        before do
+          @availability_zones = [double('availability_zone', name: 'ap-southeast-2a'), double('availability_zone', name: 'ap-southeast-2b')]
+          allow(AWS::EC2).to receive_message_chain(:new, :availability_zones).and_return(@availability_zones)
+
+          @options = {}
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
+        end
+
+        it 'execute without exception' do
+          @adapter.get_availability_zones @options
+        end
+
+        it 'set credentials for aws-sdk' do
+          @options[:dummy] = 'dummy'
+
+          expect(AWS::EC2).to receive(:new)
+            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
+
+          @adapter.get_availability_zones @options
+        end
+
+        it 'return AvailabilityZone names' do
+          availability_zones = @adapter.get_availability_zones @options
+          expect(availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
+        end
+
+        it 'raise error  when target AvailabilityZones does not exist' do
+          allow(@availability_zones).to receive(:map).and_return nil
+          expect { @adapter.adapter.get_availability_zones @options }.to raise_error
+        end
+      end
+
       describe '#destroy_stack' do
         before do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :delete)

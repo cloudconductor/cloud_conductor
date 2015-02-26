@@ -216,6 +216,48 @@ module CloudConductor
         end
       end
 
+      describe '#get_availability_zones' do
+        before do
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'test_user'
+          @options[:secret] = 'test_secret'
+          @options[:tenant_name] = 'test_tenant'
+
+          @availability_zones = [double('availability_zone', zone: 'nova'), double('availability_zone', zone: '')]
+          allow(::Fog::Compute).to receive_message_chain(:new, :hosts).and_return(@availability_zones)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_availability_zones @options
+        end
+
+        it 'instantiate' do
+          @options[:dummy] = 'dummy'
+
+          expect(::Fog::Compute).to receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_user',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.get_availability_zones @options
+        end
+
+        it 'return AvailabilityZone names' do
+          availability_zones = @adapter.get_availability_zones @options
+          expect(availability_zones).to eq(['nova', ''])
+        end
+
+        it 'return nil when target AvailabilityZone does not exist' do
+          allow(@availability_zones).to receive(:map).and_return nil
+          expect { @adapter.get_availability_zones @options }.to raise_error
+        end
+      end
+
       describe '#add_security_rule' do
         before do
           @template = <<-EOS

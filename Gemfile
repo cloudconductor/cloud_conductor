@@ -21,6 +21,7 @@ gem 'fog'
 gem 'zbxapi', '0.3.8'
 
 gem 'systemu'
+gem 'netaddr'
 
 gem 'faraday'
 gem 'rb-readline'
