@@ -21,6 +21,10 @@ module CloudConductor
       ::Log = CloudConductor::Logger
     end
 
+    ActionDispatch::Callbacks.to_prepare do
+      CloudConductor::Config.from_file "#{CloudConductor::Application.config.root}/config/config.rb"
+    end
+
     # Settings in config/environments/* take precedence over those specified here.
     # Application configuration should go into files in config/initializers
     # -- all .rb files in that directory are automatically loaded.
