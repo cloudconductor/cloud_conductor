@@ -19,6 +19,8 @@ module CloudConductor
     before do
       allow_any_instance_of(Adapters::AWSAdapter).to receive(:get_availability_zones).and_return(['ap-southeast-2a'])
       allow_any_instance_of(Adapters::OpenStackAdapter).to receive(:get_availability_zones).and_return(['nova'])
+      allow_any_instance_of(Adapters::DummyAdapter).to receive(:get_availability_zones).and_return(['dummy'])
+      allow(CloudConductor::Duplicators).to receive(:increase_instance).and_return('{ "dummy": "dummy_value" }')
       @client = Client.new cloud
     end
 
@@ -46,12 +48,12 @@ module CloudConductor
 
       it 'call adapter#create_stack with same arguments without pattern' do
         expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern, {}, {}
       end
 
       it 'call adapter#create_stack with template.json in repository' do
         expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern, {}, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
@@ -65,7 +67,7 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
-        @client.create_stack 'stack_name', @pattern, {}, @instance_sizes
+        @client.create_stack 'stack_name', pattern, {}, {}
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
@@ -75,7 +77,7 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
-        @client.create_stack 'stack_name', @pattern, {}, @instance_sizes
+        @client.create_stack 'stack_name', pattern, {}, {}
       end
     end
 
