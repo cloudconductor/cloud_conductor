@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150212004325) do
+ActiveRecord::Schema.define(version: 20150129071733) do
 
   create_table "accounts", force: true do |t|
     t.string   "email",                  default: "",    null: false
@@ -168,10 +168,10 @@ ActiveRecord::Schema.define(version: 20150212004325) do
     t.string   "name"
     t.string   "status"
     t.text     "template_parameters"
+    t.text     "instance_sizes"
     t.text     "parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
-    t.text     "instance_sizes"
   end
 
   create_table "systems", force: true do |t|
