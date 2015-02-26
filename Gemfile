@@ -22,14 +22,17 @@ gem 'rb-readline'
 gem 'unicorn'
 gem 'cfn_converter', git: 'https://github.com/cloudconductor/cfn_converter.git'
 
-group :development do
-  gem 'guard'
-  gem 'guard-rubocop'
+group :development, :test do
   gem 'byebug'
   gem 'pry-byebug'
   gem 'pry-doc'
   gem 'pry-stack_explorer'
   gem 'pry-rails'
+end
+
+group :development do
+  gem 'guard'
+  gem 'guard-rubocop'
 end
 
 group :test do
