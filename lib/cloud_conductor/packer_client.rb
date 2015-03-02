@@ -76,7 +76,7 @@ module CloudConductor
 
       File.open(json_path, 'w') do |f|
         images.map(&:base_image).each do |base_image|
-          template_json[:builders].push JSON.parse(base_image.to_json)
+          template_json[:builders].push base_image.builder
         end
 
         f.write template_json.to_json

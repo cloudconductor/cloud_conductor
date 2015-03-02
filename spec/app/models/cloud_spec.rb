@@ -162,13 +162,6 @@ describe Cloud do
     end
   end
 
-  describe '#template' do
-    it 'load templates.yml and return JSON string' do
-      expect(YAML).to receive(:load_file).and_return('aws' => { 'key' => 'value' })
-      expect(@cloud.template).to eq('{"key":"value"}')
-    end
-  end
-
   describe '#to_json' do
     it 'mask secret column' do
       result = JSON.parse(@cloud.to_json, symbolize_names: true)

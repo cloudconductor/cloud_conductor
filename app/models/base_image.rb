@@ -10,8 +10,8 @@ class BaseImage < ActiveRecord::Base
   SPLITTER = '----'
   DEFAULT_OS = 'CentOS-6.5'
   DEFAULT_SSH_USERNAME = 'ec2-user'
-  ALLOW_RECEIVERS = %w(base_image cloud os)
   IMAGES_FILE_PATH = File.expand_path('../../config/images.yml', File.dirname(__FILE__))
+  TEMPLATE_PATH = File.expand_path('../../config/templates.yml.erb', File.dirname(__FILE__))
 
   after_initialize do
     self.ssh_username ||= DEFAULT_SSH_USERNAME
@@ -27,17 +27,8 @@ class BaseImage < ActiveRecord::Base
     "#{cloud.name}#{SPLITTER}#{os}"
   end
 
-  def to_json
-    template = cloud.template
-    template.gsub(/\{\{(\w+)\s*`(\w+)`\}\}/) do
-      receiver_name = Regexp.last_match[1]
-      method_name = Regexp.last_match[2]
-      next Regexp.last_match[0] unless ALLOW_RECEIVERS.include? receiver_name
-      send(receiver_name).send(method_name)
-    end
-  end
-
-  def base_image
-    self
+  def builder
+    templates = YAML.load(ERB.new(IO.read(TEMPLATE_PATH)).result(binding))
+    templates[cloud.type.to_s].with_indifferent_access
   end
 end
