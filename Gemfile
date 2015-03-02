@@ -17,7 +17,7 @@ gem 'mixlib-config'
 gem 'mixlib-log'
 
 gem 'aws-sdk', '~>1.0'
-gem 'fog'
+gem 'fog', '~>1.27.0'
 gem 'zbxapi', '0.3.8'
 
 gem 'systemu'
