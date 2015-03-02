@@ -1,36 +1,36 @@
-1407119501,,ui,say,openstack----centos output will be in this color.
+1407119501,,ui,say,openstack----centos----web output will be in this color.
 1407119501,,ui,say,
-1407119501,,ui,say,==> openstack----centos: Creating temporary keypair for this instance...
-1407119502,,ui,say,==> openstack----centos: Waiting for server (9d0f490b-995f-4bc0-8dea-ddf11c47cb6a) to become ready...
-1407119509,,ui,say,==> openstack----centos: Created temporary floating IP 10.255.205.162...
-1407119510,,ui,say,==> openstack----centos: Added floating IP 10.255.205.162 to instance...
-1407119510,,ui,say,==> openstack----centos: Waiting for SSH to become available...
-1407119536,,ui,say,==> openstack----centos: Connected to SSH!
-1407119536,,ui,say,==> openstack----centos: Provisioning with shell script: /tmp/packer-shell189229454
-1407119536,,ui,message,    openstack----centos: + '[' -f /tmp/packer-create-image.sh ']'
-1407119536,,ui,message,    openstack----centos: + sudo /tmp/packer-create-image.sh
-1407119536,,ui,message,    openstack----centos: + cd /tmp
-1407119536,,ui,message,    openstack----centos: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
-1407119536,,ui,message,    openstack----centos: Initialized empty Git repository in /tmp/pattern/.git/
-1407119538,,ui,message,    openstack----centos: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
-1407119539,,ui,message,    openstack----centos: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
-1407119539,,ui,message,    openstack----centos: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
-1407119539,,ui,message,    openstack----centos: + cd /tmp/pattern/resources/chef-repos
-1407119539,,ui,message,    openstack----centos: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repos: No such file or directory
-1407119539,,ui,message,    openstack----centos: + berks vendor cookbooks
-1407119543,,ui,message,    openstack----centos: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
-1407119543,,ui,message,    openstack----centos: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
-1407119545,,ui,message,    openstack----centos: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
-1407119547,,ui,message,    openstack----centos: Compiling Cookbooks...[0m
-1407119547,,ui,message,    openstack----centos: [0m
-1407119547,,ui,message,    openstack----centos: Running handlers:[0m
-1407119547,,ui,message,    openstack----centos: Running handlers complete
-1407119547,,ui,message,    openstack----centos: [0mChef Client failed. 0 resources updated in 2.076294576 seconds[0m
-1407119547,,ui,say,==> openstack----centos: Terminating the source server...
-1407119552,,ui,say,==> openstack----centos: Deleting temporary keypair...
-1407119552,,ui,error,Build 'openstack----centos' errored: Script exited with non-zero exit status: 1
+1407119501,,ui,say,==> openstack----centos----web: Creating temporary keypair for this instance...
+1407119502,,ui,say,==> openstack----centos----web: Waiting for server (9d0f490b-995f-4bc0-8dea-ddf11c47cb6a) to become ready...
+1407119509,,ui,say,==> openstack----centos----web: Created temporary floating IP 10.255.205.162...
+1407119510,,ui,say,==> openstack----centos----web: Added floating IP 10.255.205.162 to instance...
+1407119510,,ui,say,==> openstack----centos----web: Waiting for SSH to become available...
+1407119536,,ui,say,==> openstack----centos----web: Connected to SSH!
+1407119536,,ui,say,==> openstack----centos----web: Provisioning with shell script: /tmp/packer-shell189229454
+1407119536,,ui,message,    openstack----centos----web: + '[' -f /tmp/packer-create-image.sh ']'
+1407119536,,ui,message,    openstack----centos----web: + sudo /tmp/packer-create-image.sh
+1407119536,,ui,message,    openstack----centos----web: + cd /tmp
+1407119536,,ui,message,    openstack----centos----web: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
+1407119536,,ui,message,    openstack----centos----web: Initialized empty Git repository in /tmp/pattern/.git/
+1407119538,,ui,message,    openstack----centos----web: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
+1407119539,,ui,message,    openstack----centos----web: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
+1407119539,,ui,message,    openstack----centos----web: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
+1407119539,,ui,message,    openstack----centos----web: + cd /tmp/pattern/resources/chef-repos
+1407119539,,ui,message,    openstack----centos----web: /tmp/script.sh: line 7: cd: /tmp/pattern/resources/chef-repos: No such file or directory
+1407119539,,ui,message,    openstack----centos----web: + berks vendor cookbooks
+1407119543,,ui,message,    openstack----centos----web: [31mNo Berksfile or Berksfile.lock found at '/tmp'![0m
+1407119543,,ui,message,    openstack----centos----web: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407119545,,ui,message,    openstack----centos----web: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
+1407119547,,ui,message,    openstack----centos----web: Compiling Cookbooks...[0m
+1407119547,,ui,message,    openstack----centos----web: [0m
+1407119547,,ui,message,    openstack----centos----web: Running handlers:[0m
+1407119547,,ui,message,    openstack----centos----web: Running handlers complete
+1407119547,,ui,message,    openstack----centos----web: [0mChef Client failed. 0 resources updated in 2.076294576 seconds[0m
+1407119547,,ui,say,==> openstack----centos----web: Terminating the source server...
+1407119552,,ui,say,==> openstack----centos----web: Deleting temporary keypair...
+1407119552,,ui,error,Build 'openstack----centos----web' errored: Script exited with non-zero exit status: 1
 1407119552,,error-count,1
 1407119552,,ui,error,\n==> Some builds didn't complete successfully and had errors:
-1407119552,openstack----centos,error,Script exited with non-zero exit status: 1
-1407119552,,ui,error,--> openstack----centos: Script exited with non-zero exit status: 1
+1407119552,openstack----centos----web,error,Script exited with non-zero exit status: 1
+1407119552,,ui,error,--> openstack----centos----web: Script exited with non-zero exit status: 1
 1407119552,,ui,say,\n==> Builds finished but no artifacts were created.

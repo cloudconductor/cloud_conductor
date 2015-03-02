@@ -1,10 +1,10 @@
-1407203580,,ui,say,aws----centos output will be in this color.
+1407203580,,ui,say,aws----centos----web output will be in this color.
 1407203580,,ui,say,
-1407203580,,ui,say,==> aws----centos: Inspecting the source AMI...
-1407203580,,ui,error,==> aws----centos: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
-1407203580,,ui,error,Build 'aws----centos' errored: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
+1407203580,,ui,say,==> aws----centos----web: Inspecting the source AMI...
+1407203580,,ui,error,==> aws----centos----web: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
+1407203580,,ui,error,Build 'aws----centos----web' errored: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
 1407203580,,error-count,1
 1407203580,,ui,error,\n==> Some builds didn't complete successfully and had errors:
-1407203580,aws----centos,error,Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
-1407203580,,ui,error,--> aws----centos: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
+1407203580,aws----centos----web,error,Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
+1407203580,,ui,error,--> aws----centos----web: Error querying AMI: The image id '[ami-25732f25]' does not exist (InvalidAMIID.NotFound)
 1407203580,,ui,say,\n==> Builds finished but no artifacts were created.
