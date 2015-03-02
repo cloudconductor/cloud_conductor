@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 0.3.4 (2015/03/02)
+  - Fix version of fog gem to 1.27.x.
+  - Fix version of aws-sdk gem to 1.x.
+
 ## version 0.3.2 (2014/12/24)
   - Switch from zabbixapi to red-tux/zbxapi to support any versions of Zabbix.
   - Reduce unnecessary logs.
