@@ -46,7 +46,7 @@ module API
       end
 
       def declared_params
-        declared(params, include_missing: false).to_hash
+        declared(params, include_missing: false).to_hash.with_indifferent_access
       end
 
       def permitted_params(*args)
