@@ -1,6 +1,7 @@
 source 'https://rubygems.org'
 
 gem 'rails', '4.1.8'
+gem 'activerecord-session_store'
 gem 'grape'
 gem 'devise'
 gem 'devise-token_authenticatable'
