@@ -17,7 +17,7 @@ require 'consul/client/event'
 
 module Consul
   class Client
-    attr_reader :kv, :event
+    attr_reader :kv, :event, :catalog
 
     def initialize(host, port = 8500, options = {})
       fail 'Consul::Client require host option' unless host
@@ -32,6 +32,7 @@ module Consul
 
       @kv = Consul::Client::KV.new @faraday, options
       @event = Consul::Client::Event.new @faraday
+      @catalog = Consul::Client::Catalog.new @faraday
     end
 
     def running?
