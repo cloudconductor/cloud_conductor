@@ -62,7 +62,7 @@ module CloudConductor
       def get_stack_status(name, options = {})
         options = options.with_indifferent_access
         orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
+        body = (orc.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
@@ -70,7 +70,7 @@ module CloudConductor
       def get_outputs(name, options = {})
         options = options.with_indifferent_access
         orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
+        body = (orc.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
         url = URI.parse "#{target_link[:href]}"
@@ -139,7 +139,7 @@ module CloudConductor
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
         orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
+        body = (orc.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         if target_stack.nil?
           Log.warn("Target stack was already deleted( stack_name = #{name})")

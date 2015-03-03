@@ -111,7 +111,7 @@ module CloudConductor
             }
           }
 
-          allow(::Fog::Orchestration).to receive_message_chain(:new, :list_stacks).and_return(@stacks)
+          allow(::Fog::Orchestration).to receive_message_chain(:new, :list_stack_data).and_return(@stacks)
         end
 
         it 'execute without exception' do
@@ -166,7 +166,7 @@ module CloudConductor
               )
             )
           )
-          @orc = double('orc', list_stacks: @stacks, auth_token: 'dummy_token')
+          @orc = double('orc', list_stack_data: @stacks, auth_token: 'dummy_token')
           allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@orc)
 
           @request = double('request')
@@ -388,7 +388,7 @@ module CloudConductor
               }
             ]
           }
-          @orc = double(:orc, list_stacks: { body: @stacks }, delete_stack: nil)
+          @orc = double(:orc, list_stack_data: { body: @stacks }, delete_stack: nil)
           allow(@adapter).to receive(:create_orchestration).and_return(@orc)
         end
 
