@@ -80,9 +80,9 @@ module CloudConductor
           converted_template = '{ dummy: "dummy" }'
           allow(@converter_stub).to receive(:convert).and_return converted_template
 
-          orc_stub = double('orc')
-          expect(orc_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(orc_stub)
+          connector_stub = double('connector')
+          expect(connector_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
+          allow(::Fog::Orchestration).to receive(:new).and_return(connector_stub)
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
         end
@@ -144,9 +144,9 @@ module CloudConductor
           converted_template = '{ dummy: "dummy" }'
           allow(@converter_stub).to receive(:convert).and_return converted_template
 
-          orc_stub = double('orc')
-          expect(orc_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(orc_stub)
+          connector_stub = double('connector')
+          expect(connector_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
+          allow(::Fog::Orchestration).to receive(:new).and_return(connector_stub)
 
           @adapter.update_stack 'stack_name', '{}', {}, @options
         end
@@ -230,8 +230,8 @@ module CloudConductor
               )
             )
           )
-          @orc = double('orc', list_stack_data: @stacks, auth_token: 'dummy_token')
-          allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@orc)
+          @connector = double('connector', list_stack_data: @stacks, auth_token: 'dummy_token')
+          allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@connector)
 
           @request = double('request')
           allow(@request).to receive(:content_type=)
@@ -452,12 +452,12 @@ module CloudConductor
               }
             ]
           }
-          @orc = double(:orc, list_stack_data: { body: @stacks }, delete_stack: nil)
-          allow(@adapter).to receive(:create_orchestration).and_return(@orc)
+          @connector = double(:connector, list_stack_data: { body: @stacks }, delete_stack: nil)
+          allow(@adapter).to receive(:create_connector).and_return(@connector)
         end
 
         it 'will request delete_stack API' do
-          expect(@orc).to receive(:delete_stack).with('stack_name', :stack_id)
+          expect(@connector).to receive(:delete_stack).with('stack_name', :stack_id)
           @adapter.destroy_stack 'stack_name'
         end
 

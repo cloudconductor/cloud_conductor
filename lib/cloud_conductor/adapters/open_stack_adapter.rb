@@ -22,7 +22,7 @@ module CloudConductor
         @post_processes = []
       end
 
-      def create_orchestration(options)
+      def create_connector(options)
         ::Fog::Orchestration.new(
           provider: :OpenStack,
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
@@ -51,13 +51,13 @@ module CloudConductor
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
-        orc = create_orchestration options
+        connector = create_connector options
         stack_params = {
           stack_name: name,
           template: converted_template,
           parameters: parameters
         }
-        orc.create_stack stack_params
+        connector.create_stack stack_params
       end
 
       def update_stack(name, template, parameters, options = {})
@@ -65,7 +65,7 @@ module CloudConductor
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
-        orc = create_orchestration options
+        connector = create_connector options
         id = get_stack_id(name, options)
         stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
         stack_params = {
@@ -73,35 +73,35 @@ module CloudConductor
           parameters: parameters
         }
         Log.info "Start updating #{name} stack"
-        orc.update_stack stack, stack_params
+        connector.update_stack stack, stack_params
       end
 
       def get_stack_id(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stack_data)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:id]
       end
 
       def get_stack_status(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stack_data)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
 
       def get_outputs(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stack_data)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
         url = URI.parse "#{target_link[:href]}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
-        request.add_field 'X-Auth-Token', orc.auth_token
+        request.add_field 'X-Auth-Token', connector.auth_token
         response = Net::HTTP.start url.host, url.port do |http|
           http.request request
         end
@@ -163,15 +163,15 @@ module CloudConductor
 
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stack_data)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         if target_stack.nil?
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
         end
         stack_id = target_stack[:id].to_sym
-        orc.delete_stack name, stack_id
+        connector.delete_stack name, stack_id
       end
 
       def post_process
