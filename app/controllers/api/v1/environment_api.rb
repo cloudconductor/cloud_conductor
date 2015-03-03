@@ -53,8 +53,10 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Environment name'
-          optional :clouds, type: Array, desc: 'Cloud ids to build environment. First cloud is primary.'
-          optional :stacks, type: Array, desc: 'Pattern parameters to build environment'
+          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack', default: '[]' do
+            requires :name, type: String, desc: 'Stack name'
+            optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
+          end
         end
         put '/:id' do
           environment = ::Environment.find(params[:id])
@@ -69,6 +71,10 @@ module API
           optional :blueprint_id, type: Integer, desc: 'Blueprint id'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
+          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack', default: '[]' do
+            requires :name, type: String, desc: 'Stack name'
+            optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
+          end
         end
         post '/:id/rebuild' do
           authorize!(:create, ::Environment)
@@ -76,7 +82,7 @@ module API
           authorize!(:read, environment)
 
           new_environment = environment.dup
-          new_environment.update_attributes(declared_params.except(:id, :switch))
+          new_environment.update_attributes!(declared_params.except(:id, :switch))
 
           Thread.new do
             CloudConductor::SystemBuilder.new(new_environment).build

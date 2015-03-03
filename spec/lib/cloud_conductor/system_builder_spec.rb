@@ -31,12 +31,14 @@ module CloudConductor
 
       @builder = SystemBuilder.new @environment
 
-      Stack.skip_callback :save, :before, :create_stack
+      Stack.skip_callback :create, :before, :create_stack
+      Stack.skip_callback :update, :before, :update_stack
       Stack.skip_callback :destroy, :before, :destroy_stack
     end
 
     after do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :create, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :update, :before, :update_stack, if: -> { create_complete? }
       Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
     end
 

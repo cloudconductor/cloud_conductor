@@ -27,10 +27,10 @@ module CloudConductor
       it 'return duplicated template' do
         single_json = load_json('single')
         multi_json = load_json('multi')
-        instance_sizes = { 'WebServer' => 2 }
+        parameters = { WebServerSize: '2' }
         availability_zones = ['ap-southeast-2a', 'ap-southeast-2b']
 
-        result = CloudConductor::Duplicators.increase_instance(single_json, instance_sizes, availability_zones)
+        result = CloudConductor::Duplicators.increase_instance(single_json, parameters, availability_zones)
 
         expect(result['Resources']).to eq(multi_json['Resources'])
       end

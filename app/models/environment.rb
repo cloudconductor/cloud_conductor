@@ -110,6 +110,15 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
+  def update_attributes!(attributes)
+    attributes[:stacks_attributes].each do |stack_attributes|
+      stack = stacks.find { |stack| stack.basename == stack_attributes[:name] }
+      stack_attributes[:id] = stack.id if stack
+      stack.template_parameters = stack_attributes[:template_parameters] if stack
+    end
+    super
+  end
+
   private
 
   def stack_destroyed?

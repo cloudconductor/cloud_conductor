@@ -376,6 +376,24 @@ describe Environment do
     end
   end
 
+  describe '#update_attributes!' do
+    it '' do
+      @environment.stacks << FactoryGirl.build(:stack, environment: @environment, id: 1, name: 'dummy_stack')
+      attributes = {
+        stacks_attributes: [{
+          name: 'dummy_stack',
+          template_parameters: "{ dummy: 'sample' }"
+        }]
+      }
+
+      expect(@environment.stacks.first.template_parameters).to eq('{}')
+      expect(attributes[:stacks_attributes].first[:id]).to eq(nil)
+      @environment.update_attributes!(attributes)
+      expect(@environment.stacks.first.template_parameters).to eq("{ dummy: 'sample' }")
+      expect(attributes[:stacks_attributes].first[:id]).to eq(1)
+    end
+  end
+
   describe '#stack_destroyed?' do
   end
 end

@@ -162,6 +162,25 @@ describe Stack do
     end
   end
 
+  describe '#update_stack' do
+    before do
+      allow(@stack).to receive_message_chain(:client, :update_stack)
+    end
+
+    it 'call Client#update_stack' do
+      expect(@stack).to receive_message_chain(:client, :update_stack)
+      @stack.update_stack
+    end
+
+    it 'update status to :ERROR if Client#create_stack raise error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_raise
+      @stack.status = :CREATE_COMPLETE
+      @stack.update_stack
+
+      expect(@stack.attributes['status']).to eq(:ERROR)
+    end
+  end
+
   describe '#dup' do
     it 'duplicate all attributes in stack' do
       duplicated_stack = @stack.dup

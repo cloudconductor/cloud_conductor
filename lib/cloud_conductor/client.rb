@@ -38,14 +38,14 @@ module CloudConductor
       @adapter = Adapters.const_get(adapter_name).new
     end
 
-    def create_stack(name, pattern, parameters, instance_sizes)
+    def create_stack(name, pattern, parameters)
       template = ''
       pattern.clone_repository do |path|
         template = open(File.expand_path('template.json', path)).read
       end
 
       az_list = @adapter.get_availability_zones @cloud.attributes
-      template = CloudConductor::Duplicators.increase_instance(template, instance_sizes, az_list)
+      template = CloudConductor::Duplicators.increase_instance(template, parameters, az_list)
 
       images = pattern.images.where(cloud: @cloud)
 
@@ -54,6 +54,24 @@ module CloudConductor
       end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes
+    end
+
+    def update_stack(name, pattern, parameters)
+      template = ''
+      pattern.clone_repository do |path|
+        template = open(File.expand_path('template.json', path)).read
+      end
+
+      az_list = @adapter.get_availability_zones @cloud.attributes
+      template = CloudConductor::Duplicators.increase_instance(template, parameters, az_list)
+
+      images = pattern.images.where(cloud: @cloud)
+
+      images.each do |image|
+        parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image
+      end
+
+      @adapter.update_stack name, template, parameters, @cloud.attributes
     end
 
     def get_stack_status(name)

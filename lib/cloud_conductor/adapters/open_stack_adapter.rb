@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'fog/openstack/models/orchestration/stack'
 
 module CloudConductor
   module Adapters
@@ -57,6 +58,30 @@ module CloudConductor
           parameters: parameters
         }
         orc.create_stack stack_params
+      end
+
+      def update_stack(name, template, parameters, options = {})
+        converter = CfnConverter.create_converter(:heat)
+        converted_template = converter.convert(template, parameters)
+
+        options = options.with_indifferent_access
+        orc = create_orchestration options
+        id = get_stack_id(name, options)
+        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
+        stack_params = {
+          template: converted_template,
+          parameters: parameters
+        }
+        Log.info "Start updating #{name} stack"
+        orc.update_stack stack, stack_params
+      end
+
+      def get_stack_id(name, options = {})
+        options = options.with_indifferent_access
+        orc = create_orchestration options
+        body = (orc.list_stack_data)[:body].with_indifferent_access
+        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
+        target_stack[:id]
       end
 
       def get_stack_status(name, options = {})

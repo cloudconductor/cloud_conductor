@@ -48,12 +48,12 @@ module CloudConductor
 
       it 'call adapter#create_stack with same arguments without pattern' do
         expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
-        @client.create_stack 'stack_name', pattern, {}, {}
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'call adapter#create_stack with template.json in repository' do
         expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
-        @client.create_stack 'stack_name', pattern, {}, {}
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
@@ -67,7 +67,7 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
-        @client.create_stack 'stack_name', pattern, {}, {}
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
@@ -77,7 +77,48 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
-        @client.create_stack 'stack_name', pattern, {}, {}
+        @client.create_stack 'stack_name', pattern, {}
+      end
+    end
+
+    describe '#update_stack' do
+      before do
+        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
+      end
+
+      it 'call adapter#update_stack with same arguments without pattern' do
+        expect(@client.adapter).to receive(:update_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
+        @client.update_stack 'stack_name', pattern, {}
+      end
+
+      it 'call adapter#update_stack with template.json in repository' do
+        expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
+        @client.update_stack 'stack_name', pattern, {}
+      end
+
+      it 'add ImageId/Image pair to parameter-hash' do
+        image1 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        expected_parameters = satisfy do |parameters|
+          expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
+
+          expect(parameters["#{image1.role}ImageId"]).to eq(image1.image)
+          expect(parameters["#{image2.role}ImageId"]).to eq(image2.image)
+        end
+
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        @client.update_stack 'stack_name', pattern, {}
+      end
+
+      it 'use key of ImageId that remove special characters from image.role' do
+        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
+        expected_parameters = satisfy do |parameters|
+          expect(parameters.keys).to be_include('webapdbImageId')
+        end
+
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        @client.update_stack 'stack_name', pattern, {}
       end
     end
 

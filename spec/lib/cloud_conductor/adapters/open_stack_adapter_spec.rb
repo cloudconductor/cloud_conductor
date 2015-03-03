@@ -88,6 +88,70 @@ module CloudConductor
         end
       end
 
+      describe '#update_stack' do
+        before do
+          allow(::Fog::Orchestration).to receive_message_chain(:new, :update_stack)
+
+          @options = {}
+          @options[:entry_point] = 'http://127.0.0.1:5000/'
+          @options[:key] = 'test_user'
+          @options[:secret] = 'test_secret'
+          @options[:tenant_name] = 'test_tenant'
+
+          @converter_stub = double('converter', convert: '{}')
+          allow(CfnConverter).to receive(:create_converter).and_return(@converter_stub)
+          allow(@adapter).to receive(:get_stack_id).and_return(1)
+          @stack = double('stack', id: 1, stack_name: 'stack_name')
+          allow(::Fog::Orchestration::OpenStack::Stack).to receive(:new).and_return(@stack)
+        end
+
+        it 'execute without exception' do
+          @adapter.update_stack 'stack_name', '{}', {}, {}
+        end
+
+        it 'instantiate' do
+          @options[:dummy] = 'dummy'
+
+          expect(::Fog::Orchestration).to receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_user',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.update_stack 'stack_name', '{}', {}, @options
+        end
+
+        it 'call Fog::Orchestration#update_stack to update stack on openstack' do
+          allow(::Fog::Orchestration).to receive_message_chain(:new) do
+            double('newfog').tap do |newfog|
+              expect(newfog).to receive(:update_stack).with(@stack, hash_including(template: '{}', parameters: {}))
+            end
+          end
+
+          @adapter.update_stack 'stack_name', '{}', {}, @options
+        end
+
+        it 'call OpenStackConverter to convert template before update stack' do
+          expect(@converter_stub).to receive(:convert)
+
+          @adapter.update_stack 'stack_name', '{}', {}, @options
+        end
+
+        it 'use converted template to create stack' do
+          converted_template = '{ dummy: "dummy" }'
+          allow(@converter_stub).to receive(:convert).and_return converted_template
+
+          orc_stub = double('orc')
+          expect(orc_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
+          allow(::Fog::Orchestration).to receive(:new).and_return(orc_stub)
+
+          @adapter.update_stack 'stack_name', '{}', {}, @options
+        end
+      end
+
       describe '#get_stack_status' do
         before do
           @options = {}

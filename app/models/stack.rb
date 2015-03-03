@@ -1,4 +1,4 @@
-class Stack < ActiveRecord::Base
+class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :environment
   belongs_to :pattern
   belongs_to :cloud
@@ -22,12 +22,12 @@ class Stack < ActiveRecord::Base
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   before_destroy :destroy_stack, unless: -> { pending? }
-  before_save :create_stack, if: -> { ready? }
+  before_create :create_stack, if: -> { ready? }
+  before_update :update_stack, if: -> { create_complete? }
 
   after_initialize do
     self.template_parameters ||= '{}'
     self.parameters ||= '{}'
-    self.instance_sizes ||= '{}'
     self.status ||= :PENDING
   end
 
@@ -38,7 +38,7 @@ class Stack < ActiveRecord::Base
   def create_stack
     common_parameters = JSON.parse(environment.template_parameters, symbolize_names: true)
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
-    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters), JSON.parse(instance_sizes)
+    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -56,6 +56,16 @@ class Stack < ActiveRecord::Base
   else
     self.status = :PROGRESS
     Log.info("Create stack on #{cloud.name} ... SUCCESS")
+  end
+
+  def update_stack
+    stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
+    client.update_stack name, pattern, stack_parameters
+  rescue => e
+    self.status = :ERROR
+    Log.warn("Create stack on #{cloud.name} ... FAILED")
+    Log.warn "Unexpected error has occurred while creating stack(#{name}) on #{cloud.name}"
+    Log.warn(e)
   end
 
   def basename

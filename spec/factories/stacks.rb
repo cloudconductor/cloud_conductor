@@ -23,11 +23,13 @@ FactoryGirl.define do
     parameters '{ "dummy": "value" }'
 
     before(:create) do
-      Stack.skip_callback :save, :before, :create_stack
+      Stack.skip_callback :create, :before, :create_stack
+      Stack.skip_callback :update, :before, :update_stack
     end
 
     after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :create, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :update, :before, :update_stack, if: -> { create_complete? }
     end
   end
 end
