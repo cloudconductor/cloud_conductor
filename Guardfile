@@ -2,10 +2,7 @@
 # More info at https://github.com/guard/guard#readme
 
 # rubocop: disable Style/RegexpLiteral
-
-RSPEC_PORT = ENV['RSPEC_PORT'] || 8989
-
-guard :rspec, cmd: "spring rspec" do
+guard :rspec, cmd: 'spring rspec' do
   watch(%r{^spec/.+_spec\.rb$})
   watch(%r{^spec/factories/.+\.rb$}) { 'spec' }
   watch(%r{^app/(.+)\.rb$})     { |m| "spec/app/#{m[1]}_spec.rb" }
