@@ -47,6 +47,27 @@ module Consul
           end
           @client.fire(:dummy, 'dummy_token')
         end
+
+        it 'send PUT request with node filter' do
+          @stubs.put('/v1/event/fire/dummy') do |env|
+            expect(env.params['node']).to eq('node1|node2')
+          end
+          @client.fire(:dummy, nil, node: %w(node1 node2))
+        end
+
+        it 'send PUT request with service filter' do
+          @stubs.put('/v1/event/fire/dummy') do |env|
+            expect(env.params['service']).to eq('service1|service2')
+          end
+          @client.fire(:dummy, nil, service: %w(service1 service2))
+        end
+
+        it 'send PUT request with tag filter' do
+          @stubs.put('/v1/event/fire/dummy') do |env|
+            expect(env.params['tag']).to eq('tag1|tag2')
+          end
+          @client.fire(:dummy, nil, tag: %w(tag1 tag2))
+        end
       end
     end
   end
