@@ -376,7 +376,7 @@ describe Environment do
     end
   end
 
-  describe '#update_attributes!' do
+  describe '#update_attributes_and_stacks!' do
     it '' do
       @environment.stacks << FactoryGirl.build(:stack, environment: @environment, id: 1, name: 'dummy_stack')
       attributes = {
@@ -388,7 +388,7 @@ describe Environment do
 
       expect(@environment.stacks.first.template_parameters).to eq('{}')
       expect(attributes[:stacks_attributes].first[:id]).to eq(nil)
-      @environment.update_attributes!(attributes)
+      @environment.update_attributes_and_stacks!(attributes)
       expect(@environment.stacks.first.template_parameters).to eq("{ dummy: 'sample' }")
       expect(attributes[:stacks_attributes].first[:id]).to eq(1)
     end

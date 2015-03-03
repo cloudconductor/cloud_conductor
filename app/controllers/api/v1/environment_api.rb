@@ -61,8 +61,8 @@ module API
         put '/:id' do
           environment = ::Environment.find(params[:id])
           authorize!(:update, environment)
-          environment.update_attributes!(declared_params)
-          environment
+          environment.update_attributes_and_stacks!(declared_params)
+          status 202
         end
 
         desc 'Rebuild environment'
@@ -82,7 +82,7 @@ module API
           authorize!(:read, environment)
 
           new_environment = environment.dup
-          new_environment.update_attributes!(declared_params.except(:id, :switch))
+          new_environment.update_attributes_and_stacks!(declared_params.except(:id, :switch))
 
           Thread.new do
             CloudConductor::SystemBuilder.new(new_environment).build
