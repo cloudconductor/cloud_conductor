@@ -23,6 +23,7 @@ gem 'unicorn'
 gem 'cfn_converter', git: 'https://github.com/cloudconductor/cfn_converter.git'
 
 group :development, :test do
+  gem 'spring'
   gem 'byebug'
   gem 'pry-byebug'
   gem 'pry-doc'
@@ -47,7 +48,6 @@ group :test do
   gem 'database_cleaner'
   gem 'factory_girl_rails'
   gem 'guard-rspec', require: false
-  gem 'spork', git: 'https://github.com/sporkrb/spork.git'
-  gem 'guard-spork', '~>2'
   gem 'json_expressions', require: 'json_expressions/rspec'
+  gem 'spring-commands-rspec'
 end
