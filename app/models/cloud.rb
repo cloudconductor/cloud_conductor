@@ -11,8 +11,6 @@ class Cloud < ActiveRecord::Base
 
   before_destroy :raise_error_in_use
 
-  TEMPLATE_PATH = File.expand_path('../../config/templates.yml', File.dirname(__FILE__))
-
   def type
     super && super.to_sym
   end
@@ -27,11 +25,6 @@ class Cloud < ActiveRecord::Base
 
   def raise_error_in_use
     fail 'Can\'t destroy cloud that is used in some systems.' if used?
-  end
-
-  def template
-    templates = YAML.load_file(TEMPLATE_PATH).symbolize_keys
-    templates[type].to_json
   end
 
   def as_json(options = {})

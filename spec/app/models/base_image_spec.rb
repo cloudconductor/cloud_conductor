@@ -107,49 +107,28 @@ describe BaseImage do
     end
   end
 
-  describe '#to_json' do
-    it 'return valid JSON that is generated from Cloud#template' do
-      allow(@base_image.cloud).to receive(:template).and_return <<-EOS
-        {
-          "dummy1": "dummy_value1",
-          "dummy2": "dummy_value2"
-        }
+  describe '#builder' do
+    it 'return builder options that is generated from templates.yml.erb' do
+      allow(IO).to receive(:read).with(BaseImage::TEMPLATE_PATH).and_return <<-EOS
+        dummy:
+          name: <%= name %>----{{user `role`}}
+          access_key: <%= cloud.key %>
       EOS
 
-      result = JSON.parse(@base_image.to_json).with_indifferent_access
-      expect(result.keys).to match_array(%w(dummy1 dummy2))
+      result = @base_image.builder
+      expect(result.keys).to match_array(%w(name access_key))
     end
 
     it 'update variables in template' do
-      allow(@base_image.cloud).to receive(:template).and_return <<-EOS
-        {
-          "cloud_name": "{{cloud `name`}}",
-          "os_name": "{{base_image `os`}}",
-          "source_image": "{{base_image `source_image`}}"
-        }
+      allow(IO).to receive(:read).with(BaseImage::TEMPLATE_PATH).and_return <<-EOS
+        dummy:
+          name: <%= name %>----{{user `role`}}
+          access_key: <%= cloud.key %>
       EOS
 
-      result = JSON.parse(@base_image.to_json).with_indifferent_access
-      expect(result[:cloud_name]).to eq(cloud.name)
-      expect(result[:os_name]).to eq('dummy_os')
-      expect(result[:source_image]).to eq(@base_image.source_image)
-    end
-
-    it 'doesn\'t affect variables that has unrelated receiver' do
-      allow(@base_image.cloud).to receive(:template).and_return <<-EOS
-        {
-          "dummy1": "{{user `name`}}",
-          "dummy2": "{{env `PATH`}}",
-          "dummy3": "{{isotime}}",
-          "dummy4": "{{ .Name }}"
-        }
-      EOS
-
-      result = JSON.parse(@base_image.to_json).with_indifferent_access
-      expect(result[:dummy1]).to eq('{{user `name`}}')
-      expect(result[:dummy2]).to eq('{{env `PATH`}}')
-      expect(result[:dummy3]).to eq('{{isotime}}')
-      expect(result[:dummy4]).to eq('{{ .Name }}')
+      result = @base_image.builder
+      expect(result[:name]).to eq("#{@base_image.name}----{{user `role`}}")
+      expect(result[:access_key]).to eq(cloud.key)
     end
   end
 end
