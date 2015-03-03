@@ -5,11 +5,6 @@
 
 RSPEC_PORT = ENV['RSPEC_PORT'] || 8989
 
-guard :rubocop, all_on_start: false do
-  watch(%r{.+\.rb$})
-  watch(%r{(?:.+/)?\.rubocop\.yml$}) { |m| File.dirname(m[0]) }
-end
-
 guard :rspec, cmd: "spring rspec" do
   watch(%r{^spec/.+_spec\.rb$})
   watch(%r{^spec/factories/.+\.rb$}) { 'spec' }
@@ -18,4 +13,9 @@ guard :rspec, cmd: "spring rspec" do
 
   watch('spec/spec_helper.rb')   { 'spec' }
   watch('config.ru') { 'spec' }
+end
+
+guard :rubocop, all_on_start: false do
+  watch(%r{.+\.rb$})
+  watch(%r{(?:.+/)?\.rubocop\.yml$}) { |m| File.dirname(m[0]) }
 end
