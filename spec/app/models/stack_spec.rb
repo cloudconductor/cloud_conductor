@@ -172,8 +172,8 @@ describe Stack do
       @stack.update_stack
     end
 
-    it 'update status to :ERROR if Client#create_stack raise error' do
-      allow(@stack).to receive_message_chain(:client, :update_stack).and_raise
+    it 'update status to :ERROR if Client#update_stack raise error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_raise(Net::OpenTimeout)
       @stack.status = :CREATE_COMPLETE
       @stack.update_stack
 

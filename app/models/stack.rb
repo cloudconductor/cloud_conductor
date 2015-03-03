@@ -61,11 +61,15 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   def update_stack
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
     client.update_stack name, pattern, stack_parameters
-  rescue => e
+  rescue Excon::Errors::SocketError
     self.status = :ERROR
-    Log.warn("Create stack on #{cloud.name} ... FAILED")
-    Log.warn "Unexpected error has occurred while creating stack(#{name}) on #{cloud.name}"
-    Log.warn(e)
+    Log.warn "Failed to connect to #{cloud.name}"
+  rescue Excon::Errors::Unauthorized, AWS::CloudFormation::Errors::InvalidClientTokenId
+    self.status = :ERROR
+    Log.warn "Failed to authorize on #{cloud.name}"
+  rescue Net::OpenTimeout
+    self.status = :ERROR
+    Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
   end
 
   def basename
