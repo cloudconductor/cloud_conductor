@@ -106,7 +106,7 @@ module CloudConductor
         allow(FileUtils).to receive(:mkdir_p)
         allow(@client).to receive(:open).and_return('{ "variables": [], "builders": [] }')
         allow(File).to receive(:open).and_yield(double(:file, write: nil))
-        @images.each { |image| allow(image.base_image).to receive(:builder).and_return({ dummy: "dummy_value" }) }
+        @images.each { |image| allow(image.base_image).to receive(:builder).and_return(dummy: 'dummy_value') }
       end
 
       it 'create directory to store packer.json if directory does not exist' do
