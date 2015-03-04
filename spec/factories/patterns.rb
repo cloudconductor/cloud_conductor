@@ -17,6 +17,7 @@ FactoryGirl.define do
     blueprint
     protocol 'git'
     revision 'master'
+    backup_config '{}'
 
     trait :platform do
       sequence(:name) { |n| "platform_pattern-#{n}" }

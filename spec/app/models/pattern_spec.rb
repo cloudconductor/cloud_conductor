@@ -295,6 +295,7 @@ describe Pattern do
     before do
       allow(Dir).to receive(:chdir).and_yield
       allow(@pattern).to receive(:load_parameters).and_return({})
+      allow(@pattern).to receive(:load_backup_config).and_return({})
     end
 
     it 'update name attribute with name in metadata' do
@@ -424,6 +425,18 @@ describe Pattern do
     it 'return all parameters when specified option' do
       parameters = @pattern.filtered_parameters(true)
       expect(parameters.keys).to eq %w(KeyName SSHLocation webImageId webInstanceType)
+    end
+  end
+
+  describe '#load_backup_parameters' do
+    it 'load config/backup_restore.yml and return it' do
+      expect(YAML).to receive(:load_file).with(/backup_restore.yml/).and_return(dummy: 'value')
+      expect(@pattern.send(:load_backup_config, cloned_path)).to eq(dummy: 'value')
+    end
+
+    it 'return empty hash when config/backup_restore.yml does not exist' do
+      expect(YAML).to receive(:load_file).with(/backup_restore.yml/).and_raise
+      expect(@pattern.send(:load_backup_config, cloned_path)).to eq({})
     end
   end
 end
