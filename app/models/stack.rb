@@ -22,8 +22,8 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   before_destroy :destroy_stack, unless: -> { pending? }
-  before_create :create_stack, if: -> { ready? }
-  before_update :update_stack, if: -> { create_complete? }
+  before_save :create_stack, if: -> { ready_for_create? }
+  before_save :update_stack, if: -> { ready_for_update? }
 
   after_initialize do
     self.template_parameters ||= '{}'
@@ -70,6 +70,9 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   rescue Net::OpenTimeout
     self.status = :ERROR
     Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
+  else
+    self.status = :PROGRESS
+    Log.info("Update stack on #{cloud.name} ... SUCCESS")
   end
 
   def basename
@@ -99,7 +102,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     false
   end
 
-  %i(pending ready progress create_complete error).each do |method|
+  %i(pending ready_for_create ready_for_update progress create_complete error).each do |method|
     define_method "#{method}?" do
       (attributes['status'] || :NIL).to_sym == method.upcase
     end

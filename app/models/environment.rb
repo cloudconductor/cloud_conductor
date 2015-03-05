@@ -116,6 +116,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       next unless stack
       stack_attributes[:id] = stack.id
       stack.template_parameters = stack_attributes[:template_parameters]
+      stack.status = :PENDING
     end
     update_attributes! attributes
   end

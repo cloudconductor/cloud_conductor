@@ -13,59 +13,59 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
-  class SystemBuilder # rubocop:disable ClassLength
+  class SystemUpdater # rubocop:disable ClassLength
     TIMEOUT = 1800
     CHECK_PERIOD = 3
 
     def initialize(environment)
-      @clouds = environment.candidates.sorted.map(&:cloud)
+      # @clouds = environment.candidates.sorted.map(&:cloud)
       @environment = environment
+      @nodes = get_nodes(@environment)
     end
 
-    def build # rubocop:disable MethodLength
+    def update # rubocop:disable MethodLength
       ActiveRecord::Base.connection_pool.with_connection do
-        @clouds.each do |cloud|
-          begin
-            Log.info "Start creating stacks of environment(#{@environment.name}) on #{cloud.name}"
-            @environment.status = :PROGRESS
-            @environment.save!
+        # @clouds.each do |cloud|
+        begin
+          cloud = @environment.stacks.first.cloud
+          Log.info "Start updating stacks of environment(#{@environment.name}) on #{cloud.name}"
+          @environment.status = :PROGRESS
+          @environment.save!
 
-            until @environment.stacks.select(&:pending?).empty?
-              platforms = @environment.stacks.select(&:pending?).select(&:platform?)
-              optionals = @environment.stacks.select(&:pending?).select(&:optional?)
-              stack = (platforms + optionals).first
-              stack.cloud = cloud
-              stack.status = :READY_FOR_CREATE
-              stack.save!
-
-              wait_for_finished(stack, TIMEOUT)
-
-              update_environment stack.outputs if stack.platform?
-
-              stack.status = :CREATE_COMPLETE
-              stack.save!
-
-              stack.client.post_process
-            end
-
-            finish_environment if @environment.reload
-
-            Log.info "Created all stacks on environment(#{@environment.name}) on #{cloud.name}"
-            break
-          rescue => e
-            Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
-            Log.warn e.message
-            reset_stacks
-          end
-        end
-
-        unless @environment.status == :CREATE_COMPLETE
-          @environment.stacks.each do |stack|
-            stack.status = :ERROR
+          until @environment.stacks.select(&:pending?).empty?
+            platforms = @environment.stacks.select(&:pending?).select(&:platform?)
+            optionals = @environment.stacks.select(&:pending?).select(&:optional?)
+            stack = (platforms + optionals).first
+            stack.cloud = cloud
+            stack.status = :READY_FOR_UPDATE
             stack.save!
+
+            wait_for_finished(stack, TIMEOUT)
+
+            update_environment stack.outputs if stack.platform?
+
+            stack.status = :CREATE_COMPLETE
+            stack.save!
+
+            stack.client.post_process
           end
+
+          finish_environment if @environment.reload
+
+          Log.info "Updated all stacks on environment(#{@environment.name}) on #{cloud.name}"
+          break
+        rescue => e
+          Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
+          Log.warn e.message
+          @environment.status = :ERROR
+          @environment.save!
         end
       end
+
+      @environment.stacks.each do |stack|
+        stack.status = :ERROR
+        stack.save!
+      end unless @environment.status == :CREATE_COMPLETE
     end
 
     private
@@ -84,11 +84,11 @@ module CloudConductor
 
         status = stack.status
 
-        unless %i(CREATE_IN_PROGRESS CREATE_COMPLETE).include? stack.status
-          fail "Unknown error has occurred while create stack(#{stack.status})"
+        unless %i(UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE).include? stack.status
+          fail "Unknown error has occurred while update stack(#{stack.status})"
         end
 
-        next if status == :CREATE_IN_PROGRESS
+        next if status == :UPDATE_IN_PROGRESS || status == :UPDATE_COMPLETE_CLEANUP_IN_PROGRESS
 
         if stack.pattern.type == :platform
           outputs = stack.outputs
@@ -107,7 +107,7 @@ module CloudConductor
     # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
     def update_environment(outputs)
-      Log.info 'Platform stack has created.'
+      Log.info 'Platform stack has updated.'
       @environment.ip_address = outputs['FrontendAddress']
       @environment.template_parameters = outputs.except('FrontendAddress').to_json
       @environment.save!
@@ -115,8 +115,12 @@ module CloudConductor
 
     def finish_environment
       @environment.event.sync_fire(:configure, configure_payload(@environment))
-      @environment.event.sync_fire(:restore, application_payload(@environment))
-      @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.deployments.empty?
+      target_node = get_nodes(@environment) - @nodes
+      unless target_node.empty?
+        filter = { node: target_node }
+        @environment.event.sync_fire(:restore, application_payload(@environment), filter)
+        @environment.event.sync_fire(:deploy, application_payload(@environment), filter) unless @environment.deployments.empty?
+      end
 
       @environment.deployments.each do |deployment|
         deployment.status = :DEPLOYED
@@ -124,18 +128,6 @@ module CloudConductor
       end
 
       @environment.status = :CREATE_COMPLETE
-      @environment.save!
-    end
-
-    def reset_stacks
-      Log.info 'Reset all stacks.'
-      @environment.status = :ERROR
-      @environment.ip_address = nil
-      @environment.template_parameters = '{}'
-      stacks = @environment.stacks.map(&:dup)
-      @environment.destroy_stacks
-      @environment.stacks = stacks
-
       @environment.save!
     end
 
@@ -161,6 +153,10 @@ module CloudConductor
       return {} if environment.deployments.empty?
 
       environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
+    end
+
+    def get_nodes(environment)
+      environment.consul.catalog.nodes.map { |node| node[:node] }
     end
   end
 end

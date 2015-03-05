@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
-  describe SystemBuilder do
+  describe SystemUpdater do
     include_context 'default_resources'
 
     before do
@@ -29,7 +29,8 @@ module CloudConductor
       @environment.stacks << @optional_stack
       @environment.save!
 
-      @builder = SystemBuilder.new @environment
+      allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
+      @updater = SystemUpdater.new @environment
 
       Stack.skip_callback :save, :before, :create_stack
       Stack.skip_callback :save, :before, :update_stack
@@ -43,59 +44,42 @@ module CloudConductor
     end
 
     describe '#initialize' do
-      it 'set @clouds that contains candidate clouds orderd by priority' do
-        @environment.candidates[0].update_attributes(priority: 10)
-        @environment.candidates[1].update_attributes(priority: 20)
-        builder = SystemBuilder.new @environment
-        clouds = builder.instance_variable_get :@clouds
-        expect(clouds).to eq([@environment.clouds.last, @environment.clouds.first])
-
-        @environment.candidates[0].update_attributes(priority: 20)
-        @environment.candidates[1].update_attributes(priority: 10)
-        builder = SystemBuilder.new @environment
-        clouds = builder.instance_variable_get :@clouds
-        expect(clouds).to eq([@environment.clouds.first, @environment.clouds.last])
+      it 'set @nodes' do
+        nodes = @updater.instance_variable_get :@nodes
+        expect(nodes).to eq(['dummy_node'])
       end
 
       it 'set @environment' do
-        environment = @builder.instance_variable_get :@environment
+        environment = @updater.instance_variable_get :@environment
         expect(environment).to eq(@environment)
       end
     end
 
-    describe '#build' do
+    describe '#update' do
       before do
         allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
 
-        allow(@builder).to receive(:wait_for_finished)
-        allow(@builder).to receive(:update_environment)
-        allow(@builder).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
-        allow(@builder).to receive(:reset_stacks)
+        allow(@updater).to receive(:wait_for_finished)
+        allow(@updater).to receive(:update_environment)
+        allow(@updater).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
       end
 
       it 'call every subsequence 1 time' do
-        expect(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).ordered
-        expect(@builder).to receive(:update_environment).with(key: 'dummy').ordered
-        expect(@builder).to receive(:wait_for_finished).with(@environment.stacks[1], anything).ordered
-        expect(@builder).to receive(:finish_environment).ordered
-        expect(@builder).not_to receive(:reset_stacks)
-        @builder.build
-      end
-
-      it 'call #reset_stacks when some method raise error' do
-        allow(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).and_raise
-        expect(@builder).to receive(:reset_stacks)
-        @builder.build
+        expect(@updater).to receive(:wait_for_finished).with(@environment.stacks[0], anything).ordered
+        expect(@updater).to receive(:update_environment).with(key: 'dummy').ordered
+        expect(@updater).to receive(:wait_for_finished).with(@environment.stacks[1], anything).ordered
+        expect(@updater).to receive(:finish_environment).ordered
+        @updater.update
       end
 
       it 'create all stacks' do
-        @builder.build
+        @updater.update
         expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
       end
 
       it 'set status of stacks to :ERROR when all candidates failed' do
         allow(@environment).to receive(:status).and_return(:ERROR)
-        @builder.build
+        @updater.update
 
         expect(@environment.stacks.all?(&:error?)).to be_truthy
       end
@@ -103,53 +87,53 @@ module CloudConductor
 
     describe '#wait_for_finished' do
       before do
-        allow(@builder).to receive(:sleep)
+        allow(@updater).to receive(:sleep)
 
-        allow(@platform_stack).to receive(:status).and_return(:CREATE_COMPLETE)
+        allow(@platform_stack).to receive(:status).and_return(:UPDATE_COMPLETE)
         allow(@platform_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
-        allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
+        allow(@optional_stack).to receive(:status).and_return(:UPDATE_COMPLETE)
         allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
 
         allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
       end
 
       it 'execute without error' do
-        @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD)
+        @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD)
       end
 
       it 'raise error when timeout' do
-        expect { @builder.send(:wait_for_finished, @platform_stack, 0) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, 0) }.to raise_error
       end
 
       it 'raise error when target stack is already deleted' do
         @platform_stack.destroy
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
 
       it 'raise error when timeout' do
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
 
-      it 'infinity loop and timeout while status still :CREATE_IN_PROGRESS' do
-        allow(@platform_stack).to receive(:status).and_return(:CREATE_IN_PROGRESS)
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+      it 'infinity loop and timeout while status still :UPDATE_IN_PROGRESS' do
+        allow(@platform_stack).to receive(:status).and_return(:UPDATE_IN_PROGRESS)
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
 
       it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
         allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
 
       it 'return successfuly when outputs doesn\'t have FrontendAddress on optional stack' do
         allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
-        @builder.send(:wait_for_finished, @optional_stack, SystemBuilder::CHECK_PERIOD)
+        @updater.send(:wait_for_finished, @optional_stack, SystemUpdater::CHECK_PERIOD)
       end
 
       it 'infinity loop and timeout while consul doesn\'t running' do
         allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
     end
 
@@ -160,7 +144,7 @@ module CloudConductor
           'dummy' => 'value'
         }
 
-        @builder.send(:update_environment, outputs)
+        @updater.send(:update_environment, outputs)
 
         expect(@environment.ip_address).to eq('127.0.0.1')
         expect(@environment.template_parameters).to eq('{"dummy":"value"}')
@@ -171,36 +155,37 @@ module CloudConductor
       before do
         @event = double(:event, sync_fire: 1)
         allow(@environment).to receive(:event).and_return(@event)
-        allow(@builder).to receive(:configure_payload).and_return({})
-        allow(@builder).to receive(:application_payload).and_return({})
+        allow(@updater).to receive(:configure_payload).and_return({})
+        allow(@updater).to receive(:application_payload).and_return({})
+        allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }, { node: 'sample_node' }]
       end
 
       it 'will request configure event to consul' do
         expect(@event).to receive(:sync_fire).with(:configure, {})
-        @builder.send(:finish_environment)
+        @updater.send(:finish_environment)
       end
 
       it 'will request restore event to consul' do
-        expect(@event).to receive(:sync_fire).with(:restore, {})
-        @builder.send(:finish_environment)
+        expect(@event).to receive(:sync_fire).with(:restore, {}, node: ['sample_node'])
+        @updater.send(:finish_environment)
       end
 
       it 'won\'t request deploy event to consul when create new environment' do
-        expect(@event).not_to receive(:sync_fire).with(:deploy, anything)
-        @builder.send(:finish_environment)
+        expect(@event).not_to receive(:sync_fire).with(:deploy, anything, anything)
+        @updater.send(:finish_environment)
       end
 
       it 'will request deploy event to consul when create already deploymented environment' do
         @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-        expect(@event).to receive(:sync_fire).with(:deploy, {})
-        @builder.send(:finish_environment)
+        expect(@event).to receive(:sync_fire).with(:deploy, {}, node: ['sample_node'])
+        @updater.send(:finish_environment)
       end
 
       it 'change application history status if deploy event is finished' do
         @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
         expect(@environment.deployments.first.status).to eq(:NOT_YET)
 
-        @builder.send(:finish_environment)
+        @updater.send(:finish_environment)
 
         expect(@environment.deployments.first.status).to eq(:DEPLOYED)
       end
@@ -208,7 +193,7 @@ module CloudConductor
 
     describe '#configure_payload' do
       it 'return payload that contains random salt' do
-        payload = @builder.send(:configure_payload, @environment)
+        payload = @updater.send(:configure_payload, @environment)
         expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
       end
 
@@ -219,7 +204,7 @@ module CloudConductor
         @optional_stack.status = :CREATE_COMPLETE
         @optional_stack.save!
 
-        payload = @builder.send(:configure_payload, @environment)
+        payload = @updater.send(:configure_payload, @environment)
         expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
 
         payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
@@ -238,68 +223,9 @@ module CloudConductor
       end
     end
 
-    describe '#reset_stacks' do
-      before do
-        allow(@environment).to receive(:destroy_stacks) do
-          @environment.stacks.each(&:delete)
-        end
-      end
-
-      it 'destroy previous stacks and re-create stacks with PENDING status' do
-        stack = @environment.stacks.first
-        stack.status = :CREATE_COMPLETE
-        stack.save!
-
-        expect { @builder.send(:reset_stacks) }.not_to change { Stack.count }
-        expect(@environment.stacks.first).not_to eq(stack)
-        expect(Stack.all.all?(&:pending?)).to be_truthy
-      end
-
-      it 'reset ip_address and template_parameters in environment' do
-        @environment.ip_address = '127.0.0.1'
-        @environment.template_parameters = '{ "key": "dummy" }'
-
-        @builder.send(:reset_stacks)
-
-        expect(@environment.ip_address).to be_nil
-        expect(@environment.template_parameters).to eq('{}')
-      end
-
-      it 'change status of environment to :ERROR when some error occurred' do
-        @builder.send(:reset_stacks)
-        expect(@environment.status).to eq(:ERROR)
-      end
-    end
-
-    describe '#configure_payload' do
-      it 'return payload that used for configure event' do
-        allow(@environment.stacks).to receive(:created).and_return([@platform_stack, @optional_stack])
-
-        expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
-
-          payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
-          expect(payload1[:name]).to eq(@platform_stack.pattern.name)
-          expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
-          expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
-          expect(payload1[:url]).to eq(@platform_stack.pattern.url)
-          expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-
-          payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
-          expect(payload2[:name]).to eq(@optional_stack.pattern.name)
-          expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
-          expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
-          expect(payload2[:url]).to eq(@optional_stack.pattern.url)
-          expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-        end
-
-        expect(@builder.send(:configure_payload, @environment)).to expected_payload
-      end
-    end
-
     describe '#application_payload' do
       it 'return empty payload when deployments are empty' do
-        expect(@builder.send(:application_payload, @environment)).to eq({})
+        expect(@updater.send(:application_payload, @environment)).to eq({})
       end
 
       it 'return merged payload that contains all deployments' do
@@ -314,7 +240,7 @@ module CloudConductor
           expect(payload[:cloudconductor][:applications].keys).to eq(%w(application1 application2))
         end
 
-        expect(@builder.send(:application_payload, @environment)).to expected_payload
+        expect(@updater.send(:application_payload, @environment)).to expected_payload
       end
     end
   end
