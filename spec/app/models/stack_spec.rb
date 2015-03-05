@@ -138,7 +138,6 @@ describe Stack do
   describe '#create_stack' do
     before do
       allow(@stack).to receive_message_chain(:client, :create_stack)
-      # @template_parameters = JSON.parse @stack.template_parameters
     end
 
     it 'call Client#create_stack' do
