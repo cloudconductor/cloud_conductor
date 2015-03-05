@@ -155,13 +155,11 @@ module CloudConductor
       before do
         @event = double(:event, sync_fire: 1)
         allow(@environment).to receive(:event).and_return(@event)
-        allow(@updater).to receive(:configure_payload).and_return({})
-        allow(@updater).to receive(:application_payload).and_return({})
         allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }, { node: 'sample_node' }]
       end
 
       it 'will request configure event to consul' do
-        expect(@event).to receive(:sync_fire).with(:configure, {})
+        expect(@event).to receive(:sync_fire).with(:configure)
         @updater.send(:finish_environment)
       end
 
@@ -188,59 +186,6 @@ module CloudConductor
         @updater.send(:finish_environment)
 
         expect(@environment.deployments.first.status).to eq(:DEPLOYED)
-      end
-    end
-
-    describe '#configure_payload' do
-      it 'return payload that contains random salt' do
-        payload = @updater.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
-      end
-
-      it 'will request configure event to serf with payload' do
-        @platform_stack.status = :CREATE_COMPLETE
-        @platform_stack.save!
-
-        @optional_stack.status = :CREATE_COMPLETE
-        @optional_stack.save!
-
-        payload = @updater.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
-
-        payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
-        expect(payload1[:name]).to eq(@platform_stack.pattern.name)
-        expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
-        expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
-        expect(payload1[:url]).to eq(@platform_stack.pattern.url)
-        expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-
-        payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
-        expect(payload2[:name]).to eq(@optional_stack.pattern.name)
-        expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
-        expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
-        expect(payload2[:url]).to eq(@optional_stack.pattern.url)
-        expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-      end
-    end
-
-    describe '#application_payload' do
-      it 'return empty payload when deployments are empty' do
-        expect(@updater.send(:application_payload, @environment)).to eq({})
-      end
-
-      it 'return merged payload that contains all deployments' do
-        application1 = FactoryGirl.create(:application, name: 'application1')
-        application2 = FactoryGirl.create(:application, name: 'application2')
-        history1 = FactoryGirl.create(:application_history, application: application1)
-        history2 = FactoryGirl.create(:application_history, application: application2)
-
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
-        expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:applications].keys).to eq(%w(application1 application2))
-        end
-
-        expect(@updater.send(:application_payload, @environment)).to expected_payload
       end
     end
   end

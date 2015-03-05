@@ -18,7 +18,6 @@ module CloudConductor
     CHECK_PERIOD = 3
 
     def initialize(environment)
-      # @clouds = environment.candidates.sorted.map(&:cloud)
       @environment = environment
       @nodes = get_nodes(@environment)
     end
@@ -35,7 +34,6 @@ module CloudConductor
             platforms = @environment.stacks.select(&:pending?).select(&:platform?)
             optionals = @environment.stacks.select(&:pending?).select(&:optional?)
             stack = (platforms + optionals).first
-            stack.cloud = cloud
             stack.status = :READY_FOR_UPDATE
             stack.save!
 
@@ -113,12 +111,11 @@ module CloudConductor
     end
 
     def finish_environment
-      @environment.event.sync_fire(:configure, configure_payload(@environment))
+      @environment.event.sync_fire(:configure)
       target_node = get_nodes(@environment) - @nodes
       unless target_node.empty?
-        filter = { node: target_node }
-        @environment.event.sync_fire(:restore, application_payload(@environment), filter)
-        @environment.event.sync_fire(:deploy, application_payload(@environment), filter) unless @environment.deployments.empty?
+        @environment.event.sync_fire(:restore, {}, node: target_node)
+        @environment.event.sync_fire(:deploy, {}, node: target_node) unless @environment.deployments.empty?
       end
 
       @environment.deployments.each do |deployment|
@@ -131,28 +128,6 @@ module CloudConductor
     end
 
     private
-
-    def configure_payload(environment)
-      payload = {
-        cloudconductor: {
-          salt: SecureRandom.hex,
-          patterns: {
-          }
-        }
-      }
-
-      environment.stacks.created.each do |stack|
-        payload[:cloudconductor][:patterns].deep_merge! stack.payload
-      end
-
-      payload
-    end
-
-    def application_payload(environment)
-      return {} if environment.deployments.empty?
-
-      environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
-    end
 
     def get_nodes(environment)
       environment.consul.catalog.nodes.map { |node| node[:node] }

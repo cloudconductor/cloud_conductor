@@ -14,6 +14,7 @@
 # limitations under the License.
 require 'cloud_conductor/adapters'
 require 'cloud_conductor/duplicators'
+require 'cloud_conductor/converter'
 
 module CloudConductor
   class Client
@@ -46,6 +47,7 @@ module CloudConductor
 
       az_list = @adapter.get_availability_zones @cloud.attributes
       template = CloudConductor::Duplicators.increase_instance(template, parameters, az_list)
+      template = CloudConductor::Converter.new.update_cluster_addresses(template)
 
       images = pattern.images.where(cloud: @cloud)
 
@@ -64,6 +66,7 @@ module CloudConductor
 
       az_list = @adapter.get_availability_zones @cloud.attributes
       template = CloudConductor::Duplicators.increase_instance(template, parameters, az_list)
+      template = CloudConductor::Converter.new.update_cluster_addresses(template)
 
       images = pattern.images.where(cloud: @cloud)
 
