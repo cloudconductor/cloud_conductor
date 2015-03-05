@@ -25,7 +25,6 @@ module CloudConductor
 
     def update # rubocop:disable MethodLength
       ActiveRecord::Base.connection_pool.with_connection do
-        # @clouds.each do |cloud|
         begin
           cloud = @environment.stacks.first.cloud
           Log.info "Start updating stacks of environment(#{@environment.name}) on #{cloud.name}"
