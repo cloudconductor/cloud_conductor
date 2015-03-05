@@ -28,12 +28,13 @@ describe Stack do
     it 'returns stacks in progress status' do
       stack1 = FactoryGirl.create(:stack, status: :PENDING)
       stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
-      stack3 = FactoryGirl.create(:stack, status: :READY)
-      stack4 = FactoryGirl.create(:stack, status: :ERROR)
-      stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
-      stack6 = FactoryGirl.create(:stack, status: :PROGRESS)
+      stack3 = FactoryGirl.create(:stack, status: :READY_FOR_CREATE)
+      stack4 = FactoryGirl.create(:stack, status: :READY_FOR_UPDATE)
+      stack5 = FactoryGirl.create(:stack, status: :ERROR)
+      stack6 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+      stack7 = FactoryGirl.create(:stack, status: :PROGRESS)
 
-      expect(Stack.in_progress).to eq([stack2, stack6])
+      expect(Stack.in_progress).to eq([stack2, stack7])
     end
   end
 
@@ -41,12 +42,13 @@ describe Stack do
     it 'returns stacks in progress status' do
       stack1 = FactoryGirl.create(:stack, status: :PENDING)
       stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
-      stack3 = FactoryGirl.create(:stack, status: :READY)
-      stack4 = FactoryGirl.create(:stack, status: :ERROR)
-      stack5 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+      stack3 = FactoryGirl.create(:stack, status: :READY_FOR_CREATE)
+      stack4 = FactoryGirl.create(:stack, status: :READY_FOR_UPDATE)
+      stack5 = FactoryGirl.create(:stack, status: :ERROR)
       stack6 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
+      stack7 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
 
-      expect(Stack.created).to eq([stack5, stack6])
+      expect(Stack.created).to eq([stack6, stack7])
     end
   end
   # rubocop:enable UselessAssignment
@@ -116,20 +118,33 @@ describe Stack do
   describe '#save' do
     before do
       allow(@stack).to receive(:create_stack)
+      allow(@stack).to receive(:update_stack)
     end
 
     it 'create with valid parameters' do
       expect { @stack.save! }.to change { Stack.count }.by(1)
     end
 
-    it 'call #create_stack callback when status is ready' do
+    it 'call #create_stack callback when status is ready_for_create' do
       expect(@stack).to receive(:create_stack)
-      @stack.status = :READY
+      @stack.status = :READY_FOR_CREATE
       @stack.save!
     end
 
-    it 'doesn\'t call #create_stack callback when status isn\'t ready' do
+    it 'call #create_stack callback when status is ready_for_update' do
+      expect(@stack).to receive(:update_stack)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.save!
+    end
+
+    it 'doesn\'t call #create_stack callback when status isn\'t ready_for_create' do
       expect(@stack).not_to receive(:create_stack)
+      @stack.status = :PENDING
+      @stack.save!
+    end
+
+    it 'doesn\'t call #create_stack callback when status isn\'t ready_for_update' do
+      expect(@stack).not_to receive(:update_stack)
       @stack.status = :PENDING
       @stack.save!
     end
@@ -138,7 +153,6 @@ describe Stack do
   describe '#create_stack' do
     before do
       allow(@stack).to receive_message_chain(:client, :create_stack)
-      # @template_parameters = JSON.parse @stack.template_parameters
     end
 
     it 'call Client#create_stack' do
@@ -147,7 +161,7 @@ describe Stack do
     end
 
     it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
-      @stack.status = :READY
+      @stack.status = :READY_FOR_CREATE
       @stack.create_stack
 
       expect(@stack.attributes['status']).to eq(:PROGRESS)
@@ -155,8 +169,27 @@ describe Stack do
 
     it 'update status to :ERROR if Client#create_stack raise error' do
       allow(@stack).to receive_message_chain(:client, :create_stack).and_raise
-      @stack.status = :READY
+      @stack.status = :READY_FOR_CREATE
       @stack.create_stack
+
+      expect(@stack.attributes['status']).to eq(:ERROR)
+    end
+  end
+
+  describe '#update_stack' do
+    before do
+      allow(@stack).to receive_message_chain(:client, :update_stack)
+    end
+
+    it 'call Client#update_stack' do
+      expect(@stack).to receive_message_chain(:client, :update_stack)
+      @stack.update_stack
+    end
+
+    it 'update status to :ERROR if Client#update_stack raise error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_raise(Net::OpenTimeout)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.update_stack
 
       expect(@stack.attributes['status']).to eq(:ERROR)
     end
@@ -205,8 +238,11 @@ describe Stack do
       @stack.status = :PENDING
       expect(@stack.status).to eq(:PENDING)
 
-      @stack.status = :READY
-      expect(@stack.status).to eq(:READY)
+      @stack.status = :READY_FOR_CREATE
+      expect(@stack.status).to eq(:READY_FOR_CREATE)
+
+      @stack.status = :READY_FOR_UPDATE
+      expect(@stack.status).to eq(:READY_FOR_UPDATE)
 
       @stack.status = :CREATE_COMPLETE
       expect(@stack.status).to eq(:CREATE_COMPLETE)
@@ -277,18 +313,26 @@ describe Stack do
 
   describe '#pending?' do
     it 'return boolean for status is pending' do
-      @stack.status = :READY
+      @stack.status = :READY_FOR_CREATE
       expect(@stack.pending?).to be_falsey
       @stack.status = :PENDING
       expect(@stack.pending?).to be_truthy
     end
   end
 
-  describe '#ready?' do
-    it 'return boolean for status is ready' do
-      expect(@stack.ready?).to be_falsey
-      @stack.status = :READY
-      expect(@stack.ready?).to be_truthy
+  describe '#ready_for_create?' do
+    it 'return boolean for status is ready_for_create' do
+      expect(@stack.ready_for_create?).to be_falsey
+      @stack.status = :READY_FOR_CREATE
+      expect(@stack.ready_for_create?).to be_truthy
+    end
+  end
+
+  describe '#ready_for_update?' do
+    it 'return boolean for status is ready_for_update' do
+      expect(@stack.ready_for_update?).to be_falsey
+      @stack.status = :READY_FOR_UPDATE
+      expect(@stack.ready_for_update?).to be_truthy
     end
   end
 

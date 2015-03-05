@@ -35,7 +35,7 @@ module CloudConductor
               optionals = @environment.stacks.select(&:pending?).select(&:optional?)
               stack = (platforms + optionals).first
               stack.cloud = cloud
-              stack.status = :READY
+              stack.status = :READY_FOR_CREATE
               stack.save!
 
               wait_for_finished(stack, TIMEOUT)

@@ -24,10 +24,12 @@ FactoryGirl.define do
 
     before(:create) do
       Stack.skip_callback :save, :before, :create_stack
+      Stack.skip_callback :save, :before, :update_stack
     end
 
     after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
+      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
     end
   end
 end

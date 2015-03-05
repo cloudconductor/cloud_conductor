@@ -18,19 +18,22 @@ require 'cloud_conductor/duplicators/network_interface_duplicator'
 
 module CloudConductor
   module Duplicators
-    def self.increase_instance(template_json, instance_sizes = {}, availability_zones = [])
-      options = { AvailabilityZone: availability_zones }
+    extend DuplicatorUtils
 
+    def self.increase_instance(template_json, parameters = {}, availability_zones = [])
+      options = { AvailabilityZone: availability_zones }
       template = JSON.parse(template_json).with_indifferent_access
-      instance_sizes.each do |target_name, size|
-        resources = template['Resources']
-        next unless resources[target_name]
-        (2..size).each do |n|
+
+      resources = template['Resources']
+      instances = resources.select(&type?('AWS::EC2::Instance'))
+      instances.each do |instance_name, _instance_property|
+        scale_size = parameters[:"#{instance_name}Size"] || 1
+        (2..scale_size.to_i).each do |n|
           options.merge! CopyNum: n
-          options.merge! Role: resources[target_name]['Metadata']['Role']
+          options.merge! Role: resources[instance_name]['Metadata']['Role']
 
           duplicator = InstanceDuplicator.new(resources, options)
-          template['Resources'].merge! duplicator.copy(target_name, {}, options)
+          resources.merge! duplicator.copy(instance_name, {}, options)
         end
       end
       remove_copied_flag(template).to_json

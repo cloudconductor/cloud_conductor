@@ -19,7 +19,11 @@ module Consul
         @faraday = faraday
       end
 
-      def fire(name, payload = nil)
+      def fire(name, payload = nil, filter = {})
+        @faraday.params[:node] = filter[:node].join('|') if filter[:node]
+        @faraday.params[:service] = filter[:service].join('|') if filter[:service]
+        @faraday.params[:tag] = filter[:tag].join('|') if filter[:tag]
+
         response = @faraday.put("event/fire/#{name}", payload)
         return nil unless response.success?
 

@@ -7,7 +7,6 @@ class CreateStacks < ActiveRecord::Migration
       t.string :name
       t.string :status
       t.text :template_parameters
-      t.text :instance_sizes
       t.text :parameters
       t.timestamps null: false
     end
