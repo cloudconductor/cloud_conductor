@@ -59,7 +59,7 @@ module CloudConductor
         it 'call CloudFormation#create to create stack on aws' do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks) do
             double('stacks').tap do |stacks|
-              expect(stacks).to receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
+              expect(stacks).to receive(:create).with('stack-name', '{}', hash_including(parameters: {}))
             end
           end
 
@@ -93,7 +93,7 @@ module CloudConductor
 
         it 'return stack status via aws-sdk' do
           expect(@stack).to receive(:status).and_return('dummy_status')
-          expect(@stacks).to receive(:[]).with('stack_name').and_return(@stack)
+          expect(@stacks).to receive(:[]).with('stack-name').and_return(@stack)
 
           status = @adapter.get_stack_status 'stack_name', @options
           expect(status).to eq(:dummy_status)
@@ -209,6 +209,12 @@ module CloudConductor
           end
 
           @adapter.destroy_stack 'stack_name', @options
+        end
+      end
+
+      describe '#convert_name' do
+        it 'replace from underscore to hyphen to follow AWS constraint' do
+          expect(@adapter.send(:convert_name, 'dummy_name-test')).to eq('dummy-name-test')
         end
       end
     end

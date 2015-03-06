@@ -42,7 +42,7 @@ module CloudConductor
       end
 
       it 'call Event#fire with token' do
-        expect(@client).to receive_message_chain(:event, :fire).with(:configure, 'dummy_token')
+        expect(@client).to receive_message_chain(:event, :fire).with(:configure, 'dummy_token', {})
         @event.fire(:configure, {})
       end
 
@@ -73,9 +73,9 @@ module CloudConductor
       end
 
       it 'call fire' do
-        expect(@event).to receive(:fire).with(:configure, {})
+        expect(@event).to receive(:fire).with(:configure, {}, {})
 
-        @event.sync_fire(:configure, {})
+        @event.sync_fire(:configure, {}, {})
       end
 
       it 'call wait' do

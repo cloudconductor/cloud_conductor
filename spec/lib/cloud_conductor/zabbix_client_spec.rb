@@ -45,16 +45,12 @@ module CloudConductor
         allow(@client).to receive(:register_action).and_return(3)
         allow(@client).to receive(:operation).and_return('dummy command')
 
-        @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
+        @system = FactoryGirl.create(:system, name: 'example')
+        @system.environments << FactoryGirl.create(:environment, ip_address: '127.0.0.1')
+        @system.primary_environment = @system.environments.first
       end
 
       it 'register hostgroup' do
-        expect(@client).to receive(:register_hostgroup).with('example')
-        @client.register(@system)
-      end
-
-      it 'use System#name without UUID' do
-        @system.name = 'example-6b6ee787-25ad-4245-a370-5e1a6c30d7d2'
         expect(@client).to receive(:register_hostgroup).with('example')
         @client.register(@system)
       end
@@ -197,8 +193,8 @@ module CloudConductor
 
     describe '#operation' do
       it 'return curl command' do
-        expected_command = 'curl -H "Content-Type:application/json" -X POST -d \'{"system_id": "1"}\' http://example.com/'
-        expect(@client.send(:operation, 1, 'http://example.com/')).to eq(expected_command)
+        expected_command = 'curl -H "Content-Type:application/json" -X POST -d \'{"switch": "true"}\' http://example.com/1/rebuild'
+        expect(@client.send(:operation, 1, 'http://example.com')).to eq(expected_command)
       end
     end
   end

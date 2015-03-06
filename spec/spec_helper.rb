@@ -1,61 +1,72 @@
-# -*- coding: utf-8 -*-
-# Copyright 2014 TIS Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
 require 'rubygems'
-require 'spork'
 require 'simplecov'
 require 'simplecov-rcov'
 
-SimpleCov.start do
-  coverage_dir 'tmp/coverage'
-end
+ENV['RAILS_ENV'] ||= 'test'
+require ::File.expand_path('../../config/environment',  __FILE__)
+require 'rspec/rails'
+require 'pry'
 
-SimpleCov.formatter = SimpleCov::Formatter::RcovFormatter
+Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+FactoryGirl.definition_file_paths = [::File.expand_path('../factories', __FILE__)]
+ActiveRecord::Migration.maintain_test_schema!
 
-Spork.prefork do
-  require File.expand_path('../src/helpers/loader', File.dirname(__FILE__))
-  Bundler.require(:development, :test)
+RSpec.configure do |config|
+  config.use_transactional_fixtures = false
 
-  ActiveRecord::Base.establish_connection :test
-
-  FactoryGirl.definition_file_paths = %w(./spec/factories)
-
-  RSpec.configure do |config|
-    # Enable focus feature to execute focused test only.
-    config.filter_run focus: true
-    config.run_all_when_everything_filtered = true
-    config.order = 'random'
-
-    config.before :all do
-      FactoryGirl.factories.clear
-      FactoryGirl.find_definitions
-      FactoryGirl.reload
-    end
-
-    config.before :suite do
-      DatabaseCleaner.strategy = :transaction
-      DatabaseCleaner.clean_with(:truncation)
-    end
-
-    config.around(:each) do |example|
-      DatabaseCleaner.cleaning do
-        example.run
-      end
-    end
+  config.before :all do
+    FactoryGirl.factories.clear
+    FactoryGirl.find_definitions
+    FactoryGirl.reload
   end
-end
 
-Spork.each_run do
-  RSpec.configuration.start_time = Time.now
+  config.before :suite do
+    DatabaseCleaner.strategy = :transaction
+    DatabaseCleaner.clean_with :truncation
+  end
+
+  config.before :each do
+    DatabaseCleaner.start
+  end
+
+  config.after :each do
+    DatabaseCleaner.clean
+  end
+
+  # These two settings work together to allow you to limit a spec run
+  # to individual examples or groups you care about by tagging them with
+  # `:focus` metadata. When nothing is tagged with `:focus`, all examples
+  # get run.
+  config.filter_run :focus
+  config.run_all_when_everything_filtered = true
+
+  # rspec-expectations config goes here. You can use an alternate
+  # assertion/expectation library such as wrong or the stdlib/minitest
+  # assertions if you prefer.
+  config.expect_with :rspec do |expectations|
+    # This option will default to `true` in RSpec 4. It makes the `description`
+    # and `failure_message` of custom matchers include text for helper methods
+    # defined using `chain`, e.g.:
+    # be_bigger_than(2).and_smaller_than(4).description
+    #   # => "be bigger than 2 and smaller than 4"
+    # ...rather than:
+    #   # => "be bigger than 2"
+    expectations.include_chain_clauses_in_custom_matcher_descriptions = true
+  end
+
+  # rspec-mocks config goes here. You can use an alternate test double
+  # library (such as bogus or mocha) by changing the `mock_with` option here.
+  config.mock_with :rspec do |mocks|
+    # Prevents you from mocking or stubbing a method that does not exist on
+    # a real object. This is generally recommended, and will default to
+    # `true` in RSpec 4.
+    # mocks.verify_partial_doubles = true
+    mocks.verify_partial_doubles = false
+  end
+
+  # Run specs in random order to surface order dependencies. If you find an
+  # order dependency and want to debug it, you can fix the order by providing
+  # the seed, which is printed after each run.
+  #     --seed 1234
+  config.order = :random
 end

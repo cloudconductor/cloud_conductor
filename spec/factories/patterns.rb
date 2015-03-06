@@ -14,18 +14,28 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :pattern do
-    sequence(:name) { |n| "pattern_#{n}" }
-    type :platform
-    protocol :git
-    url 'http://example.com/'
+    blueprint
+    protocol 'git'
+    revision 'master'
 
-    before(:create) do |pattern|
+    trait :platform do
+      sequence(:name) { |n| "platform_pattern-#{n}" }
+      url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
+      type 'platform'
+    end
+
+    trait :optional do
+      sequence(:name) { |n| "optional_pattern-#{n}" }
+      url 'https://example.com/cloudconductor-dev/sample_optional_pattern.git'
+      type 'optional'
+    end
+
+    before(:create) do
       Pattern.skip_callback :save, :before, :execute_packer
-      pattern.clouds << create(:cloud_aws)
     end
 
     after(:create) do
-      Pattern.set_callback :save, :before, :execute_packer
+      Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
     end
   end
 end

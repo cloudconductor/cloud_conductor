@@ -17,30 +17,30 @@ module CloudConductor
     TIMEOUT = 1800
     CHECK_PERIOD = 3
 
-    def initialize(system)
-      @clouds = system.candidates.sorted.map(&:cloud)
-      @system = system
+    def initialize(environment)
+      @clouds = environment.candidates.sorted.map(&:cloud)
+      @environment = environment
     end
 
     def build # rubocop:disable MethodLength
       ActiveRecord::Base.connection_pool.with_connection do
         @clouds.each do |cloud|
           begin
-            Log.info "Start creating stacks of system(#{@system.name}) on #{cloud.name}"
-            @system.status = :PROGRESS
-            @system.save!
+            Log.info "Start creating stacks of environment(#{@environment.name}) on #{cloud.name}"
+            @environment.status = :PROGRESS
+            @environment.save!
 
-            until @system.stacks.select(&:pending?).empty?
-              platforms = @system.stacks.select(&:pending?).select(&:platform?)
-              optionals = @system.stacks.select(&:pending?).select(&:optional?)
+            until @environment.stacks.select(&:pending?).empty?
+              platforms = @environment.stacks.select(&:pending?).select(&:platform?)
+              optionals = @environment.stacks.select(&:pending?).select(&:optional?)
               stack = (platforms + optionals).first
               stack.cloud = cloud
-              stack.status = :READY
+              stack.status = :READY_FOR_CREATE
               stack.save!
 
               wait_for_finished(stack, TIMEOUT)
 
-              update_system stack.outputs if stack.platform?
+              update_environment stack.outputs if stack.platform?
 
               stack.status = :CREATE_COMPLETE
               stack.save!
@@ -48,19 +48,19 @@ module CloudConductor
               stack.client.post_process
             end
 
-            finish_system if @system.reload
+            finish_environment if @environment.reload
 
-            Log.info "Created all stacks on system(#{@system.name}) on #{cloud.name}"
+            Log.info "Created all stacks on environment(#{@environment.name}) on #{cloud.name}"
             break
           rescue => e
-            Log.warn "Some error has occurred while creating stacks on system(#{@system.name}) on #{cloud.name}"
+            Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
             Log.warn e.message
             reset_stacks
           end
         end
 
-        unless @system.status == :CREATE_COMPLETE
-          @system.stacks.each do |stack|
+        unless @environment.status == :CREATE_COMPLETE
+          @environment.stacks.each do |stack|
             stack.status = :ERROR
             stack.save!
           end
@@ -90,7 +90,7 @@ module CloudConductor
 
         next if status == :CREATE_IN_PROGRESS
 
-        if stack.pattern.type == :platform
+        if stack.pattern.type == 'platform'
           outputs = stack.outputs
           next if outputs['FrontendAddress'].nil?
 
@@ -106,44 +106,42 @@ module CloudConductor
     end
     # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
-    def update_system(outputs)
-      Log.info 'Platform stack has created. CloudConductor will register host to zabbix/DNS.'
-      @system.ip_address = outputs['FrontendAddress']
-      @system.monitoring_host = @system.domain
-      @system.template_parameters = outputs.except('FrontendAddress').to_json
-      @system.save!
+    def update_environment(outputs)
+      Log.info 'Platform stack has created.'
+      @environment.ip_address = outputs['FrontendAddress']
+      @environment.template_parameters = outputs.except('FrontendAddress').to_json
+      @environment.save!
     end
 
-    def finish_system
-      @system.event.sync_fire(:configure, configure_payload(@system))
-      @system.event.sync_fire(:restore, application_payload(@system))
-      @system.event.sync_fire(:deploy, application_payload(@system)) unless @system.applications.empty?
+    def finish_environment
+      @environment.event.sync_fire(:configure, configure_payload(@environment))
+      @environment.event.sync_fire(:restore, application_payload(@environment))
+      @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.deployments.empty?
 
-      @system.applications.map(&:latest).compact.each do |history|
-        history.status = :DEPLOYED
-        history.save!
+      @environment.deployments.each do |deployment|
+        deployment.status = :DEPLOYED
+        deployment.save!
       end
 
-      @system.status = :CREATE_COMPLETE
-      @system.save!
+      @environment.status = :CREATE_COMPLETE
+      @environment.save!
     end
 
     def reset_stacks
       Log.info 'Reset all stacks.'
-      @system.status = :ERROR
-      @system.ip_address = nil
-      @system.monitoring_host = nil
-      @system.template_parameters = '{}'
-      stacks = @system.stacks.map(&:dup)
-      @system.destroy_stacks
-      @system.stacks = stacks
+      @environment.status = :ERROR
+      @environment.ip_address = nil
+      @environment.template_parameters = '{}'
+      stacks = @environment.stacks.map(&:dup)
+      @environment.destroy_stacks
+      @environment.stacks = stacks
 
-      @system.save!
+      @environment.save!
     end
 
     private
 
-    def configure_payload(system)
+    def configure_payload(environment)
       payload = {
         cloudconductor: {
           salt: SecureRandom.hex,
@@ -152,28 +150,17 @@ module CloudConductor
         }
       }
 
-      system.stacks.created.each do |stack|
+      environment.stacks.created.each do |stack|
         payload[:cloudconductor][:patterns].deep_merge! stack.payload
       end
 
       payload
     end
 
-    def application_payload(system)
-      return {} if system.applications.empty?
+    def application_payload(environment)
+      return {} if environment.deployments.empty?
 
-      payload = {
-        cloudconductor: {
-          applications: {
-          }
-        }
-      }
-
-      system.applications.map(&:latest).compact.each do |history|
-        payload[:cloudconductor][:applications][history.application.name] = history.application_payload
-      end
-
-      payload
+      environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
     end
   end
 end

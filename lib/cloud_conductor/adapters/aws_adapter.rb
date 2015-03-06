@@ -30,7 +30,19 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks.create name, template, parameters: parameters
+        cf.stacks.create convert_name(name), template, parameters: parameters
+      end
+
+      def update_stack(name, template, parameters, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        cf = AWS::CloudFormation.new aws_options
+        cf.stacks[convert_name(name)].update(template: template, parameters: parameters)
       end
 
       def get_stack_status(name, options = {})
@@ -42,7 +54,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks[name].status.to_sym
+        cf.stacks[convert_name(name)].status.to_sym
       end
 
       def get_outputs(name, options = {})
@@ -55,7 +67,7 @@ module CloudConductor
 
         cf = AWS::CloudFormation.new aws_options
         outputs = {}
-        cf.stacks[name].outputs.each do |output|
+        cf.stacks[convert_name(name)].outputs.each do |output|
           outputs[output.key] = output.value
         end
 
@@ -83,12 +95,18 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        stack = cf.stacks[name]
+        stack = cf.stacks[convert_name(name)]
         stack.delete if stack
       end
 
       def post_process
         @post_processes.each(&:call)
+      end
+
+      private
+
+      def convert_name(name)
+        name.gsub('_', '-')
       end
     end
   end
