@@ -99,7 +99,7 @@ module CloudConductor
       it 'fail if success? method returns false' do
         allow(@event_log).to receive(:success?).and_return(false)
 
-        expect { @event.sync_fire(:error) }.to raise_error('{"dummy_host":"dummy_log"}')
+        expect { @event.sync_fire(:error) }.to raise_error("error event has failed.\n{\"dummy_host\":\"dummy_log\"}")
       end
     end
 
