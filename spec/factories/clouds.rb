@@ -15,31 +15,24 @@
 FactoryGirl.define do
   factory :cloud do
     project
-    sequence(:name) { |n| "cloud_dummy_#{n}" }
-    type 'dummy'
-    entry_point 'entry_point'
-    key '1234567890abcdef'
-    secret 'fedcba9876543210'
-    tenant_name 'dummy_tenant'
-  end
-
-  factory :cloud_aws, class: Cloud do
-    project
-    sequence(:name) { |n| "cloud_aws_#{n}" }
+    sequence(:name) { |n| "cloud_#{n}" }
+    description 'cloud description'
     type 'aws'
     entry_point 'ap-northeast-1'
-    key '1234567890abcdef'
-    secret 'fedcba9876543210'
+    key 'aws_access_key'
+    secret 'aws_secret_key'
     tenant_name nil
-  end
 
-  factory :cloud_openstack, class: Cloud do
-    project
-    sequence(:name) { |n| "cloud_openstack_#{n}" }
-    type 'openstack'
-    entry_point 'http://example.com/'
-    key '1234567890abcdef'
-    secret 'fedcba9876543210'
-    tenant_name 'dummy_tenant'
+    trait :aws do
+      # default
+    end
+
+    trait :openstack do
+      type 'openstack'
+      entry_point 'http://127.0.0.1:5000/v1'
+      key 'openstack username'
+      secret 'openstack password'
+      tenant_name 'openstack tenant name'
+    end
   end
 end

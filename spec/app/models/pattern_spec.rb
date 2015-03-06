@@ -135,7 +135,7 @@ describe Pattern do
       expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
       expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
       expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
-      expect(@pattern).to receive(:create_images).with('dummy', nil, @pattern.blueprint.consul_secret_key)
+      expect(@pattern).to receive(:create_images).with('dummy')
 
       @pattern.send(:execute_packer)
     end
@@ -308,7 +308,7 @@ describe Pattern do
       metadata = { type: 'platform' }
       @pattern.send(:update_metadata, cloned_path, metadata)
 
-      expect(@pattern.type).to eq(:platform)
+      expect(@pattern.type).to eq('platform')
     end
 
     it 'update parameters attribute with parameters in template' do
@@ -338,53 +338,54 @@ describe Pattern do
     end
 
     it 'create image each cloud and role' do
-      expect { @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key') }.to change { @pattern.images.size }.by(2)
+      expect { @pattern.send(:create_images, 'nginx') }.to change { @pattern.images.size }.by(1)
     end
 
     it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
       parameters = {
         repository_url: @pattern.url,
         revision: @pattern.revision,
-        pattern_name: 'dummy_platform',
+        pattern_name: @pattern.name,
         role: 'nginx',
-        consul_secret_key: 'dummy key'
+        consul_secret_key: @pattern.blueprint.consul_secret_key
       }
-      expect(CloudConductor::PackerClient).to receive_message_chain(:new, :build).with(anything, parameters)
-
-      @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
+      packer_client = CloudConductor::PackerClient.new
+      allow(CloudConductor::PackerClient).to receive(:new).and_return(packer_client)
+      expect(packer_client).to receive(:build).with(anything, parameters)
+      @pattern.send(:create_images, 'nginx')
     end
 
     it 'call #update_images with packer results' do
       expect(@pattern).to receive(:update_images).with('dummy' => {})
-      @pattern.send(:create_images, 'nginx', 'dummy_platform', 'dummy key')
+      @pattern.send(:create_images, 'nginx')
     end
   end
 
   describe '#update_images' do
     it 'update status of all images' do
       results = {
-        'aws----CentOS-6.5----nginx' => {
+        'aws-CentOS-6.5----nginx' => {
           status: :SUCCESS,
           image: 'ami-12345678'
         },
-        'openstack----CentOS-6.5----nginx' => {
+        'openstack-CentOS-6.5----nginx' => {
           status: :ERROR,
           message: 'dummy_message'
         }
       }
 
-      base_image_aws = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_aws, name: 'aws'))
-      base_image_openstack = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud_openstack, name: 'openstack'))
+      base_image_aws = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :aws, name: 'aws'))
+      base_image_openstack = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :openstack, name: 'openstack'))
       FactoryGirl.create(:image, pattern: @pattern, base_image: base_image_aws, role: 'nginx')
       FactoryGirl.create(:image, pattern: @pattern, base_image: base_image_openstack, role: 'nginx')
       @pattern.send(:update_images, results)
 
-      aws = Image.where(name: 'aws----CentOS-6.5----nginx').first
+      aws = Image.where(name: 'aws-CentOS-6.5----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
       expect(aws.image).to eq('ami-12345678')
       expect(aws.message).to be_nil
 
-      openstack = Image.where(name: 'openstack----CentOS-6.5----nginx').first
+      openstack = Image.where(name: 'openstack-CentOS-6.5----nginx').first
       expect(openstack.status).to eq(:ERROR)
       expect(openstack.image).to be_nil
       expect(openstack.message).to eq('dummy_message')
@@ -416,12 +417,12 @@ describe Pattern do
     end
 
     it 'return parameters without [computed] annotation' do
-      parameters = JSON.parse(@pattern.parameters)
+      parameters = @pattern.filtered_parameters
       expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType)
     end
 
     it 'return all parameters when specified option' do
-      parameters = JSON.parse(@pattern.parameters true)
+      parameters = @pattern.filtered_parameters(true)
       expect(parameters.keys).to eq %w(KeyName SSHLocation webImageId webInstanceType)
     end
   end

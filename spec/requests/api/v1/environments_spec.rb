@@ -2,14 +2,13 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'ApplicationAPI' do
-    before { application }
+  describe 'EnvironmentAPI' do
+    before { environment }
 
-    describe 'GET /applications' do
+    describe 'GET /environments' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/applications' }
-      let(:params) { { system_id: application.system.id } }
-      let(:result) { format_iso8601([application]) }
+      let(:url) { '/api/v1/environments' }
+      let(:result) { format_iso8601([environment]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -32,10 +31,10 @@ describe API do
       end
     end
 
-    describe 'GET /applications/:id' do
+    describe 'GET /environments/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-      let(:result) { format_iso8601(application) }
+      let(:url) { "/api/v1/environments/#{environment.id}" }
+      let(:result) { format_iso8601(environment) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -58,121 +57,152 @@ describe API do
       end
     end
 
-    describe 'POST /applications' do
+    describe 'POST /environments' do
       let(:method) { 'post' }
-      let(:url) { '/api/v1/applications' }
-      let(:params) { FactoryGirl.attributes_for(:application, system_id: system.id) }
-      let(:result) do
-        params.merge(
-          'id' => Fixnum,
-          'created_at' => String,
-          'updated_at' => String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('201 Created')
-      end
-    end
-
-    describe 'PUT /applications/:id' do
-      let(:method) { 'put' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-      let(:params) { { name: 'new_name' } }
-      let(:result) do
-        application.as_json.merge(
-          'created_at' => application.created_at.iso8601(3),
-          'updated_at' => String,
-          'name' => 'new_name'
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
-      end
-    end
-
-    describe 'DELETE /applications/:id' do
-      let(:method) { 'delete' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('204 No Content')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('204 No Content')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('204 No Content')
-      end
-    end
-
-    describe 'POST /applications/:id/deploy' do
-      let(:method) { 'post' }
-      let(:url) { "/api/v1/applications/#{application.id}/deploy" }
+      let(:url) { '/api/v1/environments' }
       let(:params) do
-        FactoryGirl.attributes_for(:deployment,
-                                   environment_id: environment.id,
-                                   application_history_id: application_history.id
+        FactoryGirl.attributes_for(:environment,
+                                   system_id: system.id,
+                                   blueprint_id: blueprint.id,
+                                   candidates_attributes: [{
+                                     cloud_id: cloud.id,
+                                     priority: 10
+                                   }],
+                                   stacks_attributes: [{
+                                     name: 'test',
+                                     template_parameters: '{}',
+                                     parameters: '{}'
+                                   }]
         )
       end
       let(:result) do
-        params.merge(
-          'id' => Fixnum,
-          'created_at' => String,
-          'updated_at' => String,
-          'status' => :PENDING,
-          'event' => String
+        params.except(:candidates_attributes, :stacks_attributes).merge(
+          id: Fixnum,
+          created_at: String,
+          updated_at: String,
+          status: 'PENDING',
+          ip_address: nil
         )
       end
 
       before do
-        allow_any_instance_of(Deployment).to receive(:consul_request) do |deployment|
-          deployment.status = :PENDING
-          deployment.event = SecureRandom.uuid
-        end
+        allow_any_instance_of(Environment).to receive(:create_stacks).and_return(true)
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('202 Accepted')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('202 Accepted')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('202 Accepted')
+      end
+    end
+
+    describe 'PUT /environments/:id' do
+      let(:method) { 'put' }
+      let(:url) { "/api/v1/environments/#{environment.id}" }
+      let(:params) do
+        {
+          'name' => 'new_name',
+          'description' => 'new_description'
+        }
+      end
+      let(:result) do
+        environment.as_json.merge(params).merge(
+          'created_at' => environment.created_at.iso8601(3),
+          'updated_at' => String
+        )
+      end
+
+      before do
+        allow_any_instance_of(Environment).to receive(:create_stacks).and_return(true)
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
+    describe 'DELETE /environments/:id' do
+      let(:method) { 'delete' }
+      let(:url) { "/api/v1/environments/#{new_environment.id}" }
+      let(:new_environment) { FactoryGirl.create(:environment, system: system) }
+
+      before do
+        allow_any_instance_of(Environment).to receive(:destroy_stacks).and_return(true)
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('204 No Content')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('204 No Content')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('204 No Content')
+      end
+    end
+
+    describe 'POST /environments/:id/rebuild' do
+      let(:method) { 'post' }
+      let(:url) { "/api/v1/environments/#{environment.id}/rebuild" }
+      let(:params) do
+        {
+          'blueprint_id' => blueprint.id,
+          'description' => 'new_description',
+          'switch' => true
+        }
+      end
+      let(:result) do
+        environment.as_json.merge(params.except('switch')).merge(
+          'id' => Fixnum,
+          'created_at' => String,
+          'updated_at' => String,
+          'name' => /#{environment.name}-*/,
+          'ip_address' => nil
+        )
+      end
+
+      before do
+        allow_any_instance_of(Environment).to receive(:create_stacks).and_return(true)
       end
 
       context 'not_logged_in' do

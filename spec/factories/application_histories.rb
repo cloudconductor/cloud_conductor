@@ -8,6 +8,6 @@ FactoryGirl.define do
     revision 'master'
     pre_deploy 'echo "pre_deploy"'
     post_deploy 'echo "post_deploy"'
-    parameters '{ "key": "value" }'
+    parameters '{"some_key": "some_value"}'
   end
 end

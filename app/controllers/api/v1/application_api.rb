@@ -3,12 +3,9 @@ module API
     class ApplicationAPI < API::V1::Base
       resource :applications do
         desc 'List applications'
-        params do
-          requires :system_id, type: Integer, desc: 'System id'
-        end
         get '/' do
           authorize!(:read, ::Application)
-          ::Application.where(system_id: params[:system_id]).select do |application|
+          ::Application.all.select do |application|
             can?(:read, application)
           end
         end
@@ -27,6 +24,7 @@ module API
         params do
           requires :system_id, type: Integer, desc: 'Target system id'
           requires :name, type: String, desc: 'Application name'
+          optional :description, type: String, desc: 'Application description'
         end
         post '/' do
           authorize!(:create, ::Application)
@@ -37,6 +35,7 @@ module API
         params do
           requires :id, type: Integer, desc: 'Application id'
           optional :name, type: String, desc: 'Application name'
+          optional :description, type: String, desc: 'Application description'
         end
         put '/:id' do
           application = ::Application.find(params[:id])
@@ -54,6 +53,28 @@ module API
           authorize!(:destroy, application)
           application.destroy
           status 204
+        end
+
+        desc 'Deploy application to environment'
+        params do
+          requires :id, type: Integer, desc: 'Application id'
+          requires :environment_id, type: Integer, desc: 'Target environment id'
+          optional :application_history_id, type: Integer, desc: 'Application history id'
+        end
+        post '/:id/deploy' do
+          authorize!(:create, ::Deployment)
+          application = ::Application.find(params[:id])
+          authorize!(:read, application)
+          if params[:application_history_id]
+            application_history = application.histories.find(params[:application_history_id])
+          else
+            application_history = application.latest
+          end
+          authorize!(:read, application_history)
+          params[:application_history_id] = application_history.id
+          deployment = ::Deployment.create!(declared_params.except(:id))
+          status 202
+          deployment
         end
       end
     end

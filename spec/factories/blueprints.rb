@@ -2,24 +2,21 @@ FactoryGirl.define do
   factory :blueprint, class: Blueprint do
     project
     sequence(:name) { |n| "blueprint-#{n}" }
-    consul_secret_key ''
-
-    transient do
-      patterns_count 2
+    description 'blueprint description'
+    patterns_attributes do
+      [FactoryGirl.attributes_for(:pattern, :platform),
+       FactoryGirl.attributes_for(:pattern, :optional)]
     end
 
-    after(:build) do |blueprint, evaluator|
-      blueprint.patterns = create_list(:pattern, evaluator.patterns_count, :platform, blueprint: blueprint) if blueprint.patterns.empty?
-    end
-
-    before(:create) do
+    before(:create) do |blueprint|
       Pattern.skip_callback :save, :before, :execute_packer
-      Blueprint.skip_callback :save, :before, :update_consul_secret_key
+      Blueprint.skip_callback :create, :before, :update_consul_secret_key
+      blueprint.consul_secret_key = SecureRandom.base64(16)
     end
 
     after(:create) do
       Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
-      Blueprint.set_callback :save, :before, :update_consul_secret_key
+      Blueprint.set_callback :create, :before, :update_consul_secret_key
     end
   end
 end

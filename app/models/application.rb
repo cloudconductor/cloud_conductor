@@ -14,14 +14,6 @@ class Application < ActiveRecord::Base
     latest.version if latest
   end
 
-  def status
-    latest.status if latest
-  end
-
-  def as_json(options = {})
-    super options.merge(methods: [:latest, :latest_version, :status])
-  end
-
   def dup
     application = super
     application.system = nil

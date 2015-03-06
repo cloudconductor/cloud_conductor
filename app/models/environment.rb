@@ -9,40 +9,67 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :deployments, dependent: :destroy, inverse_of: :environment
   has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
-  accepts_nested_attributes_for :stacks
+  # accepts_nested_attributes_for :stacks
 
-  before_destroy :destroy_stacks, unless: -> { stacks.empty? }
+  attr_accessor :user_attributes
 
-  before_save :create_stacks, if: -> { blueprint_id_changed? }
-
-  validates_presence_of :system, :candidates, :blueprint
+  validates_presence_of :system, :blueprint
   validates :name, presence: true, uniqueness: true
-
   validate do
     clouds = candidates.map(&:cloud)
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
+  validate do
+    errors.add(:blueprint, 'status does not create_complete') unless blueprint.status == :CREATE_COMPLETE
+  end
 
+  before_save :create_or_update_stacks
+  before_destroy :destroy_stacks
   after_initialize do
     self.template_parameters ||= '{}'
+    self.user_attributes ||= '{}'
     self.status ||= :PENDING
+  end
+
+  def create_or_update_stacks
+    if new_record? || blueprint_id_changed?
+      create_stacks
+    elsif template_parameters_changed? || user_attributes
+      update_stacks
+    end
   end
 
   def create_stacks
     primary_cloud = candidates.sort.first.cloud
-
-    self.stacks = blueprint.patterns.map do |pattern|
-      stack = stacks.find { |stack| stack.basename == pattern.name }
-      unless stack
-        stack = Stack.new(environment: self, name: pattern.name)
-        stacks << stack
-      end
-
-      stack.pattern = pattern
-      stack.cloud = primary_cloud
-      stack
+    cfn_parameters_hash = JSON.parse(template_parameters)
+    user_attributes_hash = JSON.parse(user_attributes)
+    blueprint.patterns.each do |pattern|
+      stacks.build(
+        cloud: primary_cloud,
+        pattern: pattern,
+        name: "#{system.name}-#{pattern.name}",
+        template_parameters: cfn_parameters_hash.key?(pattern.name) ? JSON.dump(cfn_parameters_hash[pattern.name]) : '{}',
+        parameters: user_attributes_hash.key?(pattern.name) ? JSON.dump(user_attributes_hash[pattern.name]) : '{}'
+      )
     end
-    true
+  end
+
+  def update_stacks
+    cfn_parameters_hash = JSON.parse(template_parameters)
+    user_attributes_hash = JSON.parse(user_attributes)
+    stacks.each do |stack|
+      if cfn_parameters_hash.key?(stack.pattern.name)
+        new_template_parameters = JSON.dump(cfn_parameters_hash[stack.pattern.name])
+      else
+        new_template_parameters = '{}'
+      end
+      if user_attributes_hash.key?(stack.pattern.name)
+        new_user_attributes = JSON.dump(user_attributes_hash[stack.pattern.name])
+      else
+        new_user_attributes = '{}'
+      end
+      stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes)
+    end
   end
 
   def status
@@ -89,6 +116,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   TIMEOUT = 1800
   def destroy_stacks
+    return if stacks.empty?
     platforms = stacks.select(&:platform?)
     optionals = stacks.select(&:optional?)
     stacks.delete_all
@@ -108,17 +136,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
         platforms.each(&:destroy)
       end
     end
-  end
-
-  def update_attributes_and_stacks!(attributes)
-    attributes[:stacks_attributes].each do |stack_attributes|
-      stack = stacks.find { |stack| stack.basename == stack_attributes[:name] }
-      next unless stack
-      stack_attributes[:id] = stack.id
-      stack.template_parameters = stack_attributes[:template_parameters]
-      stack.status = :PENDING
-    end
-    update_attributes! attributes
   end
 
   private

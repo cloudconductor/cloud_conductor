@@ -81,7 +81,7 @@ system = System.find_or_create_by!(
   project_id: project_x.id,
   name: 'sample_system_1',
   description: 'sample_system_1',
-  domain: 'sample.example.com',
+  domain: 'sample.example.com'
 )
 System.set_callback(:save, :before, :update_dns)
 System.set_callback(:save, :before, :enable_monitoring)

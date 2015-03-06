@@ -30,9 +30,8 @@ module API
         end
         post '/' do
           authorize!(:create, ::Account)
-          account = ::Account.create!(declared_params)
-          status 200
-          account
+          authorize!(:update_admin, ::Account) if params[:admin] != 0
+          ::Account.create!(declared_params)
         end
 
         desc 'Update account'
@@ -40,14 +39,14 @@ module API
           requires :id, type: Integer, desc: 'Account id'
           optional :email, type: String, desc: 'Account email'
           optional :name, type: String, desc: 'Account username'
-          optional :old_password, type: String, desc: 'Account old password'
-          optional :new_password, type: String, desc: 'Account new password'
-          optional :new_password_confirmation, type: String, desc: 'Account new password confirmation'
+          optional :password, type: String, desc: 'Account old password'
+          optional :password_confirmation, type: String, desc: 'Account new password confirmation'
           optional :admin, type: Integer, desc: 'Account role'
         end
         put '/:id' do
           account = ::Account.find(params[:id])
           authorize!(:update, account)
+          authorize!(:update_admin, ::Account) if params[:admin] != 0
           account.update_attributes!(declared_params)
           account
         end
@@ -59,6 +58,7 @@ module API
         delete '/:id' do
           account = ::Account.find(params[:id])
           authorize!(:destroy, account)
+          error!('Cannot delete your own account.', 405) if current_account == account
           account.destroy
           status 204
         end

@@ -40,7 +40,7 @@ module API
 
         rescue_from :all do |e|
           # logger.error()
-          error_response(message: e.message, status: 500)
+          error_response(message: "#{e.message}", status: 500)
         end
       end
     end

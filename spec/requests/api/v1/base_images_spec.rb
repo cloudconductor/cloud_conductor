@@ -2,13 +2,13 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'CloudAPI' do
-    before { cloud }
+  describe 'BaseImageAPI' do
+    before { base_image }
 
-    describe 'GET /clouds' do
+    describe 'GET /base_images' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/clouds' }
-      let(:result) { format_iso8601([cloud]) }
+      let(:url) { '/api/v1/base_images' }
+      let(:result) { format_iso8601([base_image]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -31,10 +31,10 @@ describe API do
       end
     end
 
-    describe 'GET /clouds/:id' do
+    describe 'GET /base_images/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/clouds/#{cloud.id}" }
-      let(:result) { format_iso8601(cloud) }
+      let(:url) { "/api/v1/base_images/#{base_image.id}" }
+      let(:result) { format_iso8601(base_image) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -57,57 +57,14 @@ describe API do
       end
     end
 
-    describe 'POST /clouds' do
+    describe 'POST /base_images' do
       let(:method) { 'post' }
-      let(:url) { '/api/v1/clouds' }
-      let(:params) { FactoryGirl.attributes_for(:cloud, :openstack, project_id: project.id) }
+      let(:url) { '/api/v1/base_images' }
+      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id) }
       let(:result) do
         params.merge(
-          id: Fixnum,
-          secret: '********',
-          created_at: String,
-          updated_at: String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('201 Created')
-      end
-    end
-
-    describe 'PUT /clouds/:id' do
-      let(:method) { 'put' }
-      let(:url) { "/api/v1/clouds/#{cloud.id}" }
-      let(:params) do
-        {
-          'name' => 'new_openstack',
-          'type' => 'openstack',
-          'entry_point' => 'http://127.0.0.1:5000/v1',
-          'tenant_name' => 'demo',
-          'key' => 'new_key',
-          'secret' => 'new_secret'
-        }
-      end
-      let(:result) do
-        cloud.as_json.merge(params).merge(
-          'secret' => '********',
-          'created_at' => cloud.created_at.iso8601(3),
+          'id' => Fixnum,
+          'created_at' => String,
           'updated_at' => String
         )
       end
@@ -121,22 +78,60 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('201 Created')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('201 Created')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('201 Created')
       end
     end
 
-    describe 'DELETE /clouds/:id' do
+    #     describe 'PUT /base_images/:id' do
+    #       let(:method) { 'put' }
+    #       let(:url) { "/api/v1/base_images/#{base_image.id}" }
+    #       let(:params) do
+    #         {
+    #           'os' => 'centos7',
+    #           'ssh_username' => 'root',
+    #           'source_image' => SecureRandom.uuid
+    #         }
+    #       end
+    #       let(:result) do
+    #         base_image.as_json.merge(params).merge(
+    #           'created_at' => base_image.created_at.iso8601(3),
+    #           'updated_at' => String
+    #         )
+    #       end
+    #
+    #       context 'not_logged_in' do
+    #         it_behaves_like('401 Unauthorized')
+    #       end
+    #
+    #       context 'normal_account', normal: true do
+    #         it_behaves_like('403 Forbidden')
+    #       end
+    #
+    #       context 'administrator', admin: true do
+    #         it_behaves_like('200 OK')
+    #       end
+    #
+    #       context 'project_owner', project_owner: true do
+    #         it_behaves_like('200 OK')
+    #       end
+    #
+    #       context 'project_operator', project_operator: true do
+    #         it_behaves_like('200 OK')
+    #       end
+    #     end
+
+    describe 'DELETE /base_images/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/clouds/#{new_cloud.id}" }
-      let(:new_cloud) { FactoryGirl.create(:cloud, project_id: project.id) }
+      let(:url) { "/api/v1/base_images/#{new_base_image.id}" }
+      let(:new_base_image) { FactoryGirl.create(:base_image, cloud_id: cloud.id) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')

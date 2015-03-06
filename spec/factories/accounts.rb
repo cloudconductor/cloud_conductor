@@ -4,17 +4,21 @@ FactoryGirl.define do
     name { 'UserName' }
     password 'password'
     password_confirmation 'password'
-    # old_password 'password'
-    # new_password 'password'
-    # new_password_confirmation 'password'
     admin false
-
-    after(:create) do |account|
-      account.ensure_authentication_token!
-    end
 
     trait :admin do
       admin true
+    end
+
+    transient do
+      assign_project nil
+      role :operator
+    end
+
+    after(:create) do |account, evaluator|
+      unless evaluator.assign_project.nil?
+        FactoryGirl.create(:assignment, project: evaluator.assign_project, account: account, role: evaluator.role)
+      end
     end
   end
 end

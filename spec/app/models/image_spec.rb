@@ -37,8 +37,9 @@ describe Image do
 
   describe '#update_name' do
     it 'update name by base_image and role' do
+      splitter = '----'
       @image.send(:update_name)
-      expect(@image.name).to eq("#{@image.base_image.name}#{Image::SPLITTER}#{@image.role}")
+      expect(@image.name).to eq("#{@image.base_image.name}#{splitter}#{@image.role}")
     end
   end
 

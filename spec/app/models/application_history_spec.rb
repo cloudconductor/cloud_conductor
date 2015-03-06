@@ -73,14 +73,6 @@ describe ApplicationHistory do
       expect(@history.valid?).to be_truthy
     end
 
-    it 'returns false when domain is unset' do
-      @history.domain = nil
-      expect(@history.valid?).to be_falsey
-
-      @history.domain = ''
-      expect(@history.valid?).to be_falsey
-    end
-
     it 'returns false when type is unset' do
       @history.type = nil
       expect(@history.valid?).to be_falsey

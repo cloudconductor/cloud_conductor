@@ -36,7 +36,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_stack
-    client.create_stack name, pattern, generate_parameters
+    client.create_stack(name, pattern, generate_parameters)
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -92,11 +92,11 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def platform?
-    pattern && pattern.type == :platform
+    pattern && pattern.type == 'platform'
   end
 
   def optional?
-    pattern && pattern.type == :optional
+    pattern && pattern.type == 'optional'
   end
 
   def exist?

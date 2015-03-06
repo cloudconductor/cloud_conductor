@@ -18,7 +18,7 @@ FactoryGirl.define do
     pattern { create(:pattern, :platform) }
     status :PROGRESS
     image { SecureRandom.uuid }
-    cloud { create(:cloud_aws) }
+    cloud { create(:cloud, :aws) }
     base_image { create(:base_image, cloud: cloud) }
   end
 end

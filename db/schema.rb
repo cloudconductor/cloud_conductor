@@ -61,7 +61,7 @@ ActiveRecord::Schema.define(version: 20150220082849) do
   create_table "assignments", force: true do |t|
     t.integer  "project_id",             null: false
     t.integer  "account_id",             null: false
-    t.integer  "role",       default: 1
+    t.integer  "role",       default: 0
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end
@@ -81,7 +81,6 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.integer  "project_id"
     t.string   "name"
     t.string   "description"
-    t.integer  "version"
     t.string   "consul_secret_key"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false

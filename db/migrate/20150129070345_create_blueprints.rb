@@ -4,7 +4,6 @@ class CreateBlueprints < ActiveRecord::Migration
       t.references :project
       t.string :name
       t.string :description
-      t.integer :version
       t.string :consul_secret_key
       t.timestamps null: false
     end

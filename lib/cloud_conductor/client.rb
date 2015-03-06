@@ -22,20 +22,14 @@ module CloudConductor
     def initialize(cloud)
       @cloud = cloud
       @type = cloud.type
-
-      # load adapters
-      if Adapters.constants.empty?
-        Dir.glob(File.expand_path('./adapters/*.rb', File.dirname(__FILE__))) do |file|
-          require file
-        end
+      case cloud.type
+      when 'aws'
+        @adapter = CloudConductor::Adapters::AWSAdapter.new
+      when 'openstack'
+        @adapter = CloudConductor::Adapters::OpenStackAdapter.new
+      else
+        fail "Cannnot find #{cloud.type} adapter"
       end
-
-      adapter_name = Adapters.constants.find do |klass_name|
-        klass = Adapters.const_get(klass_name)
-        klass.const_get(:TYPE) == @type if klass.constants.include? :TYPE
-      end
-
-      @adapter = Adapters.const_get(adapter_name).new
     end
 
     def create_stack(name, pattern, parameters)

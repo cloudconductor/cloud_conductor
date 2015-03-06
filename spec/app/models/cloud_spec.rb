@@ -46,7 +46,7 @@ describe Cloud do
 
     it 'returns true when type is dummy' do
       @cloud.type = 'dummy'
-      expect(@cloud.valid?).to be_truthy
+      expect(@cloud.valid?).to be_falsey
     end
 
     it 'returns false when project is unset' do
@@ -132,12 +132,6 @@ describe Cloud do
       expect do
         expect { @cloud.destroy }.to(raise_error('Can\'t destroy cloud that is used in some systems.'))
       end.not_to change { Cloud.count }
-    end
-  end
-
-  describe '#type' do
-    it 'return type as symbol' do
-      expect(@cloud.type).to be_a(Symbol)
     end
   end
 

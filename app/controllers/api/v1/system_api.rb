@@ -54,12 +54,11 @@ module API
         put '/:id/switch' do
           system = ::System.find(params[:id])
           authorize!(:update, system)
-
           environment = system.environments.find(params[:environment_id])
           authorize!(:read, environment)
 
-          system.primary_environment = environment
-          system.save!
+          system.update_attributes!(primary_environment: environment)
+          system
         end
 
         desc 'Destroy system'

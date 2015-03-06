@@ -4,8 +4,9 @@ class Blueprint < ActiveRecord::Base
   accepts_nested_attributes_for :patterns
 
   validates_presence_of :name, :project, :patterns
+  validates :name, uniqueness: true
 
-  before_save :update_consul_secret_key
+  before_create :update_consul_secret_key
 
   def update_consul_secret_key
     if !consul_secret_key && CloudConductor::Config.consul.options.acl
@@ -15,5 +16,20 @@ class Blueprint < ActiveRecord::Base
     else
       self.consul_secret_key = ''
     end
+  end
+
+  def status
+    pattern_states = patterns.map(&:status)
+    if pattern_states.all? { |status| status == :CREATE_COMPLETE }
+      :CREATE_COMPLETE
+    elsif pattern_states.any? { |status| status == :ERROR }
+      :ERROR
+    else
+      :PENDING
+    end
+  end
+
+  def as_json(options = {})
+    super(options.merge(except: :consul_secret_key, methods: :status))
   end
 end

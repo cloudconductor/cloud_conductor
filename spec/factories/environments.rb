@@ -14,25 +14,19 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :environment, class: Environment do
-    sequence(:name) { |n| "system-#{n}" }
-    template_parameters '{ "dummy": "value" }'
+    sequence(:name) { |n| "environment-#{n}" }
+    description 'environment description'
     system
     blueprint
-
-    after(:build) do |environment|
-      environment.candidates << build(:candidate, environment: environment)
-      environment.candidates << build(:candidate, environment: environment)
-
-      environment.stacks << build(:stack, environment: environment)
-      environment.stacks << build(:stack, environment: environment)
-    end
+    template_parameters '{}'
+    ip_address '127.0.0.1'
 
     before(:create) do
-      Environment.skip_callback :save, :before, :create_stacks
+      Environment.skip_callback :save, :before, :create_or_update_stacks
     end
 
     after(:create) do
-      Environment.set_callback :save, :before, :create_stacks
+      Environment.set_callback :save, :before, :create_or_update_stacks
     end
   end
 end

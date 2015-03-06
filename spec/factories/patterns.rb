@@ -15,19 +15,19 @@
 FactoryGirl.define do
   factory :pattern do
     blueprint
-    protocol :git
+    protocol 'git'
     revision 'master'
 
     trait :platform do
       sequence(:name) { |n| "platform_pattern-#{n}" }
       url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
-      type :platform
+      type 'platform'
     end
 
     trait :optional do
       sequence(:name) { |n| "optional_pattern-#{n}" }
       url 'https://example.com/cloudconductor-dev/sample_optional_pattern.git'
-      type :optional
+      type 'optional'
     end
 
     before(:create) do

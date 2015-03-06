@@ -13,7 +13,7 @@ module API
         else
           # Insert random sleep to make token prediction more difficult by timing attack.
           sleep((200 + rand(200)) / 1000.0)
-          error!('Unauthorized', 401)
+          error!('Requires valid auth_token.', 401)
         end
       end
 

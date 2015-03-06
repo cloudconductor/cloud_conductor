@@ -28,6 +28,7 @@ module API
           requires :key, type: String, desc: 'AccessKey or username to authenticate cloud'
           requires :secret, type: String, desc: 'SecretKey or password to authenticate cloud'
           requires :entry_point, type: String, desc: 'Entry point (e.g. ap-northeast-1 or http://<your-openstack>:5000/)'
+          optional :description, type: String, desc: 'Cloud description'
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'
         end
         post '/' do
@@ -43,6 +44,7 @@ module API
           optional :key, type: String, desc: 'AccessKey or username to authenticate cloud'
           optional :secret, type: String, desc: 'SecretKey or password to authenticate cloud'
           optional :entry_point, type: String, desc: 'Entry point (e.g. ap-northeast-1 or http://<your-openstack>:5000/)'
+          optional :description, type: String, desc: 'Cloud description'
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'
         end
         put '/:id' do

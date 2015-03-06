@@ -32,3 +32,6 @@ NumericLiterals:
 
 ShadowingOuterLocalVariable:
   Enabled: false
+
+GuardClause:
+  MinBodyLength: 4

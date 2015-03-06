@@ -24,10 +24,6 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     super options.merge(methods: :status, except: :parameters)
   end
 
-  def type
-    super && super.to_sym
-  end
-
   def clone_repository
     fail 'Pattern#clone_repository needs block' unless block_given?
 
@@ -46,14 +42,12 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     FileUtils.rm_r path, force: true if path
   end
 
-  def parameters(is_include_computed = false)
-    return attributes['parameters'] if is_include_computed
-
-    parameters = JSON.parse(attributes['parameters'] || '{}').reject do |_, parameter|
-      parameter['Description'] =~ /^\[computed\]/
+  def filtered_parameters(is_include_computed = false)
+    return JSON.parse(parameters) if is_include_computed
+    filtered_parameters = JSON.parse(parameters || '{}').reject do |_, param|
+      param['Description'] =~ /^\[computed\]/
     end
-
-    parameters.to_json
+    filtered_parameters
   end
 
   private
@@ -65,7 +59,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       update_metadata path, metadata
 
       roles.each do |role|
-        create_images role, metadata[:name], blueprint.consul_secret_key
+        create_images(role)
       end
     end
 
@@ -116,31 +110,36 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  def create_images(role, pattern_name, consul_secret_key) # rubocop:disable MethodLength
-    current_images = BaseImage.where(os: 'CentOS-6.5').map do |base_image|
-      images.build(cloud: base_image.cloud, base_image: base_image, pattern: self, role: role)
+  def create_images(role)
+    os = 'CentOS-6.5'
+    base_images = blueprint.project.clouds.map do |cloud|
+      BaseImage.find_by(os: os, cloud: cloud)
+    end.compact
+    new_images = base_images.map do |base_image|
+      images.build(cloud: base_image.cloud, base_image: base_image, role: role)
     end
-
-    parameters = {
+    packer_variables = {
       repository_url: url,
       revision: revision,
-      pattern_name: pattern_name,
+      pattern_name: name,
       role: role,
-      consul_secret_key: consul_secret_key
+      consul_secret_key: blueprint.consul_secret_key
     }
-
-    CloudConductor::PackerClient.new.build(current_images, parameters) do |results|
+    packer_client = CloudConductor::PackerClient.new
+    packer_client.build(new_images, packer_variables) do |results|
       update_images(results)
     end
   end
 
   def update_images(results)
-    results.each do |name, result|
-      image = images.where(name: name).first
-      image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
-      image.image = result[:image]
-      image.message = result[:message]
-      image.save!
+    ActiveRecord::Base.connection_pool.with_connection do
+      results.each do |name, result|
+        image = images.where(name: name).first
+        image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
+        image.image = result[:image]
+        image.message = result[:message]
+        image.save!
+      end
     end
   end
 end

@@ -38,7 +38,6 @@ module API
         desc 'Update blueprint'
         params do
           requires :id, type: Integer, desc: 'Blueprint id'
-          requires :project_id, type: Integer, desc: 'Project id'
           optional :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
           optional :patterns_attributes, type: Array, desc: 'Pattern repository url and revision'
@@ -59,6 +58,18 @@ module API
           authorize!(:destroy, blueprint)
           blueprint.destroy
           status 204
+        end
+
+        desc 'Get blueprint parameters'
+        params do
+          requires :id, type: Integer, desc: 'Blueprint id'
+        end
+        get '/:id/parameters' do
+          blueprint = ::Blueprint.find(params[:id])
+          authorize!(:read, blueprint)
+          blueprint.patterns.each_with_object({}) do |pattern, hash|
+            hash[pattern.name] = pattern.filtered_parameters
+          end
         end
       end
     end

@@ -1,16 +1,14 @@
 describe API do
   include ApiSpecHelper
-  include_context 'api'
-  include_context 'default_accounts'
+  include_context 'default_api_settings'
 
-  describe 'PatternAPI' do
-    let(:pattern) { FactoryGirl.create(:pattern) }
-    before { pattern }
+  describe 'ApplicationHistoryAPI' do
+    before { application_history }
 
-    describe 'GET /patterns' do
+    describe 'GET /applications/:application_id/histories' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/patterns' }
-      let(:result) { [api_attributes(pattern)] }
+      let(:url) { "/api/v1/applications/#{application.id}/histories" }
+      let(:result) { format_iso8601(application.histories.map(&:as_json)) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -33,10 +31,10 @@ describe API do
       end
     end
 
-    describe 'GET /patterns/:id' do
+    describe 'GET /applications/:application_id/histories/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/patterns/#{pattern.id}" }
-      let(:result) { api_attributes(pattern) }
+      let(:url) { "/api/v1/applications/#{application.id}/histories/#{application_history.id}" }
+      let(:result) { format_iso8601(application_history.as_json) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -59,30 +57,17 @@ describe API do
       end
     end
 
-    describe 'POST /patterns' do
+    describe 'POST /applications/:application_id/histories' do
       let(:method) { 'post' }
-      let(:url) { '/api/v1/patterns' }
-      let(:params) { FactoryGirl.attributes_for(:pattern) }
+      let(:url) { "/api/v1/applications/#{application.id}/histories" }
+      let(:params) { FactoryGirl.attributes_for(:application_history, application_id: application.id) }
       let(:result) do
-        pattern.attributes.except('parameters').merge(
+        params.merge(
           'id' => Fixnum,
           'created_at' => String,
           'updated_at' => String,
-          'revision' => String,
-          'status' => :PENDING
+          'version' => Date.today.strftime('%Y%m%d') + '-002'
         )
-      end
-
-      before do
-        allow_any_instance_of(Pattern).to receive(:system).and_return(true)
-        allow_any_instance_of(Pattern).to receive(:systemu).and_return(true)
-        allow(Dir).to receive(:chdir).and_yield
-        allow(YAML).to receive(:load_file).and_return(
-          name: 'sample_platform_pattern',
-          description: 'sample_platform_pattern',
-          type: 'platform'
-        )
-        allow(File).to receive_message_chain(:open, :read).and_return('{ "Parameters": {}, "Resources": {} }')
       end
 
       context 'not_logged_in' do
@@ -94,41 +79,37 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('201 Created')
       end
     end
 
-    describe 'PUT /patterns/:id' do
+    describe 'PUT /applications/:application_id/histories/:id' do
       let(:method) { 'put' }
-      let(:url) { "/api/v1/patterns/#{pattern.id}" }
-      let(:params) { FactoryGirl.attributes_for(:pattern) }
-      let(:result) do
-        pattern.attributes.except('parameters').merge(
-          'created_at' => String,
-          'updated_at' => String,
-          'revision' => String,
-          'status' => :PENDING
-        )
+      let(:url) { "/api/v1/applications/#{application.id}/histories/#{application_history.id}" }
+      let(:params) do
+        {
+          'type' => 'dynamic',
+          'url' => 'http://example.com/new_app.tar.gz',
+          'protocol' => 'http',
+          'revision' => 'develop',
+          'pre_deploy' => 'some command to run pre deploy',
+          'post_deploy' => 'some command to run post deploy',
+          'parameters' => { 'some_key' => 'some_value' }.to_json
+        }
       end
-
-      before do
-        allow_any_instance_of(Pattern).to receive(:system).and_return(true)
-        allow_any_instance_of(Pattern).to receive(:systemu).and_return(true)
-        allow(Dir).to receive(:chdir).and_yield
-        allow(YAML).to receive(:load_file).and_return(
-          name: 'sample_platform_pattern',
-          description: 'sample_platform_pattern',
-          type: 'platform'
+      let(:result) do
+        application_history.as_json.merge(params).merge(
+          'created_at' => application_history.created_at.iso8601(3),
+          'updated_at' => String
         )
-        allow(File).to receive_message_chain(:open, :read).and_return('{ "Parameters": {}, "Resources": {} }')
       end
 
       context 'not_logged_in' do
@@ -140,21 +121,21 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('200 OK')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('200 OK')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('201 Accepted')
+        it_behaves_like('200 OK')
       end
     end
 
-    describe 'DELETE /patterns/:id' do
+    describe 'DELETE /applications/:application_id/histories/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/patterns/#{pattern.id}" }
+      let(:url) { "/api/v1/applications/#{application.id}/histories/#{application_history.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')

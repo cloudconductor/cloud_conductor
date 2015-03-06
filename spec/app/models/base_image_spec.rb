@@ -16,20 +16,18 @@ describe BaseImage do
   include_context 'default_resources'
 
   before do
-    BaseImage.ami_images = nil
+    aws_images_yml = File.join(Rails.root, 'config/images.yml')
     ami_images = { 'ap-northeast-1' => 'ami-12345678' }
-    allow(YAML).to receive(:load_file).and_call_original
-    allow(YAML).to receive(:load_file).with(BaseImage::IMAGES_FILE_PATH).and_return(ami_images)
-
-    @base_image = BaseImage.new(cloud: cloud, os: 'dummy_os', source_image: 'dummy_image')
+    allow(YAML).to receive(:load_file).with(aws_images_yml).and_return(ami_images)
+    @base_image = FactoryGirl.build(:base_image, cloud: cloud)
   end
 
   describe '#initialize' do
     it 'set default to OS and ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.os).to eq(BaseImage::DEFAULT_OS)
-      expect(base_image.ssh_username).to eq(BaseImage::DEFAULT_SSH_USERNAME)
+      expect(base_image.os).to eq('CentOS-6.5')
+      expect(base_image.ssh_username).to eq('ec2-user')
     end
 
     it 'set specified value to OS and ssh_username' do
@@ -39,30 +37,16 @@ describe BaseImage do
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
-    it 'set source_image if cloud type equal aws and source_image is nil' do
-      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_aws))
-
-      expect(base_image.source_image).to eq('ami-12345678')
-    end
-
     it 'doesn\'t set source_image if cloud type equal aws and source_image is not nil' do
-      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_aws), source_image: 'ami-xxxxxxxx')
+      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud, :aws), source_image: 'ami-xxxxxxxx')
 
       expect(base_image.source_image).to eq('ami-xxxxxxxx')
     end
 
     it 'doesn\'t set source_image if cloud type equal openstack' do
-      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud_openstack))
+      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud, :openstack))
 
       expect(base_image.source_image).to be_nil
-    end
-
-    it 'call YAML.load_file only once' do
-      expect(YAML).to receive(:load_file).once
-
-      BaseImage.ami_images = nil
-      BaseImage.new
-      BaseImage.new
     end
   end
 
@@ -103,29 +87,27 @@ describe BaseImage do
 
   describe '#name' do
     it 'return string that joined cloud name and OS name with hyphen' do
-      expect(@base_image.name).to eq("#{cloud.name}#{BaseImage::SPLITTER}dummy_os")
+      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.os}")
     end
   end
 
   describe '#builder' do
-    it 'return builder options that is generated from templates.yml.erb' do
-      allow(IO).to receive(:read).with(BaseImage::TEMPLATE_PATH).and_return <<-EOS
-        dummy:
+    let(:template_path) { File.join(Rails.root, 'config/templates.yml.erb') }
+
+    before do
+      allow(IO).to receive(:read).with(template_path).and_return <<-EOS
+        aws:
           name: <%= name %>----{{user `role`}}
           access_key: <%= cloud.key %>
       EOS
+    end
 
+    it 'return builder options that is generated from templates.yml.erb' do
       result = @base_image.builder
       expect(result.keys).to match_array(%w(name access_key))
     end
 
     it 'update variables in template' do
-      allow(IO).to receive(:read).with(BaseImage::TEMPLATE_PATH).and_return <<-EOS
-        dummy:
-          name: <%= name %>----{{user `role`}}
-          access_key: <%= cloud.key %>
-      EOS
-
       result = @base_image.builder
       expect(result[:name]).to eq("#{@base_image.name}----{{user `role`}}")
       expect(result[:access_key]).to eq(cloud.key)

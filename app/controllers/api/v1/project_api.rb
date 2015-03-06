@@ -25,10 +25,8 @@ module API
         end
         post '/' do
           authorize!(:create, ::Project)
-          project = ::Project.new(declared_params)
-          project.assign_project_administrator(current_account)
-          project.save!
-          project
+          parameters = declared_params.merge(current_account: current_account)
+          ::Project.create!(parameters)
         end
 
         desc 'Update project'

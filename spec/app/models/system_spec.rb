@@ -32,7 +32,7 @@ describe System do
     end
 
     it 'call #update_dns callback if system has primary environment' do
-      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.environments << environment
       @system.primary_environment = @system.environments.first
 
       expect(@system).to receive(:update_dns)
@@ -40,7 +40,7 @@ describe System do
     end
 
     it 'call #enable_monitoring callback if system has primary environment' do
-      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.environments << environment
       @system.primary_environment = @system.environments.first
 
       expect(@system).to receive(:enable_monitoring)
@@ -48,7 +48,7 @@ describe System do
     end
 
     it 'doesn\'t call #update_dns and #enable_monitoring callback if system hasn\'t primary environment' do
-      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.environments << environment
 
       expect(@system).not_to receive(:update_dns)
       expect(@system).not_to receive(:enable_monitoring)
@@ -81,11 +81,10 @@ describe System do
     it 'delete all environment records' do
       Environment.skip_callback :destroy, :before, :destroy_stacks
 
-      @system.environments << FactoryGirl.create(:environment, system: @system)
-      @system.environments << FactoryGirl.create(:environment, system: @system)
+      @system.environments << environment
 
-      expect(@system.environments.size).to eq(2)
-      expect { @system.destroy }.to change { Environment.count }.by(-2)
+      expect(@system.environments.size).to eq(1)
+      expect { @system.destroy }.to change { Environment.count }.by(-1)
 
       Environment.set_callback :destroy, :before, :destroy_stacks, unless: -> { stacks.empty? }
     end
@@ -114,7 +113,7 @@ describe System do
     it 'call DNSClient#update when ip_address isn\'t nil' do
       allow(@system).to receive(:update_dns).and_call_original
 
-      @system.environments << FactoryGirl.create(:environment, system: @system, ip_address: '127.0.0.1')
+      @system.environments << environment
       @system.primary_environment = @system.environments.first
 
       expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
@@ -126,7 +125,7 @@ describe System do
     it 'call ZabbixClient#register' do
       allow(@system).to receive(:enable_monitoring).and_call_original
 
-      @system.environments << FactoryGirl.create(:environment, system: @system, ip_address: '127.0.0.1')
+      @system.environments << environment
       @system.primary_environment = @system.environments.first
 
       expect(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)

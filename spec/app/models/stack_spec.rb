@@ -75,7 +75,7 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, name: 'Test', cloud: FactoryGirl.create(:cloud_openstack))
+      FactoryGirl.create(:stack, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
@@ -362,24 +362,24 @@ describe Stack do
 
   describe '#platform?' do
     it 'return true if stack has platform pattern' do
-      @stack.pattern.type = :platform
+      @stack.pattern.type = 'platform'
       expect(@stack.platform?).to be_truthy
     end
 
     it 'return false if stack has optional pattern' do
-      @stack.pattern.type = :optional
+      @stack.pattern.type = 'optional'
       expect(@stack.platform?).to be_falsey
     end
   end
 
   describe '#optional?' do
     it 'return true if stack has optional pattern' do
-      @stack.pattern.type = :optional
+      @stack.pattern.type = 'optional'
       expect(@stack.optional?).to be_truthy
     end
 
     it 'return false if stack has platform pattern' do
-      @stack.pattern.type = :platform
+      @stack.pattern.type = 'platform'
       expect(@stack.optional?).to be_falsey
     end
   end

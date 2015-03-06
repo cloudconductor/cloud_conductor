@@ -59,6 +59,7 @@ module CloudConductor
           end
         rescue => e
           Log.error(e)
+          raise
         ensure
           FileUtils.rm parameters[:packer_json_path]
         end

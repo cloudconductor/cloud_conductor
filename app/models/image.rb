@@ -7,8 +7,6 @@ class Image < ActiveRecord::Base
   validates_presence_of :pattern, :cloud, :base_image, :role
   validates :role, format: /\A[^\-_]+\Z/
 
-  SPLITTER = '----'
-
   before_save :update_name
 
   after_initialize do
@@ -20,6 +18,7 @@ class Image < ActiveRecord::Base
   end
 
   def update_name
-    self.name = "#{base_image.name}#{SPLITTER}#{role}"
+    splitter = '----'
+    self.name = "#{base_image.name}#{splitter}#{role}"
   end
 end

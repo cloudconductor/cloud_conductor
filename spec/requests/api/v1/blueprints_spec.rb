@@ -2,14 +2,13 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'ApplicationAPI' do
-    before { application }
+  describe 'BlueprintAPI' do
+    before { blueprint }
 
-    describe 'GET /applications' do
+    describe 'GET /blueprints' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/applications' }
-      let(:params) { { system_id: application.system.id } }
-      let(:result) { format_iso8601([application]) }
+      let(:url) { '/api/v1/blueprints' }
+      let(:result) { format_iso8601([blueprint]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -32,10 +31,10 @@ describe API do
       end
     end
 
-    describe 'GET /applications/:id' do
+    describe 'GET /blueprints/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-      let(:result) { format_iso8601(application) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
+      let(:result) { format_iso8601(blueprint) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -58,121 +57,25 @@ describe API do
       end
     end
 
-    describe 'POST /applications' do
+    describe 'POST /blueprints' do
       let(:method) { 'post' }
-      let(:url) { '/api/v1/applications' }
-      let(:params) { FactoryGirl.attributes_for(:application, system_id: system.id) }
+      let(:url) { '/api/v1/blueprints' }
+      let(:consul_secret_key) { SecureRandom.base64(16) }
+      let(:params) { FactoryGirl.attributes_for(:blueprint, project_id: project.id) }
       let(:result) do
-        params.merge(
-          'id' => Fixnum,
-          'created_at' => String,
-          'updated_at' => String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('201 Created')
-      end
-    end
-
-    describe 'PUT /applications/:id' do
-      let(:method) { 'put' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-      let(:params) { { name: 'new_name' } }
-      let(:result) do
-        application.as_json.merge(
-          'created_at' => application.created_at.iso8601(3),
-          'updated_at' => String,
-          'name' => 'new_name'
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
-      end
-    end
-
-    describe 'DELETE /applications/:id' do
-      let(:method) { 'delete' }
-      let(:url) { "/api/v1/applications/#{application.id}" }
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('204 No Content')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('204 No Content')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('204 No Content')
-      end
-    end
-
-    describe 'POST /applications/:id/deploy' do
-      let(:method) { 'post' }
-      let(:url) { "/api/v1/applications/#{application.id}/deploy" }
-      let(:params) do
-        FactoryGirl.attributes_for(:deployment,
-                                   environment_id: environment.id,
-                                   application_history_id: application_history.id
-        )
-      end
-      let(:result) do
-        params.merge(
+        params.except(:patterns_attributes).merge(
           'id' => Fixnum,
           'created_at' => String,
           'updated_at' => String,
-          'status' => :PENDING,
-          'event' => String
+          'status' => 'CREATE_COMPLETE'
         )
       end
 
       before do
-        allow_any_instance_of(Deployment).to receive(:consul_request) do |deployment|
-          deployment.status = :PENDING
-          deployment.event = SecureRandom.uuid
-        end
+        mock_process_status = double('process_status')
+        allow(mock_process_status).to receive(:success?).and_return(true)
+        allow_any_instance_of(Blueprint).to receive(:systemu).with('consul keygen').and_return([mock_process_status, consul_secret_key, ''])
+        allow_any_instance_of(Pattern).to receive(:execute_packer).and_return(true)
       end
 
       context 'not_logged_in' do
@@ -184,15 +87,84 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
+      end
+    end
+
+    describe 'PUT /blueprints/:id' do
+      let(:method) { 'put' }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
+      let(:params) do
+        {
+          'name' => 'new_name',
+          'description' => 'new_description',
+          'patterns_attributes' => blueprint.patterns.map(&:attributes).push('url' => 'http://example.com/new_pattern.git',
+                                                                             'revision' => 'master')
+        }
+      end
+      let(:result) do
+        blueprint.as_json.merge(params.except('patterns_attributes')).merge(
+          'created_at' => blueprint.created_at.iso8601(3),
+          'updated_at' => String
+        )
+      end
+
+      before do
+        allow_any_instance_of(Blueprint).to receive(:update_consul_secret_key).and_return(true)
+        allow_any_instance_of(Pattern).to receive(:execute_packer).and_return(true)
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
+    describe 'DELETE /blueprints/:id' do
+      let(:method) { 'delete' }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('204 No Content')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('204 No Content')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('204 No Content')
       end
     end
   end

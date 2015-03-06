@@ -1,28 +1,22 @@
 module ApiSpecHelper
   include Rack::Test::Methods
+  include ModelSpecHelper
 
-  shared_context 'api' do
+  shared_context 'default_api_settings' do
     subject { send(method, url, request_params, rack_env) }
     let(:params) { Hash.new }
     let(:auth_token) { nil }
     let(:request_params) { params.merge(auth_token: auth_token) }
     let(:rack_env) { default_rack_env }
+    include_context 'default_resources'
+    include_context 'default_accounts'
   end
 
   shared_context 'default_accounts' do
-    let(:project) { FactoryGirl.create(:project) }
     let(:admin_account) { FactoryGirl.create(:account, :admin) }
     let(:normal_account) { FactoryGirl.create(:account) }
-    let(:project_owner_account) do
-      account = FactoryGirl.create(:account)
-      FactoryGirl.create(:assignment, :admin, project: project, account: account)
-      account
-    end
-    let(:project_operator_account) do
-      account = FactoryGirl.create(:account)
-      FactoryGirl.create(:assignment, project: project, account: account)
-      account
-    end
+    let(:project_owner_account) { FactoryGirl.create(:account, assign_project: project, role: :administrator) }
+    let(:project_operator_account) { FactoryGirl.create(:account, assign_project: project, role: :operator) }
   end
 
   shared_context 'normal_auth_token', normal: true do
@@ -42,28 +36,45 @@ module ApiSpecHelper
   end
 
   shared_examples_for '200 OK' do
-    it { expect(subject.status).to be(200) }
-    it { expect(subject.body).to match_json_expression(result) }
+    it 'returns 200 and expected response body' do
+      expect(subject.body).to match_json_expression(result)
+      expect(subject.status).to be(200)
+    end
   end
 
-  shared_examples_for '201 Accepted' do
-    it { expect(subject.status).to be(201) }
-    it { expect(subject.body).to match_json_expression(result) }
+  shared_examples_for '201 Created' do
+    it 'returns 201 and expected response body' do
+      expect(subject.body).to match_json_expression(result)
+      expect(subject.status).to be(201)
+    end
+  end
+
+  shared_examples_for '202 Accepted' do
+    it 'returns 202 and expected response body' do
+      expect(subject.body).to match_json_expression(result)
+      expect(subject.status).to be(202)
+    end
   end
 
   shared_examples_for '204 No Content' do
-    it { expect(subject.status).to be(204) }
-    it { expect(subject.body).to be_empty }
+    it 'returns 204 and empty response body' do
+      expect(subject.body).to be_empty
+      expect(subject.status).to be(204)
+    end
   end
 
   shared_examples_for '401 Unauthorized' do
-    it { expect(subject.status).to be(401) }
-    it { expect(subject.body).to match_json_expression(error: 'Unauthorized') }
+    it 'returns 401 and unauthorized message' do
+      expect(subject.body).to match_json_expression(error: 'Requires valid auth_token.')
+      expect(subject.status).to be(401)
+    end
   end
 
   shared_examples_for '403 Forbidden' do
-    it { expect(subject.status).to be(403) }
-    it { expect(subject.body).to match_json_expression(error: 'You are not authorized to access this page.') }
+    it 'returns 403 and forbidden message' do
+      expect(subject.body).to match_json_expression(error: 'You are not authorized to access this page.')
+      expect(subject.status).to be(403)
+    end
   end
 
   def app
@@ -77,7 +88,7 @@ module ApiSpecHelper
     }
   end
 
-  def api_attributes(object)
+  def format_iso8601(object)
     JSON.parse(object.to_json)
   end
 end

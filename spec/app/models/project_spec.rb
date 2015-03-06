@@ -27,8 +27,8 @@ describe Project do
     end
 
     it 'delete all cloud records' do
-      FactoryGirl.create(:cloud_aws, project: @project)
-      FactoryGirl.create(:cloud_aws, project: @project)
+      FactoryGirl.create(:cloud, :aws, project: @project)
+      FactoryGirl.create(:cloud, :aws, project: @project)
 
       expect(@project.clouds.size).to eq(2)
       expect { @project.destroy }.to change { Cloud.count }.by(-2)

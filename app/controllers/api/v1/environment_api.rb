@@ -26,14 +26,11 @@ module API
           requires :blueprint_id, type: Integer, desc: 'Blueprint id'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment. First cloud is primary.' do
+          optional :template_parameters, type: String, desc: 'Parameter JSON'
+          optional :user_attributes, type: String, desc: 'User Attribute JSON'
+          requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment' do
             requires :cloud_id, type: String, desc: 'Cloud id'
             optional :priority, type: Integer, desc: 'Cloud priority(prefer cloud that has higher value)'
-          end
-          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack' do
-            requires :name, type: String, desc: 'Stack name'
-            optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
-            optional :parameters, type: String, desc: 'Parameters is used when some event in created stack'
           end
         end
         post '/' do
@@ -41,11 +38,14 @@ module API
           environment = Environment.create!(declared_params)
 
           Thread.new do
-            CloudConductor::SystemBuilder.new(environment).build
-            system = environment.system
-            system.update_attributes!(primary_environment: environment) unless system.primary_environment
+            ActiveRecord::Base.connection_pool.with_connection do
+              CloudConductor::SystemBuilder.new(environment).build
+              system = environment.system
+              system.update_attributes!(primary_environment: environment) unless system.primary_environment
+            end
           end
 
+          status 202
           environment
         end
 
@@ -53,16 +53,15 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Environment name'
-          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack', default: '[]' do
-            requires :name, type: String, desc: 'Stack name'
-            optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
-          end
+          optional :description, type: String, desc: 'Environment description'
+          optional :template_parameters, type: String, desc: 'Parameters JSON'
+          optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         put '/:id' do
           environment = ::Environment.find(params[:id])
           authorize!(:update, environment)
 
-          environment.update_attributes_and_stacks!(declared_params.except(:id, :switch))
+          environment.update_attributes!(declared_params.except(:id, :switch))
 
           Thread.new do
             CloudConductor::SystemUpdater.new(environment).update
@@ -74,13 +73,12 @@ module API
         desc 'Rebuild environment'
         params do
           requires :id, type: Integer, desc: 'Environment id'
+          optional :name, type: String, desc: 'Blueprint name'
           optional :blueprint_id, type: Integer, desc: 'Blueprint id'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
-          optional :stacks_attributes, type: Array, desc: 'Parameters for individual stack', default: '[]' do
-            requires :name, type: String, desc: 'Stack name'
-            optional :template_parameters, type: String, desc: 'Parameters for cloudformation', default: '{}'
-          end
+          optional :template_parameters, type: String, desc: 'Parameters JSON'
+          optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         post '/:id/rebuild' do
           authorize!(:create, ::Environment)
@@ -88,13 +86,16 @@ module API
           authorize!(:read, environment)
 
           new_environment = environment.dup
-          new_environment.update_attributes_and_stacks!(declared_params.except(:id, :switch))
+          new_environment.update_attributes!(declared_params.except(:id, :switch))
 
           Thread.new do
-            CloudConductor::SystemBuilder.new(new_environment).build
-            new_environment.system.update_attributes!(primary_environment: new_environment) if declared_params[:switch]
+            ActiveRecord::Base.connection_pool.with_connection do
+              CloudConductor::SystemBuilder.new(new_environment).build
+              new_environment.system.update_attributes!(primary_environment: new_environment) if declared_params[:switch]
+            end
           end
 
+          status 202
           new_environment
         end
 

@@ -3,7 +3,7 @@ class ApplicationHistory < ActiveRecord::Base
   belongs_to :application
 
   validates_associated :application
-  validates_presence_of :application, :domain, :type, :protocol, :url
+  validates_presence_of :application, :type, :protocol, :url
   validates :protocol, inclusion: { in: %w(http https git) }
   validates :url, format: { with: URI.regexp }
   validates_each :parameters do |record, attr, value|

@@ -1,4 +1,4 @@
-class ModelSpecHelper
+module ModelSpecHelper
   shared_context 'default_resources' do
     let(:project) { FactoryGirl.create(:project) }
     let(:cloud) { FactoryGirl.create(:cloud, project: project) }
@@ -7,7 +7,7 @@ class ModelSpecHelper
     let(:pattern) { blueprint.patterns.first }
     let(:image) { FactoryGirl.create(:image, base_image: base_image, pattern: pattern, cloud: cloud) }
     let(:base_image) { FactoryGirl.create(:base_image, cloud: cloud) }
-    let(:environment) { FactoryGirl.create(:environment, system: system, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
+    let(:environment) { FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
     let(:stack) { environment.stacks.first }
     let(:candidate) { environment.candidates.first }
     let(:application) { FactoryGirl.create(:application, system: system) }
