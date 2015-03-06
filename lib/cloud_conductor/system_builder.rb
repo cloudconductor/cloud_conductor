@@ -55,6 +55,7 @@ module CloudConductor
           rescue => e
             Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
             Log.warn e.message
+            Log.debug e.backtrace
             reset_stacks
           end
         end
