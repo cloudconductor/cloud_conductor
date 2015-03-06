@@ -97,11 +97,8 @@ environment = Environment.where(name: 'sample_environment_1').first_or_create!(
     cloud_id: cloud.id,
     priority: 10
   }],
-  stacks_attributes: [{
-    name: 'tomcat_pattern',
-    template_parameters: '{}',
-    parameters: '{}'
-  }]
+  template_parameters: '{}',
+  user_attributes: '{}'
 )
 environment.update!(status: :CREATE_COMPLETE)
 Stack.set_callback(:save, :before, :create_stack)
