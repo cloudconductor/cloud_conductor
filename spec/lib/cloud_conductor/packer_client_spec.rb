@@ -92,7 +92,7 @@ module CloudConductor
       it 'remove temporary json for packer when some errors occurred while yielding block' do
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
-        @client.build(@images, @parameters) { fail }
+        expect { @client.build(@images, @parameters) { fail } }.to raise_exception
       end
     end
 
