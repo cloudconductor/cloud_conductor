@@ -271,12 +271,12 @@ describe Pattern do
               "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
               "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
             },
-            "webInstanceType" : {
+            "WebInstanceType" : {
               "Description" : "WebServer instance type",
               "Type" : "String",
               "Default" : "t2.small"
             },
-            "webImageId" : {
+            "WebImageId" : {
               "Description" : "DBServer Image Id. This parameter is automatically filled by CloudConductor.",
               "Type" : "String"
             }
@@ -286,7 +286,7 @@ describe Pattern do
       allow(File).to receive(:open).with(/template.json/).and_return(double('File', read: template))
       parameters = @pattern.send(:load_parameters, cloned_path)
       expect(parameters).to be_instance_of Hash
-      expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType webImageId)
+      expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType WebImageId)
       expect(parameters['KeyName']['MinLength']).to eq '1'
     end
   end
@@ -405,11 +405,11 @@ describe Pattern do
             "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
             "Type" : "String"
           },
-          "webImageId" : {
+          "WebImageId" : {
             "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
             "Type" : "String"
           },
-          "webInstanceType" : {
+          "WebInstanceType" : {
             "Description" : "WebServer instance type",
             "Type" : "String"
           }
@@ -419,12 +419,12 @@ describe Pattern do
 
     it 'return parameters without [computed] annotation' do
       parameters = @pattern.filtered_parameters
-      expect(parameters.keys).to eq %w(KeyName SSHLocation webInstanceType)
+      expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType)
     end
 
     it 'return all parameters when specified option' do
       parameters = @pattern.filtered_parameters(true)
-      expect(parameters.keys).to eq %w(KeyName SSHLocation webImageId webInstanceType)
+      expect(parameters.keys).to eq %w(KeyName SSHLocation WebImageId WebInstanceType)
     end
   end
 
