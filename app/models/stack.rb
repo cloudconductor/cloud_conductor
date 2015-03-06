@@ -36,9 +36,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_stack
-    common_parameters = JSON.parse(environment.template_parameters, symbolize_names: true)
-    stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
-    client.create_stack name, pattern, common_parameters.deep_merge(stack_parameters)
+    client.create_stack name, pattern, generate_parameters
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -59,8 +57,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def update_stack
-    stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
-    client.update_stack name, pattern, stack_parameters
+    client.update_stack name, pattern, generate_parameters
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -73,6 +70,13 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   else
     self.status = :PROGRESS
     Log.info("Update stack on #{cloud.name} ... SUCCESS")
+  end
+
+  def generate_parameters
+    common_parameters = {}
+    common_parameters = JSON.parse(environment.template_parameters, symbolize_names: true) if pattern.type == :optional
+    stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
+    common_parameters.deep_merge(stack_parameters)
   end
 
   def basename
