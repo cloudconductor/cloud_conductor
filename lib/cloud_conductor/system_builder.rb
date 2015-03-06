@@ -119,10 +119,7 @@ module CloudConductor
       @environment.event.sync_fire(:restore, application_payload(@environment))
       @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.deployments.empty?
 
-      @environment.deployments.each do |deployment|
-        deployment.status = :DEPLOYED
-        deployment.save!
-      end
+      @environment.deployments.each(&:update_status)
 
       @environment.status = :CREATE_COMPLETE
       @environment.save!

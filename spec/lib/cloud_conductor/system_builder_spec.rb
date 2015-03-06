@@ -27,6 +27,8 @@ module CloudConductor
       @environment.stacks.delete_all
       @environment.stacks << @platform_stack
       @environment.stacks << @optional_stack
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
       @environment.save!
 
       @builder = SystemBuilder.new @environment
@@ -191,18 +193,16 @@ module CloudConductor
       end
 
       it 'will request deploy event to consul when create already deploymented environment' do
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
         expect(@event).to receive(:sync_fire).with(:deploy, {})
         @builder.send(:finish_environment)
       end
 
       it 'change application history status if deploy event is finished' do
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-        expect(@environment.deployments.first.status).to eq(:NOT_YET)
+        FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
 
+        expect_any_instance_of(Deployment).to receive(:update_status).at_least(1)
         @builder.send(:finish_environment)
-
-        expect(@environment.deployments.first.status).to eq(:DEPLOYED)
       end
     end
 
@@ -308,8 +308,8 @@ module CloudConductor
         history1 = FactoryGirl.create(:application_history, application: application1)
         history2 = FactoryGirl.create(:application_history, application: application2)
 
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
-        @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
+        FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
+        FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
         expected_payload = satisfy do |payload|
           expect(payload[:cloudconductor][:applications].keys).to eq(%w(application1 application2))
         end
