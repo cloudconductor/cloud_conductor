@@ -138,6 +138,8 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     payload = {}
     payload[pattern.name] = JSON.parse(pattern.to_json, symbolize_names: true)
     payload[pattern.name][:user_attributes] = JSON.parse(parameters, symbolize_names: true)
+    payload[pattern.name][:config] = {}
+    payload[pattern.name][:config][:backup_restore] = JSON.parse(pattern.backup_config, symbolize_names: true)
 
     payload
   end

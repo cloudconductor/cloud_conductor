@@ -207,18 +207,16 @@ module CloudConductor
     end
 
     describe '#configure_payload' do
+      before do
+        @environment.stacks.each { |stack| stack.update_attributes(status: :CREATE_COMPLETE) }
+      end
+
       it 'return payload that contains random salt' do
         payload = @builder.send(:configure_payload, @environment)
         expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
       end
 
       it 'will request configure event to serf with payload' do
-        @platform_stack.status = :CREATE_COMPLETE
-        @platform_stack.save!
-
-        @optional_stack.status = :CREATE_COMPLETE
-        @optional_stack.save!
-
         payload = @builder.send(:configure_payload, @environment)
         expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
 
@@ -235,6 +233,12 @@ module CloudConductor
         expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
         expect(payload2[:url]).to eq(@optional_stack.pattern.url)
         expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
+      end
+
+      it 'contains backup_restore settings for amanda' do
+        @platform_stack.pattern.update_attributes(backup_config: '{ "dummy": "value" }')
+        payload = @builder.send(:configure_payload, @environment)
+        expect(payload[:cloudconductor][:patterns][@platform_stack.pattern.name][:config][:backup_restore]).to eq(dummy: 'value')
       end
     end
 
