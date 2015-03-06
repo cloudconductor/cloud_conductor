@@ -1,858 +1,858 @@
-1407119759,,ui,say,aws----centos----web output will be in this color.
-1407119759,,ui,say,openstack----centos----web output will be in this color.
+1407119759,,ui,say,aws-centos----web output will be in this color.
+1407119759,,ui,say,openstack-centos----web output will be in this color.
 1407119759,,ui,say,
-1407119759,,ui,say,==> aws----centos----web: Inspecting the source AMI...
-1407119759,,ui,say,==> openstack----centos----web: Creating temporary keypair for this instance...
-1407119759,,ui,say,==> aws----centos----web: Creating temporary keypair: packer 53def18f-a285-28cf-959a-b34dbe10f150
-1407119760,,ui,say,==> openstack----centos----web: Waiting for server (1f57f6e1-6cef-4d30-83bd-a906ef05e55f) to become ready...
-1407119760,,ui,say,==> aws----centos----web: Creating temporary security group for this instance...
-1407119760,,ui,say,==> aws----centos----web: Authorizing SSH access on the temporary security group...
-1407119760,,ui,say,==> aws----centos----web: Launching a source AWS instance...
-1407119762,,ui,message,    aws----centos----web: Instance ID: i-06ad0b1f
-1407119762,,ui,say,==> aws----centos----web: Waiting for instance (i-06ad0b1f) to become ready...
-1407119767,,ui,say,==> openstack----centos----web: Created temporary floating IP 10.255.205.164...
-1407119768,,ui,say,==> openstack----centos----web: Added floating IP 10.255.205.164 to instance...
-1407119768,,ui,say,==> openstack----centos----web: Waiting for SSH to become available...
-1407119779,,ui,say,==> aws----centos----web: Waiting for SSH to become available...
-1407119800,,ui,say,==> openstack----centos----web: Connected to SSH!
-1407119800,,ui,say,==> openstack----centos----web: Provisioning with shell script: /tmp/packer-shell991749081
-1407119800,,ui,message,    openstack----centos----web: + '[' -f /tmp/packer-create-image.sh ']'
-1407119800,,ui,message,    openstack----centos----web: + sudo /tmp/packer-create-image.sh
-1407119800,,ui,message,    openstack----centos----web: + cd /tmp
-1407119800,,ui,message,    openstack----centos----web: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
-1407119800,,ui,message,    openstack----centos----web: Initialized empty Git repository in /tmp/pattern/.git/
-1407119802,,ui,message,    openstack----centos----web: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
-1407119802,,ui,message,    openstack----centos----web: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
-1407119802,,ui,message,    openstack----centos----web: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
-1407119802,,ui,message,    openstack----centos----web: + cd /tmp/pattern/resources/chef-repo
-1407119802,,ui,message,    openstack----centos----web: + berks vendor cookbooks
-1407119807,,ui,message,    openstack----centos----web: Resolving cookbook dependencies...
-1407119807,,ui,message,    openstack----centos----web: Fetching cookbook index from http://api.berkshelf.com...
-1407119809,,ui,message,    openstack----centos----web: Installing apt (2.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119809,,ui,message,    openstack----centos----web: Installing bluepill (2.3.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119813,,ui,message,    openstack----centos----web: Installing build-essential (2.0.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119813,,ui,message,    openstack----centos----web: Installing mysql (5.3.6) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119816,,ui,message,    openstack----centos----web: Installing nginx (2.7.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119817,,ui,message,    openstack----centos----web: Installing ohai (2.0.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119819,,ui,message,    openstack----centos----web: Installing rsyslog (1.12.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119820,,ui,message,    openstack----centos----web: Installing runit (1.5.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119822,,ui,message,    openstack----centos----web: Installing yum (3.2.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119823,,ui,message,    openstack----centos----web: Installing yum-epel (0.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119825,,ui,message,    openstack----centos----web: Installing yum-mysql-community (0.1.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119827,,ui,message,    openstack----centos----web: Vendoring apt (2.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/apt
-1407119827,,ui,message,    openstack----centos----web: Vendoring bluepill (2.3.1) to /tmp/pattern/resources/chef-repo/cookbooks/bluepill
-1407119827,,ui,message,    openstack----centos----web: Vendoring build-essential (2.0.4) to /tmp/pattern/resources/chef-repo/cookbooks/build-essential
-1407119827,,ui,message,    openstack----centos----web: Vendoring mysql (5.3.6) to /tmp/pattern/resources/chef-repo/cookbooks/mysql
-1407119827,,ui,message,    openstack----centos----web: Vendoring nginx (2.7.4) to /tmp/pattern/resources/chef-repo/cookbooks/nginx
-1407119827,,ui,message,    openstack----centos----web: Vendoring ohai (2.0.1) to /tmp/pattern/resources/chef-repo/cookbooks/ohai
-1407119827,,ui,message,    openstack----centos----web: Vendoring rsyslog (1.12.2) to /tmp/pattern/resources/chef-repo/cookbooks/rsyslog
-1407119827,,ui,message,    openstack----centos----web: Vendoring runit (1.5.10) to /tmp/pattern/resources/chef-repo/cookbooks/runit
-1407119827,,ui,message,    openstack----centos----web: Vendoring yum (3.2.2) to /tmp/pattern/resources/chef-repo/cookbooks/yum
-1407119827,,ui,message,    openstack----centos----web: Vendoring yum-epel (0.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/yum-epel
-1407119827,,ui,message,    openstack----centos----web: Vendoring yum-mysql-community (0.1.10) to /tmp/pattern/resources/chef-repo/cookbooks/yum-mysql-community
-1407119827,,ui,message,    openstack----centos----web: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
-1407119829,,ui,say,==> aws----centos----web: Connected to SSH!
-1407119829,,ui,say,==> aws----centos----web: Provisioning with shell script: /tmp/packer-shell790672334
-1407119830,,ui,message,    openstack----centos----web: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
-1407119831,,ui,message,    aws----centos----web: + '[' -f /tmp/packer-create-image.sh ']'
-1407119831,,ui,message,    aws----centos----web: + cd /tmp
-1407119831,,ui,message,    aws----centos----web: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
-1407119831,,ui,message,    aws----centos----web: Initialized empty Git repository in /tmp/pattern/.git/
-1407119832,,ui,message,    openstack----centos----web: Compiling Cookbooks...[0m
-1407119832,,ui,message,    openstack----centos----web: Recipe: ohai::default[0m
-1407119832,,ui,message,    openstack----centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action create
-1407119832,,ui,message,    openstack----centos----web: [32m- create new directory /etc/chef/ohai_plugins[0m
-1407119832,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119832,,ui,message,    openstack----centos----web: Recipe: <Dynamically Defined Resource>[0m
-1407119832,,ui,message,    openstack----centos----web: * cookbook_file[/etc/chef/ohai_plugins/README] action create
-1407119832,,ui,message,    openstack----centos----web: [32m- create new file /etc/chef/ohai_plugins/README[0m
-1407119832,,ui,message,    openstack----centos----web: [32m- update content in file /etc/chef/ohai_plugins/README from none to 775fa7[0m
-1407119832,,ui,message,    openstack----centos----web: [37m--- /etc/chef/ohai_plugins/README	2014-08-04 11:37:38.393999968 +0900[0m
-1407119832,,ui,message,    openstack----centos----web: [37m+++ /tmp/.README20140804-1286-jg7fx9	2014-08-04 11:37:38.394999968 +0900[0m
-1407119832,,ui,message,    openstack----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)2 @@[0m
-1407119832,,ui,message,    openstack----centos----web: [37m+This directory contains custom plugins for Ohai.[0m
-1407119832,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0644'[0m
-1407119832,,ui,message,    openstack----centos----web: [0m
-1407119832,,ui,message,    openstack----centos----web: [0mRecipe: ohai::default[0m
-1407119833,,ui,message,    aws----centos----web: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
-1407119833,,ui,message,    aws----centos----web: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
-1407119833,,ui,message,    aws----centos----web: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
-1407119833,,ui,message,    aws----centos----web: + cd /tmp/pattern/resources/chef-repo
-1407119833,,ui,message,    aws----centos----web: + berks vendor cookbooks
-1407119833,,ui,message,    openstack----centos----web: * ohai[custom_plugins] action reload
-1407119833,,ui,message,    openstack----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119833,,ui,message,    openstack----centos----web: [0m  Converging 19 resources[0m
-1407119833,,ui,message,    openstack----centos----web: Recipe: nginx::ohai_plugin[0m
-1407119833,,ui,message,    openstack----centos----web: * ohai[reload_nginx] action nothing (skipped due to action :nothing)
-1407119833,,ui,message,    openstack----centos----web: * template[/etc/chef/ohai_plugins/nginx.rb] action create
-1407119833,,ui,message,    openstack----centos----web: [32m- create new file /etc/chef/ohai_plugins/nginx.rb[0m
-1407119833,,ui,message,    openstack----centos----web: [32m- update content in file /etc/chef/ohai_plugins/nginx.rb from none to 9f7e82[0m
-1407119833,,ui,message,    openstack----centos----web: [37m--- /etc/chef/ohai_plugins/nginx.rb	2014-08-04 11:37:40.054999968 +0900[0m
-1407119833,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-qah71s	2014-08-04 11:37:40.055999968 +0900[0m
-1407119833,,ui,message,    openstack----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)67 @@[0m
-1407119833,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119833,,ui,message,    openstack----centos----web: [37m+# Author:: Jamie Winsor (<jamie@vialstudios.com>)[0m
-1407119833,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119833,,ui,message,    openstack----centos----web: [37m+# Copyright 2012%!(PACKER_COMMA) Riot Games[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# Licensed under the Apache License%!(PACKER_COMMA) Version 2.0 (the "License");[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# you may not use this file except in compliance with the License.[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# You may obtain a copy of the License at[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+#     http://www.apache.org/licenses/LICENSE-2.0[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# Unless required by applicable law or agreed to in writing%!(PACKER_COMMA) software[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# distributed under the License is distributed on an "AS IS" BASIS%!(PACKER_COMMA)[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND%!(PACKER_COMMA) either express or implied.[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# See the License for the specific language governing permissions and[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# limitations under the License.[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+#[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+provides "nginx"[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+provides "nginx/version"[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+provides "nginx/configure_arguments"[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+provides "nginx/prefix"[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+provides "nginx/conf_path"[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+def parse_flags(flags)[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  prefix = nil[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  conf_path = nil[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  flags.each do |flag|[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    case flag[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    when /^--prefix=(.+)$/[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      prefix = $1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    when /^--conf-path=(.+)$/[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      conf_path = $1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    end[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  end[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  [ prefix%!(PACKER_COMMA) conf_path ][0m
-1407119834,,ui,message,    openstack----centos----web: [37m+end[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+nginx Mash.new unless nginx[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+nginx[:version]             = nil unless nginx[:version][0m
-1407119834,,ui,message,    openstack----centos----web: [37m+nginx[:configure_arguments] = Array.new unless nginx[:configure_arguments][0m
-1407119834,,ui,message,    openstack----centos----web: [37m+nginx[:prefix]              = nil unless nginx[:prefix][0m
-1407119834,,ui,message,    openstack----centos----web: [37m+nginx[:conf_path]           = nil unless nginx[:conf_path][0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+status%!(PACKER_COMMA) stdout%!(PACKER_COMMA) stderr = run_command(:no_status_check => true%!(PACKER_COMMA) :command => "/usr/sbin/nginx -V")[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+if status == 0[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  stderr.split("\n").each do |line|[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    case line[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    when /^configure arguments:(.+)/[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      # This could be better: I'm splitting on configure arguments which removes them and also[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      # adds a blank string at index 0 of the array. This is why we drop index 0 and map to[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      # add the '--' prefix back to the configure argument.[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      nginx[:configure_arguments] = $1.split(/\s--/).drop(1).map { |ca| "--#{ca}" }[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      prefix%!(PACKER_COMMA) conf_path = parse_flags(nginx[:configure_arguments])[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      nginx[:prefix] = prefix[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      nginx[:conf_path] = conf_path[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    when /^nginx version: nginx\/(\d+\.\d+\.\d+)/[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+      nginx[:version] = $1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+    end[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+  end[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+end[0m
-1407119834,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119834,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119834,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119834,,ui,message,    openstack----centos----web: [0m  * ohai[reload_nginx] action reload[2014-08-04T11:37:40+09:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
-1407119834,,ui,message,    openstack----centos----web:
-1407119834,,ui,message,    openstack----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119834,,ui,message,    openstack----centos----web: [0mRecipe: ohai::default[0m
-1407119834,,ui,message,    openstack----centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action nothing (skipped due to action :nothing)
-1407119834,,ui,message,    openstack----centos----web: * ohai[custom_plugins] action nothing (skipped due to action :nothing)
-1407119834,,ui,message,    openstack----centos----web: Recipe: yum-epel::default[0m
-1407119834,,ui,message,    openstack----centos----web: * yum_repository[epel] action create
-1407119834,,ui,message,    openstack----centos----web: * template[/etc/yum.repos.d/epel.repo] action create
-1407119834,,ui,message,    openstack----centos----web: [32m- update content in file /etc/yum.repos.d/epel.repo from cd4915 to 759e91[0m
-1407119834,,ui,message,    openstack----centos----web: [37m--- /etc/yum.repos.d/epel.repo	2012-11-05 12:52:17.000000000 +0900[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-1uyhj9x	2014-08-04 11:37:40.187999966 +0900[0m
-1407119834,,ui,message,    openstack----centos----web: [37m@@ -1%!(PACKER_COMMA)27 +1%!(PACKER_COMMA)12 @@[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# This file was generated by Chef[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+# Do NOT modify this file by hand.[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+[0m
-1407119834,,ui,message,    openstack----centos----web: [37m [epel][0m
-1407119834,,ui,message,    openstack----centos----web: [37m name=Extra Packages for Enterprise Linux 6 - $basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-failovermethod=priority[0m
-1407119834,,ui,message,    openstack----centos----web: [37m enabled=1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-gpgcheck=1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-[epel-debuginfo][0m
-1407119834,,ui,message,    openstack----centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Debug[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch/debug[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-6&arch=$basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m failovermethod=priority[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-enabled=0[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119834,,ui,message,    openstack----centos----web: [37m gpgcheck=1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-[epel-source][0m
-1407119834,,ui,message,    openstack----centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Source[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/SRPMS[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-6&arch=$basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-failovermethod=priority[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-enabled=0[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119834,,ui,message,    openstack----centos----web: [37m-gpgcheck=1[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+gpgkey=http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch[0m
-1407119834,,ui,message,    openstack----centos----web: [37m+sslverify=1[0m
-1407119842,,ui,message,    aws----centos----web: Resolving cookbook dependencies...
-1407119842,,ui,message,    aws----centos----web: Fetching cookbook index from http://api.berkshelf.com...
-1407119845,,ui,message,    aws----centos----web: Installing apt (2.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119845,,ui,message,    aws----centos----web: Installing bluepill (2.3.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119847,,ui,message,    aws----centos----web: Installing build-essential (2.0.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119848,,ui,message,    aws----centos----web: Installing mysql (5.3.6) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119850,,ui,message,    openstack----centos----web: [0m    * execute[yum-makecache-epel] action run
-1407119850,,ui,message,    openstack----centos----web: [32m- execute yum -q makecache --disablerepo=* --enablerepo=epel[0m
-1407119850,,ui,message,    openstack----centos----web: [0m    * ruby_block[yum-cache-reload-epel] action create
-1407119850,,ui,message,    openstack----centos----web: [32m- execute the ruby block yum-cache-reload-epel[0m
-1407119850,,ui,message,    openstack----centos----web: [0m    * execute[yum-makecache-epel] action nothing (skipped due to action :nothing)
-1407119850,,ui,message,    openstack----centos----web: * ruby_block[yum-cache-reload-epel] action nothing (skipped due to action :nothing)
-1407119850,,ui,message,    openstack----centos----web:
-1407119850,,ui,message,    openstack----centos----web: [0mRecipe: nginx::package[0m
-1407119850,,ui,message,    aws----centos----web: Installing nginx (2.7.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119851,,ui,message,    aws----centos----web: Installing ohai (2.0.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119854,,ui,message,    aws----centos----web: Installing rsyslog (1.12.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119854,,ui,message,    aws----centos----web: Installing runit (1.5.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119857,,ui,message,    aws----centos----web: Installing yum (3.2.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119857,,ui,message,    aws----centos----web: Installing yum-epel (0.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119860,,ui,message,    aws----centos----web: Installing yum-mysql-community (0.1.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
-1407119862,,ui,message,    aws----centos----web: Vendoring apt (2.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/apt
-1407119862,,ui,message,    aws----centos----web: Vendoring bluepill (2.3.1) to /tmp/pattern/resources/chef-repo/cookbooks/bluepill
-1407119862,,ui,message,    aws----centos----web: Vendoring build-essential (2.0.4) to /tmp/pattern/resources/chef-repo/cookbooks/build-essential
-1407119862,,ui,message,    aws----centos----web: Vendoring mysql (5.3.6) to /tmp/pattern/resources/chef-repo/cookbooks/mysql
-1407119862,,ui,message,    aws----centos----web: Vendoring nginx (2.7.4) to /tmp/pattern/resources/chef-repo/cookbooks/nginx
-1407119862,,ui,message,    aws----centos----web: Vendoring ohai (2.0.1) to /tmp/pattern/resources/chef-repo/cookbooks/ohai
-1407119862,,ui,message,    aws----centos----web: Vendoring rsyslog (1.12.2) to /tmp/pattern/resources/chef-repo/cookbooks/rsyslog
-1407119862,,ui,message,    aws----centos----web: Vendoring runit (1.5.10) to /tmp/pattern/resources/chef-repo/cookbooks/runit
-1407119862,,ui,message,    aws----centos----web: Vendoring yum (3.2.2) to /tmp/pattern/resources/chef-repo/cookbooks/yum
-1407119862,,ui,message,    aws----centos----web: Vendoring yum-epel (0.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/yum-epel
-1407119862,,ui,message,    aws----centos----web: Vendoring yum-mysql-community (0.1.10) to /tmp/pattern/resources/chef-repo/cookbooks/yum-mysql-community
-1407119862,,ui,message,    aws----centos----web: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
-1407119867,,ui,message,    aws----centos----web: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
-1407119871,,ui,message,    aws----centos----web: Compiling Cookbooks...[0m
-1407119872,,ui,message,    aws----centos----web: Recipe: ohai::default[0m
-1407119872,,ui,message,    aws----centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action create
-1407119872,,ui,message,    aws----centos----web: [32m- create new directory /etc/chef/ohai_plugins[0m
-1407119872,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119872,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119872,,ui,message,    aws----centos----web: Recipe: <Dynamically Defined Resource>[0m
-1407119872,,ui,message,    aws----centos----web: * cookbook_file[/etc/chef/ohai_plugins/README] action create
-1407119872,,ui,message,    aws----centos----web: [32m- create new file /etc/chef/ohai_plugins/README[0m
-1407119872,,ui,message,    aws----centos----web: [32m- update content in file /etc/chef/ohai_plugins/README from none to 775fa7[0m
-1407119872,,ui,message,    aws----centos----web: [37m--- /etc/chef/ohai_plugins/README	2014-08-04 02:38:20.118688966 +0000[0m
-1407119872,,ui,message,    aws----centos----web: [37m+++ /tmp/.README20140804-1016-12cne1f	2014-08-04 02:38:20.120688966 +0000[0m
-1407119872,,ui,message,    aws----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)2 @@[0m
-1407119872,,ui,message,    aws----centos----web: [37m+This directory contains custom plugins for Ohai.[0m
-1407119873,,ui,message,    aws----centos----web: [32m- change mode from '' to '0644'[0m
-1407119873,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119873,,ui,message,    aws----centos----web: [0m
-1407119873,,ui,message,    aws----centos----web: [0mRecipe: ohai::default[0m
-1407119877,,ui,message,    aws----centos----web: * ohai[custom_plugins] action reload
-1407119877,,ui,message,    aws----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119877,,ui,message,    aws----centos----web: [0m  Converging 19 resources[0m
-1407119877,,ui,message,    aws----centos----web: Recipe: nginx::ohai_plugin[0m
-1407119877,,ui,message,    aws----centos----web: * ohai[reload_nginx] action nothing (skipped due to action :nothing)
-1407119878,,ui,message,    aws----centos----web: * template[/etc/chef/ohai_plugins/nginx.rb] action create
-1407119878,,ui,message,    aws----centos----web: [32m- create new file /etc/chef/ohai_plugins/nginx.rb[0m
-1407119878,,ui,message,    aws----centos----web: [32m- update content in file /etc/chef/ohai_plugins/nginx.rb from none to 9f7e82[0m
-1407119878,,ui,message,    aws----centos----web: [37m--- /etc/chef/ohai_plugins/nginx.rb	2014-08-04 02:38:25.199688967 +0000[0m
-1407119878,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-1xrpd88	2014-08-04 02:38:25.201688967 +0000[0m
-1407119878,,ui,message,    aws----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)67 @@[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# Author:: Jamie Winsor (<jamie@vialstudios.com>)[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# Copyright 2012%!(PACKER_COMMA) Riot Games[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# Licensed under the Apache License%!(PACKER_COMMA) Version 2.0 (the "License");[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# you may not use this file except in compliance with the License.[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# You may obtain a copy of the License at[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#     http://www.apache.org/licenses/LICENSE-2.0[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# Unless required by applicable law or agreed to in writing%!(PACKER_COMMA) software[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# distributed under the License is distributed on an "AS IS" BASIS%!(PACKER_COMMA)[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND%!(PACKER_COMMA) either express or implied.[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# See the License for the specific language governing permissions and[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# limitations under the License.[0m
-1407119878,,ui,message,    aws----centos----web: [37m+#[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+provides "nginx"[0m
-1407119878,,ui,message,    aws----centos----web: [37m+provides "nginx/version"[0m
-1407119878,,ui,message,    aws----centos----web: [37m+provides "nginx/configure_arguments"[0m
-1407119878,,ui,message,    aws----centos----web: [37m+provides "nginx/prefix"[0m
-1407119878,,ui,message,    aws----centos----web: [37m+provides "nginx/conf_path"[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+def parse_flags(flags)[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  prefix = nil[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  conf_path = nil[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  flags.each do |flag|[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    case flag[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    when /^--prefix=(.+)$/[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      prefix = $1[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    when /^--conf-path=(.+)$/[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      conf_path = $1[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    end[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  end[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  [ prefix%!(PACKER_COMMA) conf_path ][0m
-1407119878,,ui,message,    aws----centos----web: [37m+end[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+nginx Mash.new unless nginx[0m
-1407119878,,ui,message,    aws----centos----web: [37m+nginx[:version]             = nil unless nginx[:version][0m
-1407119878,,ui,message,    aws----centos----web: [37m+nginx[:configure_arguments] = Array.new unless nginx[:configure_arguments][0m
-1407119878,,ui,message,    aws----centos----web: [37m+nginx[:prefix]              = nil unless nginx[:prefix][0m
-1407119878,,ui,message,    aws----centos----web: [37m+nginx[:conf_path]           = nil unless nginx[:conf_path][0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+status%!(PACKER_COMMA) stdout%!(PACKER_COMMA) stderr = run_command(:no_status_check => true%!(PACKER_COMMA) :command => "/usr/sbin/nginx -V")[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+if status == 0[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  stderr.split("\n").each do |line|[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    case line[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    when /^configure arguments:(.+)/[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      # This could be better: I'm splitting on configure arguments which removes them and also[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      # adds a blank string at index 0 of the array. This is why we drop index 0 and map to[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      # add the '--' prefix back to the configure argument.[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      nginx[:configure_arguments] = $1.split(/\s--/).drop(1).map { |ca| "--#{ca}" }[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      prefix%!(PACKER_COMMA) conf_path = parse_flags(nginx[:configure_arguments])[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      nginx[:prefix] = prefix[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      nginx[:conf_path] = conf_path[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    when /^nginx version: nginx\/(\d+\.\d+\.\d+)/[0m
-1407119878,,ui,message,    aws----centos----web: [37m+      nginx[:version] = $1[0m
-1407119878,,ui,message,    aws----centos----web: [37m+    end[0m
-1407119878,,ui,message,    aws----centos----web: [37m+  end[0m
-1407119878,,ui,message,    aws----centos----web: [37m+end[0m
-1407119878,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119878,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119878,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119878,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119878,,ui,message,    aws----centos----web: [0m  * ohai[reload_nginx] action reload[2014-08-04T02:38:25+00:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
-1407119878,,ui,message,    aws----centos----web:
-1407119878,,ui,message,    aws----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119878,,ui,message,    aws----centos----web: [0mRecipe: ohai::default[0m
-1407119878,,ui,message,    aws----centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action nothing (skipped due to action :nothing)
-1407119878,,ui,message,    aws----centos----web: * ohai[custom_plugins] action nothing (skipped due to action :nothing)
-1407119878,,ui,message,    aws----centos----web: Recipe: yum-epel::default[0m
-1407119878,,ui,message,    aws----centos----web: * yum_repository[epel] action create
-1407119878,,ui,message,    aws----centos----web: * template[/etc/yum.repos.d/epel.repo] action create
-1407119878,,ui,message,    aws----centos----web: [32m- update content in file /etc/yum.repos.d/epel.repo from cd4915 to 759e91[0m
-1407119878,,ui,message,    aws----centos----web: [37m--- /etc/yum.repos.d/epel.repo	2012-11-05 03:52:17.000000000 +0000[0m
-1407119878,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-ylvosp	2014-08-04 02:38:26.063688967 +0000[0m
-1407119878,,ui,message,    aws----centos----web: [37m@@ -1%!(PACKER_COMMA)27 +1%!(PACKER_COMMA)12 @@[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# This file was generated by Chef[0m
-1407119878,,ui,message,    aws----centos----web: [37m+# Do NOT modify this file by hand.[0m
-1407119878,,ui,message,    aws----centos----web: [37m+[0m
-1407119878,,ui,message,    aws----centos----web: [37m [epel][0m
-1407119878,,ui,message,    aws----centos----web: [37m name=Extra Packages for Enterprise Linux 6 - $basearch[0m
-1407119878,,ui,message,    aws----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch[0m
-1407119878,,ui,message,    aws----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch[0m
-1407119878,,ui,message,    aws----centos----web: [37m-failovermethod=priority[0m
-1407119878,,ui,message,    aws----centos----web: [37m enabled=1[0m
-1407119878,,ui,message,    aws----centos----web: [37m-gpgcheck=1[0m
-1407119878,,ui,message,    aws----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119878,,ui,message,    aws----centos----web: [37m-[0m
-1407119878,,ui,message,    aws----centos----web: [37m-[epel-debuginfo][0m
-1407119878,,ui,message,    aws----centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Debug[0m
-1407119878,,ui,message,    aws----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch/debug[0m
-1407119878,,ui,message,    aws----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-6&arch=$basearch[0m
-1407119878,,ui,message,    aws----centos----web: [37m failovermethod=priority[0m
-1407119878,,ui,message,    aws----centos----web: [37m-enabled=0[0m
-1407119878,,ui,message,    aws----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119878,,ui,message,    aws----centos----web: [37m gpgcheck=1[0m
-1407119878,,ui,message,    aws----centos----web: [37m-[0m
-1407119878,,ui,message,    aws----centos----web: [37m-[epel-source][0m
-1407119878,,ui,message,    aws----centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Source[0m
-1407119878,,ui,message,    aws----centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/SRPMS[0m
-1407119878,,ui,message,    aws----centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-6&arch=$basearch[0m
-1407119878,,ui,message,    aws----centos----web: [37m-failovermethod=priority[0m
-1407119878,,ui,message,    aws----centos----web: [37m-enabled=0[0m
-1407119878,,ui,message,    aws----centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
-1407119878,,ui,message,    aws----centos----web: [37m-gpgcheck=1[0m
-1407119878,,ui,message,    aws----centos----web: [37m+gpgkey=http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6[0m
-1407119878,,ui,message,    aws----centos----web: [37m+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch[0m
-1407119879,,ui,message,    aws----centos----web: [37m+sslverify=1[0m
-1407119879,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119895,,ui,message,    openstack----centos----web: * package[nginx] action install
-1407119895,,ui,message,    openstack----centos----web: [32m- install version 1.0.15-5.el6 of package nginx[0m
-1407119895,,ui,message,    openstack----centos----web: [0mRecipe: nginx::ohai_plugin[0m
-1407119895,,ui,message,    openstack----centos----web: * ohai[reload_nginx] action reload[2014-08-04T11:38:41+09:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
-1407119895,,ui,message,    openstack----centos----web:
-1407119895,,ui,message,    openstack----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119895,,ui,message,    openstack----centos----web: [0mRecipe: nginx::package[0m
-1407119895,,ui,message,    openstack----centos----web: * service[nginx] action enable
-1407119895,,ui,message,    openstack----centos----web: [32m- enable service service[nginx][0m
-1407119895,,ui,message,    openstack----centos----web: [0mRecipe: nginx::commons_dir[0m
-1407119895,,ui,message,    openstack----centos----web: * directory[/etc/nginx] action create (up to date)
-1407119895,,ui,message,    openstack----centos----web: * directory[/var/log/nginx] action create
-1407119895,,ui,message,    openstack----centos----web: [32m- change mode from '0700' to '0755'[0m
-1407119895,,ui,message,    openstack----centos----web: [0m  * directory[/var/run] action create (up to date)
-1407119895,,ui,message,    openstack----centos----web: * directory[/etc/nginx/sites-available] action create
-1407119895,,ui,message,    openstack----centos----web: [32m- create new directory /etc/nginx/sites-available[0m
-1407119895,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119895,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119895,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119895,,ui,message,    openstack----centos----web: [0m  * directory[/etc/nginx/sites-enabled] action create
-1407119896,,ui,message,    openstack----centos----web: [32m- create new directory /etc/nginx/sites-enabled[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [0m  * directory[/etc/nginx/conf.d] action create (up to date)
-1407119896,,ui,message,    openstack----centos----web: Recipe: nginx::commons_script[0m
-1407119896,,ui,message,    openstack----centos----web: * template[/usr/sbin/nxensite] action create
-1407119896,,ui,message,    openstack----centos----web: [32m- create new file /usr/sbin/nxensite[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- update content in file /usr/sbin/nxensite from none to fa46fb[0m
-1407119896,,ui,message,    openstack----centos----web: [37m--- /usr/sbin/nxensite	2014-08-04 11:38:42.065999968 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-j0oytx	2014-08-04 11:38:42.066999968 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)39 @@[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+#!/bin/sh -e[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ -z $1 ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo "Which site would you like to enable?"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo -n "Your choices are: "[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        ls $SYSCONFDIR/sites-available/* | \[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-available/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo -n "Site name? "[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        read SITENAME[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+else[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        SITENAME=$1[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        PRIORITY="000"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+     -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo "This site is already enabled!"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        exit 0[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-available/$SITENAME ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo "This site does not exist!"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        exit 1[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME \[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+               $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+else[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME $SYSCONFDIR/sites-enabled/$SITENAME[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+echo "Site $SITENAME installed; reload nginx to enable."[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [0m  * template[/usr/sbin/nxdissite] action create
-1407119896,,ui,message,    openstack----centos----web: [32m- create new file /usr/sbin/nxdissite[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- update content in file /usr/sbin/nxdissite from none to cc16ec[0m
-1407119896,,ui,message,    openstack----centos----web: [37m--- /usr/sbin/nxdissite	2014-08-04 11:38:42.074999969 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-16c468d	2014-08-04 11:38:42.074999969 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)30 @@[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+#!/bin/sh -e[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ -z $1 ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo "Which site would you like to disable?"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo -n "Your choices are: "[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        ls $SYSCONFDIR/sites-enabled/* | \[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-enabled/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo -n "Site name? "[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        read SITENAME[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+else[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        SITENAME=$1[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        PRIORITY="000"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+       -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        echo "This site is already disabled%!(PACKER_COMMA) or does not exist!"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        exit 1[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+if ! rm $SYSCONFDIR/sites-enabled/$SITENAME 2>/dev/null; then[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+        rm -f $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+fi[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+echo "Site $SITENAME disabled; reload nginx to disable."[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0755'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [0mRecipe: nginx::commons_conf[0m
-1407119896,,ui,message,    openstack----centos----web: * template[nginx.conf] action create
-1407119896,,ui,message,    openstack----centos----web: [32m- update content in file /etc/nginx/nginx.conf from d364aa to 161383[0m
-1407119896,,ui,message,    openstack----centos----web: [37m--- /etc/nginx/nginx.conf	2013-04-27 05:36:51.000000000 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-1iqs9vd	2014-08-04 11:38:42.083999969 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m@@ -1%!(PACKER_COMMA)43 +1%!(PACKER_COMMA)40 @@[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-# For more information on configuration%!(PACKER_COMMA) see:[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-#   * Official English Documentation: http://nginx.org/en/docs/[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-#   * Official Russian Documentation: http://nginx.org/ru/docs/[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-user              nginx;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+user nginx;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m worker_processes  1;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m error_log  /var/log/nginx/error.log;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-#error_log  /var/log/nginx/error.log  notice;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-#error_log  /var/log/nginx/error.log  info;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-[0m
-1407119896,,ui,message,    openstack----centos----web: [37m pid        /var/run/nginx.pid;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-[0m
-1407119896,,ui,message,    openstack----centos----web: [37m events {[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    worker_connections  1024;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  worker_connections  1024;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m }[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-[0m
-1407119896,,ui,message,    openstack----centos----web: [37m http {[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    include       /etc/nginx/mime.types;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    default_type  application/octet-stream;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-                      '$status $body_bytes_sent "$http_referer" '[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-                      '"$http_user_agent" "$http_x_forwarded_for"';[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  include       /etc/nginx/mime.types;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  default_type  application/octet-stream;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    access_log  /var/log/nginx/access.log  main;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  access_log	/var/log/nginx/access.log;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    sendfile        on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    #tcp_nopush     on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  sendfile on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  tcp_nopush on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  tcp_nodelay on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    #keepalive_timeout  0;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    keepalive_timeout  65;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  keepalive_timeout  65;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    #gzip  on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    [0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    # Load config files from the /etc/nginx/conf.d directory[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    # The default server is in conf.d/default.conf[0m
-1407119896,,ui,message,    openstack----centos----web: [37m-    include /etc/nginx/conf.d/*.conf;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip  on;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_http_version 1.0;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_comp_level 2;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_proxied any;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_vary off;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_types text/plain text/css application/x-javascript text/xml application/xml application/rss+xml application/atom+xml text/javascript application/javascript application/json text/mathml;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_min_length  1000;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  gzip_disable     "MSIE [1-6]\.";[0m
-1407119896,,ui,message,    openstack----centos----web: [37m [0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  server_names_hash_bucket_size 64;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  types_hash_max_size 2048;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  types_hash_bucket_size 64;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  include /etc/nginx/conf.d/*.conf;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  include /etc/nginx/sites-enabled/*;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m }[0m
-1407119896,,ui,message,    openstack----centos----web: [0m  * template[/etc/nginx/sites-available/default] action create
-1407119896,,ui,message,    openstack----centos----web: [32m- create new file /etc/nginx/sites-available/default[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- update content in file /etc/nginx/sites-available/default from none to 5f7702[0m
-1407119896,,ui,message,    openstack----centos----web: [37m--- /etc/nginx/sites-available/default	2014-08-04 11:38:42.094999969 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-4l54ap	2014-08-04 11:38:42.095999968 +0900[0m
-1407119896,,ui,message,    openstack----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)12 @@[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+server {[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  listen   80;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  server_name  centos-nginx;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  access_log  /var/log/nginx/localhost.access.log;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  location / {[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+    root   /var/www/nginx-default;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+    index  index.html index.htm;[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+  }[0m
-1407119896,,ui,message,    openstack----centos----web: [37m+}[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change mode from '' to '0644'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change owner from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [32m- change group from '' to 'root'[0m
-1407119896,,ui,message,    openstack----centos----web: [0m  * execute[nxensite default] action run
-1407119896,,ui,message,    openstack----centos----web: [32m- execute /usr/sbin/nxensite default[0m
-1407119896,,ui,message,    openstack----centos----web: [0mRecipe: nginx::default[0m
-1407119896,,ui,message,    openstack----centos----web: * service[nginx] action start
-1407119896,,ui,message,    openstack----centos----web: [32m- start service service[nginx][0m
-1407119896,,ui,message,    openstack----centos----web: [0m  * service[nginx] action reload
-1407119896,,ui,message,    openstack----centos----web: [32m- reload service service[nginx][0m
-1407119896,,ui,message,    openstack----centos----web: [0m[0m
-1407119896,,ui,message,    openstack----centos----web: Running handlers:[0m
-1407119896,,ui,message,    openstack----centos----web: Running handlers complete
-1407119896,,ui,message,    openstack----centos----web: [0mChef Client finished%!(PACKER_COMMA) 22/25 resources updated in 66.458152687 seconds[0m
-1407119896,,ui,say,==> openstack----centos----web: Creating the image: CentOS-nginx
-1407119897,,ui,say,==> openstack----centos----web: Image: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
-1407119897,,ui,say,==> openstack----centos----web: Waiting for image to become ready...
-1407119898,,ui,message,    aws----centos----web: [0m    * execute[yum-makecache-epel] action run
-1407119898,,ui,message,    aws----centos----web: [32m- execute yum -q makecache --disablerepo=* --enablerepo=epel[0m
-1407119898,,ui,message,    aws----centos----web: [0m    * ruby_block[yum-cache-reload-epel] action create
-1407119898,,ui,message,    aws----centos----web: [32m- execute the ruby block yum-cache-reload-epel[0m
-1407119898,,ui,message,    aws----centos----web: [0m    * execute[yum-makecache-epel] action nothing (skipped due to action :nothing)
-1407119898,,ui,message,    aws----centos----web: * ruby_block[yum-cache-reload-epel] action nothing (skipped due to action :nothing)
-1407119898,,ui,message,    aws----centos----web:
-1407119898,,ui,message,    aws----centos----web: [0mRecipe: nginx::package[0m
-1407119942,,ui,message,    aws----centos----web: * package[nginx] action install
-1407119942,,ui,message,    aws----centos----web: [32m- install version 1.0.15-5.el6 of package nginx[0m
-1407119942,,ui,message,    aws----centos----web: [0mRecipe: nginx::ohai_plugin[0m
-1407119942,,ui,message,    aws----centos----web: * ohai[reload_nginx] action reload[2014-08-04T02:39:29+00:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
-1407119942,,ui,message,    aws----centos----web:
-1407119942,,ui,message,    aws----centos----web: [32m- re-run ohai and merge results into node attributes[0m
-1407119942,,ui,message,    aws----centos----web: [0mRecipe: nginx::package[0m
-1407119943,,ui,message,    aws----centos----web: * service[nginx] action enable
-1407119943,,ui,message,    aws----centos----web: [32m- enable service service[nginx][0m
-1407119943,,ui,message,    aws----centos----web: [0mRecipe: nginx::commons_dir[0m
-1407119943,,ui,message,    aws----centos----web: * directory[/etc/nginx] action create (up to date)
-1407119943,,ui,message,    aws----centos----web: * directory[/var/log/nginx] action create
-1407119944,,ui,message,    aws----centos----web: [32m- change mode from '0700' to '0755'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119944,,ui,message,    aws----centos----web: [0m  * directory[/var/run] action create (up to date)
-1407119944,,ui,message,    aws----centos----web: * directory[/etc/nginx/sites-available] action create
-1407119944,,ui,message,    aws----centos----web: [32m- create new directory /etc/nginx/sites-available[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119944,,ui,message,    aws----centos----web: [0m  * directory[/etc/nginx/sites-enabled] action create
-1407119944,,ui,message,    aws----centos----web: [32m- create new directory /etc/nginx/sites-enabled[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119944,,ui,message,    aws----centos----web: [0m  * directory[/etc/nginx/conf.d] action create (up to date)
-1407119944,,ui,message,    aws----centos----web: Recipe: nginx::commons_script[0m
-1407119944,,ui,message,    aws----centos----web: * template[/usr/sbin/nxensite] action create
-1407119944,,ui,message,    aws----centos----web: [32m- create new file /usr/sbin/nxensite[0m
-1407119944,,ui,message,    aws----centos----web: [32m- update content in file /usr/sbin/nxensite from none to fa46fb[0m
-1407119944,,ui,message,    aws----centos----web: [37m--- /usr/sbin/nxensite	2014-08-04 02:39:32.085688966 +0000[0m
-1407119944,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-1ia6iuf	2014-08-04 02:39:32.087688966 +0000[0m
-1407119944,,ui,message,    aws----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)39 @@[0m
-1407119944,,ui,message,    aws----centos----web: [37m+#!/bin/sh -e[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+if [ -z $1 ]; then[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        echo "Which site would you like to enable?"[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        echo -n "Your choices are: "[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        ls $SYSCONFDIR/sites-available/* | \[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-available/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        echo -n "Site name? "[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        read SITENAME[0m
-1407119944,,ui,message,    aws----centos----web: [37m+else[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        SITENAME=$1[0m
-1407119944,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        PRIORITY="000"[0m
-1407119944,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+if [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
-1407119944,,ui,message,    aws----centos----web: [37m+     -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        echo "This site is already enabled!"[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        exit 0[0m
-1407119944,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-available/$SITENAME ]; then[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        echo "This site does not exist!"[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        exit 1[0m
-1407119944,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME \[0m
-1407119944,,ui,message,    aws----centos----web: [37m+               $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
-1407119944,,ui,message,    aws----centos----web: [37m+else[0m
-1407119944,,ui,message,    aws----centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME $SYSCONFDIR/sites-enabled/$SITENAME[0m
-1407119944,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119944,,ui,message,    aws----centos----web: [37m+[0m
-1407119944,,ui,message,    aws----centos----web: [37m+echo "Site $SITENAME installed; reload nginx to enable."[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119944,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119945,,ui,say,==> openstack----centos----web: Terminating the source server...
-1407119945,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119945,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119945,,ui,message,    aws----centos----web: [0m  * template[/usr/sbin/nxdissite] action create
-1407119945,,ui,message,    aws----centos----web: [32m- create new file /usr/sbin/nxdissite[0m
-1407119945,,ui,message,    aws----centos----web: [32m- update content in file /usr/sbin/nxdissite from none to cc16ec[0m
-1407119945,,ui,message,    aws----centos----web: [37m--- /usr/sbin/nxdissite	2014-08-04 02:39:32.616688967 +0000[0m
-1407119945,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-ulki2u	2014-08-04 02:39:32.617688967 +0000[0m
-1407119945,,ui,message,    aws----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)30 @@[0m
-1407119945,,ui,message,    aws----centos----web: [37m+#!/bin/sh -e[0m
-1407119945,,ui,message,    aws----centos----web: [37m+[0m
-1407119945,,ui,message,    aws----centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
-1407119945,,ui,message,    aws----centos----web: [37m+[0m
-1407119945,,ui,message,    aws----centos----web: [37m+if [ -z $1 ]; then[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        echo "Which site would you like to disable?"[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        echo -n "Your choices are: "[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        ls $SYSCONFDIR/sites-enabled/* | \[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-enabled/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        echo -n "Site name? "[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        read SITENAME[0m
-1407119945,,ui,message,    aws----centos----web: [37m+else[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        SITENAME=$1[0m
-1407119945,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119945,,ui,message,    aws----centos----web: [37m+[0m
-1407119945,,ui,message,    aws----centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        PRIORITY="000"[0m
-1407119945,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119945,,ui,message,    aws----centos----web: [37m+[0m
-1407119945,,ui,message,    aws----centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
-1407119945,,ui,message,    aws----centos----web: [37m+       -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        echo "This site is already disabled%!(PACKER_COMMA) or does not exist!"[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        exit 1[0m
-1407119945,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119945,,ui,message,    aws----centos----web: [37m+[0m
-1407119945,,ui,message,    aws----centos----web: [37m+if ! rm $SYSCONFDIR/sites-enabled/$SITENAME 2>/dev/null; then[0m
-1407119945,,ui,message,    aws----centos----web: [37m+        rm -f $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
-1407119945,,ui,message,    aws----centos----web: [37m+fi[0m
-1407119945,,ui,message,    aws----centos----web: [37m+echo "Site $SITENAME disabled; reload nginx to disable."[0m
-1407119945,,ui,message,    aws----centos----web: [32m- change mode from '' to '0755'[0m
-1407119945,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119945,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119945,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119945,,ui,message,    aws----centos----web: [0mRecipe: nginx::commons_conf[0m
-1407119945,,ui,message,    aws----centos----web: * template[nginx.conf] action create
-1407119945,,ui,message,    aws----centos----web: [32m- update content in file /etc/nginx/nginx.conf from d364aa to 161383[0m
-1407119945,,ui,message,    aws----centos----web: [37m--- /etc/nginx/nginx.conf	2013-04-26 20:36:51.000000000 +0000[0m
-1407119945,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-znojjo	2014-08-04 02:39:33.163688967 +0000[0m
-1407119945,,ui,message,    aws----centos----web: [37m@@ -1%!(PACKER_COMMA)43 +1%!(PACKER_COMMA)40 @@[0m
-1407119945,,ui,message,    aws----centos----web: [37m-# For more information on configuration%!(PACKER_COMMA) see:[0m
-1407119945,,ui,message,    aws----centos----web: [37m-#   * Official English Documentation: http://nginx.org/en/docs/[0m
-1407119945,,ui,message,    aws----centos----web: [37m-#   * Official Russian Documentation: http://nginx.org/ru/docs/[0m
-1407119945,,ui,message,    aws----centos----web: [37m-[0m
-1407119945,,ui,message,    aws----centos----web: [37m-user              nginx;[0m
-1407119945,,ui,message,    aws----centos----web: [37m+user nginx;[0m
-1407119945,,ui,message,    aws----centos----web: [37m worker_processes  1;[0m
-1407119945,,ui,message,    aws----centos----web: [37m [0m
-1407119945,,ui,message,    aws----centos----web: [37m error_log  /var/log/nginx/error.log;[0m
-1407119945,,ui,message,    aws----centos----web: [37m-#error_log  /var/log/nginx/error.log  notice;[0m
-1407119945,,ui,message,    aws----centos----web: [37m-#error_log  /var/log/nginx/error.log  info;[0m
-1407119945,,ui,message,    aws----centos----web: [37m-[0m
-1407119945,,ui,message,    aws----centos----web: [37m pid        /var/run/nginx.pid;[0m
-1407119945,,ui,message,    aws----centos----web: [37m [0m
-1407119945,,ui,message,    aws----centos----web: [37m-[0m
-1407119946,,ui,message,    aws----centos----web: [37m events {[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    worker_connections  1024;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  worker_connections  1024;[0m
-1407119946,,ui,message,    aws----centos----web: [37m }[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-[0m
-1407119946,,ui,message,    aws----centos----web: [37m http {[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    include       /etc/nginx/mime.types;[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    default_type  application/octet-stream;[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '[0m
-1407119946,,ui,message,    aws----centos----web: [37m-                      '$status $body_bytes_sent "$http_referer" '[0m
-1407119946,,ui,message,    aws----centos----web: [37m-                      '"$http_user_agent" "$http_x_forwarded_for"';[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  include       /etc/nginx/mime.types;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  default_type  application/octet-stream;[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    access_log  /var/log/nginx/access.log  main;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  access_log	/var/log/nginx/access.log;[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    sendfile        on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    #tcp_nopush     on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  sendfile on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  tcp_nopush on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  tcp_nodelay on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    #keepalive_timeout  0;[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    keepalive_timeout  65;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  keepalive_timeout  65;[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    #gzip  on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    [0m
-1407119946,,ui,message,    aws----centos----web: [37m-    # Load config files from the /etc/nginx/conf.d directory[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    # The default server is in conf.d/default.conf[0m
-1407119946,,ui,message,    aws----centos----web: [37m-    include /etc/nginx/conf.d/*.conf;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip  on;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_http_version 1.0;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_comp_level 2;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_proxied any;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_vary off;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_types text/plain text/css application/x-javascript text/xml application/xml application/rss+xml application/atom+xml text/javascript application/javascript application/json text/mathml;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_min_length  1000;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  gzip_disable     "MSIE [1-6]\.";[0m
-1407119946,,ui,message,    aws----centos----web: [37m [0m
-1407119946,,ui,message,    aws----centos----web: [37m+  server_names_hash_bucket_size 64;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  types_hash_max_size 2048;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  types_hash_bucket_size 64;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  include /etc/nginx/conf.d/*.conf;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  include /etc/nginx/sites-enabled/*;[0m
-1407119946,,ui,message,    aws----centos----web: [37m }[0m
-1407119946,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119946,,ui,message,    aws----centos----web: [0m  * template[/etc/nginx/sites-available/default] action create
-1407119946,,ui,message,    aws----centos----web: [32m- create new file /etc/nginx/sites-available/default[0m
-1407119946,,ui,message,    aws----centos----web: [32m- update content in file /etc/nginx/sites-available/default from none to 5ddeb2[0m
-1407119946,,ui,message,    aws----centos----web: [37m--- /etc/nginx/sites-available/default	2014-08-04 02:39:33.607688967 +0000[0m
-1407119946,,ui,message,    aws----centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-z3oq56	2014-08-04 02:39:33.609688967 +0000[0m
-1407119946,,ui,message,    aws----centos----web: [37m@@ -1 +1%!(PACKER_COMMA)12 @@[0m
-1407119946,,ui,message,    aws----centos----web: [37m+server {[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  listen   80;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  server_name  ip-172-31-24-154;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  access_log  /var/log/nginx/localhost.access.log;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  location / {[0m
-1407119946,,ui,message,    aws----centos----web: [37m+    root   /var/www/nginx-default;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+    index  index.html index.htm;[0m
-1407119946,,ui,message,    aws----centos----web: [37m+  }[0m
-1407119946,,ui,message,    aws----centos----web: [37m+}[0m
-1407119946,,ui,message,    aws----centos----web: [32m- change mode from '' to '0644'[0m
-1407119946,,ui,message,    aws----centos----web: [32m- change owner from '' to 'root'[0m
-1407119946,,ui,message,    aws----centos----web: [32m- change group from '' to 'root'[0m
-1407119946,,ui,message,    aws----centos----web: [32m- restore selinux security context[0m
-1407119946,,ui,message,    aws----centos----web: [0m  * execute[nxensite default] action run
-1407119946,,ui,message,    aws----centos----web: [32m- execute /usr/sbin/nxensite default[0m
-1407119946,,ui,message,    aws----centos----web: [0mRecipe: nginx::default[0m
-1407119947,,ui,message,    aws----centos----web: * service[nginx] action start
-1407119947,,ui,message,    aws----centos----web: [32m- start service service[nginx][0m
-1407119948,,ui,message,    aws----centos----web: [0m  * service[nginx] action reload
-1407119948,,ui,message,    aws----centos----web: [32m- reload service service[nginx][0m
-1407119948,,ui,message,    aws----centos----web: [0m[0m
-1407119948,,ui,message,    aws----centos----web: Running handlers:[0m
-1407119948,,ui,message,    aws----centos----web: Running handlers complete
-1407119948,,ui,message,    aws----centos----web: [0mChef Client finished%!(PACKER_COMMA) 22/25 resources updated in 81.196290466 seconds[0m
-1407119949,,ui,say,==> aws----centos----web: Stopping the source instance...
-1407119949,,ui,say,==> aws----centos----web: Waiting for the instance to stop...
-1407119958,,ui,say,==> openstack----centos----web: Deleting temporary keypair...
-1407119958,,ui,say,Build 'openstack----centos----web' finished.
-1407119998,,ui,say,==> aws----centos----web: Creating the AMI: CentOS-nginx-53def18f-a5d2-2e2b-feb8-f4a9610adaa2
-1407119998,,ui,message,    aws----centos----web: AMI: ami-5f89d75e
-1407119998,,ui,say,==> aws----centos----web: Waiting for AMI to become ready...
-1407120045,,ui,say,==> aws----centos----web: Adding tags to AMI (ami-5f89d75e)...
-1407120045,,ui,message,    aws----centos----web: Adding tag: "Name": "CentOS-nginx"
-1407120045,,ui,say,==> aws----centos----web: Terminating the source AWS instance...
-1407120046,,ui,say,==> aws----centos----web: Deleting temporary security group...
-1407120051,,ui,say,==> aws----centos----web: Deleting temporary keypair...
-1407120051,,ui,say,Build 'aws----centos----web' finished.
+1407119759,,ui,say,==> aws-centos----web: Inspecting the source AMI...
+1407119759,,ui,say,==> openstack-centos----web: Creating temporary keypair for this instance...
+1407119759,,ui,say,==> aws-centos----web: Creating temporary keypair: packer 53def18f-a285-28cf-959a-b34dbe10f150
+1407119760,,ui,say,==> openstack-centos----web: Waiting for server (1f57f6e1-6cef-4d30-83bd-a906ef05e55f) to become ready...
+1407119760,,ui,say,==> aws-centos----web: Creating temporary security group for this instance...
+1407119760,,ui,say,==> aws-centos----web: Authorizing SSH access on the temporary security group...
+1407119760,,ui,say,==> aws-centos----web: Launching a source AWS instance...
+1407119762,,ui,message,    aws-centos----web: Instance ID: i-06ad0b1f
+1407119762,,ui,say,==> aws-centos----web: Waiting for instance (i-06ad0b1f) to become ready...
+1407119767,,ui,say,==> openstack-centos----web: Created temporary floating IP 10.255.205.164...
+1407119768,,ui,say,==> openstack-centos----web: Added floating IP 10.255.205.164 to instance...
+1407119768,,ui,say,==> openstack-centos----web: Waiting for SSH to become available...
+1407119779,,ui,say,==> aws-centos----web: Waiting for SSH to become available...
+1407119800,,ui,say,==> openstack-centos----web: Connected to SSH!
+1407119800,,ui,say,==> openstack-centos----web: Provisioning with shell script: /tmp/packer-shell991749081
+1407119800,,ui,message,    openstack-centos----web: + '[' -f /tmp/packer-create-image.sh ']'
+1407119800,,ui,message,    openstack-centos----web: + sudo /tmp/packer-create-image.sh
+1407119800,,ui,message,    openstack-centos----web: + cd /tmp
+1407119800,,ui,message,    openstack-centos----web: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
+1407119800,,ui,message,    openstack-centos----web: Initialized empty Git repository in /tmp/pattern/.git/
+1407119802,,ui,message,    openstack-centos----web: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
+1407119802,,ui,message,    openstack-centos----web: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
+1407119802,,ui,message,    openstack-centos----web: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
+1407119802,,ui,message,    openstack-centos----web: + cd /tmp/pattern/resources/chef-repo
+1407119802,,ui,message,    openstack-centos----web: + berks vendor cookbooks
+1407119807,,ui,message,    openstack-centos----web: Resolving cookbook dependencies...
+1407119807,,ui,message,    openstack-centos----web: Fetching cookbook index from http://api.berkshelf.com...
+1407119809,,ui,message,    openstack-centos----web: Installing apt (2.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119809,,ui,message,    openstack-centos----web: Installing bluepill (2.3.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119813,,ui,message,    openstack-centos----web: Installing build-essential (2.0.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119813,,ui,message,    openstack-centos----web: Installing mysql (5.3.6) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119816,,ui,message,    openstack-centos----web: Installing nginx (2.7.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119817,,ui,message,    openstack-centos----web: Installing ohai (2.0.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119819,,ui,message,    openstack-centos----web: Installing rsyslog (1.12.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119820,,ui,message,    openstack-centos----web: Installing runit (1.5.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119822,,ui,message,    openstack-centos----web: Installing yum (3.2.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119823,,ui,message,    openstack-centos----web: Installing yum-epel (0.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119825,,ui,message,    openstack-centos----web: Installing yum-mysql-community (0.1.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119827,,ui,message,    openstack-centos----web: Vendoring apt (2.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/apt
+1407119827,,ui,message,    openstack-centos----web: Vendoring bluepill (2.3.1) to /tmp/pattern/resources/chef-repo/cookbooks/bluepill
+1407119827,,ui,message,    openstack-centos----web: Vendoring build-essential (2.0.4) to /tmp/pattern/resources/chef-repo/cookbooks/build-essential
+1407119827,,ui,message,    openstack-centos----web: Vendoring mysql (5.3.6) to /tmp/pattern/resources/chef-repo/cookbooks/mysql
+1407119827,,ui,message,    openstack-centos----web: Vendoring nginx (2.7.4) to /tmp/pattern/resources/chef-repo/cookbooks/nginx
+1407119827,,ui,message,    openstack-centos----web: Vendoring ohai (2.0.1) to /tmp/pattern/resources/chef-repo/cookbooks/ohai
+1407119827,,ui,message,    openstack-centos----web: Vendoring rsyslog (1.12.2) to /tmp/pattern/resources/chef-repo/cookbooks/rsyslog
+1407119827,,ui,message,    openstack-centos----web: Vendoring runit (1.5.10) to /tmp/pattern/resources/chef-repo/cookbooks/runit
+1407119827,,ui,message,    openstack-centos----web: Vendoring yum (3.2.2) to /tmp/pattern/resources/chef-repo/cookbooks/yum
+1407119827,,ui,message,    openstack-centos----web: Vendoring yum-epel (0.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/yum-epel
+1407119827,,ui,message,    openstack-centos----web: Vendoring yum-mysql-community (0.1.10) to /tmp/pattern/resources/chef-repo/cookbooks/yum-mysql-community
+1407119827,,ui,message,    openstack-centos----web: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407119829,,ui,say,==> aws-centos----web: Connected to SSH!
+1407119829,,ui,say,==> aws-centos----web: Provisioning with shell script: /tmp/packer-shell790672334
+1407119830,,ui,message,    openstack-centos----web: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
+1407119831,,ui,message,    aws-centos----web: + '[' -f /tmp/packer-create-image.sh ']'
+1407119831,,ui,message,    aws-centos----web: + cd /tmp
+1407119831,,ui,message,    aws-centos----web: + git clone https://github.com/KondaTomoyuki/pattern.git pattern
+1407119831,,ui,message,    aws-centos----web: Initialized empty Git repository in /tmp/pattern/.git/
+1407119832,,ui,message,    openstack-centos----web: Compiling Cookbooks...[0m
+1407119832,,ui,message,    openstack-centos----web: Recipe: ohai::default[0m
+1407119832,,ui,message,    openstack-centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action create
+1407119832,,ui,message,    openstack-centos----web: [32m- create new directory /etc/chef/ohai_plugins[0m
+1407119832,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119832,,ui,message,    openstack-centos----web: Recipe: <Dynamically Defined Resource>[0m
+1407119832,,ui,message,    openstack-centos----web: * cookbook_file[/etc/chef/ohai_plugins/README] action create
+1407119832,,ui,message,    openstack-centos----web: [32m- create new file /etc/chef/ohai_plugins/README[0m
+1407119832,,ui,message,    openstack-centos----web: [32m- update content in file /etc/chef/ohai_plugins/README from none to 775fa7[0m
+1407119832,,ui,message,    openstack-centos----web: [37m--- /etc/chef/ohai_plugins/README	2014-08-04 11:37:38.393999968 +0900[0m
+1407119832,,ui,message,    openstack-centos----web: [37m+++ /tmp/.README20140804-1286-jg7fx9	2014-08-04 11:37:38.394999968 +0900[0m
+1407119832,,ui,message,    openstack-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)2 @@[0m
+1407119832,,ui,message,    openstack-centos----web: [37m+This directory contains custom plugins for Ohai.[0m
+1407119832,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0644'[0m
+1407119832,,ui,message,    openstack-centos----web: [0m
+1407119832,,ui,message,    openstack-centos----web: [0mRecipe: ohai::default[0m
+1407119833,,ui,message,    aws-centos----web: remote: Counting objects: 45%!(PACKER_COMMA) done.[K
+1407119833,,ui,message,    aws-centos----web: remote: Total 45 (delta 0)%!(PACKER_COMMA) reused 0 (delta 0)[K
+1407119833,,ui,message,    aws-centos----web: Unpacking objects: 100% (45/45)%!(PACKER_COMMA) done.
+1407119833,,ui,message,    aws-centos----web: + cd /tmp/pattern/resources/chef-repo
+1407119833,,ui,message,    aws-centos----web: + berks vendor cookbooks
+1407119833,,ui,message,    openstack-centos----web: * ohai[custom_plugins] action reload
+1407119833,,ui,message,    openstack-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119833,,ui,message,    openstack-centos----web: [0m  Converging 19 resources[0m
+1407119833,,ui,message,    openstack-centos----web: Recipe: nginx::ohai_plugin[0m
+1407119833,,ui,message,    openstack-centos----web: * ohai[reload_nginx] action nothing (skipped due to action :nothing)
+1407119833,,ui,message,    openstack-centos----web: * template[/etc/chef/ohai_plugins/nginx.rb] action create
+1407119833,,ui,message,    openstack-centos----web: [32m- create new file /etc/chef/ohai_plugins/nginx.rb[0m
+1407119833,,ui,message,    openstack-centos----web: [32m- update content in file /etc/chef/ohai_plugins/nginx.rb from none to 9f7e82[0m
+1407119833,,ui,message,    openstack-centos----web: [37m--- /etc/chef/ohai_plugins/nginx.rb	2014-08-04 11:37:40.054999968 +0900[0m
+1407119833,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-qah71s	2014-08-04 11:37:40.055999968 +0900[0m
+1407119833,,ui,message,    openstack-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)67 @@[0m
+1407119833,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119833,,ui,message,    openstack-centos----web: [37m+# Author:: Jamie Winsor (<jamie@vialstudios.com>)[0m
+1407119833,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119833,,ui,message,    openstack-centos----web: [37m+# Copyright 2012%!(PACKER_COMMA) Riot Games[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# Licensed under the Apache License%!(PACKER_COMMA) Version 2.0 (the "License");[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# you may not use this file except in compliance with the License.[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# You may obtain a copy of the License at[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+#     http://www.apache.org/licenses/LICENSE-2.0[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# Unless required by applicable law or agreed to in writing%!(PACKER_COMMA) software[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# distributed under the License is distributed on an "AS IS" BASIS%!(PACKER_COMMA)[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND%!(PACKER_COMMA) either express or implied.[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# See the License for the specific language governing permissions and[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# limitations under the License.[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+#[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+provides "nginx"[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+provides "nginx/version"[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+provides "nginx/configure_arguments"[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+provides "nginx/prefix"[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+provides "nginx/conf_path"[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+def parse_flags(flags)[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  prefix = nil[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  conf_path = nil[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  flags.each do |flag|[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    case flag[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    when /^--prefix=(.+)$/[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      prefix = $1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    when /^--conf-path=(.+)$/[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      conf_path = $1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    end[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  end[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  [ prefix%!(PACKER_COMMA) conf_path ][0m
+1407119834,,ui,message,    openstack-centos----web: [37m+end[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+nginx Mash.new unless nginx[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+nginx[:version]             = nil unless nginx[:version][0m
+1407119834,,ui,message,    openstack-centos----web: [37m+nginx[:configure_arguments] = Array.new unless nginx[:configure_arguments][0m
+1407119834,,ui,message,    openstack-centos----web: [37m+nginx[:prefix]              = nil unless nginx[:prefix][0m
+1407119834,,ui,message,    openstack-centos----web: [37m+nginx[:conf_path]           = nil unless nginx[:conf_path][0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+status%!(PACKER_COMMA) stdout%!(PACKER_COMMA) stderr = run_command(:no_status_check => true%!(PACKER_COMMA) :command => "/usr/sbin/nginx -V")[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+if status == 0[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  stderr.split("\n").each do |line|[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    case line[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    when /^configure arguments:(.+)/[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      # This could be better: I'm splitting on configure arguments which removes them and also[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      # adds a blank string at index 0 of the array. This is why we drop index 0 and map to[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      # add the '--' prefix back to the configure argument.[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      nginx[:configure_arguments] = $1.split(/\s--/).drop(1).map { |ca| "--#{ca}" }[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      prefix%!(PACKER_COMMA) conf_path = parse_flags(nginx[:configure_arguments])[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      nginx[:prefix] = prefix[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      nginx[:conf_path] = conf_path[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    when /^nginx version: nginx\/(\d+\.\d+\.\d+)/[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+      nginx[:version] = $1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+    end[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+  end[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+end[0m
+1407119834,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119834,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119834,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119834,,ui,message,    openstack-centos----web: [0m  * ohai[reload_nginx] action reload[2014-08-04T11:37:40+09:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
+1407119834,,ui,message,    openstack-centos----web:
+1407119834,,ui,message,    openstack-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119834,,ui,message,    openstack-centos----web: [0mRecipe: ohai::default[0m
+1407119834,,ui,message,    openstack-centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action nothing (skipped due to action :nothing)
+1407119834,,ui,message,    openstack-centos----web: * ohai[custom_plugins] action nothing (skipped due to action :nothing)
+1407119834,,ui,message,    openstack-centos----web: Recipe: yum-epel::default[0m
+1407119834,,ui,message,    openstack-centos----web: * yum_repository[epel] action create
+1407119834,,ui,message,    openstack-centos----web: * template[/etc/yum.repos.d/epel.repo] action create
+1407119834,,ui,message,    openstack-centos----web: [32m- update content in file /etc/yum.repos.d/epel.repo from cd4915 to 759e91[0m
+1407119834,,ui,message,    openstack-centos----web: [37m--- /etc/yum.repos.d/epel.repo	2012-11-05 12:52:17.000000000 +0900[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-1uyhj9x	2014-08-04 11:37:40.187999966 +0900[0m
+1407119834,,ui,message,    openstack-centos----web: [37m@@ -1%!(PACKER_COMMA)27 +1%!(PACKER_COMMA)12 @@[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# This file was generated by Chef[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+# Do NOT modify this file by hand.[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+[0m
+1407119834,,ui,message,    openstack-centos----web: [37m [epel][0m
+1407119834,,ui,message,    openstack-centos----web: [37m name=Extra Packages for Enterprise Linux 6 - $basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-failovermethod=priority[0m
+1407119834,,ui,message,    openstack-centos----web: [37m enabled=1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-gpgcheck=1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-[epel-debuginfo][0m
+1407119834,,ui,message,    openstack-centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Debug[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch/debug[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-6&arch=$basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m failovermethod=priority[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-enabled=0[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119834,,ui,message,    openstack-centos----web: [37m gpgcheck=1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-[epel-source][0m
+1407119834,,ui,message,    openstack-centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Source[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/SRPMS[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-6&arch=$basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-failovermethod=priority[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-enabled=0[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119834,,ui,message,    openstack-centos----web: [37m-gpgcheck=1[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+gpgkey=http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch[0m
+1407119834,,ui,message,    openstack-centos----web: [37m+sslverify=1[0m
+1407119842,,ui,message,    aws-centos----web: Resolving cookbook dependencies...
+1407119842,,ui,message,    aws-centos----web: Fetching cookbook index from http://api.berkshelf.com...
+1407119845,,ui,message,    aws-centos----web: Installing apt (2.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119845,,ui,message,    aws-centos----web: Installing bluepill (2.3.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119847,,ui,message,    aws-centos----web: Installing build-essential (2.0.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119848,,ui,message,    aws-centos----web: Installing mysql (5.3.6) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119850,,ui,message,    openstack-centos----web: [0m    * execute[yum-makecache-epel] action run
+1407119850,,ui,message,    openstack-centos----web: [32m- execute yum -q makecache --disablerepo=* --enablerepo=epel[0m
+1407119850,,ui,message,    openstack-centos----web: [0m    * ruby_block[yum-cache-reload-epel] action create
+1407119850,,ui,message,    openstack-centos----web: [32m- execute the ruby block yum-cache-reload-epel[0m
+1407119850,,ui,message,    openstack-centos----web: [0m    * execute[yum-makecache-epel] action nothing (skipped due to action :nothing)
+1407119850,,ui,message,    openstack-centos----web: * ruby_block[yum-cache-reload-epel] action nothing (skipped due to action :nothing)
+1407119850,,ui,message,    openstack-centos----web:
+1407119850,,ui,message,    openstack-centos----web: [0mRecipe: nginx::package[0m
+1407119850,,ui,message,    aws-centos----web: Installing nginx (2.7.4) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119851,,ui,message,    aws-centos----web: Installing ohai (2.0.1) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119854,,ui,message,    aws-centos----web: Installing rsyslog (1.12.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119854,,ui,message,    aws-centos----web: Installing runit (1.5.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119857,,ui,message,    aws-centos----web: Installing yum (3.2.2) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119857,,ui,message,    aws-centos----web: Installing yum-epel (0.4.0) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119860,,ui,message,    aws-centos----web: Installing yum-mysql-community (0.1.10) from http://api.berkshelf.com ([opscode] http://supermarket.getchef.com/api/v1)
+1407119862,,ui,message,    aws-centos----web: Vendoring apt (2.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/apt
+1407119862,,ui,message,    aws-centos----web: Vendoring bluepill (2.3.1) to /tmp/pattern/resources/chef-repo/cookbooks/bluepill
+1407119862,,ui,message,    aws-centos----web: Vendoring build-essential (2.0.4) to /tmp/pattern/resources/chef-repo/cookbooks/build-essential
+1407119862,,ui,message,    aws-centos----web: Vendoring mysql (5.3.6) to /tmp/pattern/resources/chef-repo/cookbooks/mysql
+1407119862,,ui,message,    aws-centos----web: Vendoring nginx (2.7.4) to /tmp/pattern/resources/chef-repo/cookbooks/nginx
+1407119862,,ui,message,    aws-centos----web: Vendoring ohai (2.0.1) to /tmp/pattern/resources/chef-repo/cookbooks/ohai
+1407119862,,ui,message,    aws-centos----web: Vendoring rsyslog (1.12.2) to /tmp/pattern/resources/chef-repo/cookbooks/rsyslog
+1407119862,,ui,message,    aws-centos----web: Vendoring runit (1.5.10) to /tmp/pattern/resources/chef-repo/cookbooks/runit
+1407119862,,ui,message,    aws-centos----web: Vendoring yum (3.2.2) to /tmp/pattern/resources/chef-repo/cookbooks/yum
+1407119862,,ui,message,    aws-centos----web: Vendoring yum-epel (0.4.0) to /tmp/pattern/resources/chef-repo/cookbooks/yum-epel
+1407119862,,ui,message,    aws-centos----web: Vendoring yum-mysql-community (0.1.10) to /tmp/pattern/resources/chef-repo/cookbooks/yum-mysql-community
+1407119862,,ui,message,    aws-centos----web: + sudo chef-solo -j /tmp/pattern/resources/chef-repo/roles/nginx.json
+1407119867,,ui,message,    aws-centos----web: Starting Chef Client%!(PACKER_COMMA) version 11.14.0.rc.2[0m
+1407119871,,ui,message,    aws-centos----web: Compiling Cookbooks...[0m
+1407119872,,ui,message,    aws-centos----web: Recipe: ohai::default[0m
+1407119872,,ui,message,    aws-centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action create
+1407119872,,ui,message,    aws-centos----web: [32m- create new directory /etc/chef/ohai_plugins[0m
+1407119872,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119872,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119872,,ui,message,    aws-centos----web: Recipe: <Dynamically Defined Resource>[0m
+1407119872,,ui,message,    aws-centos----web: * cookbook_file[/etc/chef/ohai_plugins/README] action create
+1407119872,,ui,message,    aws-centos----web: [32m- create new file /etc/chef/ohai_plugins/README[0m
+1407119872,,ui,message,    aws-centos----web: [32m- update content in file /etc/chef/ohai_plugins/README from none to 775fa7[0m
+1407119872,,ui,message,    aws-centos----web: [37m--- /etc/chef/ohai_plugins/README	2014-08-04 02:38:20.118688966 +0000[0m
+1407119872,,ui,message,    aws-centos----web: [37m+++ /tmp/.README20140804-1016-12cne1f	2014-08-04 02:38:20.120688966 +0000[0m
+1407119872,,ui,message,    aws-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)2 @@[0m
+1407119872,,ui,message,    aws-centos----web: [37m+This directory contains custom plugins for Ohai.[0m
+1407119873,,ui,message,    aws-centos----web: [32m- change mode from '' to '0644'[0m
+1407119873,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119873,,ui,message,    aws-centos----web: [0m
+1407119873,,ui,message,    aws-centos----web: [0mRecipe: ohai::default[0m
+1407119877,,ui,message,    aws-centos----web: * ohai[custom_plugins] action reload
+1407119877,,ui,message,    aws-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119877,,ui,message,    aws-centos----web: [0m  Converging 19 resources[0m
+1407119877,,ui,message,    aws-centos----web: Recipe: nginx::ohai_plugin[0m
+1407119877,,ui,message,    aws-centos----web: * ohai[reload_nginx] action nothing (skipped due to action :nothing)
+1407119878,,ui,message,    aws-centos----web: * template[/etc/chef/ohai_plugins/nginx.rb] action create
+1407119878,,ui,message,    aws-centos----web: [32m- create new file /etc/chef/ohai_plugins/nginx.rb[0m
+1407119878,,ui,message,    aws-centos----web: [32m- update content in file /etc/chef/ohai_plugins/nginx.rb from none to 9f7e82[0m
+1407119878,,ui,message,    aws-centos----web: [37m--- /etc/chef/ohai_plugins/nginx.rb	2014-08-04 02:38:25.199688967 +0000[0m
+1407119878,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-1xrpd88	2014-08-04 02:38:25.201688967 +0000[0m
+1407119878,,ui,message,    aws-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)67 @@[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# Author:: Jamie Winsor (<jamie@vialstudios.com>)[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# Copyright 2012%!(PACKER_COMMA) Riot Games[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# Licensed under the Apache License%!(PACKER_COMMA) Version 2.0 (the "License");[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# you may not use this file except in compliance with the License.[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# You may obtain a copy of the License at[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#     http://www.apache.org/licenses/LICENSE-2.0[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# Unless required by applicable law or agreed to in writing%!(PACKER_COMMA) software[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# distributed under the License is distributed on an "AS IS" BASIS%!(PACKER_COMMA)[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND%!(PACKER_COMMA) either express or implied.[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# See the License for the specific language governing permissions and[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# limitations under the License.[0m
+1407119878,,ui,message,    aws-centos----web: [37m+#[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+provides "nginx"[0m
+1407119878,,ui,message,    aws-centos----web: [37m+provides "nginx/version"[0m
+1407119878,,ui,message,    aws-centos----web: [37m+provides "nginx/configure_arguments"[0m
+1407119878,,ui,message,    aws-centos----web: [37m+provides "nginx/prefix"[0m
+1407119878,,ui,message,    aws-centos----web: [37m+provides "nginx/conf_path"[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+def parse_flags(flags)[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  prefix = nil[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  conf_path = nil[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  flags.each do |flag|[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    case flag[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    when /^--prefix=(.+)$/[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      prefix = $1[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    when /^--conf-path=(.+)$/[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      conf_path = $1[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    end[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  end[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  [ prefix%!(PACKER_COMMA) conf_path ][0m
+1407119878,,ui,message,    aws-centos----web: [37m+end[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+nginx Mash.new unless nginx[0m
+1407119878,,ui,message,    aws-centos----web: [37m+nginx[:version]             = nil unless nginx[:version][0m
+1407119878,,ui,message,    aws-centos----web: [37m+nginx[:configure_arguments] = Array.new unless nginx[:configure_arguments][0m
+1407119878,,ui,message,    aws-centos----web: [37m+nginx[:prefix]              = nil unless nginx[:prefix][0m
+1407119878,,ui,message,    aws-centos----web: [37m+nginx[:conf_path]           = nil unless nginx[:conf_path][0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+status%!(PACKER_COMMA) stdout%!(PACKER_COMMA) stderr = run_command(:no_status_check => true%!(PACKER_COMMA) :command => "/usr/sbin/nginx -V")[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+if status == 0[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  stderr.split("\n").each do |line|[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    case line[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    when /^configure arguments:(.+)/[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      # This could be better: I'm splitting on configure arguments which removes them and also[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      # adds a blank string at index 0 of the array. This is why we drop index 0 and map to[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      # add the '--' prefix back to the configure argument.[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      nginx[:configure_arguments] = $1.split(/\s--/).drop(1).map { |ca| "--#{ca}" }[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      prefix%!(PACKER_COMMA) conf_path = parse_flags(nginx[:configure_arguments])[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      nginx[:prefix] = prefix[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      nginx[:conf_path] = conf_path[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    when /^nginx version: nginx\/(\d+\.\d+\.\d+)/[0m
+1407119878,,ui,message,    aws-centos----web: [37m+      nginx[:version] = $1[0m
+1407119878,,ui,message,    aws-centos----web: [37m+    end[0m
+1407119878,,ui,message,    aws-centos----web: [37m+  end[0m
+1407119878,,ui,message,    aws-centos----web: [37m+end[0m
+1407119878,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119878,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119878,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119878,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119878,,ui,message,    aws-centos----web: [0m  * ohai[reload_nginx] action reload[2014-08-04T02:38:25+00:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
+1407119878,,ui,message,    aws-centos----web:
+1407119878,,ui,message,    aws-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119878,,ui,message,    aws-centos----web: [0mRecipe: ohai::default[0m
+1407119878,,ui,message,    aws-centos----web: * remote_directory[/etc/chef/ohai_plugins for cookbook ohai] action nothing (skipped due to action :nothing)
+1407119878,,ui,message,    aws-centos----web: * ohai[custom_plugins] action nothing (skipped due to action :nothing)
+1407119878,,ui,message,    aws-centos----web: Recipe: yum-epel::default[0m
+1407119878,,ui,message,    aws-centos----web: * yum_repository[epel] action create
+1407119878,,ui,message,    aws-centos----web: * template[/etc/yum.repos.d/epel.repo] action create
+1407119878,,ui,message,    aws-centos----web: [32m- update content in file /etc/yum.repos.d/epel.repo from cd4915 to 759e91[0m
+1407119878,,ui,message,    aws-centos----web: [37m--- /etc/yum.repos.d/epel.repo	2012-11-05 03:52:17.000000000 +0000[0m
+1407119878,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-ylvosp	2014-08-04 02:38:26.063688967 +0000[0m
+1407119878,,ui,message,    aws-centos----web: [37m@@ -1%!(PACKER_COMMA)27 +1%!(PACKER_COMMA)12 @@[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# This file was generated by Chef[0m
+1407119878,,ui,message,    aws-centos----web: [37m+# Do NOT modify this file by hand.[0m
+1407119878,,ui,message,    aws-centos----web: [37m+[0m
+1407119878,,ui,message,    aws-centos----web: [37m [epel][0m
+1407119878,,ui,message,    aws-centos----web: [37m name=Extra Packages for Enterprise Linux 6 - $basearch[0m
+1407119878,,ui,message,    aws-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch[0m
+1407119878,,ui,message,    aws-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-6&arch=$basearch[0m
+1407119878,,ui,message,    aws-centos----web: [37m-failovermethod=priority[0m
+1407119878,,ui,message,    aws-centos----web: [37m enabled=1[0m
+1407119878,,ui,message,    aws-centos----web: [37m-gpgcheck=1[0m
+1407119878,,ui,message,    aws-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119878,,ui,message,    aws-centos----web: [37m-[0m
+1407119878,,ui,message,    aws-centos----web: [37m-[epel-debuginfo][0m
+1407119878,,ui,message,    aws-centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Debug[0m
+1407119878,,ui,message,    aws-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/$basearch/debug[0m
+1407119878,,ui,message,    aws-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-debug-6&arch=$basearch[0m
+1407119878,,ui,message,    aws-centos----web: [37m failovermethod=priority[0m
+1407119878,,ui,message,    aws-centos----web: [37m-enabled=0[0m
+1407119878,,ui,message,    aws-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119878,,ui,message,    aws-centos----web: [37m gpgcheck=1[0m
+1407119878,,ui,message,    aws-centos----web: [37m-[0m
+1407119878,,ui,message,    aws-centos----web: [37m-[epel-source][0m
+1407119878,,ui,message,    aws-centos----web: [37m-name=Extra Packages for Enterprise Linux 6 - $basearch - Source[0m
+1407119878,,ui,message,    aws-centos----web: [37m-#baseurl=http://download.fedoraproject.org/pub/epel/6/SRPMS[0m
+1407119878,,ui,message,    aws-centos----web: [37m-mirrorlist=https://mirrors.fedoraproject.org/metalink?repo=epel-source-6&arch=$basearch[0m
+1407119878,,ui,message,    aws-centos----web: [37m-failovermethod=priority[0m
+1407119878,,ui,message,    aws-centos----web: [37m-enabled=0[0m
+1407119878,,ui,message,    aws-centos----web: [37m-gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-6[0m
+1407119878,,ui,message,    aws-centos----web: [37m-gpgcheck=1[0m
+1407119878,,ui,message,    aws-centos----web: [37m+gpgkey=http://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-6[0m
+1407119878,,ui,message,    aws-centos----web: [37m+mirrorlist=http://mirrors.fedoraproject.org/mirrorlist?repo=epel-6&arch=$basearch[0m
+1407119879,,ui,message,    aws-centos----web: [37m+sslverify=1[0m
+1407119879,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119895,,ui,message,    openstack-centos----web: * package[nginx] action install
+1407119895,,ui,message,    openstack-centos----web: [32m- install version 1.0.15-5.el6 of package nginx[0m
+1407119895,,ui,message,    openstack-centos----web: [0mRecipe: nginx::ohai_plugin[0m
+1407119895,,ui,message,    openstack-centos----web: * ohai[reload_nginx] action reload[2014-08-04T11:38:41+09:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
+1407119895,,ui,message,    openstack-centos----web:
+1407119895,,ui,message,    openstack-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119895,,ui,message,    openstack-centos----web: [0mRecipe: nginx::package[0m
+1407119895,,ui,message,    openstack-centos----web: * service[nginx] action enable
+1407119895,,ui,message,    openstack-centos----web: [32m- enable service service[nginx][0m
+1407119895,,ui,message,    openstack-centos----web: [0mRecipe: nginx::commons_dir[0m
+1407119895,,ui,message,    openstack-centos----web: * directory[/etc/nginx] action create (up to date)
+1407119895,,ui,message,    openstack-centos----web: * directory[/var/log/nginx] action create
+1407119895,,ui,message,    openstack-centos----web: [32m- change mode from '0700' to '0755'[0m
+1407119895,,ui,message,    openstack-centos----web: [0m  * directory[/var/run] action create (up to date)
+1407119895,,ui,message,    openstack-centos----web: * directory[/etc/nginx/sites-available] action create
+1407119895,,ui,message,    openstack-centos----web: [32m- create new directory /etc/nginx/sites-available[0m
+1407119895,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119895,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119895,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119895,,ui,message,    openstack-centos----web: [0m  * directory[/etc/nginx/sites-enabled] action create
+1407119896,,ui,message,    openstack-centos----web: [32m- create new directory /etc/nginx/sites-enabled[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [0m  * directory[/etc/nginx/conf.d] action create (up to date)
+1407119896,,ui,message,    openstack-centos----web: Recipe: nginx::commons_script[0m
+1407119896,,ui,message,    openstack-centos----web: * template[/usr/sbin/nxensite] action create
+1407119896,,ui,message,    openstack-centos----web: [32m- create new file /usr/sbin/nxensite[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- update content in file /usr/sbin/nxensite from none to fa46fb[0m
+1407119896,,ui,message,    openstack-centos----web: [37m--- /usr/sbin/nxensite	2014-08-04 11:38:42.065999968 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-j0oytx	2014-08-04 11:38:42.066999968 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)39 @@[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+#!/bin/sh -e[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ -z $1 ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo "Which site would you like to enable?"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo -n "Your choices are: "[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        ls $SYSCONFDIR/sites-available/* | \[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-available/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo -n "Site name? "[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        read SITENAME[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+else[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        SITENAME=$1[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        PRIORITY="000"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+     -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo "This site is already enabled!"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        exit 0[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-available/$SITENAME ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo "This site does not exist!"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        exit 1[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME \[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+               $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+else[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME $SYSCONFDIR/sites-enabled/$SITENAME[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+echo "Site $SITENAME installed; reload nginx to enable."[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [0m  * template[/usr/sbin/nxdissite] action create
+1407119896,,ui,message,    openstack-centos----web: [32m- create new file /usr/sbin/nxdissite[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- update content in file /usr/sbin/nxdissite from none to cc16ec[0m
+1407119896,,ui,message,    openstack-centos----web: [37m--- /usr/sbin/nxdissite	2014-08-04 11:38:42.074999969 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-16c468d	2014-08-04 11:38:42.074999969 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)30 @@[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+#!/bin/sh -e[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ -z $1 ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo "Which site would you like to disable?"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo -n "Your choices are: "[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        ls $SYSCONFDIR/sites-enabled/* | \[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-enabled/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo -n "Site name? "[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        read SITENAME[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+else[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        SITENAME=$1[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        PRIORITY="000"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+       -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        echo "This site is already disabled%!(PACKER_COMMA) or does not exist!"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        exit 1[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+if ! rm $SYSCONFDIR/sites-enabled/$SITENAME 2>/dev/null; then[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+        rm -f $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+fi[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+echo "Site $SITENAME disabled; reload nginx to disable."[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0755'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [0mRecipe: nginx::commons_conf[0m
+1407119896,,ui,message,    openstack-centos----web: * template[nginx.conf] action create
+1407119896,,ui,message,    openstack-centos----web: [32m- update content in file /etc/nginx/nginx.conf from d364aa to 161383[0m
+1407119896,,ui,message,    openstack-centos----web: [37m--- /etc/nginx/nginx.conf	2013-04-27 05:36:51.000000000 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-1iqs9vd	2014-08-04 11:38:42.083999969 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m@@ -1%!(PACKER_COMMA)43 +1%!(PACKER_COMMA)40 @@[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-# For more information on configuration%!(PACKER_COMMA) see:[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-#   * Official English Documentation: http://nginx.org/en/docs/[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-#   * Official Russian Documentation: http://nginx.org/ru/docs/[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-user              nginx;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+user nginx;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m worker_processes  1;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m error_log  /var/log/nginx/error.log;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-#error_log  /var/log/nginx/error.log  notice;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-#error_log  /var/log/nginx/error.log  info;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-[0m
+1407119896,,ui,message,    openstack-centos----web: [37m pid        /var/run/nginx.pid;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-[0m
+1407119896,,ui,message,    openstack-centos----web: [37m events {[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    worker_connections  1024;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  worker_connections  1024;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m }[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-[0m
+1407119896,,ui,message,    openstack-centos----web: [37m http {[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    include       /etc/nginx/mime.types;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    default_type  application/octet-stream;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-                      '$status $body_bytes_sent "$http_referer" '[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-                      '"$http_user_agent" "$http_x_forwarded_for"';[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  include       /etc/nginx/mime.types;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  default_type  application/octet-stream;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    access_log  /var/log/nginx/access.log  main;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  access_log	/var/log/nginx/access.log;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    sendfile        on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    #tcp_nopush     on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  sendfile on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  tcp_nopush on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  tcp_nodelay on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    #keepalive_timeout  0;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    keepalive_timeout  65;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  keepalive_timeout  65;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    #gzip  on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    [0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    # Load config files from the /etc/nginx/conf.d directory[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    # The default server is in conf.d/default.conf[0m
+1407119896,,ui,message,    openstack-centos----web: [37m-    include /etc/nginx/conf.d/*.conf;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip  on;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_http_version 1.0;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_comp_level 2;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_proxied any;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_vary off;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_types text/plain text/css application/x-javascript text/xml application/xml application/rss+xml application/atom+xml text/javascript application/javascript application/json text/mathml;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_min_length  1000;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  gzip_disable     "MSIE [1-6]\.";[0m
+1407119896,,ui,message,    openstack-centos----web: [37m [0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  server_names_hash_bucket_size 64;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  types_hash_max_size 2048;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  types_hash_bucket_size 64;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  include /etc/nginx/conf.d/*.conf;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  include /etc/nginx/sites-enabled/*;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m }[0m
+1407119896,,ui,message,    openstack-centos----web: [0m  * template[/etc/nginx/sites-available/default] action create
+1407119896,,ui,message,    openstack-centos----web: [32m- create new file /etc/nginx/sites-available/default[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- update content in file /etc/nginx/sites-available/default from none to 5f7702[0m
+1407119896,,ui,message,    openstack-centos----web: [37m--- /etc/nginx/sites-available/default	2014-08-04 11:38:42.094999969 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1286-4l54ap	2014-08-04 11:38:42.095999968 +0900[0m
+1407119896,,ui,message,    openstack-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)12 @@[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+server {[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  listen   80;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  server_name  centos-nginx;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  access_log  /var/log/nginx/localhost.access.log;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  location / {[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+    root   /var/www/nginx-default;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+    index  index.html index.htm;[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+  }[0m
+1407119896,,ui,message,    openstack-centos----web: [37m+}[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change mode from '' to '0644'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change owner from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [32m- change group from '' to 'root'[0m
+1407119896,,ui,message,    openstack-centos----web: [0m  * execute[nxensite default] action run
+1407119896,,ui,message,    openstack-centos----web: [32m- execute /usr/sbin/nxensite default[0m
+1407119896,,ui,message,    openstack-centos----web: [0mRecipe: nginx::default[0m
+1407119896,,ui,message,    openstack-centos----web: * service[nginx] action start
+1407119896,,ui,message,    openstack-centos----web: [32m- start service service[nginx][0m
+1407119896,,ui,message,    openstack-centos----web: [0m  * service[nginx] action reload
+1407119896,,ui,message,    openstack-centos----web: [32m- reload service service[nginx][0m
+1407119896,,ui,message,    openstack-centos----web: [0m[0m
+1407119896,,ui,message,    openstack-centos----web: Running handlers:[0m
+1407119896,,ui,message,    openstack-centos----web: Running handlers complete
+1407119896,,ui,message,    openstack-centos----web: [0mChef Client finished%!(PACKER_COMMA) 22/25 resources updated in 66.458152687 seconds[0m
+1407119896,,ui,say,==> openstack-centos----web: Creating the image: CentOS-nginx
+1407119897,,ui,say,==> openstack-centos----web: Image: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
+1407119897,,ui,say,==> openstack-centos----web: Waiting for image to become ready...
+1407119898,,ui,message,    aws-centos----web: [0m    * execute[yum-makecache-epel] action run
+1407119898,,ui,message,    aws-centos----web: [32m- execute yum -q makecache --disablerepo=* --enablerepo=epel[0m
+1407119898,,ui,message,    aws-centos----web: [0m    * ruby_block[yum-cache-reload-epel] action create
+1407119898,,ui,message,    aws-centos----web: [32m- execute the ruby block yum-cache-reload-epel[0m
+1407119898,,ui,message,    aws-centos----web: [0m    * execute[yum-makecache-epel] action nothing (skipped due to action :nothing)
+1407119898,,ui,message,    aws-centos----web: * ruby_block[yum-cache-reload-epel] action nothing (skipped due to action :nothing)
+1407119898,,ui,message,    aws-centos----web:
+1407119898,,ui,message,    aws-centos----web: [0mRecipe: nginx::package[0m
+1407119942,,ui,message,    aws-centos----web: * package[nginx] action install
+1407119942,,ui,message,    aws-centos----web: [32m- install version 1.0.15-5.el6 of package nginx[0m
+1407119942,,ui,message,    aws-centos----web: [0mRecipe: nginx::ohai_plugin[0m
+1407119942,,ui,message,    aws-centos----web: * ohai[reload_nginx] action reload[2014-08-04T02:39:29+00:00] WARN: [DEPRECATION] Plugin at /etc/chef/ohai_plugins/nginx.rb is a version 6 plugin. Version 6 plugins will not be supported in future releases of Ohai. Please upgrade your plugin to version 7 plugin syntax. For more information visit here: docs.opscode.com/ohai_custom.html
+1407119942,,ui,message,    aws-centos----web:
+1407119942,,ui,message,    aws-centos----web: [32m- re-run ohai and merge results into node attributes[0m
+1407119942,,ui,message,    aws-centos----web: [0mRecipe: nginx::package[0m
+1407119943,,ui,message,    aws-centos----web: * service[nginx] action enable
+1407119943,,ui,message,    aws-centos----web: [32m- enable service service[nginx][0m
+1407119943,,ui,message,    aws-centos----web: [0mRecipe: nginx::commons_dir[0m
+1407119943,,ui,message,    aws-centos----web: * directory[/etc/nginx] action create (up to date)
+1407119943,,ui,message,    aws-centos----web: * directory[/var/log/nginx] action create
+1407119944,,ui,message,    aws-centos----web: [32m- change mode from '0700' to '0755'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119944,,ui,message,    aws-centos----web: [0m  * directory[/var/run] action create (up to date)
+1407119944,,ui,message,    aws-centos----web: * directory[/etc/nginx/sites-available] action create
+1407119944,,ui,message,    aws-centos----web: [32m- create new directory /etc/nginx/sites-available[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119944,,ui,message,    aws-centos----web: [0m  * directory[/etc/nginx/sites-enabled] action create
+1407119944,,ui,message,    aws-centos----web: [32m- create new directory /etc/nginx/sites-enabled[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119944,,ui,message,    aws-centos----web: [0m  * directory[/etc/nginx/conf.d] action create (up to date)
+1407119944,,ui,message,    aws-centos----web: Recipe: nginx::commons_script[0m
+1407119944,,ui,message,    aws-centos----web: * template[/usr/sbin/nxensite] action create
+1407119944,,ui,message,    aws-centos----web: [32m- create new file /usr/sbin/nxensite[0m
+1407119944,,ui,message,    aws-centos----web: [32m- update content in file /usr/sbin/nxensite from none to fa46fb[0m
+1407119944,,ui,message,    aws-centos----web: [37m--- /usr/sbin/nxensite	2014-08-04 02:39:32.085688966 +0000[0m
+1407119944,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-1ia6iuf	2014-08-04 02:39:32.087688966 +0000[0m
+1407119944,,ui,message,    aws-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)39 @@[0m
+1407119944,,ui,message,    aws-centos----web: [37m+#!/bin/sh -e[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+if [ -z $1 ]; then[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        echo "Which site would you like to enable?"[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        echo -n "Your choices are: "[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        ls $SYSCONFDIR/sites-available/* | \[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-available/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        echo -n "Site name? "[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        read SITENAME[0m
+1407119944,,ui,message,    aws-centos----web: [37m+else[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        SITENAME=$1[0m
+1407119944,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        PRIORITY="000"[0m
+1407119944,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+if [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
+1407119944,,ui,message,    aws-centos----web: [37m+     -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        echo "This site is already enabled!"[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        exit 0[0m
+1407119944,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-available/$SITENAME ]; then[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        echo "This site does not exist!"[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        exit 1[0m
+1407119944,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME \[0m
+1407119944,,ui,message,    aws-centos----web: [37m+               $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
+1407119944,,ui,message,    aws-centos----web: [37m+else[0m
+1407119944,,ui,message,    aws-centos----web: [37m+        ln -sf $SYSCONFDIR/sites-available/$SITENAME $SYSCONFDIR/sites-enabled/$SITENAME[0m
+1407119944,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119944,,ui,message,    aws-centos----web: [37m+[0m
+1407119944,,ui,message,    aws-centos----web: [37m+echo "Site $SITENAME installed; reload nginx to enable."[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119944,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119945,,ui,say,==> openstack-centos----web: Terminating the source server...
+1407119945,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119945,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119945,,ui,message,    aws-centos----web: [0m  * template[/usr/sbin/nxdissite] action create
+1407119945,,ui,message,    aws-centos----web: [32m- create new file /usr/sbin/nxdissite[0m
+1407119945,,ui,message,    aws-centos----web: [32m- update content in file /usr/sbin/nxdissite from none to cc16ec[0m
+1407119945,,ui,message,    aws-centos----web: [37m--- /usr/sbin/nxdissite	2014-08-04 02:39:32.616688967 +0000[0m
+1407119945,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-ulki2u	2014-08-04 02:39:32.617688967 +0000[0m
+1407119945,,ui,message,    aws-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)30 @@[0m
+1407119945,,ui,message,    aws-centos----web: [37m+#!/bin/sh -e[0m
+1407119945,,ui,message,    aws-centos----web: [37m+[0m
+1407119945,,ui,message,    aws-centos----web: [37m+SYSCONFDIR='/etc/nginx'[0m
+1407119945,,ui,message,    aws-centos----web: [37m+[0m
+1407119945,,ui,message,    aws-centos----web: [37m+if [ -z $1 ]; then[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        echo "Which site would you like to disable?"[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        echo -n "Your choices are: "[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        ls $SYSCONFDIR/sites-enabled/* | \[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        sed -e "s%!(PACKER_COMMA)$SYSCONFDIR/sites-enabled/%!(PACKER_COMMA)%!(PACKER_COMMA)g" | xargs echo[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        echo -n "Site name? "[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        read SITENAME[0m
+1407119945,,ui,message,    aws-centos----web: [37m+else[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        SITENAME=$1[0m
+1407119945,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119945,,ui,message,    aws-centos----web: [37m+[0m
+1407119945,,ui,message,    aws-centos----web: [37m+if [ $SITENAME = "default" ]; then[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        PRIORITY="000"[0m
+1407119945,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119945,,ui,message,    aws-centos----web: [37m+[0m
+1407119945,,ui,message,    aws-centos----web: [37m+if ! [ -e $SYSCONFDIR/sites-enabled/$SITENAME -o \[0m
+1407119945,,ui,message,    aws-centos----web: [37m+       -e $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME" ]; then[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        echo "This site is already disabled%!(PACKER_COMMA) or does not exist!"[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        exit 1[0m
+1407119945,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119945,,ui,message,    aws-centos----web: [37m+[0m
+1407119945,,ui,message,    aws-centos----web: [37m+if ! rm $SYSCONFDIR/sites-enabled/$SITENAME 2>/dev/null; then[0m
+1407119945,,ui,message,    aws-centos----web: [37m+        rm -f $SYSCONFDIR/sites-enabled/"$PRIORITY"-"$SITENAME"[0m
+1407119945,,ui,message,    aws-centos----web: [37m+fi[0m
+1407119945,,ui,message,    aws-centos----web: [37m+echo "Site $SITENAME disabled; reload nginx to disable."[0m
+1407119945,,ui,message,    aws-centos----web: [32m- change mode from '' to '0755'[0m
+1407119945,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119945,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119945,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119945,,ui,message,    aws-centos----web: [0mRecipe: nginx::commons_conf[0m
+1407119945,,ui,message,    aws-centos----web: * template[nginx.conf] action create
+1407119945,,ui,message,    aws-centos----web: [32m- update content in file /etc/nginx/nginx.conf from d364aa to 161383[0m
+1407119945,,ui,message,    aws-centos----web: [37m--- /etc/nginx/nginx.conf	2013-04-26 20:36:51.000000000 +0000[0m
+1407119945,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-znojjo	2014-08-04 02:39:33.163688967 +0000[0m
+1407119945,,ui,message,    aws-centos----web: [37m@@ -1%!(PACKER_COMMA)43 +1%!(PACKER_COMMA)40 @@[0m
+1407119945,,ui,message,    aws-centos----web: [37m-# For more information on configuration%!(PACKER_COMMA) see:[0m
+1407119945,,ui,message,    aws-centos----web: [37m-#   * Official English Documentation: http://nginx.org/en/docs/[0m
+1407119945,,ui,message,    aws-centos----web: [37m-#   * Official Russian Documentation: http://nginx.org/ru/docs/[0m
+1407119945,,ui,message,    aws-centos----web: [37m-[0m
+1407119945,,ui,message,    aws-centos----web: [37m-user              nginx;[0m
+1407119945,,ui,message,    aws-centos----web: [37m+user nginx;[0m
+1407119945,,ui,message,    aws-centos----web: [37m worker_processes  1;[0m
+1407119945,,ui,message,    aws-centos----web: [37m [0m
+1407119945,,ui,message,    aws-centos----web: [37m error_log  /var/log/nginx/error.log;[0m
+1407119945,,ui,message,    aws-centos----web: [37m-#error_log  /var/log/nginx/error.log  notice;[0m
+1407119945,,ui,message,    aws-centos----web: [37m-#error_log  /var/log/nginx/error.log  info;[0m
+1407119945,,ui,message,    aws-centos----web: [37m-[0m
+1407119945,,ui,message,    aws-centos----web: [37m pid        /var/run/nginx.pid;[0m
+1407119945,,ui,message,    aws-centos----web: [37m [0m
+1407119945,,ui,message,    aws-centos----web: [37m-[0m
+1407119946,,ui,message,    aws-centos----web: [37m events {[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    worker_connections  1024;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  worker_connections  1024;[0m
+1407119946,,ui,message,    aws-centos----web: [37m }[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-[0m
+1407119946,,ui,message,    aws-centos----web: [37m http {[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    include       /etc/nginx/mime.types;[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    default_type  application/octet-stream;[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '[0m
+1407119946,,ui,message,    aws-centos----web: [37m-                      '$status $body_bytes_sent "$http_referer" '[0m
+1407119946,,ui,message,    aws-centos----web: [37m-                      '"$http_user_agent" "$http_x_forwarded_for"';[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  include       /etc/nginx/mime.types;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  default_type  application/octet-stream;[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    access_log  /var/log/nginx/access.log  main;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  access_log	/var/log/nginx/access.log;[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    sendfile        on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    #tcp_nopush     on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  sendfile on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  tcp_nopush on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  tcp_nodelay on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    #keepalive_timeout  0;[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    keepalive_timeout  65;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  keepalive_timeout  65;[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    #gzip  on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    [0m
+1407119946,,ui,message,    aws-centos----web: [37m-    # Load config files from the /etc/nginx/conf.d directory[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    # The default server is in conf.d/default.conf[0m
+1407119946,,ui,message,    aws-centos----web: [37m-    include /etc/nginx/conf.d/*.conf;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip  on;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_http_version 1.0;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_comp_level 2;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_proxied any;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_vary off;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_types text/plain text/css application/x-javascript text/xml application/xml application/rss+xml application/atom+xml text/javascript application/javascript application/json text/mathml;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_min_length  1000;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  gzip_disable     "MSIE [1-6]\.";[0m
+1407119946,,ui,message,    aws-centos----web: [37m [0m
+1407119946,,ui,message,    aws-centos----web: [37m+  server_names_hash_bucket_size 64;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  types_hash_max_size 2048;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  types_hash_bucket_size 64;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  include /etc/nginx/conf.d/*.conf;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  include /etc/nginx/sites-enabled/*;[0m
+1407119946,,ui,message,    aws-centos----web: [37m }[0m
+1407119946,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119946,,ui,message,    aws-centos----web: [0m  * template[/etc/nginx/sites-available/default] action create
+1407119946,,ui,message,    aws-centos----web: [32m- create new file /etc/nginx/sites-available/default[0m
+1407119946,,ui,message,    aws-centos----web: [32m- update content in file /etc/nginx/sites-available/default from none to 5ddeb2[0m
+1407119946,,ui,message,    aws-centos----web: [37m--- /etc/nginx/sites-available/default	2014-08-04 02:39:33.607688967 +0000[0m
+1407119946,,ui,message,    aws-centos----web: [37m+++ /tmp/chef-rendered-template20140804-1016-z3oq56	2014-08-04 02:39:33.609688967 +0000[0m
+1407119946,,ui,message,    aws-centos----web: [37m@@ -1 +1%!(PACKER_COMMA)12 @@[0m
+1407119946,,ui,message,    aws-centos----web: [37m+server {[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  listen   80;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  server_name  ip-172-31-24-154;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  access_log  /var/log/nginx/localhost.access.log;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  location / {[0m
+1407119946,,ui,message,    aws-centos----web: [37m+    root   /var/www/nginx-default;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+    index  index.html index.htm;[0m
+1407119946,,ui,message,    aws-centos----web: [37m+  }[0m
+1407119946,,ui,message,    aws-centos----web: [37m+}[0m
+1407119946,,ui,message,    aws-centos----web: [32m- change mode from '' to '0644'[0m
+1407119946,,ui,message,    aws-centos----web: [32m- change owner from '' to 'root'[0m
+1407119946,,ui,message,    aws-centos----web: [32m- change group from '' to 'root'[0m
+1407119946,,ui,message,    aws-centos----web: [32m- restore selinux security context[0m
+1407119946,,ui,message,    aws-centos----web: [0m  * execute[nxensite default] action run
+1407119946,,ui,message,    aws-centos----web: [32m- execute /usr/sbin/nxensite default[0m
+1407119946,,ui,message,    aws-centos----web: [0mRecipe: nginx::default[0m
+1407119947,,ui,message,    aws-centos----web: * service[nginx] action start
+1407119947,,ui,message,    aws-centos----web: [32m- start service service[nginx][0m
+1407119948,,ui,message,    aws-centos----web: [0m  * service[nginx] action reload
+1407119948,,ui,message,    aws-centos----web: [32m- reload service service[nginx][0m
+1407119948,,ui,message,    aws-centos----web: [0m[0m
+1407119948,,ui,message,    aws-centos----web: Running handlers:[0m
+1407119948,,ui,message,    aws-centos----web: Running handlers complete
+1407119948,,ui,message,    aws-centos----web: [0mChef Client finished%!(PACKER_COMMA) 22/25 resources updated in 81.196290466 seconds[0m
+1407119949,,ui,say,==> aws-centos----web: Stopping the source instance...
+1407119949,,ui,say,==> aws-centos----web: Waiting for the instance to stop...
+1407119958,,ui,say,==> openstack-centos----web: Deleting temporary keypair...
+1407119958,,ui,say,Build 'openstack-centos----web' finished.
+1407119998,,ui,say,==> aws-centos----web: Creating the AMI: CentOS-nginx-53def18f-a5d2-2e2b-feb8-f4a9610adaa2
+1407119998,,ui,message,    aws-centos----web: AMI: ami-5f89d75e
+1407119998,,ui,say,==> aws-centos----web: Waiting for AMI to become ready...
+1407120045,,ui,say,==> aws-centos----web: Adding tags to AMI (ami-5f89d75e)...
+1407120045,,ui,message,    aws-centos----web: Adding tag: "Name": "CentOS-nginx"
+1407120045,,ui,say,==> aws-centos----web: Terminating the source AWS instance...
+1407120046,,ui,say,==> aws-centos----web: Deleting temporary security group...
+1407120051,,ui,say,==> aws-centos----web: Deleting temporary keypair...
+1407120051,,ui,say,Build 'aws-centos----web' finished.
 1407120051,,ui,say,\n==> Builds finished. The artifacts of successful builds are:
-1407120051,openstack----centos----web,artifact-count,1
-1407120051,openstack----centos----web,artifact,0,builder-id,mitchellh.openstack
-1407120051,openstack----centos----web,artifact,0,id,b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
-1407120051,openstack----centos----web,artifact,0,string,An image was created: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
-1407120052,openstack----centos----web,artifact,0,files-count,0
-1407120052,openstack----centos----web,artifact,0,end
-1407120052,,ui,say,--> openstack----centos----web: An image was created: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
-1407120052,aws----centos----web,artifact-count,1
-1407120052,aws----centos----web,artifact,0,builder-id,mitchellh.amazonebs
-1407120052,aws----centos----web,artifact,0,id,ap-northeast-1:ami-5f89d75e
-1407120052,aws----centos----web,artifact,0,string,AMIs were created:\n\nap-northeast-1: ami-5f89d75e
-1407120052,aws----centos----web,artifact,0,files-count,0
-1407120052,aws----centos----web,artifact,0,end
-1407120052,,ui,say,--> aws----centos----web: AMIs were created:\n\nap-northeast-1: ami-5f89d75e
+1407120051,openstack-centos----web,artifact-count,1
+1407120051,openstack-centos----web,artifact,0,builder-id,mitchellh.openstack
+1407120051,openstack-centos----web,artifact,0,id,b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
+1407120051,openstack-centos----web,artifact,0,string,An image was created: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
+1407120052,openstack-centos----web,artifact,0,files-count,0
+1407120052,openstack-centos----web,artifact,0,end
+1407120052,,ui,say,--> openstack-centos----web: An image was created: b2e42caa-0adb-4d08-aa50-5f0cf3a7b6cc
+1407120052,aws-centos----web,artifact-count,1
+1407120052,aws-centos----web,artifact,0,builder-id,mitchellh.amazonebs
+1407120052,aws-centos----web,artifact,0,id,ap-northeast-1:ami-5f89d75e
+1407120052,aws-centos----web,artifact,0,string,AMIs were created:\n\nap-northeast-1: ami-5f89d75e
+1407120052,aws-centos----web,artifact,0,files-count,0
+1407120052,aws-centos----web,artifact,0,end
+1407120052,,ui,say,--> aws-centos----web: AMIs were created:\n\nap-northeast-1: ami-5f89d75e
