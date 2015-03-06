@@ -74,7 +74,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def generate_parameters
     common_parameters = {}
-    common_parameters = JSON.parse(environment.template_parameters, symbolize_names: true) if pattern.type == 'optional'
+    common_parameters = JSON.parse(environment.platform_outputs, symbolize_names: true) if pattern.type == 'optional'
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
     common_parameters.deep_merge(stack_parameters)
   end

@@ -37,8 +37,8 @@ describe Environment do
   end
 
   describe '#initialize' do
-    it 'set empty JSON to template_parameters' do
-      expect(@environment.template_parameters).to eq('{}')
+    it 'set empty JSON to platform_outputs' do
+      expect(@environment.platform_outputs).to eq('{}')
     end
 
     it 'set PENDING status' do
@@ -149,9 +149,9 @@ describe Environment do
       expect(@environment.dup.ip_address).to be_nil
     end
 
-    it 'clear template_parameters' do
-      @environment.template_parameters = '{"SubnetId": "123456"}'
-      expect(@environment.dup.template_parameters).to eq('{}')
+    it 'clear platform_outputs' do
+      @environment.platform_outputs = '{"SubnetId": "123456"}'
+      expect(@environment.dup.platform_outputs).to eq('{}')
     end
 
     it 'clear status to :PENDING' do
@@ -234,7 +234,7 @@ describe Environment do
       expect(json['id']).to eq(@environment.id)
       expect(json['name']).to eq(@environment.name)
       expect(json['ip_address']).to eq(@environment.ip_address)
-      expect(json['template_parameters']).to eq(@environment.template_parameters)
+      expect(json['platform_outputs']).to eq(@environment.platform_outputs)
       expect(json['status']).to eq(@environment.status)
     end
   end

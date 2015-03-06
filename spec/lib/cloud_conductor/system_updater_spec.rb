@@ -149,7 +149,7 @@ module CloudConductor
         @updater.send(:update_environment, outputs)
 
         expect(@environment.ip_address).to eq('127.0.0.1')
-        expect(@environment.template_parameters).to eq('{"dummy":"value"}')
+        expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
       end
     end
 

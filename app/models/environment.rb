@@ -11,7 +11,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   accepts_nested_attributes_for :candidates
   # accepts_nested_attributes_for :stacks
 
-  attr_accessor :user_attributes
+  attr_accessor :template_parameters, :user_attributes
 
   validates_presence_of :system, :blueprint, :candidates
   validates :name, presence: true, uniqueness: true
@@ -28,13 +28,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   after_initialize do
     self.template_parameters ||= '{}'
     self.user_attributes ||= '{}'
+    self.platform_outputs ||= '{}'
     self.status ||= :PENDING
   end
 
   def create_or_update_stacks
     if new_record? || blueprint_id_changed?
       create_stacks
-    elsif template_parameters_changed? || user_attributes
+    elsif template_parameters || user_attributes
       update_stacks
     end
   end
@@ -90,7 +91,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     environment.name = "#{basename}-#{SecureRandom.uuid}"
     environment.ip_address = nil
-    environment.template_parameters = '{}'
+    environment.platform_outputs = '{}'
     environment.status = :PENDING
 
     environment.candidates = candidates.map(&:dup)

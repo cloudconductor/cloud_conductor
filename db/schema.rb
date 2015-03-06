@@ -123,9 +123,9 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.string   "description"
     t.string   "status"
     t.string   "ip_address"
-    t.text     "template_parameters"
-    t.datetime "created_at",          null: false
-    t.datetime "updated_at",          null: false
+    t.text     "platform_outputs"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
   end
 
   create_table "images", force: true do |t|

@@ -18,7 +18,7 @@ FactoryGirl.define do
     description 'environment description'
     system
     blueprint
-    template_parameters '{}'
+    platform_outputs '{}'
     ip_address '127.0.0.1'
 
     before(:create) do

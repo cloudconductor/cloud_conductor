@@ -7,7 +7,7 @@ class CreateEnvironments < ActiveRecord::Migration
       t.string :description
       t.string :status
       t.string :ip_address
-      t.text :template_parameters
+      t.text :platform_outputs
       t.timestamps null: false
     end
   end

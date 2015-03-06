@@ -165,7 +165,7 @@ module CloudConductor
         @builder.send(:update_environment, outputs)
 
         expect(@environment.ip_address).to eq('127.0.0.1')
-        expect(@environment.template_parameters).to eq('{"dummy":"value"}')
+        expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
       end
     end
 
@@ -255,14 +255,14 @@ module CloudConductor
         expect(Stack.all.all?(&:pending?)).to be_truthy
       end
 
-      it 'reset ip_address and template_parameters in environment' do
+      it 'reset ip_address and platform_outputs in environment' do
         @environment.ip_address = '127.0.0.1'
-        @environment.template_parameters = '{ "key": "dummy" }'
+        @environment.platform_outputs = '{ "key": "dummy" }'
 
         @builder.send(:reset_stacks)
 
         expect(@environment.ip_address).to be_nil
-        expect(@environment.template_parameters).to eq('{}')
+        expect(@environment.platform_outputs).to eq('{}')
       end
 
       it 'change status of environment to :ERROR when some error occurred' do
