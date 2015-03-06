@@ -40,7 +40,7 @@ module CloudConductor
           messages[node[:hostname]] = node[:log_message]
         end
 
-        fail messages.to_json
+        fail "#{name} event has failed.\n#{messages.to_json}"
       end
       event_id
     end
