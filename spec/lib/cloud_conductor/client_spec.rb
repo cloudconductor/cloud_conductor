@@ -29,14 +29,14 @@ module CloudConductor
       it 'returns initialized client with aws adapter' do
         cloud_aws = FactoryGirl.create(:cloud, :aws)
         client = Client.new cloud_aws
-        expect(client.type).to eq(:aws)
+        expect(client.type).to eq('aws')
         expect(client.adapter.class).to eq(Adapters::AWSAdapter)
       end
 
       it 'returns initialized client with openstack adapter' do
         cloud_openstack = FactoryGirl.create(:cloud, :openstack)
         client = Client.new cloud_openstack
-        expect(client.type).to eq(:openstack)
+        expect(client.type).to eq('openstack')
         expect(client.adapter.class).to eq(Adapters::OpenStackAdapter)
       end
     end

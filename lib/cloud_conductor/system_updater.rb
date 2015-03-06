@@ -87,7 +87,7 @@ module CloudConductor
 
         next if status == :UPDATE_IN_PROGRESS || status == :UPDATE_COMPLETE_CLEANUP_IN_PROGRESS
 
-        if stack.pattern.type == :platform
+        if stack.pattern.type == 'platform'
           outputs = stack.outputs
           next if outputs['FrontendAddress'].nil?
 
