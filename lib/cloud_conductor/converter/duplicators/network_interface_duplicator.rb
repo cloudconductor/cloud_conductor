@@ -13,30 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module CloudConductor
-  module Duplicators
-    class InstanceDuplicator < BaseDuplicator
-      include DuplicatorUtils
+  class Converter
+    module Duplicators
+      class NetworkInterfaceDuplicator < BaseDuplicator
+        include DuplicatorUtils
 
-      def replace_properties(resource)
-        return resource unless resource['Properties']['NetworkInterfaces']
-
-        resource['Properties']['NetworkInterfaces'].each do |network_interface|
-          next if network_interface['NetworkInterfaceId']
-
-          subnet = @resources[network_interface['SubnetId']['Ref']]
+        def replace_properties(resource)
+          subnet = @resources[resource['Properties']['SubnetId']['Ref']]
           cidr = NetAddr::CIDR.create(subnet['Properties']['CidrBlock'])
           allocatable_addresses = get_allocatable_addresses(@resources, cidr)
 
-          if network_interface['PrivateIpAddress']
-            network_interface['PrivateIpAddress'] = allocatable_addresses.first
-          elsif network_interface['PrivateIpAddresses']
-            network_interface['PrivateIpAddresses'].each do |ip_address|
+          properties = resource['Properties']
+          if properties['PrivateIpAddress']
+            properties['PrivateIpAddress'] = allocatable_addresses.first
+          elsif properties['PrivateIpAddresses']
+            properties['PrivateIpAddresses'].each do |ip_address|
               ip_address['PrivateIpAddress'] = allocatable_addresses.shift
             end
           end
-        end
 
-        resource
+          resource
+        end
       end
     end
   end

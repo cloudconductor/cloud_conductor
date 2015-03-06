@@ -20,7 +20,7 @@ module CloudConductor
       allow_any_instance_of(Adapters::AWSAdapter).to receive(:get_availability_zones).and_return(['ap-southeast-2a'])
       allow_any_instance_of(Adapters::OpenStackAdapter).to receive(:get_availability_zones).and_return(['nova'])
       allow_any_instance_of(Adapters::DummyAdapter).to receive(:get_availability_zones).and_return(['dummy'])
-      allow(CloudConductor::Duplicators).to receive(:increase_instance).and_return('{ "dummy": "dummy_value" }')
+      allow(CloudConductor::Converter::Duplicators).to receive(:increase_instance).and_return('{ "dummy": "dummy_value" }')
       allow(CloudConductor::Converter).to receive_message_chain(:new, :update_cluster_addresses).and_return('{ "dummy": "dummy_value" }')
       @client = Client.new cloud
     end
