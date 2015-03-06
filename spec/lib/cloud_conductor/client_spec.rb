@@ -63,8 +63,8 @@ module CloudConductor
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
 
-          expect(parameters["#{image1.role}ImageId"]).to eq(image1.image)
-          expect(parameters["#{image2.role}ImageId"]).to eq(image2.image)
+          expect(parameters["#{image1.role.camelize}ImageId"]).to eq(image1.image)
+          expect(parameters["#{image2.role.camelize}ImageId"]).to eq(image2.image)
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
@@ -74,7 +74,7 @@ module CloudConductor
       it 'use key of ImageId that remove special characters from image.role' do
         FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
-          expect(parameters.keys).to be_include('webapdbImageId')
+          expect(parameters.keys).to be_include('WebApDbImageId')
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)

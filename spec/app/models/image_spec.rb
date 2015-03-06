@@ -70,14 +70,6 @@ describe Image do
       @image.role = ''
       expect(@image.valid?).to be_falsey
     end
-
-    it 'returns false when role contains hyphen or underscore character' do
-      @image.role = 'dummy-role'
-      expect(@image.valid?).to be_falsey
-
-      @image.role = 'dummy_role'
-      expect(@image.valid?).to be_falsey
-    end
   end
 
   describe '#status' do

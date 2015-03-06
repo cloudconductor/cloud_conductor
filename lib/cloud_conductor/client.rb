@@ -45,7 +45,8 @@ module CloudConductor
       images = pattern.images.where(cloud: @cloud)
 
       images.each do |image|
-        parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image
+        camelized_roles = image.role.split(/\s*,\s*/).map(&:camelize).join
+        parameters["#{camelized_roles}ImageId"] = image.image
       end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes
@@ -64,7 +65,8 @@ module CloudConductor
       images = pattern.images.where(cloud: @cloud)
 
       images.each do |image|
-        parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image
+        camelized_roles = image.role.split(/\s*,\s*/).map(&:camelize).join
+        parameters["#{camelized_roles}ImageId"] = image.image
       end
 
       @adapter.update_stack name, template, parameters, @cloud.attributes

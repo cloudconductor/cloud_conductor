@@ -42,8 +42,8 @@
         "Role" : "web"
       },
       "Properties" : {
-        "ImageId" : { "Ref" : "webImageId" },
-        "InstanceType" : { "Ref" : "webInstanceType" },
+        "ImageId" : { "Ref" : "WebImageId" },
+        "InstanceType" : { "Ref" : "WebInstanceType" },
         "KeyName" : { "Ref" : "KeyName" },
         "NetworkInterfaces" : [{
            "DeviceIndex" : "0",

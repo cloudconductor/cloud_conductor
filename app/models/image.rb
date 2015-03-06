@@ -5,7 +5,6 @@ class Image < ActiveRecord::Base
 
   validates_associated :pattern, :cloud, :base_image
   validates_presence_of :pattern, :cloud, :base_image, :role
-  validates :role, format: /\A[^\-_]+\Z/
 
   before_save :update_name
 
