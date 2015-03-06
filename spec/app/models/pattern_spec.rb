@@ -80,9 +80,9 @@ describe Pattern do
 
   describe '#status' do
     before do
-      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
-      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
-      @pattern.images << FactoryGirl.create(:image, pattern: @pattern)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.create(:image, pattern: @pattern, status: :PROGRESS)
     end
 
     it 'return status that integrated status over all images' do
@@ -95,9 +95,9 @@ describe Pattern do
       expect(@pattern.status).to eq(:PROGRESS)
     end
 
-    it 'return :CREATE_COMPLETE when pattern hasn\'t images' do
+    it 'return :ERROR when pattern hasn\'t images' do
       @pattern.images.delete_all
-      expect(@pattern.status).to eq(:CREATE_COMPLETE)
+      expect(@pattern.status).to eq(:ERROR)
     end
 
     it 'return :CREATE_COMPLETE when all images have CREATE_COMPLETE status' do

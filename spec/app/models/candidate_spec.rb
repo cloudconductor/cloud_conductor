@@ -15,28 +15,29 @@
 describe Candidate do
   include_context 'default_resources'
 
+  let(:cloud1) { FactoryGirl.create(:cloud, :aws) }
+  let(:cloud2) { FactoryGirl.create(:cloud, :openstack) }
+  let(:cloud3) { FactoryGirl.create(:cloud, :aws, name: 'new_cloud') }
+
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
-      environment = FactoryGirl.create(:environment)
-      environment.candidates.delete_all
-      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 10)
-      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 30)
-      environment.candidates << FactoryGirl.build(:candidate, environment: environment, priority: 20)
+      environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud1, priority: 10)
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud2, priority: 30)
+      environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud3, priority: 20)
       environment.save!
 
       expect(environment.candidates.primary).to eq(environment.candidates[1])
     end
 
     it 'ignore candidates on other environment' do
-      environment1 = FactoryGirl.create(:environment)
-      environment1.candidates.delete_all
-      environment1.candidates << FactoryGirl.build(:candidate, environment: environment1, priority: 30)
+      environment1 = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment1.candidates << FactoryGirl.build(:candidate, environment: environment1, cloud: cloud1, priority: 30)
       environment1.save!
 
-      environment2 = FactoryGirl.create(:environment)
-      environment2.candidates.delete_all
-      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, priority: 10)
-      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, priority: 20)
+      environment2 = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud2, priority: 10)
+      environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud3, priority: 20)
       environment2.save!
 
       expect(environment2.candidates.primary).to eq(environment2.candidates[1])

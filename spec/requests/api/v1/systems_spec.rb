@@ -160,7 +160,6 @@ describe API do
     describe 'PUT /systems/:id/switch' do
       let(:method) { 'put' }
       let(:url) { "/api/v1/systems/#{system.id}/switch" }
-      let(:blueprint) { FactoryGirl.create(:blueprint, project_id: project.id) }
       let(:new_environment) { FactoryGirl.create(:environment, system_id: system.id, blueprint_id: blueprint.id, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
       let(:params) { { environment_id: new_environment.id } }
       let(:result) do

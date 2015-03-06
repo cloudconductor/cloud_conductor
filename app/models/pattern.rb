@@ -15,9 +15,13 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   before_save :execute_packer, if: -> { url_changed? || revision_changed? }
 
   def status
-    return :ERROR if images.any? { |image| image.status == :ERROR }
-    return :PROGRESS if images.any? { |image| image.status == :PROGRESS }
-    :CREATE_COMPLETE
+    if images.empty? || images.any? { |image| image.status == :ERROR }
+      :ERROR
+    elsif images.all? { |image| image.status == :CREATE_COMPLETE }
+      :CREATE_COMPLETE
+    else
+      :PROGRESS
+    end
   end
 
   def as_json(options = {})

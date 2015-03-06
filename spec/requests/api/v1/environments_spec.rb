@@ -154,7 +154,7 @@ describe API do
     describe 'DELETE /environments/:id' do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/environments/#{new_environment.id}" }
-      let(:new_environment) { FactoryGirl.create(:environment, system: system) }
+      let(:new_environment) { FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
 
       before do
         allow_any_instance_of(Environment).to receive(:destroy_stacks).and_return(true)

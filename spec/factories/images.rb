@@ -16,7 +16,7 @@ FactoryGirl.define do
   factory :image, class: Image do
     sequence(:role) { |n| "role#{n}" }
     pattern { create(:pattern, :platform) }
-    status :PROGRESS
+    status :CREATE_COMPLETE
     image { SecureRandom.uuid }
     cloud { create(:cloud, :aws) }
     base_image { create(:base_image, cloud: cloud) }

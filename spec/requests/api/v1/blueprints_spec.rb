@@ -75,7 +75,9 @@ describe API do
         mock_process_status = double('process_status')
         allow(mock_process_status).to receive(:success?).and_return(true)
         allow_any_instance_of(Blueprint).to receive(:systemu).with('consul keygen').and_return([mock_process_status, consul_secret_key, ''])
-        allow_any_instance_of(Pattern).to receive(:execute_packer).and_return(true)
+        allow_any_instance_of(Pattern).to receive(:execute_packer) do |pattern|
+          pattern.images << FactoryGirl.build(:image, pattern: pattern, base_image: base_image, cloud: cloud)
+        end
       end
 
       context 'not_logged_in' do

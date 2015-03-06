@@ -19,13 +19,9 @@ describe Environment do
     @cloud_aws = FactoryGirl.create(:cloud, :aws)
     @cloud_openstack = FactoryGirl.create(:cloud, :openstack)
 
-    @environment = Environment.new
-    @environment.name = 'test'
-    @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_aws, priority: 1)
-    @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: @cloud_openstack, priority: 2)
-    @environment.system = FactoryGirl.create(:system)
-    @environment.blueprint = FactoryGirl.create(:blueprint)
-
+    @environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint,
+                                                   candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
+                                                                           { cloud_id: @cloud_openstack.id, priority: 2 }])
     allow(@environment).to receive(:create_or_update_stacks)
   end
 
@@ -117,8 +113,8 @@ describe Environment do
 
       @environment.save!
       @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern, :platform)
-      optional_pattern = FactoryGirl.create(:pattern, :optional)
+      platform_pattern = FactoryGirl.create(:pattern, :platform, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      optional_pattern = FactoryGirl.create(:pattern, :optional, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: platform_pattern)
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: optional_pattern)
 
@@ -182,7 +178,7 @@ describe Environment do
     end
 
     it 'duplicate deployments without save' do
-      @environment.deployments << FactoryGirl.create(:deployment, environment: @environment, application_history: application_history, status: :DEPLOYED)
+      @environment.deployments << FactoryGirl.build(:deployment, environment: @environment, application_history: application_history, status: :DEPLOY_COMPLETE)
 
       deployments = @environment.dup.deployments
       expect(deployments.size).to eq(@environment.deployments.size)

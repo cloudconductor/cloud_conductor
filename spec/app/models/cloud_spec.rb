@@ -119,11 +119,12 @@ describe Cloud do
     end
 
     it 'delete all base image records' do
-      @cloud.base_images << FactoryGirl.create(:base_image, cloud: @cloud)
-      @cloud.base_images << FactoryGirl.create(:base_image, cloud: @cloud)
+      cloud = FactoryGirl.create(:cloud, :openstack, project: project)
+      FactoryGirl.create(:base_image, cloud: cloud)
+      FactoryGirl.create(:base_image, cloud: cloud)
 
-      expect(@cloud.base_images.size).to eq(2)
-      expect { @cloud.destroy }.to change { BaseImage.count }.by(-2)
+      expect(cloud.base_images.size).to eq(2)
+      expect { cloud.destroy }.to change { BaseImage.count }.by(-2)
     end
 
     it 'raise error and cancel destroy when specified cloud is used in some environments' do

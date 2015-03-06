@@ -23,35 +23,27 @@ describe Stack do
     @stack.environment = environment
   end
 
-  # rubocop:disable UselessAssignment
   describe '.in_progress' do
     it 'returns stacks in progress status' do
-      stack1 = FactoryGirl.create(:stack, status: :PENDING)
-      stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
-      stack3 = FactoryGirl.create(:stack, status: :READY_FOR_CREATE)
-      stack4 = FactoryGirl.create(:stack, status: :READY_FOR_UPDATE)
-      stack5 = FactoryGirl.create(:stack, status: :ERROR)
-      stack6 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
-      stack7 = FactoryGirl.create(:stack, status: :PROGRESS)
-
-      expect(Stack.in_progress).to eq([stack2, stack7])
+      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :PROGRESS)
+      expect(Stack.in_progress).to include(stack)
+      [:PENDING, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR, :CREATE_COMPLETE].each do |state|
+        stack.update_columns(status: state)
+        expect(Stack.in_progress).not_to include(stack)
+      end
     end
   end
 
   describe '.created' do
     it 'returns stacks in progress status' do
-      stack1 = FactoryGirl.create(:stack, status: :PENDING)
-      stack2 = FactoryGirl.create(:stack, status: :PROGRESS)
-      stack3 = FactoryGirl.create(:stack, status: :READY_FOR_CREATE)
-      stack4 = FactoryGirl.create(:stack, status: :READY_FOR_UPDATE)
-      stack5 = FactoryGirl.create(:stack, status: :ERROR)
-      stack6 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
-      stack7 = FactoryGirl.create(:stack, status: :CREATE_COMPLETE)
-
-      expect(Stack.created).to eq([stack6, stack7])
+      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :CREATE_COMPLETE)
+      expect(Stack.created).to include(stack)
+      [:PENDING, :PROGRESS, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR].each do |state|
+        stack.update_columns(status: state)
+        expect(Stack.created).not_to include(stack)
+      end
     end
   end
-  # rubocop:enable UselessAssignment
 
   describe '#initialize' do
     it 'set default values to status, template_parameters and parameters' do
@@ -75,12 +67,12 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
+      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
     it 'return false when name is not unique in Cloud' do
-      FactoryGirl.create(:stack, name: 'Test', cloud: @stack.cloud)
+      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: @stack.cloud)
       expect(@stack.valid?).to be_falsey
     end
 

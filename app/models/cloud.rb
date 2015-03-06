@@ -16,11 +16,10 @@ class Cloud < ActiveRecord::Base
     return unless type == 'aws'
     aws_images_yml = File.join(Rails.root, 'config/images.yml')
     aws_images = YAML.load_file(aws_images_yml)
-    if new_record?
+    if base_images.empty?
       base_images.create(source_image: aws_images[entry_point])
-    elsif entry_point_changed?
-      base_image = base_images.first
-      base_image.update_attributes(source_image: aws_images[entry_point]) if base_image
+    else
+      base_images.first.update_attributes(source_image: aws_images[entry_point])
     end
   end
 

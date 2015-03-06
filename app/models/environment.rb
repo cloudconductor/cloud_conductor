@@ -13,7 +13,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   attr_accessor :user_attributes
 
-  validates_presence_of :system, :blueprint
+  validates_presence_of :system, :blueprint, :candidates
   validates :name, presence: true, uniqueness: true
   validate do
     clouds = candidates.map(&:cloud)
