@@ -6,7 +6,7 @@ gem 'grape'
 gem 'devise'
 gem 'devise-token_authenticatable'
 gem 'cancancan'
-gem 'activeadmin', github: 'activeadmin'
+# gem 'activeadmin', github: 'activeadmin'
 gem 'sqlite3'
 
 gem 'systemu'
