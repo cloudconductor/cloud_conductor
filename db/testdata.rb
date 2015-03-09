@@ -71,6 +71,14 @@ blueprint.patterns.first.update(
   name: 'tomcat_pattern',
   type: 'platform'
 )
+blueprint.patterns.first.images.where(image: 'ami-12345678').first_or_create!(
+  cloud: cloud,
+  base_image: cloud.base_images.first,
+  name: 'test',
+  role: 'web',
+  image: 'ami-12345678',
+  status: 'CREATE_COMPLETE'
+)
 Pattern.set_callback(:save, :before, :execute_packer)
 Blueprint.set_callback(:create, :before, :update_consul_secret_key)
 
