@@ -110,6 +110,12 @@ describe Cloud do
       @cloud.tenant_name = nil
       expect(@cloud.valid?).to be_falsey
     end
+
+    it 'returns false when region is not valid aws region' do
+      @cloud.type = 'aws'
+      @cloud.entry_point = 'ap-northeast-1a' # AvailabilityZone name is invalid.
+      expect(@cloud.valid?).to be_falsey
+    end
   end
 
   describe '#destroy(raise_error_in_use)' do
