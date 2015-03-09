@@ -120,7 +120,6 @@ describe API do
       end
 
       before do
-        allow_any_instance_of(Blueprint).to receive(:update_consul_secret_key).and_return(true)
         allow_any_instance_of(Pattern).to receive(:execute_packer).and_return(true)
       end
 

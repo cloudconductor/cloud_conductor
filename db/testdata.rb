@@ -56,12 +56,10 @@ cloud = Cloud.find_or_create_by!(
 
 # Blueprint and Pattern
 Pattern.skip_callback(:save, :before, :execute_packer)
-Blueprint.skip_callback(:create, :before, :update_consul_secret_key)
 blueprint = Blueprint.where(name: 'tomcat').first_or_create!(
   project_id: project_x.id,
   name: 'tomcat',
   description: 'Apache, Tomcat, PostgreSQL',
-  consul_secret_key: 'xxxxxxxx',
   patterns_attributes: [{
     url: 'https://github.com/cloudconductor-patterns/tomcat_pattern.git',
     revision: 'master'
@@ -80,7 +78,6 @@ blueprint.patterns.first.images.where(image: 'ami-12345678').first_or_create!(
   status: 'CREATE_COMPLETE'
 )
 Pattern.set_callback(:save, :before, :execute_packer)
-Blueprint.set_callback(:create, :before, :update_consul_secret_key)
 
 # System
 System.skip_callback(:save, :before, :update_dns)

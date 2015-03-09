@@ -6,16 +6,15 @@ class Blueprint < ActiveRecord::Base
   validates_presence_of :name, :project, :patterns
   validates :name, uniqueness: true
 
-  before_create :update_consul_secret_key
+  before_create :set_consul_secret_key
 
-  def update_consul_secret_key
-    if !consul_secret_key && CloudConductor::Config.consul.options.acl
-      status, stdout, stderr = systemu('consul keygen')
-      fail "consul keygen failed.\n#{stderr}" unless status.success?
-      self.consul_secret_key = stdout.chomp
-    else
-      self.consul_secret_key = ''
-    end
+  def set_consul_secret_key
+    return unless CloudConductor::Config.consul.options.acl
+    self.consul_secret_key ||= generate_consul_secret_key
+  end
+
+  def generate_consul_secret_key
+    SecureRandom.base64(16)
   end
 
   def status

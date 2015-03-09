@@ -8,15 +8,12 @@ FactoryGirl.define do
        FactoryGirl.attributes_for(:pattern, :optional)]
     end
 
-    before(:create) do |blueprint|
+    before(:create) do
       Pattern.skip_callback :save, :before, :execute_packer
-      Blueprint.skip_callback :create, :before, :update_consul_secret_key
-      blueprint.consul_secret_key = SecureRandom.base64(16)
     end
 
     after(:create) do
       Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
-      Blueprint.set_callback :create, :before, :update_consul_secret_key
     end
   end
 end
