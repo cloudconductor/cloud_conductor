@@ -276,32 +276,6 @@ module CloudConductor
       end
     end
 
-    describe '#configure_payload' do
-      it 'return payload that used for configure event' do
-        allow(@environment.stacks).to receive(:created).and_return([@platform_stack, @optional_stack])
-
-        expected_payload = satisfy do |payload|
-          expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
-
-          payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
-          expect(payload1[:name]).to eq(@platform_stack.pattern.name)
-          expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
-          expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
-          expect(payload1[:url]).to eq(@platform_stack.pattern.url)
-          expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-
-          payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
-          expect(payload2[:name]).to eq(@optional_stack.pattern.name)
-          expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
-          expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
-          expect(payload2[:url]).to eq(@optional_stack.pattern.url)
-          expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-        end
-
-        expect(@builder.send(:configure_payload, @environment)).to expected_payload
-      end
-    end
-
     describe '#application_payload' do
       it 'return empty payload when deployments are empty' do
         expect(@builder.send(:application_payload, @environment)).to eq({})
