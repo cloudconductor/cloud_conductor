@@ -93,5 +93,35 @@ module CloudConductor
         expect(@event_log.success?).to be_falsey
       end
     end
+
+    describe '#as_json' do
+      it 'return Hash that contains aggregated event' do
+        result = @event_log.as_json(detail: true)
+        expect(result).to be_is_a(Hash)
+        expect(result.keys).to eq(%i(id type succeeded finished results))
+        expect(result[:id]).to eq('4ee5d2a6-853a-21a9-7463-ef1866468b76')
+        expect(result[:type]).to eq('configure')
+        expect(result[:succeeded]).to be_truthy
+        expect(result[:finished]).to be_truthy
+      end
+
+      it 'doesn\'t contains individual result when detail is false' do
+        result = @event_log.as_json(detail: false)
+        expect(result[:results]).to be_nil
+      end
+
+      it 'contains individual result when detail is true' do
+        result = @event_log.as_json(detail: true)
+        expect(result[:results]).to be_is_a(Array)
+        expect(result[:results].size).to eq(2)
+
+        expect(result[:results][0]).to be_is_a(Hash)
+        expect(result[:results][0][:hostname]).to eq('host1')
+        expect(result[:results][0][:return_code]).to eq(0)
+        expect(result[:results][0][:started_at]).to eq('2014-12-16T14:44:07.000+09:00')
+        expect(result[:results][0][:finished_at]).to eq('2014-12-16T14:44:09.000+09:00')
+        expect(result[:results][0][:log]).to eq('Dummy consul event log')
+      end
+    end
   end
 end

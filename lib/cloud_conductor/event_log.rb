@@ -39,5 +39,16 @@ module CloudConductor
     def success?
       @nodes.all? { |node| node[:return_code] == 0 }
     end
+
+    def as_json(options = {})
+      result = {
+        id: @id,
+        type: @name,
+        succeeded: success?,
+        finished: finished?
+      }
+      result[:results] = @nodes if options[:detail]
+      result
+    end
   end
 end
