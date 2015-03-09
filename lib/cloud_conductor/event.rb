@@ -37,7 +37,7 @@ module CloudConductor
       unless event_log.success?
         messages = {}
         event_log.nodes.each do |node|
-          messages[node[:hostname]] = node[:log_message]
+          messages[node[:hostname]] = node[:log]
         end
 
         fail "#{name} event has failed.\n#{messages.to_json}"

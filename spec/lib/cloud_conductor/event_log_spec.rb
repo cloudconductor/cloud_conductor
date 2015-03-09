@@ -16,20 +16,20 @@ module CloudConductor
   describe EventLog do
     before do
       response = {
-        'event/12345678-1234-1234-1234-1234567890ab/host1' => {
+        'event/4ee5d2a6-853a-21a9-7463-ef1866468b76/host1' => {
           'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
           'type' => 'configure',
-          'result' => '0',
-          'start_datetime' => '2014-12-16T14:44:07+0900',
-          'end_datetime' => '2014-12-16T14:44:09+0900',
+          'return_code' => '0',
+          'started_at' => '2014-12-16T14:44:07+0900',
+          'finished_at' => '2014-12-16T14:44:09+0900',
           'log' => 'Dummy consul event log'
         },
-        'event/12345678-1234-1234-1234-1234567890ab/host2' => {
+        'event/4ee5d2a6-853a-21a9-7463-ef1866468b76/host2' => {
           'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
           'type' => 'configure',
-          'result' => '0',
-          'start_datetime' => '2014-12-16T14:44:07+0900',
-          'end_datetime' => '2014-12-16T14:44:09+0900',
+          'return_code' => '0',
+          'started_at' => '2014-12-16T14:44:07+0900',
+          'finished_at' => '2014-12-16T14:44:09+0900',
           'log' => 'Dummy consul event log'
         }
       }
@@ -59,7 +59,7 @@ module CloudConductor
           return_code: 0,
           started_at: DateTime.new(2014, 12, 16, 14, 44, 7, 'JST'),
           finished_at: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST'),
-          log_message: 'Dummy consul event log'
+          log: 'Dummy consul event log'
         )
       end
     end

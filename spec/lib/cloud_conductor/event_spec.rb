@@ -62,7 +62,7 @@ module CloudConductor
 
     describe '#sync_fire' do
       before do
-        nodes = [{ hostname: 'dummy_host', log_message: 'dummy_log' }]
+        nodes = [{ hostname: 'dummy_host', log: 'dummy_log' }]
         @event_log = double(:event_log)
         allow(@event_log).to receive(:success?).and_return(true)
         allow(@event_log).to receive(:nodes).and_return(nodes)

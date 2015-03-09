@@ -24,10 +24,10 @@ module CloudConductor
         hostname = key.split('/').last
         {
           hostname: hostname,
-          return_code: value['result'] && value['result'].to_i,
-          started_at: value['start_datetime'] && DateTime.parse(value['start_datetime']),
-          finished_at: value['end_datetime'] && DateTime.parse(value['end_datetime']),
-          log_message: value['log']
+          return_code: value['return_code'] && value['return_code'].to_i,
+          started_at: value['started_at'] && DateTime.parse(value['started_at']),
+          finished_at: value['finished_at'] && DateTime.parse(value['finished_at']),
+          log: value['log']
         }
       end
     end
