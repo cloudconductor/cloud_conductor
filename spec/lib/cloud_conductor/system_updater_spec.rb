@@ -16,33 +16,35 @@ module CloudConductor
   describe SystemUpdater do
     include_context 'default_resources'
 
-    before do
-      platform_pattern = FactoryGirl.create(:pattern, :platform)
-      optional_pattern = FactoryGirl.create(:pattern, :optional)
-      blueprint = FactoryGirl.create(:blueprint, patterns: [platform_pattern, optional_pattern])
-      @environment = FactoryGirl.build(:environment, blueprint: blueprint)
-
-      @platform_stack = FactoryGirl.build(:stack, pattern: platform_pattern, name: platform_pattern.name, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: optional_pattern, name: optional_pattern.name, environment: @environment)
-      @environment.stacks.delete_all
-      @environment.stacks << @platform_stack
-      @environment.stacks << @optional_stack
-      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
-      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
-      @environment.save!
-
-      allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
-      @updater = SystemUpdater.new @environment
-
-      Stack.skip_callback :save, :before, :create_stack
-      Stack.skip_callback :save, :before, :update_stack
-      Stack.skip_callback :destroy, :before, :destroy_stack
+    let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
+    let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
+    let(:blueprint) do
+      blueprint = FactoryGirl.create(:blueprint,
+                                     project: project,
+                                     patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),
+                                                           FactoryGirl.attributes_for(:pattern, :optional)]
+                  )
+      blueprint.patterns.each do |pattern|
+        FactoryGirl.create(:image, pattern: pattern, base_image: base_image, cloud: cloud)
+      end
+      blueprint
+    end
+    let(:environment) do
+      FactoryGirl.create(:environment,
+                         system: system,
+                         blueprint: blueprint,
+                         candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
+                                                 { cloud_id: cloud_openstack.id, priority: 20 }]
+      )
     end
 
-    after do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
-      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
-      Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
+    before do
+      @environment = environment
+      allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
+      @environment.stacks += [@platform_stack, @optional_stack]
+      @updater = SystemUpdater.new @environment
     end
 
     describe '#initialize' do
@@ -60,18 +62,14 @@ module CloudConductor
     describe '#update' do
       before do
         allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
-
+        allow(@environment).to receive(:create_or_update_stacks) do
+          @environment.stacks.each do |stack|
+            stack.update_columns(status: :CREATE_COMPLETE)
+          end
+        end
         allow(@updater).to receive(:wait_for_finished)
         allow(@updater).to receive(:update_environment)
         allow(@updater).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
-      end
-
-      it 'call every subsequence 1 time' do
-        expect(@updater).to receive(:wait_for_finished).with(@environment.stacks[0], anything).ordered
-        expect(@updater).to receive(:update_environment).with(key: 'dummy').ordered
-        expect(@updater).to receive(:wait_for_finished).with(@environment.stacks[1], anything).ordered
-        expect(@updater).to receive(:finish_environment).ordered
-        @updater.update
       end
 
       it 'create all stacks' do

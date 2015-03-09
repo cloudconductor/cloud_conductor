@@ -16,44 +16,45 @@ module CloudConductor
   describe SystemBuilder do
     include_context 'default_resources'
 
-    before do
-      platform_pattern = FactoryGirl.create(:pattern, :platform)
-      optional_pattern = FactoryGirl.create(:pattern, :optional)
-      blueprint = FactoryGirl.create(:blueprint, patterns: [platform_pattern, optional_pattern])
-      @environment = FactoryGirl.build(:environment, blueprint: blueprint)
-
-      @platform_stack = FactoryGirl.build(:stack, pattern: platform_pattern, name: platform_pattern.name, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: optional_pattern, name: optional_pattern.name, environment: @environment)
-      @environment.stacks.delete_all
-      @environment.stacks << @platform_stack
-      @environment.stacks << @optional_stack
-      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
-      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment)
-      @environment.save!
-
-      @builder = SystemBuilder.new @environment
-
-      Stack.skip_callback :save, :before, :create_stack
-      Stack.skip_callback :save, :before, :update_stack
-      Stack.skip_callback :destroy, :before, :destroy_stack
+    let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
+    let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
+    let(:blueprint) do
+      blueprint = FactoryGirl.create(:blueprint, project: project,
+                                                 patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),
+                                                                       FactoryGirl.attributes_for(:pattern, :optional)])
+      blueprint.patterns.each do |pattern|
+        FactoryGirl.create(:image, pattern: pattern, base_image: base_image, cloud: cloud)
+      end
+      blueprint
+    end
+    let(:environment) do
+      FactoryGirl.create(:environment, system: system, blueprint: blueprint,
+                                       candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
+                                                               { cloud_id: cloud_openstack.id, priority: 20 }])
     end
 
-    after do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
-      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
-      Stack.set_callback :destroy, :before, :destroy_stack, unless: -> { pending? }
+    before do
+      @environment = environment
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
+      @environment.stacks += [@platform_stack, @optional_stack]
+      @builder = SystemBuilder.new @environment
+      allow_any_instance_of(Environment).to receive(:create_or_update_stack)
+      allow_any_instance_of(Environment).to receive(:destroy_stack)
+      allow_any_instance_of(Pattern).to receive(:execute_packer)
+      allow_any_instance_of(Pattern).to receive(:clone_repository)
     end
 
     describe '#initialize' do
       it 'set @clouds that contains candidate clouds orderd by priority' do
-        @environment.candidates[0].update_attributes(priority: 10)
-        @environment.candidates[1].update_attributes(priority: 20)
+        @environment.candidates[0].update_columns(priority: 10)
+        @environment.candidates[1].update_columns(priority: 20)
         builder = SystemBuilder.new @environment
         clouds = builder.instance_variable_get :@clouds
         expect(clouds).to eq([@environment.clouds.last, @environment.clouds.first])
 
-        @environment.candidates[0].update_attributes(priority: 20)
-        @environment.candidates[1].update_attributes(priority: 10)
+        @environment.candidates[0].update_columns(priority: 20)
+        @environment.candidates[1].update_columns(priority: 10)
         builder = SystemBuilder.new @environment
         clouds = builder.instance_variable_get :@clouds
         expect(clouds).to eq([@environment.clouds.first, @environment.clouds.last])

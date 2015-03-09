@@ -13,7 +13,11 @@ module ModelSpecHelper
     let(:pattern) { blueprint.patterns.first }
     let(:image) { pattern.images.first }
     let(:system) { FactoryGirl.create(:system, project: project) }
-    let(:environment) { FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
+    let(:environment) do
+      environment = FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)])
+      system.update_columns(primary_environment_id: environment.id)
+      environment
+    end
     let(:stack) { environment.stacks.first }
     let(:candidate) { environment.candidates.first }
     let(:application) { FactoryGirl.create(:application, system: system) }

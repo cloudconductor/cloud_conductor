@@ -14,6 +14,8 @@
 # limitations under the License.
 module CloudConductor
   describe ZabbixClient do
+    include_context 'default_resources'
+
     before do
       allow(CloudConductor::Config).to receive_message_chain(:zabbix, :url).and_return('http://example.com')
       allow(CloudConductor::Config).to receive_message_chain(:zabbix, :user).and_return('user')
@@ -45,13 +47,11 @@ module CloudConductor
         allow(@client).to receive(:register_action).and_return(3)
         allow(@client).to receive(:operation).and_return('dummy command')
 
-        @system = FactoryGirl.create(:system, name: 'example')
-        @system.environments << FactoryGirl.create(:environment, ip_address: '127.0.0.1')
-        @system.primary_environment = @system.environments.first
+        @system = environment.system
       end
 
       it 'register hostgroup' do
-        expect(@client).to receive(:register_hostgroup).with('example')
+        expect(@client).to receive(:register_hostgroup).with(@system.name)
         @client.register(@system)
       end
 
