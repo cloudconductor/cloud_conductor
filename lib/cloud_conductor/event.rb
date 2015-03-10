@@ -56,6 +56,15 @@ module CloudConductor
       end
     end
 
+    def list
+      events = @client.kv.get('event', true)
+      return [] unless events
+
+      events.group_by { |_, event| event['event_id'] }.map do |_, event|
+        CloudConductor::EventLog.new(Hash[*event.flatten])
+      end
+    end
+
     def find(id)
       response = @client.kv.get("event/#{id}", true)
       return nil unless response

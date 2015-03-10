@@ -120,6 +120,49 @@ module CloudConductor
       end
     end
 
+    describe '#list' do
+      it 'return empty array if request failed' do
+        allow(@client).to receive_message_chain(:kv, :get).and_return(nil)
+        expect(@event.list).to eq([])
+      end
+
+      it 'return event list' do
+        value = {
+          'event/11111111-1111-1111-1111-111111111111/host1' => {
+            'event_id' => '11111111-1111-1111-1111-111111111111',
+            'type' => 'configure',
+            'result' => '0',
+            'start_datetime' => '2014-12-16T14:44:07+0900',
+            'end_datetime' => '2014-12-16T14:44:09+0900',
+            'log' => 'Dummy consul event log1'
+          },
+          'event/11111111-1111-1111-1111-111111111111/host2' => {
+            'event_id' => '11111111-1111-1111-1111-111111111111',
+            'type' => 'configure',
+            'result' => '0',
+            'start_datetime' => '2014-12-16T14:44:07+0900',
+            'end_datetime' => '2014-12-16T14:44:09+0900',
+            'log' => 'Dummy consul event log2'
+          },
+          'event/22222222-2222-2222-2222-222222222222/host1' => {
+            'event_id' => '22222222-2222-2222-2222-222222222222',
+            'type' => 'configure',
+            'result' => '0',
+            'start_datetime' => '2014-12-16T14:44:07+0900',
+            'end_datetime' => '2014-12-16T14:44:09+0900',
+            'log' => 'Dummy consul event log1'
+          }
+        }
+
+        allow(@client).to receive_message_chain(:kv, :get).and_return(value)
+        results = @event.list
+        expect(results).to be_is_a Array
+        expect(results.size).to eq(2)
+        expect(results).to all(be_is_a(EventLog))
+        expect(results.map(&:id)).to eq(['11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'])
+      end
+    end
+
     describe '#find' do
       it 'return nil if target event does not exist or request failed' do
         allow(@client).to receive_message_chain(:kv, :get).and_return(nil)
