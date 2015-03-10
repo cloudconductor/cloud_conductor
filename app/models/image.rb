@@ -18,6 +18,6 @@ class Image < ActiveRecord::Base
 
   def update_name
     splitter = '----'
-    self.name = "#{base_image.name}#{splitter}#{role}"
+    self.name = "#{base_image.name}#{splitter}#{role.gsub(/\s*,\s*/, '-')}"
   end
 end

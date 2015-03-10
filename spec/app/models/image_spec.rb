@@ -41,6 +41,13 @@ describe Image do
       @image.send(:update_name)
       expect(@image.name).to eq("#{@image.base_image.name}#{splitter}#{@image.role}")
     end
+
+    it 'update name by base_image and multiple roles' do
+      splitter = '----'
+      @image.role = 'web, ap'
+      @image.send(:update_name)
+      expect(@image.name).to eq("#{@image.base_image.name}#{splitter}web-ap")
+    end
   end
 
   describe '#valid?' do

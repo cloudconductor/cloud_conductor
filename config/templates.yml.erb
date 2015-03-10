@@ -1,5 +1,5 @@
 aws:
-  name: <%= name %>----{{user `role`}}
+  name: <%= name %>----{{user `image_name`}}
   type: amazon-ebs
   access_key: <%= cloud.key %>
   secret_key: <%= cloud.secret %>
@@ -15,7 +15,7 @@ aws:
       delete_on_termination: true
 
 openstack:
-  name: <%= name %>----{{user `role`}}
+  name: <%= name %>----{{user `image_name`}}
   type: openstack
   username: <%= cloud.key %>
   password: <%= cloud.secret %>
