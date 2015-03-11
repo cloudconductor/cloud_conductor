@@ -163,8 +163,7 @@ describe API do
           'id' => Fixnum,
           'created_at' => String,
           'updated_at' => String,
-          'status' => :PENDING,
-          'event' => String
+          'status' => :PENDING
         )
       end
 
@@ -172,7 +171,6 @@ describe API do
         environment.update_columns(status: :CREATE_COMPLETE)
         allow_any_instance_of(Deployment).to receive(:consul_request) do |deployment|
           deployment.status = :PENDING
-          deployment.event = SecureRandom.uuid
         end
       end
 
