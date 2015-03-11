@@ -229,13 +229,13 @@ describe Environment do
       allow(@environment).to receive(:status).and_return(:PROGRESS)
     end
 
-    it 'return attributes as json format' do
-      json = @environment.as_json
-      expect(json['id']).to eq(@environment.id)
-      expect(json['name']).to eq(@environment.name)
-      expect(json['ip_address']).to eq(@environment.ip_address)
-      expect(json['platform_outputs']).to eq(@environment.platform_outputs)
-      expect(json['status']).to eq(@environment.status)
+    it 'return attributes as hash' do
+      hash = @environment.as_json
+      expect(hash['id']).to eq(@environment.id)
+      expect(hash['name']).to eq(@environment.name)
+      expect(hash['ip_address']).to eq(@environment.ip_address)
+      expect(hash['platform_outputs']).to eq(@environment.platform_outputs)
+      expect(hash['status']).to eq(@environment.status)
     end
   end
 
