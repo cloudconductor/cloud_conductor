@@ -182,9 +182,9 @@ module CloudConductor
 
       it 'change application history status if deploy event is finished' do
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-
-        expect_any_instance_of(Deployment).to receive(:update_status).at_least(1)
+        expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
         @updater.send(:finish_environment)
+        expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
       end
     end
   end

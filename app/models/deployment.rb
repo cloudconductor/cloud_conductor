@@ -7,27 +7,28 @@ class Deployment < ActiveRecord::Base
     errors.add(:environment, 'status does not create_complete') if environment && environment.status != :CREATE_COMPLETE
   end
 
-  before_save :consul_request
+  before_save :consul_request, if: -> { status == :NOT_DEPLOYED }
   after_initialize -> { self.status ||= :NOT_DEPLOYED }
-  after_find :update_status
 
   def consul_request
     if environment.ip_address
       self.status = :PROGRESS
-      self.event = environment.event.fire(:deploy, application_history.payload)
+      deploy_application
     else
       self.status = :ERROR
     end
   end
 
-  def update_status
-    return if new_record? || status.to_sym != :PROGRESS
-    event_log = environment.event.find(event)
-    if event_log.nil?
-      update_columns(status: :ERROR)
-    elsif event_log.finished?
-      new_status = event_log.success? ? :DEPLOY_COMPLETE : :ERROR
-      update_columns(status: new_status)
+  def deploy_application
+    Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        begin
+          environment.event.sync_fire(:deploy, application_history.payload)
+          update_attributes(status: :DEPLOY_COMPLETE)
+        rescue
+          update_attributes(status: :ERROR)
+        end
+      end
     end
   rescue
     update_columns(status: :ERROR)
