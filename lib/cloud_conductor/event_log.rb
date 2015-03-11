@@ -44,8 +44,8 @@ module CloudConductor
       result = {
         id: @id,
         type: @name,
-        succeeded: success?,
-        finished: finished?
+        finished: finished?,
+        succeeded: success?
       }
       result[:results] = @nodes if options[:detail]
       result

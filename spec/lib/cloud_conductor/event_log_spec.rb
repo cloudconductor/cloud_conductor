@@ -98,7 +98,7 @@ module CloudConductor
       it 'return Hash that contains aggregated event' do
         result = @event_log.as_json(detail: true)
         expect(result).to be_is_a(Hash)
-        expect(result.keys).to eq(%i(id type succeeded finished results))
+        expect(result.keys).to eq(%i(id type finished succeeded results))
         expect(result[:id]).to eq('4ee5d2a6-853a-21a9-7463-ef1866468b76')
         expect(result[:type]).to eq('configure')
         expect(result[:succeeded]).to be_truthy
