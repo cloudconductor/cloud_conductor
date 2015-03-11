@@ -32,7 +32,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def client
-    @client ||= cloud.client
+    cloud.client
   end
 
   def create_stack
