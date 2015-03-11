@@ -26,6 +26,8 @@ class Deployment < ActiveRecord::Base
       new_status = event_log.success? ? :DEPLOY_COMPLETE : :ERROR
       update_columns(status: new_status)
     end
+  rescue
+    update_columns(status: :ERROR)
   end
 
   def dup
