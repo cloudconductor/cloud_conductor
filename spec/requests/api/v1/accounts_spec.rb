@@ -5,11 +5,12 @@ describe API do
   describe 'AccountAPI' do
     let(:account) { FactoryGirl.create(:account) }
     let(:project_account) { FactoryGirl.create(:account, assign_project: project) }
+    let(:monitoring_account) { project.accounts.where(email: "zabbix@#{project.name}.example.com").first }
 
     describe 'GET /accounts' do
       let(:method) { 'get' }
       let(:url) { '/api/v1/accounts' }
-      let!(:accounts) { [normal_account, admin_account, project_owner_account, project_operator_account] }
+      let!(:accounts) { [normal_account, admin_account, project_owner_account, project_operator_account, monitoring_account] }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -26,12 +27,12 @@ describe API do
       end
 
       context 'project_owner', project_owner: true do
-        let(:result) { format_iso8601([project_owner_account, project_operator_account]) }
+        let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
         it_behaves_like('200 OK')
       end
 
       context 'project_operator', project_operator: true do
-        let(:result) { format_iso8601([project_owner_account, project_operator_account]) }
+        let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
         it_behaves_like('200 OK')
       end
     end

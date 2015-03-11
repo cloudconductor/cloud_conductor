@@ -192,8 +192,18 @@ module CloudConductor
     end
 
     describe '#operation' do
+      before do
+        account = double('account', authentication_token: 'dummy_token')
+        accounts = double('accounts')
+        allow(accounts).to receive(:where).and_return([account])
+        project = double('project', accounts: accounts, name: 'dummy')
+        system = double('system', project: project)
+        environment = double('environment', system: system)
+        allow(Environment).to receive_message_chain(:find).and_return(environment)
+      end
+
       it 'return curl command' do
-        expected_command = 'curl -H "Content-Type:application/json" -X POST -d \'{"switch": "true"}\' http://example.com/1/rebuild'
+        expected_command = 'curl -H "Content-Type:application/json" -X POST -d "{\"switch\": \"true\", \"auth_token\": \"dummy_token\"}" http://example.com/environments/1/rebuild'
         expect(@client.send(:operation, 1, 'http://example.com')).to eq(expected_command)
       end
     end

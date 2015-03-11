@@ -134,8 +134,13 @@ module CloudConductor
       @zabbix.action.update(params)
     end
 
+    # rubocop:disable LineLength
     def operation(environment_id, url)
-      "curl -H \"Content-Type:application/json\" -X POST -d '{\"switch\": \"true\"}' #{url}/#{environment_id}/rebuild"
+      project = Environment.find(environment_id).system.project
+      monitoring_account = project.accounts.where(email: "zabbix@#{project.name}.example.com").first
+
+      "curl -H \"Content-Type:application/json\" -X POST -d \"{\\\"switch\\\": \\\"true\\\", \\\"auth_token\\\": \\\"#{monitoring_account.authentication_token}\\\"}\" #{url}/environments/#{environment_id}/rebuild"
     end
+    # rubocop:enable LineLength
   end
 end
