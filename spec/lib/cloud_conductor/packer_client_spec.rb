@@ -349,6 +349,18 @@ module CloudConductor
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
       end
+
+      it 'return success status and image when pattern has comman separated roles' do
+        images = []
+        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web, ap')
+
+        result = @client.send(:parse, load_csv('success_with_multiple_roles.csv'), images)
+        expect(result.keys).to match_array(%w(aws-centos----web-ap))
+
+        aws = result['aws-centos----web-ap']
+        expect(aws[:status]).to eq(:SUCCESS)
+        expect(aws[:image]).to match(/ami-[0-9a-f]{8}/)
+      end
     end
   end
 end
