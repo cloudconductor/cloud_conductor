@@ -33,9 +33,9 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_or_update_stacks
-    if new_record? || blueprint_id_changed?
+    if (new_record? || blueprint_id_changed?) && stacks.empty?
       create_stacks
-    elsif template_parameters || user_attributes
+    elsif template_parameters != '{}' || user_attributes != '{}'
       update_stacks
     end
   end
