@@ -26,7 +26,6 @@ module API
             params do
               requires :application_id, type: Integer, desc: 'Target application id'
               requires :url, type: String, desc: "Application's git repository or tar.gz url"
-              optional :domain, type: String, desc: 'Domain name to point this application'
               optional :type, type: String, default: 'dynamic', desc: 'Application type (dynamic or static)'
               optional :protocol, type: String, default: 'git', desc: 'Application file transferred protocol'
               optional :revision, type: String, default: 'master', desc: "Application's git repository revision"
@@ -42,7 +41,6 @@ module API
             desc 'Update application history'
             params do
               requires :id, type: Integer, desc: 'Application history id'
-              optional :domain, type: String, desc: 'Domain name to point this application'
               optional :url, type: String, desc: "Application's git repository or tar.gz url"
               optional :type, type: String, default: 'dynamic', desc: 'Application type (dynamic or static)'
               optional :protocol, type: String, default: 'git', desc: 'Application file transferred protocol'
