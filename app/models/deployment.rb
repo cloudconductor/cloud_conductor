@@ -3,13 +3,13 @@ class Deployment < ActiveRecord::Base
   belongs_to :application_history
 
   validates_presence_of :environment, :application_history
+  validate do
+    errors.add(:environment, 'status does not create_complete') if environment && environment.status != :CREATE_COMPLETE
+  end
 
   before_save :consul_request
   after_initialize -> { self.status ||= :NOT_DEPLOYED }
   after_find :update_status
-  validate do
-    errors.add(:environment, 'status does not create_complete') if environment && environment.status != :CREATE_COMPLETE
-  end
 
   def consul_request
     if environment.ip_address
