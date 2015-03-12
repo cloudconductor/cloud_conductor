@@ -24,6 +24,7 @@ class Deployment < ActiveRecord::Base
       ActiveRecord::Base.connection_pool.with_connection do
         begin
           environment.event.sync_fire(:deploy, application_history.payload)
+          environment.event.sync_fire(:spec)
           update_attributes(status: :DEPLOY_COMPLETE)
         rescue
           update_attributes(status: :ERROR)

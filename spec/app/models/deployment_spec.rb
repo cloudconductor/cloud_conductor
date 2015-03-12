@@ -86,20 +86,29 @@ describe Deployment do
       @deployment.save!
     end
 
-    it 'deploy application in background' do
+    it 'deploy application and serverspec in background' do
       expect(Thread).to receive(:new).and_yield
       expect(@event).to receive(:sync_fire).with(:deploy, be_a(Hash))
+      expect(@event).to receive(:sync_fire).with(:spec)
       @deployment.deploy_application
     end
 
     it 'update deployment status to DEPLOY_COMPLETE when event has deployed without error' do
       allow(@event).to receive(:sync_fire).with(:deploy, be_a(Hash))
+      allow(@event).to receive(:sync_fire).with(:spec)
       @deployment.deploy_application
       expect(@deployment.status).to eq(:DEPLOY_COMPLETE)
     end
 
-    it 'update deployment status to ERROR when some error occurred while event' do
+    it 'update deployment status to ERROR when some error occurred while deploy event' do
       allow(@event).to receive(:sync_fire).with(:deploy, be_a(Hash)).and_raise
+      @deployment.deploy_application
+      expect(@deployment.status).to eq(:ERROR)
+    end
+
+    it 'update deployment status to ERROR when some error occurred while serverspec' do
+      allow(@event).to receive(:sync_fire).with(:deploy, be_a(Hash))
+      allow(@event).to receive(:sync_fire).with(:spec).and_raise
       @deployment.deploy_application
       expect(@deployment.status).to eq(:ERROR)
     end

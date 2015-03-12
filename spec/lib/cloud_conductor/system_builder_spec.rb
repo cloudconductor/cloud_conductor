@@ -200,7 +200,12 @@ module CloudConductor
         @builder.send(:finish_environment)
       end
 
-      it 'change deployment status if deploy event is finished' do
+      it 'will request spec event to consul' do
+        expect(@event).to receive(:sync_fire).with(:spec)
+        @builder.send(:finish_environment)
+      end
+
+      it 'change application history status if deploy event is finished' do
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
         expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
         @builder.send(:finish_environment)
