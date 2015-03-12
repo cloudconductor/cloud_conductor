@@ -317,6 +317,10 @@ describe Environment do
   end
 
   describe '#application_status' do
+    before do
+      @environment.status = :CREATE_COMPLETE
+    end
+
     it 'contains application_status as :NOT_DEPLOYED if application haven\'t deployed' do
       hash = @environment.as_json
       expect(hash['application_status']).to eq(:NOT_DEPLOYED)
