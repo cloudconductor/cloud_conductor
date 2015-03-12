@@ -22,6 +22,7 @@ gem 'zbxapi', '0.3.8'
 gem 'rb-readline'
 gem 'unicorn'
 gem 'cfn_converter', git: 'https://github.com/cloudconductor/cfn_converter.git'
+gem 'binding_of_caller'
 
 group :development, :test do
   gem 'spring'

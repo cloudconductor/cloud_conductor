@@ -373,6 +373,7 @@ PLATFORMS
 DEPENDENCIES
   activerecord-session_store
   aws-sdk (~> 1.0)
+  binding_of_caller
   byebug
   cancancan
   cfn_converter!
