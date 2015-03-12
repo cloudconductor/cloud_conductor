@@ -203,7 +203,7 @@ module CloudConductor
       end
 
       it 'return curl command' do
-        expected_command = 'curl -H "Content-Type:application/json" -X POST -d "{\"switch\": \"true\", \"auth_token\": \"dummy_token\"}" http://example.com/environments/1/rebuild'
+        expected_command = %q(curl -H "Content-Type:application/json" -X POST -d '{"switch":true,"auth_token":"dummy_token"}' http://example.com/environments/1/rebuild)
         expect(@client.send(:operation, 1, 'http://example.com')).to eq(expected_command)
       end
     end

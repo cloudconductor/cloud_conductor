@@ -5,7 +5,7 @@ describe API do
   describe 'AccountAPI' do
     let(:account) { FactoryGirl.create(:account) }
     let(:project_account) { FactoryGirl.create(:account, assign_project: project) }
-    let(:monitoring_account) { project.accounts.where(email: "zabbix@#{project.name}.example.com").first }
+    let(:monitoring_account) { project.accounts.where(email: "monitoring@#{project.name}.example.com").first }
 
     describe 'GET /accounts' do
       let(:method) { 'get' }

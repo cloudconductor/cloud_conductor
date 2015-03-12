@@ -65,17 +65,17 @@ describe Project do
     end
   end
 
-  describe '#assign_project_monitoring' do
+  describe '#create_monitoring_account' do
     it 'create monitoring account' do
-      expect { @project.assign_project_monitoring }.to change { Account.count }.by(1)
+      expect { @project.create_monitoring_account }.to change { Account.count }.by(1)
     end
 
     it 'create assignment for monitoring' do
       expect(@project.assignments).to be_empty
-      @project.assign_project_monitoring
+      @project.create_monitoring_account
       expect(@project.assignments).not_to be_empty
       expect(@project.assignments.first.account).to eq(Account.last)
-      expect(@project.assignments.first.role).to eq('administrator')
+      expect(@project.assignments.first.role).to eq('operator')
     end
   end
 end
