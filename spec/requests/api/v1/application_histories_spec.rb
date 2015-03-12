@@ -63,10 +63,11 @@ describe API do
       let(:params) { FactoryGirl.attributes_for(:application_history, application_id: application.id) }
       let(:result) do
         params.merge(
-          'id' => Fixnum,
-          'created_at' => String,
-          'updated_at' => String,
-          'version' => Date.today.strftime('%Y%m%d') + '-002'
+          id: Fixnum,
+          domain: nil,
+          created_at: String,
+          updated_at: String,
+          version: Date.today.strftime('%Y%m%d') + '-002'
         )
       end
 
