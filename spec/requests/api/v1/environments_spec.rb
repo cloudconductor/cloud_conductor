@@ -81,6 +81,7 @@ describe API do
           created_at: String,
           updated_at: String,
           status: 'PENDING',
+          application_status: 'NOT_DEPLOYED',
           ip_address: nil
         )
       end

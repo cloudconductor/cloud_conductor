@@ -4,7 +4,6 @@ class CreateDeployments < ActiveRecord::Migration
       t.references :environment
       t.references :application_history
       t.string :status
-      t.string :event
       t.timestamps null: false
     end
   end

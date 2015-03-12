@@ -77,12 +77,26 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     super && super.to_sym
   end
 
+  def application_status
+    if deployments.empty?
+      :NOT_DEPLOYED
+    elsif deployments.any? { |deployment| deployment.status == 'ERROR' }
+      :ERROR
+    elsif deployments.any? { |deployment| deployment.status == 'PROGRESS' }
+      :PROGRESS
+    elsif deployments.all? { |deployment| deployment.status == 'DEPLOY_COMPLETE' }
+      :DEPLOY_COMPLETE
+    else
+      :ERROR
+    end
+  end
+
   def basename
     name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
   end
 
   def as_json(options = {})
-    super options.merge(methods: [:status])
+    super options.merge(methods: [:status, :application_status])
   end
 
   def dup

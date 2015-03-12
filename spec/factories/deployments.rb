@@ -9,6 +9,6 @@ FactoryGirl.define do
   end
 
   after(:create) do
-    Deployment.set_callback :save, :before, :consul_request
+    Deployment.set_callback :save, :before, :consul_request, if: -> { status == :NOT_DEPLOYED }
   end
 end

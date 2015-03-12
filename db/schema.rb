@@ -111,7 +111,6 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.integer  "environment_id"
     t.integer  "application_history_id"
     t.string   "status"
-    t.string   "event"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end

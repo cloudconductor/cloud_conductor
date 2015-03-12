@@ -227,15 +227,17 @@ describe Environment do
       @environment.id = 1
       @environment.ip_address = '127.0.0.1'
       allow(@environment).to receive(:status).and_return(:PROGRESS)
+      allow(@environment).to receive(:application_status).and_return(:DEPLOY_COMPLETE)
     end
 
-    it 'return attributes as json format' do
-      json = @environment.as_json
-      expect(json['id']).to eq(@environment.id)
-      expect(json['name']).to eq(@environment.name)
-      expect(json['ip_address']).to eq(@environment.ip_address)
-      expect(json['platform_outputs']).to eq(@environment.platform_outputs)
-      expect(json['status']).to eq(@environment.status)
+    it 'return attributes as hash' do
+      hash = @environment.as_json
+      expect(hash['id']).to eq(@environment.id)
+      expect(hash['name']).to eq(@environment.name)
+      expect(hash['ip_address']).to eq(@environment.ip_address)
+      expect(hash['platform_outputs']).to eq(@environment.platform_outputs)
+      expect(hash['status']).to eq(@environment.status)
+      expect(hash['application_status']).to eq(@environment.application_status)
     end
   end
 
@@ -314,6 +316,45 @@ describe Environment do
     end
   end
 
-  describe '#stack_destroyed?' do
+  describe '#application_status' do
+    before do
+      @environment.status = :CREATE_COMPLETE
+    end
+
+    it 'contains application_status as :NOT_DEPLOYED if application haven\'t deployed' do
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:NOT_DEPLOYED)
+    end
+
+    it 'contains application_status as :ERROR if deployments have least one :ERROR status' do
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRESS)
+      FactoryGirl.create(:deployment, environment: @environment, status: :ERROR)
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:ERROR)
+    end
+
+    it 'contains application_status as :PROGRESS if deployments have least one :PROGRESS status' do
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRESS)
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:PROGRESS)
+    end
+
+    it 'contains application_status as :DEPLOY_COMPLETE if all deployments have completed' do
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:DEPLOY_COMPLETE)
+    end
+
+    it 'contains application_status as :ERROR if deployments have invalid status' do
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRES)
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRES)
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:ERROR)
+    end
   end
 end

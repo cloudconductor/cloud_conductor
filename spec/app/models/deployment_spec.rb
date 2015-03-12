@@ -21,7 +21,7 @@ describe Deployment do
     @deployment.environment.status = :CREATE_COMPLETE
     @deployment.application_history = application_history
 
-    @event = double(:event, fire: 1)
+    @event = double(:event, fire: 1, sync_fire: 1)
     allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
     allow(@event).to receive_message_chain(:find, :success?).and_return(true)
     allow(environment).to receive(:event).and_return(@event)
@@ -51,6 +51,7 @@ describe Deployment do
 
   describe '#save' do
     it 'create with valid parameters' do
+      allow(@deployment).to receive(:consul_request)
       expect { @deployment.save! }.to change { Deployment.count }.by(1)
     end
 
@@ -63,29 +64,44 @@ describe Deployment do
   end
 
   describe '#consul_request' do
-    it 'trigger deploy event' do
-      expect(@event).to receive(:fire).with(:deploy, be_a(Hash))
+    it 'call #deploy_application to deploy application in background' do
+      expect(@deployment).to receive(:deploy_application)
       @deployment.send(:consul_request)
     end
 
     it 'change status and event when call consul_request' do
+      allow(@deployment).to receive(:deploy_application)
       expect(@deployment.status).to eq(:NOT_DEPLOYED)
-      expect(@deployment.event).to be_nil
 
       @deployment.send(:consul_request)
 
       expect(@deployment.status).to eq(:PROGRESS)
-      expect(@deployment.event).not_to be_nil
     end
   end
 
-  describe '#update_status' do
-    it 'update status' do
-      allow_any_instance_of(CloudConductor::Event).to receive(:find)
-        .and_return(double(success?: true, finished?: true))
-      deployment = FactoryGirl.create(:deployment, environment: environment, application_history: application_history, status: :PROGRESS)
-      deployment.send(:update_status)
-      expect(deployment.reload.status).to eq('DEPLOY_COMPLETE')
+  describe '#deploy_application' do
+    before do
+      allow(Thread).to receive(:new).and_yield
+      allow(@deployment).to receive(:consul_request)
+      @deployment.save!
+    end
+
+    it 'deploy application in background' do
+      expect(Thread).to receive(:new).and_yield
+      expect(@event).to receive(:sync_fire).with(:deploy, be_a(Hash))
+      @deployment.deploy_application
+    end
+
+    it 'update deployment status to DEPLOY_COMPLETE when event has deployed without error' do
+      allow(@event).to receive(:sync_fire).with(:deploy, be_a(Hash))
+      @deployment.deploy_application
+      expect(@deployment.status).to eq(:DEPLOY_COMPLETE)
+    end
+
+    it 'update deployment status to ERROR when some error occurred while event' do
+      allow(@event).to receive(:sync_fire).with(:deploy, be_a(Hash)).and_raise
+      @deployment.deploy_application
+      expect(@deployment.status).to eq(:ERROR)
     end
   end
 
