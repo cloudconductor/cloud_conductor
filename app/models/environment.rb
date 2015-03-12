@@ -78,10 +78,17 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def application_status
-    return :NOT_DEPLOYED if deployments.empty?
-    return :ERROR if deployments.any? { |deployment| deployment.status == 'ERROR' }
-    return :PROGRESS if deployments.any? { |deployment| deployment.status == 'PROGRESS' }
-    :DEPLOY_COMPLETE
+    if deployments.empty?
+      :NOT_DEPLOYED
+    elsif deployments.any? { |deployment| deployment.status == 'ERROR' }
+      :ERROR
+    elsif deployments.any? { |deployment| deployment.status == 'PROGRESS' }
+      :PROGRESS
+    elsif deployments.all? { |deployment| deployment.status == 'DEPLOY_COMPLETE' }
+      :DEPLOY_COMPLETE
+    else
+      :ERROR
+    end
   end
 
   def basename

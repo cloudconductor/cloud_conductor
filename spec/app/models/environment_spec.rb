@@ -348,5 +348,13 @@ describe Environment do
       hash = @environment.as_json
       expect(hash['application_status']).to eq(:DEPLOY_COMPLETE)
     end
+
+    it 'contains application_status as :ERROR if deployments have invalid status' do
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRES)
+      FactoryGirl.create(:deployment, environment: @environment, status: :PROGRES)
+      FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
+      hash = @environment.as_json
+      expect(hash['application_status']).to eq(:ERROR)
+    end
   end
 end
