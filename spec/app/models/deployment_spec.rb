@@ -51,6 +51,7 @@ describe Deployment do
 
   describe '#save' do
     it 'create with valid parameters' do
+      allow(@deployment).to receive(:consul_request)
       expect { @deployment.save! }.to change { Deployment.count }.by(1)
     end
 
@@ -69,6 +70,7 @@ describe Deployment do
     end
 
     it 'change status and event when call consul_request' do
+      allow(@deployment).to receive(:deploy_application)
       expect(@deployment.status).to eq(:NOT_DEPLOYED)
 
       @deployment.send(:consul_request)
