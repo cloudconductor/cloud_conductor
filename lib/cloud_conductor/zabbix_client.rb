@@ -135,7 +135,11 @@ module CloudConductor
     end
 
     def operation(environment_id, url)
-      "curl -H \"Content-Type:application/json\" -X POST -d '{\"switch\": \"true\"}' #{url}/#{environment_id}/rebuild"
+      project = Environment.find(environment_id).system.project
+      monitoring_account = project.accounts.where(email: "monitoring@#{project.name}.example.com").first
+
+      parameter = { switch: true, auth_token: monitoring_account.authentication_token }
+      %(curl -H "Content-Type:application/json" -X POST -d '#{parameter.to_json}' #{url}/environments/#{environment_id}/rebuild)
     end
   end
 end

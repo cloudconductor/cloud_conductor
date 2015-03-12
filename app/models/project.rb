@@ -13,9 +13,15 @@ class Project < ActiveRecord::Base
   validates_uniqueness_of :name
 
   before_create :assign_project_administrator
+  before_create :create_monitoring_account
 
   def assign_project_administrator
     assignments.build(account: current_account, role: :administrator) if current_account
+  end
+
+  def create_monitoring_account
+    account = Account.create!(email: "monitoring@#{name}.example.com", name: 'monitoring', password: "#{SecureRandom.hex}")
+    assignments.build(account: account, role: :operator)
   end
 
   def assign_project_member(account, role = :operator)

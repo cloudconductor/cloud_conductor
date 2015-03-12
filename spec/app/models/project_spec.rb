@@ -22,8 +22,8 @@ describe Project do
       FactoryGirl.create(:assignment, project: @project, account: account1)
       FactoryGirl.create(:assignment, project: @project, account: account2)
 
-      expect(@project.assignments.size).to eq(2)
-      expect { @project.destroy }.to change { Assignment.count }.by(-2)
+      expect(@project.assignments.size).to eq(3)
+      expect { @project.destroy }.to change { Assignment.count }.by(-3)
     end
 
     it 'delete all cloud records' do
@@ -62,6 +62,20 @@ describe Project do
 
       @project.name = ''
       expect(@project.valid?).to be_falsey
+    end
+  end
+
+  describe '#create_monitoring_account' do
+    it 'create monitoring account' do
+      expect { @project.create_monitoring_account }.to change { Account.count }.by(1)
+    end
+
+    it 'create assignment for monitoring' do
+      expect(@project.assignments).to be_empty
+      @project.create_monitoring_account
+      expect(@project.assignments).not_to be_empty
+      expect(@project.assignments.first.account).to eq(Account.last)
+      expect(@project.assignments.first.role).to eq('operator')
     end
   end
 end
