@@ -35,6 +35,7 @@ module API
           authorize!(:update, environment)
 
           event_id = environment.event.fire(declared_params[:event])
+          status 202
           { event_id: event_id }
         end
       end
