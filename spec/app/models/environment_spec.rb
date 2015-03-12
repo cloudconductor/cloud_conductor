@@ -260,6 +260,8 @@ describe Environment do
       allow(Timeout).to receive(:timeout) do |_, &block|
         original_timeout.call(0.1, &block)
       end
+
+      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { true })
     end
 
     it 'destroy all stacks of environment' do
