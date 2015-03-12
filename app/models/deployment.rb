@@ -7,6 +7,9 @@ class Deployment < ActiveRecord::Base
   before_save :consul_request
   after_initialize -> { self.status ||= :NOT_DEPLOYED }
   after_find :update_status
+  validate do
+    errors.add(:environment, 'status does not create_complete') if environment && environment.status != :CREATE_COMPLETE
+  end
 
   def consul_request
     if environment.ip_address

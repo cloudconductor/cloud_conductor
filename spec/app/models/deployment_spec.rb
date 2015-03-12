@@ -18,6 +18,7 @@ describe Deployment do
   before do
     @deployment = Deployment.new
     @deployment.environment = environment
+    @deployment.environment.status = :CREATE_COMPLETE
     @deployment.application_history = application_history
 
     @event = double(:event, fire: 1)

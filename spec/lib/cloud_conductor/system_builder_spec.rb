@@ -35,6 +35,7 @@ module CloudConductor
 
     before do
       @environment = environment
+      @environment.status = :CREATE_COMPLETE
       @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
       @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]

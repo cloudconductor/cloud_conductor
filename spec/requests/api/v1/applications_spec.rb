@@ -169,6 +169,7 @@ describe API do
       end
 
       before do
+        environment.update_columns(status: :CREATE_COMPLETE)
         allow_any_instance_of(Deployment).to receive(:consul_request) do |deployment|
           deployment.status = :PENDING
           deployment.event = SecureRandom.uuid
