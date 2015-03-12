@@ -32,7 +32,7 @@ module API
         end
         post '/:id/events' do
           environment = ::Environment.find(declared_params[:id])
-          authorize!(:read, environment)
+          authorize!(:update, environment)
 
           event_id = environment.event.fire(declared_params[:event])
           { event_id: event_id }
