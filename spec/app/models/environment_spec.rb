@@ -316,7 +316,7 @@ describe Environment do
     end
   end
 
-  describe '#stack_destroyed?' do
+  describe '#application_status' do
     it 'contains application_status as :NOT_DEPLOYED if application haven\'t deployed' do
       hash = @environment.as_json
       expect(hash['application_status']).to eq(:NOT_DEPLOYED)
