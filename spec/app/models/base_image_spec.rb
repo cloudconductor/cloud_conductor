@@ -18,6 +18,7 @@ describe BaseImage do
   before do
     aws_images_yml = File.join(Rails.root, 'config/images.yml')
     ami_images = { 'ap-northeast-1' => 'ami-12345678' }
+    allow(YAML).to receive(:load_file).and_call_original
     allow(YAML).to receive(:load_file).with(aws_images_yml).and_return(ami_images)
     @base_image = FactoryGirl.build(:base_image, cloud: cloud)
   end
