@@ -217,6 +217,13 @@ module CloudConductor
           expect(@adapter.send(:convert_name, 'dummy_name-test')).to eq('dummy-name-test')
         end
       end
+
+      describe '#convert_parameters' do
+        it 'convert non-String to String' do
+          parameters = { dummy: 1, sample: 'value' }
+          expect(@adapter.send(:convert_parameters, parameters)).to eq(dummy: '1', sample: 'value')
+        end
+      end
     end
   end
 end
