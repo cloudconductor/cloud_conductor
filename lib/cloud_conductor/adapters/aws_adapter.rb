@@ -30,7 +30,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks.create convert_name(name), template, parameters: parameters
+        cf.stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
       end
 
       def update_stack(name, template, parameters, options = {})
@@ -42,7 +42,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks[convert_name(name)].update(template: template, parameters: parameters)
+        cf.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
       end
 
       def get_stack_status(name, options = {})
@@ -107,6 +107,10 @@ module CloudConductor
 
       def convert_name(name)
         name.gsub('_', '-')
+      end
+
+      def convert_parameters(parameters)
+        parameters.each_with_object({}) { |(key, value), hash| hash[key] = value.to_s }
       end
     end
   end
