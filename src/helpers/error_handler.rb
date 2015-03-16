@@ -5,7 +5,7 @@ module ErrorHandler
     end
     app.error 500 do
       Log.error env['sinatra.error']
-      json message: 'Unexpected error occured. Please contact server administrator.'
+      json message: 'Unexpected error occurred. Please contact server administrator.'
     end
   end
 end

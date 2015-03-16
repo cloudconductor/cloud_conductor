@@ -146,7 +146,7 @@ module CloudConductor
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
-      it 'return successfuly when outputs doesn\'t have FrontendAddress on optional stack' do
+      it 'return successfully when outputs doesn\'t have FrontendAddress on optional stack' do
         allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
         @builder.send(:wait_for_finished, @optional_stack, SystemBuilder::CHECK_PERIOD)
       end

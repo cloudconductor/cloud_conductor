@@ -28,7 +28,7 @@ module CloudConductor
       when 'openstack'
         @adapter = CloudConductor::Adapters::OpenStackAdapter.new
       else
-        fail "Cannnot find #{cloud.type} adapter"
+        fail "Cannot find #{cloud.type} adapter"
       end
     end
 
