@@ -1,6 +1,9 @@
 CHANGELOG
 =========
 
+## version 0.3.5 (2015/03/16)
+  - Update AMI images to latest base image.
+
 ## version 0.3.4 (2015/03/02)
   - Fix version of fog gem to 1.27.x.
   - Fix version of aws-sdk gem to 1.x.
