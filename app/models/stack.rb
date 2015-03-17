@@ -32,9 +32,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     self.status ||= :PENDING
   end
 
-  def client
-    cloud.client
-  end
+  attr_accessor :client
 
   def update_name
     system = environment.system

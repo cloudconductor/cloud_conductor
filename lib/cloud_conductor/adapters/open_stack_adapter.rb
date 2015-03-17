@@ -122,21 +122,26 @@ module CloudConductor
       end
 
       def add_security_rule(name, template, parameters, options = {}) # rubocop:disable MethodLength
-        return if parameters[:SharedSecurityGroup].blank?
-
         options = options.with_indifferent_access
         compute = create_compute(options)
         security_group_ingresses = JSON.parse(template)['Resources'].select do |_, resource|
           resource['Type'] == 'AWS::EC2::SecurityGroupIngress'
         end
+
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
           rule = {
             ip_protocol: properties[:IpProtocol],
             from_port: properties[:FromPort],
-            to_port: properties[:ToPort],
-            parent_group_id: parameters[:SharedSecurityGroup]
+            to_port: properties[:ToPort]
           }.with_indifferent_access
+
+          if properties[:GroupId][:Ref] == 'SharedSecurityGroup' && parameters[:SharedSecurityGroup]
+            rule[:parent_group_id] = parameters[:SharedSecurityGroup]
+          else
+            parent_group_name = "#{name}-#{properties[:GroupId][:Ref]}"
+            rule[:parent_group_id] = get_security_group_id(compute, parent_group_name)
+          end
 
           if properties[:SourceSecurityGroupId]
             security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"

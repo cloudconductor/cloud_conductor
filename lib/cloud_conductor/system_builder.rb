@@ -34,6 +34,7 @@ module CloudConductor
               platforms = @environment.stacks.select(&:pending?).select(&:platform?)
               optionals = @environment.stacks.select(&:pending?).select(&:optional?)
               stack = (platforms + optionals).first
+              stack.client = cloud.client
               stack.cloud = cloud
               stack.status = :READY_FOR_CREATE
               stack.save!
