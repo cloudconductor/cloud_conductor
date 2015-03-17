@@ -48,7 +48,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       stacks.build(
         cloud: primary_cloud,
         pattern: pattern,
-        name: "#{system.name}-#{pattern.name}",
+        name: "#{system.name}-#{id}-#{pattern.name}",
         template_parameters: cfn_parameters_hash.key?(pattern.name) ? JSON.dump(cfn_parameters_hash[pattern.name]) : '{}',
         parameters: user_attributes_hash.key?(pattern.name) ? JSON.dump(user_attributes_hash[pattern.name]) : '{}'
       )

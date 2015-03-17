@@ -71,11 +71,6 @@ describe Stack do
       expect(@stack.valid?).to be_truthy
     end
 
-    it 'return false when name is not unique in Cloud' do
-      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: @stack.cloud)
-      expect(@stack.valid?).to be_falsey
-    end
-
     it 'returns false when environment is unset' do
       @stack.environment = nil
       expect(@stack.valid?).to be_falsey
@@ -117,6 +112,11 @@ describe Stack do
       expect { @stack.save! }.to change { Stack.count }.by(1)
     end
 
+    it 'call #update_name callback' do
+      expect(@stack).to receive(:update_name)
+      @stack.save!
+    end
+
     it 'call #create_stack callback when status is ready_for_create' do
       expect(@stack).to receive(:create_stack)
       @stack.status = :READY_FOR_CREATE
@@ -139,6 +139,14 @@ describe Stack do
       expect(@stack).not_to receive(:update_stack)
       @stack.status = :PENDING
       @stack.save!
+    end
+  end
+
+  describe '#update_name' do
+    it 'call Client#create_stack' do
+      expect(@stack.name).to eq('Test')
+      @stack.update_name
+      expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern.name}")
     end
   end
 
@@ -194,27 +202,9 @@ describe Stack do
       expect(duplicated_stack.parameters).to eq(@stack.parameters)
     end
 
-    it 'duplicate name with uuid to avoid unique constraint' do
-      duplicated_stack = @stack.dup
-      expect(duplicated_stack.name).not_to eq(@stack.name)
-      expect(duplicated_stack.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
-    end
-
     it 'reset status to :PENDING' do
       duplicated_stack = @stack.dup
       expect(duplicated_stack.status).to eq(:PENDING)
-    end
-  end
-
-  describe '#basename' do
-    it 'return name without UUID' do
-      @stack.name = "dummy-#{SecureRandom.uuid}"
-      expect(@stack.basename).to eq('dummy')
-    end
-
-    it 'return original name when name hasn\'t UUID' do
-      @stack.name = 'dummy'
-      expect(@stack.basename).to eq('dummy')
     end
   end
 

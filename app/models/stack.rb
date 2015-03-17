@@ -22,6 +22,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   before_destroy :destroy_stack, unless: -> { pending? }
+  before_save :update_name
   before_save :create_stack, if: -> { ready_for_create? }
   before_save :update_stack, if: -> { ready_for_update? }
 
@@ -33,6 +34,11 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def client
     cloud.client
+  end
+
+  def update_name
+    system = environment.system
+    self.name = "#{system.name}-#{environment.id}-#{pattern.name}"
   end
 
   def create_stack
@@ -79,14 +85,9 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     common_parameters.deep_merge(stack_parameters)
   end
 
-  def basename
-    name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
-  end
-
   def dup
     stack = super
 
-    stack.name = "#{basename}-#{SecureRandom.uuid}"
     stack.status = :PENDING
     stack
   end
