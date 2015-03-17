@@ -33,6 +33,9 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   attr_accessor :client
+  def client
+    @client || cloud.client
+  end
 
   def update_name
     system = environment.system
