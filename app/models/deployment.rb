@@ -22,12 +22,18 @@ class Deployment < ActiveRecord::Base
   def deploy_application
     Thread.new do
       ActiveRecord::Base.connection_pool.with_connection do
+        application_name = application_history.application.name
         begin
+          Log.info "Deploy #{application_name} has started"
+
           environment.event.sync_fire(:deploy, application_history.payload)
           environment.event.sync_fire(:spec)
           update_attributes(status: :DEPLOY_COMPLETE)
+
+          Log.info "Deploy #{application_name} has completed successfully"
         rescue
           update_attributes(status: :ERROR)
+          Log.error "Deploy #{application_name} has failed"
         end
       end
     end
