@@ -376,15 +376,6 @@ module CloudConductor
           @adapter.add_security_rule(@name, @template, @parameters, @options)
         end
 
-        it 'do nothing when SharedSecurityGroup in parameters is blank' do
-          expect(::Fog::Compute).not_to receive(:new)
-          expect(@rules).not_to receive(:new)
-          expect(@rules).not_to receive(:save)
-
-          @parameters = {}
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
-        end
-
         it 'do nothing when AWS::EC2::SecurityGroupIngress in template is blank' do
           expect(@rules).not_to receive(:new)
           expect(@rules).not_to receive(:save)
@@ -411,7 +402,7 @@ module CloudConductor
             ip_protocol: 'tcp',
             from_port: '10050',
             to_port: '10050',
-            parent_group_id: 'dummy_id',
+            parent_group_id: 'dummy_security_group_id',
             group: 'dummy_security_group_id'
           }.with_indifferent_access
           expect(@compute.security_group_rules).to receive(:new).with(rule)
@@ -422,6 +413,7 @@ module CloudConductor
                 "SharedSecurityGroupInboundRule":{
                   "Type":"AWS::EC2::SecurityGroupIngress",
                   "Properties":{
+                    "GroupId":{ "Ref": "DummySourceGroup" },
                     "IpProtocol":"tcp",
                     "FromPort":"10050",
                     "ToPort":"10050",
