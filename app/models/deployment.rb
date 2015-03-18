@@ -31,9 +31,10 @@ class Deployment < ActiveRecord::Base
           update_attributes(status: :DEPLOY_COMPLETE)
 
           Log.info "Deploy #{application_name} has completed successfully"
-        rescue
+        rescue => e
           update_attributes(status: :ERROR)
           Log.error "Deploy #{application_name} has failed"
+          Log.error e.message
         end
       end
     end
