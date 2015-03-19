@@ -1,6 +1,7 @@
 class ApplicationHistory < ActiveRecord::Base
   self.inheritance_column = nil
   belongs_to :application
+  has_many :deployments, dependent: :destroy, inverse_of: :application_history
 
   validates_associated :application
   validates_presence_of :application, :type, :protocol, :url
