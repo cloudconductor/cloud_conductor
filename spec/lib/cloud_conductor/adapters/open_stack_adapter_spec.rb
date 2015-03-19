@@ -322,7 +322,7 @@ module CloudConductor
         end
       end
 
-      describe '#add_security_rule' do
+      describe '#add_security_rules' do
         before do
           @template = <<-EOS
             {
@@ -360,7 +360,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
 
         it 'instantiate a Fog Compute' do
@@ -373,7 +373,7 @@ module CloudConductor
               openstack_tenant: 'dummy_tenant'
             )
 
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
 
         it 'do nothing when AWS::EC2::SecurityGroupIngress in template is blank' do
@@ -381,7 +381,7 @@ module CloudConductor
           expect(@rules).not_to receive(:save)
 
           @template = '{ "Resources": {} }'
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
 
         it 'instantiate a security_group_rules in the case of CidrIp in template' do
@@ -394,7 +394,7 @@ module CloudConductor
           }.with_indifferent_access
           expect(@compute.security_group_rules).to receive(:new).with(rule)
 
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
 
         it 'instantiate a security_group_rules in the case of SourceSecurityGroupId in template' do
@@ -424,13 +424,13 @@ module CloudConductor
               }
             }
           EOS
-          @adapter.add_security_rule(@name, template, @parameters, @options)
+          @adapter.add_security_rules(@name, template, @parameters, @options)
         end
 
         it 'call save to add security rule' do
           expect(@rules).to receive(:save)
 
-          @adapter.add_security_rule(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
       end
 
