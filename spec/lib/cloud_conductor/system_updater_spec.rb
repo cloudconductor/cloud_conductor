@@ -45,6 +45,8 @@ module CloudConductor
       @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment, status: :PENDING)
       @environment.stacks += [@platform_stack, @optional_stack]
       @updater = SystemUpdater.new @environment
+      allow_any_instance_of(Pattern).to receive(:clone_repository)
+      allow_any_instance_of(Stack).to receive(:update_stack)
     end
 
     describe '#initialize' do

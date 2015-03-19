@@ -43,6 +43,7 @@ module CloudConductor
       allow_any_instance_of(Environment).to receive(:destroy_stack)
       allow_any_instance_of(Pattern).to receive(:execute_packer)
       allow_any_instance_of(Pattern).to receive(:clone_repository)
+      allow_any_instance_of(Stack).to receive(:create_stack)
     end
 
     describe '#initialize' do
