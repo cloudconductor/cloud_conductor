@@ -23,7 +23,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     errors.add(:blueprint, 'status does not create_complete') unless blueprint.status == :CREATE_COMPLETE
   end
 
-  before_save :create_or_update_stacks
+  before_save :create_or_update_stacks, if: -> { status == :PENDING }
   before_destroy :destroy_stacks
   after_initialize do
     self.template_parameters ||= '{}'
@@ -69,7 +69,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       else
         new_user_attributes = '{}'
       end
-      stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes)
+      stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes, status: :PENDING)
     end
   end
 

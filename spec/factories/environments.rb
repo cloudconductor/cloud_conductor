@@ -26,7 +26,7 @@ FactoryGirl.define do
     end
 
     after(:create) do
-      Environment.set_callback :save, :before, :create_or_update_stacks
+      Environment.set_callback :save, :before, :create_or_update_stacks, if: -> { status == :PENDING }
     end
   end
 end

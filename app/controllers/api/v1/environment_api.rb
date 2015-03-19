@@ -61,7 +61,7 @@ module API
           environment = ::Environment.find(params[:id])
           authorize!(:update, environment)
 
-          environment.update_attributes!(declared_params.except(:id, :switch))
+          environment.update_attributes!(declared_params.except(:id, :switch).merge(status: :PENDING))
 
           Thread.new do
             CloudConductor::SystemUpdater.new(environment).update
