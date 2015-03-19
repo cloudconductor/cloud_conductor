@@ -43,6 +43,15 @@ module CloudConductor
 
         cf = AWS::CloudFormation.new aws_options
         cf.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
+      rescue => e
+        if e.message == 'No updates are to be performed.'
+          Log.info "Ignore updating stack(#{name})"
+          Log.info e.message
+        else
+          Log.warn "Some error has occurred while updating stack(#{name})"
+          Log.warn e.message
+          raise
+        end
       end
 
       def get_stack_status(name, options = {})
