@@ -14,6 +14,7 @@ class Project < ActiveRecord::Base
 
   before_create :assign_project_administrator
   before_create :create_monitoring_account
+  before_destroy :delete_monitoring_account
 
   def assign_project_administrator
     assignments.build(account: current_account, role: :administrator) if current_account
@@ -22,6 +23,10 @@ class Project < ActiveRecord::Base
   def create_monitoring_account
     account = Account.create!(email: "monitoring@#{name}.example.com", name: 'monitoring', password: "#{SecureRandom.hex}")
     assignments.build(account: account, role: :operator)
+  end
+
+  def delete_monitoring_account
+    Account.where(email: "monitoring@#{name}.example.com").destroy_all
   end
 
   def assign_project_member(account, role = :operator)
