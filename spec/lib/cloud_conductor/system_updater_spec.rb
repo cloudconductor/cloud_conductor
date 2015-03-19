@@ -40,10 +40,9 @@ module CloudConductor
 
     before do
       @environment = environment
-      @environment.status = :CREATE_COMPLETE
       allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment, status: :PENDING)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment, status: :PENDING)
       @environment.stacks += [@platform_stack, @optional_stack]
       @updater = SystemUpdater.new @environment
     end
@@ -169,19 +168,25 @@ module CloudConductor
         @updater.send(:finish_environment)
       end
 
-      it 'won\'t request deploy event to consul when create new environment' do
+      it 'won\'t request deploy event to consul if environment hasn\'t deployment' do
         expect(@event).not_to receive(:sync_fire).with(:deploy, anything, anything)
         @updater.send(:finish_environment)
       end
 
-      it 'will request deploy event to consul when create already deploymented environment' do
+      it 'will request deploy event to consul when create already deployed environment' do
+        @environment.status = :CREATE_COMPLETE
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        @environment.status = :PROGRESS
+
         expect(@event).to receive(:sync_fire).with(:deploy, {}, node: ['sample_node'])
         @updater.send(:finish_environment)
       end
 
       it 'change application history status if deploy event is finished' do
+        @environment.status = :CREATE_COMPLETE
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        @environment.status = :PROGRESS
+
         expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
         @updater.send(:finish_environment)
         expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')

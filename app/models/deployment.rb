@@ -28,7 +28,7 @@ class Deployment < ActiveRecord::Base
 
           environment.event.sync_fire(:deploy, application_history.payload)
           environment.event.sync_fire(:spec)
-          update_attributes(status: :DEPLOY_COMPLETE)
+          update_attributes!(status: :DEPLOY_COMPLETE)
 
           Log.info "Deploy #{application_name} has completed successfully"
         rescue => e

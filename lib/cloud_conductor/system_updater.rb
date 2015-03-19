@@ -119,11 +119,10 @@ module CloudConductor
       end
       @environment.event.sync_fire(:spec)
 
-      @environment.deployments.each do |deployment|
-        deployment.update_attributes(status: 'DEPLOY_COMPLETE')
-      end
-
       @environment.status = :CREATE_COMPLETE
+      @environment.deployments.each do |deployment|
+        deployment.update_attributes!(status: 'DEPLOY_COMPLETE')
+      end
       @environment.save!
     end
 

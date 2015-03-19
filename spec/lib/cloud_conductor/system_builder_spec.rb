@@ -35,7 +35,6 @@ module CloudConductor
 
     before do
       @environment = environment
-      @environment.status = :CREATE_COMPLETE
       @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
       @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]
@@ -195,7 +194,10 @@ module CloudConductor
       end
 
       it 'will request deploy event to consul when create already deploymented environment' do
+        @environment.status = :CREATE_COMPLETE
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        @environment.status = :PROGRESS
+
         expect(@event).to receive(:sync_fire).with(:deploy, {})
         @builder.send(:finish_environment)
       end
@@ -206,7 +208,10 @@ module CloudConductor
       end
 
       it 'change application history status if deploy event is finished' do
+        @environment.status = :CREATE_COMPLETE
         FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
+        @environment.status = :PROGRESS
+
         expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
         @builder.send(:finish_environment)
         expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
@@ -288,6 +293,7 @@ module CloudConductor
       end
 
       it 'return merged payload that contains all deployments' do
+        @environment.status = :CREATE_COMPLETE
         application1 = FactoryGirl.create(:application, name: 'application1')
         application2 = FactoryGirl.create(:application, name: 'application2')
         history1 = FactoryGirl.create(:application_history, application: application1)
@@ -298,6 +304,7 @@ module CloudConductor
         expected_payload = satisfy do |payload|
           expect(payload[:cloudconductor][:applications].keys).to eq(%w(application1 application2))
         end
+        @environment.status = :PROGRESS
 
         expect(@builder.send(:application_payload, @environment)).to expected_payload
       end
