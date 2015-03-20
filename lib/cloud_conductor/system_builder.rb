@@ -130,14 +130,23 @@ module CloudConductor
 
     def reset_stacks
       Log.info 'Reset all stacks.'
+      cloud = next_cloud(@environment.stacks.first.cloud)
+      stacks = @environment.stacks.map(&:dup)
+
       @environment.status = :ERROR
       @environment.ip_address = nil
       @environment.platform_outputs = '{}'
-      stacks = @environment.stacks.map(&:dup)
-      @environment.destroy_stacks
-      @environment.stacks = stacks
-
       @environment.save!
+
+      @environment.destroy_stacks
+
+      return unless cloud
+
+      Log.info "Recreate stacks on next cloud(#{cloud})"
+      stacks.each do |stack|
+        stack.cloud = cloud
+      end
+      @environment.stacks = stacks
     end
 
     private
@@ -162,6 +171,11 @@ module CloudConductor
       return {} if environment.deployments.empty?
 
       environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
+    end
+
+    def next_cloud(current_cloud)
+      index = @clouds.index(current_cloud)
+      @clouds[index + 1]
     end
   end
 end

@@ -74,6 +74,7 @@ describe Environment do
 
   describe '#destroy' do
     before do
+      allow(Thread).to receive(:new).and_yield
       allow(@environment).to receive(:destroy_stacks)
     end
 
@@ -254,7 +255,6 @@ describe Environment do
 
       @environment.save!
 
-      allow(Thread).to receive(:new).and_yield
       allow(@environment).to receive(:sleep)
       allow_any_instance_of(Stack).to receive(:destroy)
 
@@ -272,11 +272,6 @@ describe Environment do
       expect(@environment.stacks).to be_empty
     end
 
-    it 'create other thread to destroy stacks use their dependencies' do
-      expect(Thread).to receive(:new).and_yield
-      @environment.destroy_stacks
-    end
-
     it 'destroy optional patterns before platform' do
       expect(@environment.stacks[0]).to receive(:destroy).ordered
       expect(@environment.stacks[2]).to receive(:destroy).ordered
@@ -288,7 +283,6 @@ describe Environment do
     it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
       allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false })
 
-      expect(@environment).to receive(:sleep).once.ordered
       expect(@environment.stacks[0]).to receive(:destroy).ordered
       expect(@environment.stacks[2]).to receive(:destroy).ordered
       expect(@environment).to receive(:sleep).at_least(:once).ordered
@@ -300,7 +294,6 @@ describe Environment do
     it 'wait and destroy platform pattern when destroyed all optional patterns' do
       allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false }, -> (_) { true })
 
-      expect(@environment).to receive(:sleep).once.ordered
       expect(@environment.stacks[0]).to receive(:destroy).ordered
       expect(@environment.stacks[2]).to receive(:destroy).ordered
       expect(@environment).to receive(:sleep).once.ordered

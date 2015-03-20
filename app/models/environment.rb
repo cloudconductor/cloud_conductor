@@ -24,7 +24,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   before_save :create_or_update_stacks, if: -> { status == :PENDING }
-  before_destroy :destroy_stacks
+  before_destroy do
+    Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        destroy_stacks
+      end
+    end
+  end
+
   after_initialize do
     self.template_parameters ||= '{}'
     self.user_attributes ||= '{}'
@@ -136,20 +143,15 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     optionals = stacks.select(&:optional?)
     stacks.delete_all
 
-    Thread.new do
-      begin
-        sleep 1
-        ActiveRecord::Base.connection_pool.disconnect!
-        optionals.each(&:destroy)
-
-        Timeout.timeout(TIMEOUT) do
-          sleep 10 until optionals.all?(&stack_destroyed?)
-        end
-      rescue Timeout::Error
-        Log.warn "Exceeded timeout while destroying stacks #{optionals}"
-      ensure
-        platforms.each(&:destroy)
+    begin
+      optionals.each(&:destroy)
+      Timeout.timeout(TIMEOUT) do
+        sleep 10 until optionals.all?(&stack_destroyed?)
       end
+    rescue Timeout::Error
+      Log.warn "Exceeded timeout while destroying stacks #{optionals}"
+    ensure
+      platforms.each(&:destroy)
     end
   end
 

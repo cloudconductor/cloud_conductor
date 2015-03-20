@@ -265,6 +265,7 @@ module CloudConductor
       it 'destroy previous stacks and re-create stacks with PENDING status' do
         stack = @environment.stacks.first
         stack.status = :CREATE_COMPLETE
+        stack.cloud = cloud_openstack
         stack.save!
 
         expect { @builder.send(:reset_stacks) }.not_to change { Stack.count }
@@ -273,6 +274,7 @@ module CloudConductor
       end
 
       it 'reset ip_address and platform_outputs in environment' do
+        allow(@builder).to receive(:next_cloud).and_return(nil)
         @environment.ip_address = '127.0.0.1'
         @environment.platform_outputs = '{ "key": "dummy" }'
 
@@ -283,6 +285,7 @@ module CloudConductor
       end
 
       it 'change status of environment to :ERROR when some error occurred' do
+        allow(@builder).to receive(:next_cloud).and_return(nil)
         @builder.send(:reset_stacks)
         expect(@environment.status).to eq(:ERROR)
       end
