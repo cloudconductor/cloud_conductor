@@ -108,6 +108,19 @@ module CloudConductor
         stack.delete if stack
       end
 
+      def destroy_image(name, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        ec2 = AWS::EC2.new aws_options
+        image = ec2.images[name]
+        image.deregister if image.exists?
+      end
+
       def post_process
         @post_processes.each(&:call)
       end

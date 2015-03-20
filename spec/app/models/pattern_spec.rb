@@ -43,6 +43,10 @@ describe Pattern do
   end
 
   describe '#destroy' do
+    before do
+      allow_any_instance_of(Image).to receive(:destroy_image).and_return(true)
+    end
+
     it 'delete pattern record' do
       @pattern.save!
       expect { @pattern.destroy }.to change { Pattern.count }.by(-1)

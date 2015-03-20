@@ -84,6 +84,10 @@ module CloudConductor
       @adapter.destroy_stack name, @cloud.attributes
     end
 
+    def destroy_image(name)
+      @adapter.destroy_image name, @cloud.attributes
+    end
+
     def post_process
       @adapter.post_process
     end

@@ -7,6 +7,7 @@ class Image < ActiveRecord::Base
   validates_presence_of :pattern, :cloud, :base_image, :role
 
   before_save :update_name
+  before_destroy :destroy_image, if: -> { status == :CREATE_COMPLETE }
 
   after_initialize do
     self.status ||= :PROGRESS
@@ -19,5 +20,9 @@ class Image < ActiveRecord::Base
   def update_name
     splitter = '----'
     self.name = "#{base_image.name}#{splitter}#{role.gsub(/\s*,\s*/, '-')}"
+  end
+
+  def destroy_image
+    cloud.client.destroy_image image
   end
 end

@@ -22,6 +22,7 @@ describe Blueprint do
     @blueprint.patterns << pattern
 
     allow(@blueprint).to receive(:set_consul_secret_key)
+    allow_any_instance_of(Image).to receive(:destroy_image).and_return(true)
   end
 
   describe '#save' do

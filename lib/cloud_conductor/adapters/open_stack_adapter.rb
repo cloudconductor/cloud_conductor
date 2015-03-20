@@ -183,6 +183,14 @@ module CloudConductor
         connector.delete_stack name, stack_id
       end
 
+      def destroy_image(name, options = {})
+        options = options.with_indifferent_access
+        compute = create_compute options
+        image = compute.images.get(name)
+
+        image.destroy if image
+      end
+
       def post_process
         @post_processes.each(&:call)
       end

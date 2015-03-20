@@ -148,6 +148,10 @@ describe API do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
 
+      before do
+        allow_any_instance_of(Image).to receive(:destroy_image).and_return(true)
+      end
+
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
