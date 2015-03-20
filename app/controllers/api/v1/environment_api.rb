@@ -41,7 +41,9 @@ module API
             ActiveRecord::Base.connection_pool.with_connection do
               CloudConductor::SystemBuilder.new(environment).build
               system = environment.system
-              system.update_attributes!(primary_environment: environment) unless system.primary_environment
+              if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
+                system.update_attributes!(primary_environment: environment)
+              end
             end
           end
 
