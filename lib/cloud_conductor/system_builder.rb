@@ -86,8 +86,8 @@ module CloudConductor
 
         status = stack.status
 
-        unless %i(CREATE_IN_PROGRESS CREATE_COMPLETE).include? stack.status
-          fail "Unknown error has occurred while create stack(#{stack.status})"
+        unless %i(CREATE_IN_PROGRESS CREATE_COMPLETE).include? status
+          fail "Unknown error has occurred while create stack(#{status})"
         end
 
         next if status == :CREATE_IN_PROGRESS
