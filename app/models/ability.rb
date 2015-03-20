@@ -28,6 +28,9 @@ class Ability
   def default_permissions(account)
     # can :manage, ActiveAdmin::Page
     can [:create], Project
+    can :read, Project do |_|
+      false
+    end
     can [:read, :update], Account, id: account.id
     cannot :update_admin, Account
   end

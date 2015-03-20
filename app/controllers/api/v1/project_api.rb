@@ -5,7 +5,9 @@ module API
         desc 'List projects'
         get '/' do
           authorize!(:read, ::Project)
-          ::Project.all
+          ::Project.all.select do |project|
+            can?(:read, project)
+          end
         end
 
         desc 'Show project'
