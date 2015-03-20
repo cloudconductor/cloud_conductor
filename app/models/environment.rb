@@ -78,13 +78,13 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def application_status
-    if deployments.empty?
+    if latest_deployments.empty?
       :NOT_DEPLOYED
-    elsif deployments.any? { |deployment| deployment.status == 'ERROR' }
+    elsif latest_deployments.any? { |deployment| deployment.status == 'ERROR' }
       :ERROR
-    elsif deployments.any? { |deployment| deployment.status == 'PROGRESS' }
+    elsif latest_deployments.any? { |deployment| deployment.status == 'PROGRESS' }
       :PROGRESS
-    elsif deployments.all? { |deployment| deployment.status == 'DEPLOY_COMPLETE' }
+    elsif latest_deployments.all? { |deployment| deployment.status == 'DEPLOY_COMPLETE' }
       :DEPLOY_COMPLETE
     else
       :ERROR
@@ -150,6 +150,13 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       ensure
         platforms.each(&:destroy)
       end
+    end
+  end
+
+  def latest_deployments
+    deployments_each_application = deployments.group_by { |deployment| deployment.application_history.application_id }.values
+    deployments_each_application.map do |deployments|
+      deployments.sort_by(&:updated_at).last
     end
   end
 

@@ -351,5 +351,41 @@ describe Environment do
       FactoryGirl.create(:deployment, environment: @environment, status: :DEPLOY_COMPLETE)
       expect(@environment.application_status).to eq(:ERROR)
     end
+
+    it 'return :DEPLOY_COMPLETE if latest deployment has succeeded each application' do
+      application1 = FactoryGirl.create(:application)
+      application2 = FactoryGirl.create(:application)
+
+      history1 = FactoryGirl.create(:application_history, application: application1)
+      history2 = FactoryGirl.create(:application_history, application: application2)
+      history3 = FactoryGirl.create(:application_history, application: application1)
+
+      FactoryGirl.create(:deployment, environment: @environment, application_history: history1, status: :ERROR)
+      FactoryGirl.create(:deployment, environment: @environment, application_history: history2, status: :DEPLOY_COMPLETE)
+      FactoryGirl.create(:deployment, environment: @environment, application_history: history3, status: :DEPLOY_COMPLETE)
+
+      expect(@environment.application_status).to eq(:DEPLOY_COMPLETE)
+    end
+  end
+
+  describe '#latest_deployments' do
+    before do
+      @environment.status = :CREATE_COMPLETE
+    end
+
+    it 'return latest deployments each application' do
+      application1 = FactoryGirl.create(:application)
+      application2 = FactoryGirl.create(:application)
+
+      history1 = FactoryGirl.create(:application_history, application: application1)
+      history2 = FactoryGirl.create(:application_history, application: application2)
+      history3 = FactoryGirl.create(:application_history, application: application1)
+
+      _deployment1 = FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
+      deployment2 = FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
+      deployment3 = FactoryGirl.create(:deployment, environment: @environment, application_history: history3)
+
+      expect(@environment.latest_deployments).to match_array([deployment2, deployment3])
+    end
   end
 end
