@@ -158,10 +158,11 @@ module CloudConductor
         @event = double(:event, sync_fire: 1)
         allow(@environment).to receive(:event).and_return(@event)
         allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }, { node: 'sample_node' }]
+        allow(@updater).to receive(:configure_payload).and_return({})
       end
 
       it 'will request configure event to consul' do
-        expect(@event).to receive(:sync_fire).with(:configure)
+        expect(@event).to receive(:sync_fire).with(:configure, {})
         @updater.send(:finish_environment)
       end
 

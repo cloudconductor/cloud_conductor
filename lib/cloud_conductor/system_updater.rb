@@ -81,8 +81,8 @@ module CloudConductor
 
         status = stack.status
 
-        unless %i(UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE).include? stack.status
-          fail "Unknown error has occurred while update stack(#{stack.status})"
+        unless %i(UPDATE_IN_PROGRESS UPDATE_COMPLETE_CLEANUP_IN_PROGRESS UPDATE_COMPLETE CREATE_COMPLETE).include? status
+          fail "Unknown error has occurred while update stack(#{status})"
         end
 
         next if status == :UPDATE_IN_PROGRESS || status == :UPDATE_COMPLETE_CLEANUP_IN_PROGRESS
@@ -111,7 +111,7 @@ module CloudConductor
     end
 
     def finish_environment
-      @environment.event.sync_fire(:configure)
+      @environment.event.sync_fire(:configure, configure_payload(@environment))
       target_node = get_nodes(@environment) - @nodes
       unless target_node.empty?
         @environment.event.sync_fire(:restore, {}, node: target_node)
@@ -127,6 +127,21 @@ module CloudConductor
     end
 
     private
+
+    def configure_payload(environment)
+      payload = {
+        cloudconductor: {
+          patterns: {
+          }
+        }
+      }
+
+      environment.stacks.created.each do |stack|
+        payload[:cloudconductor][:patterns].deep_merge! stack.payload
+      end
+
+      payload
+    end
 
     def get_nodes(environment)
       environment.consul.catalog.nodes.map { |node| node[:node] }
