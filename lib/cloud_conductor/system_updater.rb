@@ -52,7 +52,7 @@ module CloudConductor
           Log.info "Updated all stacks on environment(#{@environment.name}) on #{cloud.name}"
           break
         rescue => e
-          Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
+          Log.warn "Some error has occurred while updating stacks on environment(#{@environment.name}) on #{cloud.name}"
           Log.warn e.message
           @environment.status = :ERROR
           @environment.save!
