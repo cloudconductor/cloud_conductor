@@ -22,7 +22,13 @@ module API
           environment = ::Environment.find(declared_params[:id])
           authorize!(:read, environment)
 
-          environment.event.find(declared_params[:event_id]).as_json(detail: true)
+          event = environment.event.find(declared_params[:event_id])
+          if event
+            event.as_json(detail: true)
+          else
+            status 404
+            { error: "Couldn't find Event with 'event-id'=#{declared_params[:event_id]}" }
+          end
         end
 
         desc 'Fire event'
