@@ -9,7 +9,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :deployments, dependent: :destroy, inverse_of: :environment
   has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
-  # accepts_nested_attributes_for :stacks
 
   attr_accessor :template_parameters, :user_attributes
 
