@@ -40,7 +40,10 @@ module API
           requires :id, type: Integer, desc: 'Blueprint id'
           optional :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
-          optional :patterns_attributes, type: Array, desc: 'Pattern repository url and revision'
+          optional :patterns_attributes, type: Array, desc: 'Pattern repository url and revision' do
+            optional :url, type: String, desc: 'URL of repository that contains pattern'
+            optional :revision, type: String, desc: 'revision of repository'
+          end
         end
         put '/:id' do
           blueprint = ::Blueprint.find(params[:id])
