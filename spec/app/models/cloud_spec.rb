@@ -62,6 +62,11 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
     end
 
+    it 'return true when name is not unique in two Clouds' do
+      FactoryGirl.create(:cloud, :openstack, name: 'Test', project: Project.new(name: 'sample'))
+      expect(@cloud.valid?).to be_truthy
+    end
+
     it 'returns true when name contains hyphen character' do
       @cloud.name = 'sample-name'
       expect(@cloud.valid?).to be_truthy
