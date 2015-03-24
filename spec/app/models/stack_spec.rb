@@ -58,14 +58,6 @@ describe Stack do
       expect(@stack.valid?).to be_truthy
     end
 
-    it 'returns false when name is unset' do
-      @stack.name = nil
-      expect(@stack.valid?).to be_falsey
-
-      @stack.name = ''
-      expect(@stack.valid?).to be_falsey
-    end
-
     it 'return true when name is not unique in two Clouds' do
       FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
@@ -100,6 +92,11 @@ describe Stack do
       @stack.parameters = '{'
       expect(@stack.valid?).to be_falsey
     end
+
+    it 'call #update_name callback' do
+      expect(@stack).to receive(:update_name)
+      @stack.valid?
+    end
   end
 
   describe '#save' do
@@ -110,11 +107,6 @@ describe Stack do
 
     it 'create with valid parameters' do
       expect { @stack.save! }.to change { Stack.count }.by(1)
-    end
-
-    it 'call #update_name callback' do
-      expect(@stack).to receive(:update_name)
-      @stack.save!
     end
 
     it 'call #create_stack callback when status is ready_for_create' do

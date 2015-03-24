@@ -22,7 +22,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   scope :created, -> { where(status: :CREATE_COMPLETE) }
 
   before_destroy :destroy_stack, unless: -> { pending? }
-  before_save :update_name
+  before_validation :update_name
   before_save :create_stack, if: -> { ready_for_create? }
   before_save :update_stack, if: -> { ready_for_update? }
 
@@ -38,6 +38,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def update_name
+    return unless environment && pattern
     system = environment.system
     self.name = "#{system.name}-#{environment.id}-#{pattern.name}"
   end
