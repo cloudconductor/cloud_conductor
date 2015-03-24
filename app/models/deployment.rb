@@ -4,7 +4,9 @@ class Deployment < ActiveRecord::Base
 
   validates_presence_of :environment, :application_history
   validate do
-    errors.add(:environment, 'status does not create_complete') if environment && environment.status != :CREATE_COMPLETE
+    if environment && !%i(PENDING CREATE_COMPLETE).include?(environment.status)
+      errors.add(:environment, 'status does not create_complete')
+    end
   end
 
   before_save :consul_request, if: -> { status == :NOT_DEPLOYED }
