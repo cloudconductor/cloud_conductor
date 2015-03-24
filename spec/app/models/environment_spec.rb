@@ -236,7 +236,6 @@ describe Environment do
       expect(hash['id']).to eq(@environment.id)
       expect(hash['name']).to eq(@environment.name)
       expect(hash['ip_address']).to eq(@environment.ip_address)
-      expect(hash['platform_outputs']).to eq(@environment.platform_outputs)
       expect(hash['status']).to eq(@environment.status)
       expect(hash['application_status']).to eq(@environment.application_status)
     end
