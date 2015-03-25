@@ -436,24 +436,18 @@ module CloudConductor
 
       describe '#destroy_stack' do
         before do
-          @stacks = {
-            stacks: [
-              {
-                stack_name: 'stack_name',
-                id: 'stack_id'
-              }
-            ]
-          }
-          @connector = double(:connector, list_stack_data: { body: @stacks }, delete_stack: nil)
+          @stack = double(:stack, stack_name: 'stack_name')
+          @connector = double(:connector, stacks: [@stack])
           allow(@adapter).to receive(:create_connector).and_return(@connector)
         end
 
         it 'will request delete_stack API' do
-          expect(@connector).to receive(:delete_stack).with('stack_name', :stack_id)
+          expect(@stack).to receive(:delete)
           @adapter.destroy_stack 'stack_name'
         end
 
         it 'doesn\'t raise any error when target stack was already deleted' do
+          expect(@stack).not_to receive(:delete)
           @adapter.destroy_stack 'already_deleted_stack'
         end
       end

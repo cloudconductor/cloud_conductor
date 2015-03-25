@@ -173,14 +173,12 @@ module CloudConductor
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
         connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        if target_stack.nil?
+        stack = connector.stacks.find { |stack| stack.stack_name == name }
+        unless stack
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
         end
-        stack_id = target_stack[:id].to_sym
-        connector.delete_stack name, stack_id
+        stack.delete
       end
 
       def destroy_image(name, options = {})
