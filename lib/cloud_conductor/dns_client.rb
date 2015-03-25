@@ -33,6 +33,10 @@ module CloudConductor
 
     def update(domain, ip_address)
       @client.update(domain, ip_address)
+    rescue => e
+      Log.error('Some error occurred while requesting to DNS')
+      Log.error(e)
+      raise
     end
   end
 

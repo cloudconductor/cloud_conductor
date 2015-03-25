@@ -27,6 +27,10 @@ module CloudConductor
       host_id = register_host(hostgroup_id, system.domain)
       environment_id = system.primary_environment.id
       register_action("FailOver_#{hostname}", host_id, operation(environment_id, CloudConductor::Config.cloudconductor.url))
+    rescue => e
+      Log.error('Some error occurred while requesting to zabbix')
+      Log.error(e)
+      raise
     end
 
     private
