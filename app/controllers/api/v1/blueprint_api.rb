@@ -32,7 +32,9 @@ module API
         end
         post '/' do
           authorize!(:create, ::Blueprint)
-          ::Blueprint.create!(declared_params)
+          blueprint = ::Blueprint.create!(declared_params)
+          status 202
+          blueprint
         end
 
         desc 'Update blueprint'
@@ -49,6 +51,7 @@ module API
           blueprint = ::Blueprint.find(params[:id])
           authorize!(:update, blueprint)
           blueprint.update_attributes!(declared_params)
+          status 202
           blueprint
         end
 

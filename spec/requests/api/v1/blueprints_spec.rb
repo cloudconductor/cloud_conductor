@@ -89,15 +89,15 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('201 Created')
+        it_behaves_like('202 Accepted')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('201 Created')
+        it_behaves_like('202 Accepted')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('201 Created')
+        it_behaves_like('202 Accepted')
       end
     end
 
@@ -132,15 +132,15 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('202 Accepted')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('202 Accepted')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('202 Accepted')
       end
     end
 
