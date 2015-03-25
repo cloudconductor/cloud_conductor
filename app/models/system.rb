@@ -10,6 +10,10 @@ class System < ActiveRecord::Base
   before_save :update_dns, if: -> { primary_environment && domain }
   before_save :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
 
+  after_rollback do
+    primary_environment && primary_environment.update_columns(status: :ERROR)
+  end
+
   def update_dns
     dns_client = CloudConductor::DNSClient.new
     dns_client.update domain, primary_environment.ip_address

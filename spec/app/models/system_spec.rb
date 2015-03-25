@@ -62,6 +62,30 @@ describe System do
       expect(@system).not_to receive(:enable_monitoring)
       @system.save!
     end
+
+    it 'update status of primary environment when some error occurred while request to DNS' do
+      environment.status = :CREATE_COMPLETE
+      environment.save!
+      @system.environments << environment
+      @system.primary_environment = @system.environments.first
+
+      allow(@system).to receive(:update_dns).and_raise
+      expect { @system.save! }.to raise_error
+
+      expect(Environment.find(environment).status).to eq(:ERROR)
+    end
+
+    it 'update status of primary environment when some error occurred while request to monitoring service' do
+      environment.status = :CREATE_COMPLETE
+      environment.save!
+      @system.environments << environment
+      @system.primary_environment = @system.environments.first
+
+      allow(@system).to receive(:enable_monitoring).and_raise
+      expect { @system.save! }.to raise_error
+
+      expect(Environment.find(environment).status).to eq(:ERROR)
+    end
   end
 
   describe '#destroy' do
