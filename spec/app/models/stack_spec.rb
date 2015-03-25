@@ -276,6 +276,8 @@ describe Stack do
       expect(payload.keys).to eq([@stack.pattern.name])
 
       pattern_payload = payload[@stack.pattern.name]
+      expect(pattern_payload.keys).to eq(%i(name type protocol url revision user_attributes config))
+
       expect(pattern_payload[:name]).to eq(@stack.pattern.name)
       expect(pattern_payload[:type]).to eq(@stack.pattern.type.to_s)
       expect(pattern_payload[:protocol]).to eq(@stack.pattern.protocol.to_s)
