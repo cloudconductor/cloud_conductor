@@ -63,7 +63,11 @@ module API
             end
             post '/:id/deploy' do
               authorize!(:create, ::Deployment)
-              Deployment.create!(declared_params)
+              history = ::ApplicationHistory.find(params[:id])
+              authorize!(:read, history)
+              deployment = Deployment.create!(declared_params.merge(application_history_id: history.id))
+              status 202
+              deployment
             end
 
             desc 'Destroy application history'
