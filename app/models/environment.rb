@@ -102,7 +102,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def as_json(options = {})
-    super options.merge(methods: [:status, :application_status], except: :platform_outputs)
+    super({ methods: [:status, :application_status], except: :platform_outputs }.merge(options))
   end
 
   def dup

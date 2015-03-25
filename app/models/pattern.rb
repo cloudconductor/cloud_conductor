@@ -25,7 +25,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def as_json(options = {})
-    super options.merge(methods: :status, except: :parameters)
+    super({ methods: :status, except: :parameters }.merge(options))
   end
 
   def clone_repository

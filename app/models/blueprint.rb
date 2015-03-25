@@ -29,6 +29,6 @@ class Blueprint < ActiveRecord::Base
   end
 
   def as_json(options = {})
-    super(options.merge(except: :consul_secret_key, methods: :status))
+    super({ except: :consul_secret_key, methods: :status }.merge(options))
   end
 end
