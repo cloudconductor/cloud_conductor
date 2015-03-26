@@ -42,12 +42,12 @@ module API
             params do
               requires :id, type: Integer, desc: 'Application history id'
               optional :url, type: String, desc: "Application's git repository or tar.gz url"
-              optional :type, type: String, default: 'dynamic', desc: 'Application type (dynamic or static)'
-              optional :protocol, type: String, default: 'git', desc: 'Application file transferred protocol'
-              optional :revision, type: String, default: 'master', desc: "Application's git repository revision"
+              optional :type, type: String, desc: 'Application type (dynamic or static)'
+              optional :protocol, type: String, desc: 'Application file transferred protocol'
+              optional :revision, type: String, desc: "Application's git repository revision"
               optional :pre_deploy, type: String, desc: 'Shellscript to run before deploy'
               optional :post_deploy, type: String, desc: 'Shellscript to run after deploy'
-              optional :parameters, type: String, default: '{}', desc: 'JSON string to apply additional configuration'
+              optional :parameters, type: String, desc: 'JSON string to apply additional configuration'
             end
             put '/:id' do
               history = ::ApplicationHistory.find(params[:id])
