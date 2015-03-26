@@ -65,7 +65,9 @@ module API
               authorize!(:create, ::Deployment)
               history = ::ApplicationHistory.find(params[:id])
               authorize!(:read, history)
-              deployment = Deployment.create!(declared_params.merge(application_history_id: history.id))
+              environment = ::Environment.find(params[:environment_id])
+              authorize!(:update, environment)
+              deployment = Deployment.create!(application_history: history, environment: environment)
               status 202
               deployment
             end
