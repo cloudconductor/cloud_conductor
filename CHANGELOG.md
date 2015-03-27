@@ -1,6 +1,21 @@
 CHANGELOG
 =========
 
+## version 1.0.0 (2015/03/27)
+
+  - DB schema has been redesigned. This is not compatible with previous versions. Please build a new environment.
+  - Add authentication and authorization features.
+  - Support encrypted path to communicate CloudConductor and builded environment.
+  - Scale-out feature is now available as limited to the part of the pattern.
+  - Migrate from Sinatra to Rails.
+
+## version 0.3.5 (2015/03/16)
+  - Update AMI images to latest base image.
+
+## version 0.3.4 (2015/03/02)
+  - Fix version of fog gem to 1.27.x.
+  - Fix version of aws-sdk gem to 1.x.
+
 ## version 0.3.2 (2014/12/24)
   - Switch from zabbixapi to red-tux/zbxapi to support any versions of Zabbix.
   - Reduce unnecessary logs.

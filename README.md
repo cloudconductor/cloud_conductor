@@ -40,16 +40,16 @@ git clone https://github.com/cloudconductor/cloud_conductor.git
 Install required modules or packages to build CloudConductor
 
 ```bash
-yum -y update
-yum -y install gcc gcc-c++ make openssl-devel libxslt-devel libxml2-devel wget unzip
+sudo yum -y update
+sudo yum -y install git wget unzip gcc gcc-c++ make openssl-devel libxslt-devel libxml2-devel
 ```
 
 Install Packer (Please replace amd64 to 386 in case of working on 32bit operating systems)
 
 ```bash
-mkdir /opt/packer
-wget https://dl.bintray.com/mitchellh/packer/packer_0.7.1_linux_amd64.zip
-unzip packer_0.7.1_linux_amd64.zip -d /opt/packer
+sudo mkdir /opt/packer
+wget https://dl.bintray.com/mitchellh/packer/packer_0.7.5_linux_amd64.zip
+sudo unzip packer_0.7.5_linux_amd64.zip -d /opt/packer
 ```
 
 Clone repository
@@ -61,7 +61,6 @@ git clone https://github.com/cloudconductor/cloud_conductor.git
 Install required gems
 
 ```bash
-gem install bundler
 cd cloud_conductor
 bundle install
 ```
@@ -69,8 +68,8 @@ bundle install
 Initialize configurations and database
 
 ```bash
-$ cp config/config.rb.smp config/config.rb
-$ vi config/config.rb
+cp config/config.rb.smp config/config.rb
+vi config/config.rb
 ----------
 Edit configurations below.
   cloudconductor.url
@@ -83,8 +82,16 @@ Edit configurations below.
 
 Please see Getting Started in CloudConductor Official Website.
 ----------
-$ bundle exec rake db:migrate RAILS_ENV=production
-$ bundle exec rake db:seed RAILS_ENV=production
+secret_key_base=$(bundle exec rake secret)
+sed -i -e "s/secret_key_base: .*/secret_key_base: ${secret_key_base}/g" config/secrets.yml
+sed -i -e "s/# config.secret_key = '.*'/config.secret_key = '${secret_key_base}'/" config/initializers/devise.rb
+bundle exec rake db:migrate RAILS_ENV=production
+bundle exec rake register:admin RAILS_ENV=production
+  Input administrator account information.
+    Email: <your_email_address>
+    Name: <user_name>
+    Password: <password>
+    Password Confirmation: <password>
 ```
 
 ### Run server
