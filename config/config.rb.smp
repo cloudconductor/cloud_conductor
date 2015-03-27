@@ -14,7 +14,7 @@ when :test
 end
 
 # cloudconductor server settings
-cloudconductor.url 'http://your-cloudconductor-server.example.com/systems'
+cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
 
 # cloudconductor_init settings
 cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
@@ -30,7 +30,14 @@ dns.ttl 60
 # dns.key_file '/etc/rndc.key'
 
 # zabbix server settings
+zabbix.enabled false
 zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
 zabbix.user 'Admin'
 zabbix.password 'zabbix'
 zabbix.default_template_name 'Template App HTTP Service'
+
+# consul settings
+consul.port 8501
+consul.options.ssl true
+consul.options.acl true
+consul.options.ssl_options.verify false

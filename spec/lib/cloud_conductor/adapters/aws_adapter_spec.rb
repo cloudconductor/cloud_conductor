@@ -59,7 +59,7 @@ module CloudConductor
         it 'call CloudFormation#create to create stack on aws' do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks) do
             double('stacks').tap do |stacks|
-              expect(stacks).to receive(:create).with('stack_name', '{}', hash_including(parameters: {}))
+              expect(stacks).to receive(:create).with('stack-name', '{}', hash_including(parameters: {}))
             end
           end
 
@@ -93,7 +93,7 @@ module CloudConductor
 
         it 'return stack status via aws-sdk' do
           expect(@stack).to receive(:status).and_return('dummy_status')
-          expect(@stacks).to receive(:[]).with('stack_name').and_return(@stack)
+          expect(@stacks).to receive(:[]).with('stack-name').and_return(@stack)
 
           status = @adapter.get_stack_status 'stack_name', @options
           expect(status).to eq(:dummy_status)
@@ -138,6 +138,40 @@ module CloudConductor
         end
       end
 
+      describe '#get_availability_zones' do
+        before do
+          @availability_zones = [double('availability_zone', name: 'ap-southeast-2a'), double('availability_zone', name: 'ap-southeast-2b')]
+          allow(AWS::EC2).to receive_message_chain(:new, :availability_zones).and_return(@availability_zones)
+
+          @options = {}
+          @options[:key] = '1234567890abcdef'
+          @options[:secret] = 'abcdef1234567890'
+        end
+
+        it 'execute without exception' do
+          @adapter.get_availability_zones @options
+        end
+
+        it 'set credentials for aws-sdk' do
+          @options[:dummy] = 'dummy'
+
+          expect(AWS::EC2).to receive(:new)
+            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
+
+          @adapter.get_availability_zones @options
+        end
+
+        it 'return AvailabilityZone names' do
+          availability_zones = @adapter.get_availability_zones @options
+          expect(availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
+        end
+
+        it 'raise error  when target AvailabilityZones does not exist' do
+          allow(@availability_zones).to receive(:map).and_return nil
+          expect { @adapter.adapter.get_availability_zones @options }.to raise_error
+        end
+      end
+
       describe '#destroy_stack' do
         before do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :delete)
@@ -175,6 +209,19 @@ module CloudConductor
           end
 
           @adapter.destroy_stack 'stack_name', @options
+        end
+      end
+
+      describe '#convert_name' do
+        it 'replace from underscore to hyphen to follow AWS constraint' do
+          expect(@adapter.send(:convert_name, 'dummy_name-test')).to eq('dummy-name-test')
+        end
+      end
+
+      describe '#convert_parameters' do
+        it 'convert non-String to String' do
+          parameters = { dummy: 1, sample: 'value' }
+          expect(@adapter.send(:convert_parameters, parameters)).to eq(dummy: '1', sample: 'value')
         end
       end
     end

@@ -1,48 +1,45 @@
 GIT
   remote: https://github.com/cloudconductor/cfn_converter.git
-  revision: 3280d12798947e57facb3e7d73054ba6d12d567c
-  branch: develop
+  revision: 2e4612ec67f56628de1f87a79cab00fa90e56be3
   specs:
     cfn_converter (0.1.0)
       activesupport (~> 4.1)
-
-GIT
-  remote: https://github.com/sporkrb/spork.git
-  revision: 224df492657e617a0c93c0319e78f0eefee5b636
-  specs:
-    spork (1.0.0rc4)
 
 GEM
   remote: https://rubygems.org/
   specs:
     CFPropertyList (2.3.0)
-    actionpack (4.2.0)
-      actionview (= 4.2.0)
-      activesupport (= 4.2.0)
-      rack (~> 1.6.0)
+    actionmailer (4.1.8)
+      actionpack (= 4.1.8)
+      actionview (= 4.1.8)
+      mail (~> 2.5, >= 2.5.4)
+    actionpack (4.1.8)
+      actionview (= 4.1.8)
+      activesupport (= 4.1.8)
+      rack (~> 1.5.2)
       rack-test (~> 0.6.2)
-      rails-dom-testing (~> 1.0, >= 1.0.5)
-      rails-html-sanitizer (~> 1.0, >= 1.0.1)
-    actionview (4.2.0)
-      activesupport (= 4.2.0)
+    actionview (4.1.8)
+      activesupport (= 4.1.8)
       builder (~> 3.1)
       erubis (~> 2.7.0)
-      rails-dom-testing (~> 1.0, >= 1.0.5)
-      rails-html-sanitizer (~> 1.0, >= 1.0.1)
-    activemodel (4.2.0)
-      activesupport (= 4.2.0)
+    activemodel (4.1.8)
+      activesupport (= 4.1.8)
       builder (~> 3.1)
-    activerecord (4.2.0)
-      activemodel (= 4.2.0)
-      activesupport (= 4.2.0)
-      arel (~> 6.0)
-    activesupport (4.2.0)
-      i18n (~> 0.7)
+    activerecord (4.1.8)
+      activemodel (= 4.1.8)
+      activesupport (= 4.1.8)
+      arel (~> 5.0.0)
+    activerecord-session_store (0.1.1)
+      actionpack (>= 4.0.0, < 5)
+      activerecord (>= 4.0.0, < 5)
+      railties (>= 4.0.0, < 5)
+    activesupport (4.1.8)
+      i18n (~> 0.6, >= 0.6.9)
       json (~> 1.7, >= 1.7.7)
       minitest (~> 5.1)
-      thread_safe (~> 0.3, >= 0.3.4)
+      thread_safe (~> 0.1)
       tzinfo (~> 1.1)
-    arel (6.0.0)
+    arel (5.0.1.20140414130214)
     ast (2.0.0)
     astrolabe (1.3.0)
       parser (>= 2.2.0.pre.3, < 3.0)
@@ -51,7 +48,11 @@ GEM
     aws-sdk-v1 (1.63.0)
       json (~> 1.4)
       nokogiri (>= 1.4.4)
-    backports (3.6.4)
+    axiom-types (0.1.1)
+      descendants_tracker (~> 0.0.4)
+      ice_nine (~> 0.11.0)
+      thread_safe (~> 0.3, >= 0.3.1)
+    bcrypt (3.1.10)
     binding_of_caller (0.7.2)
       debug_inspector (>= 0.0.1)
     builder (3.2.2)
@@ -59,27 +60,43 @@ GEM
       columnize (~> 0.8)
       debugger-linecache (~> 1.2)
       slop (~> 3.6)
+    cancancan (1.10.1)
     celluloid (0.16.0)
       timers (~> 4.0.0)
-    childprocess (0.5.5)
-      ffi (~> 1.0, >= 1.0.11)
     coderay (1.1.0)
+    coercible (1.0.0)
+      descendants_tracker (~> 0.0.1)
     columnize (0.9.0)
     database_cleaner (1.4.0)
     debug_inspector (0.0.2)
     debugger-linecache (1.2.0)
+    descendants_tracker (0.0.4)
+      thread_safe (~> 0.3, >= 0.3.1)
+    devise (3.4.1)
+      bcrypt (~> 3.0)
+      orm_adapter (~> 0.1)
+      railties (>= 3.2.6, < 5)
+      responders
+      thread_safe (~> 0.1)
+      warden (~> 1.2.3)
+    devise-token_authenticatable (0.3.0)
+      devise (~> 3.4.0)
     diff-lcs (1.2.5)
     docile (1.1.5)
+    equalizer (0.0.9)
     erubis (2.7.0)
-    excon (0.44.3)
+    excon (0.44.4)
     factory_girl (4.5.0)
       activesupport (>= 3.0.0)
+    factory_girl_rails (4.5.0)
+      factory_girl (~> 4.5.0)
+      railties (>= 3.0.0)
     faraday (0.9.1)
       multipart-post (>= 1.2, < 3)
     ffi (1.9.6)
     fission (0.5.0)
       CFPropertyList (~> 2.2)
-    fog (1.27.0)
+    fog (1.28.0)
       fog-atmos
       fog-aws (~> 0.0)
       fog-brightbox (~> 0.4)
@@ -88,6 +105,7 @@ GEM
       fog-json
       fog-profitbricks
       fog-radosgw (>= 0.0.2)
+      fog-riakcs
       fog-sakuracloud (>= 0.0.4)
       fog-serverlove
       fog-softlayer
@@ -130,6 +148,10 @@ GEM
       fog-core (>= 1.21.0)
       fog-json
       fog-xml (>= 0.0.1)
+    fog-riakcs (0.1.0)
+      fog-core
+      fog-json
+      fog-xml
     fog-sakuracloud (1.0.0)
       fog-core
       fog-json
@@ -155,6 +177,16 @@ GEM
       fog-core
       nokogiri (~> 1.5, >= 1.5.11)
     formatador (0.2.5)
+    grape (0.11.0)
+      activesupport
+      builder
+      hashie (>= 2.1.0)
+      multi_json (>= 1.3.2)
+      multi_xml (>= 0.5.2)
+      rack (>= 1.3.0)
+      rack-accept
+      rack-mount
+      virtus (>= 1.0.0)
     guard (2.12.4)
       formatador (>= 0.2.4)
       listen (~> 2.7)
@@ -172,41 +204,43 @@ GEM
     guard-rubocop (1.2.0)
       guard (~> 2.0)
       rubocop (~> 0.20)
-    guard-spork (2.1.0)
-      childprocess (>= 0.2.3)
-      guard (~> 2.0)
-      guard-compat (~> 1.0)
-      spork (>= 0.8.4)
+    hashie (3.4.0)
+    hike (1.2.3)
     hitimes (1.2.2)
     i18n (0.7.0)
+    ice_nine (0.11.1)
     inflecto (0.0.2)
     ipaddress (0.8.0)
     json (1.8.2)
+    json_expressions (0.8.3)
     kgio (2.9.3)
     listen (2.8.5)
       celluloid (>= 0.15.2)
       rb-fsevent (>= 0.9.3)
       rb-inotify (>= 0.9)
-    loofah (2.0.1)
-      nokogiri (>= 1.5.9)
     lumberjack (1.0.9)
+    mail (2.6.3)
+      mime-types (>= 1.16, < 3)
     method_source (0.8.2)
     mime-types (2.4.3)
     mini_portile (0.6.2)
     minitest (5.5.1)
     mixlib-config (2.1.0)
     mixlib-log (1.6.0)
-    multi_json (1.10.1)
+    multi_json (1.11.0)
+    multi_xml (0.5.5)
     multipart-post (2.0.0)
     nenv (0.2.0)
     net-scp (1.2.1)
       net-ssh (>= 2.6.5)
     net-ssh (2.9.2)
+    netaddr (1.5.0)
     nokogiri (1.6.6.2)
       mini_portile (~> 0.6.0)
     notiffany (0.0.6)
       nenv (~> 0.1)
       shellany (~> 0.0)
+    orm_adapter (0.5.0)
     parser (2.2.0.3)
       ast (>= 1.1, < 3.0)
     powerpack (0.1.0)
@@ -220,24 +254,33 @@ GEM
     pry-doc (0.6.0)
       pry (~> 0.9)
       yard (~> 0.8)
+    pry-rails (0.3.3)
+      pry (>= 0.9.10)
     pry-stack_explorer (0.4.9.2)
       binding_of_caller (>= 0.7)
       pry (>= 0.9.11)
-    rack (1.6.0)
-    rack-parser (0.6.1)
-      rack
-    rack-protection (1.5.3)
-      rack
+    rack (1.5.2)
+    rack-accept (0.4.5)
+      rack (>= 0.4)
+    rack-mount (0.8.3)
+      rack (>= 1.0.0)
     rack-test (0.6.3)
       rack (>= 1.0)
-    rails-deprecated_sanitizer (1.0.3)
-      activesupport (>= 4.2.0.alpha)
-    rails-dom-testing (1.0.5)
-      activesupport (>= 4.2.0.beta, < 5.0)
-      nokogiri (~> 1.6.0)
-      rails-deprecated_sanitizer (>= 1.0.1)
-    rails-html-sanitizer (1.0.1)
-      loofah (~> 2.0)
+    rails (4.1.8)
+      actionmailer (= 4.1.8)
+      actionpack (= 4.1.8)
+      actionview (= 4.1.8)
+      activemodel (= 4.1.8)
+      activerecord (= 4.1.8)
+      activesupport (= 4.1.8)
+      bundler (>= 1.3.0, < 2.0)
+      railties (= 4.1.8)
+      sprockets-rails (~> 2.0)
+    railties (4.1.8)
+      actionpack (= 4.1.8)
+      activesupport (= 4.1.8)
+      rake (>= 0.8.7)
+      thor (>= 0.18.1, < 2.0)
     rainbow (2.0.0)
     raindrops (0.13.0)
     rake (10.4.2)
@@ -245,6 +288,8 @@ GEM
     rb-inotify (0.9.5)
       ffi (>= 0.5.0)
     rb-readline (0.5.2)
+    responders (1.1.2)
+      railties (>= 3.2, < 4.2)
     rspec (3.2.0)
       rspec-core (~> 3.2.0)
       rspec-expectations (~> 3.2.0)
@@ -257,12 +302,20 @@ GEM
     rspec-mocks (3.2.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.2.0)
+    rspec-rails (3.2.1)
+      actionpack (>= 3.0, < 4.3)
+      activesupport (>= 3.0, < 4.3)
+      railties (>= 3.0, < 4.3)
+      rspec-core (~> 3.2.0)
+      rspec-expectations (~> 3.2.0)
+      rspec-mocks (~> 3.2.0)
+      rspec-support (~> 3.2.0)
     rspec-support (3.2.2)
     rspec_junit_formatter (0.2.0)
       builder (< 4)
       rspec (>= 2, < 4)
       rspec-core (!= 2.12.0)
-    rubocop (0.28.0)
+    rubocop (0.29.1)
       astrolabe (~> 1.3)
       parser (>= 2.2.0.1, < 3.0)
       powerpack (~> 0.1)
@@ -277,21 +330,19 @@ GEM
     simplecov-html (0.9.0)
     simplecov-rcov (0.2.3)
       simplecov (>= 0.4.1)
-    sinatra (1.4.5)
-      rack (~> 1.4)
-      rack-protection (~> 1.4)
-      tilt (~> 1.3, >= 1.3.4)
-    sinatra-activerecord (2.0.5)
-      activerecord (>= 3.2)
-      sinatra (~> 1.0)
-    sinatra-contrib (1.4.2)
-      backports (>= 2.0)
-      multi_json
-      rack-protection
-      rack-test
-      sinatra (~> 1.4.0)
-      tilt (~> 1.3)
     slop (3.6.0)
+    spring (1.3.3)
+    spring-commands-rspec (1.0.4)
+      spring (>= 0.9.1)
+    sprockets (2.12.3)
+      hike (~> 1.2)
+      multi_json (~> 1.0)
+      rack (~> 1.0)
+      tilt (~> 1.1, != 1.3.0)
+    sprockets-rails (2.2.4)
+      actionpack (>= 3.0)
+      activesupport (>= 3.0)
+      sprockets (>= 2.8, < 4.0)
     sqlite3 (1.3.10)
     systemu (2.6.4)
     thor (0.19.1)
@@ -305,6 +356,13 @@ GEM
       kgio (~> 2.6)
       rack
       raindrops (~> 0.7)
+    virtus (1.0.4)
+      axiom-types (~> 0.1)
+      coercible (~> 1.0)
+      descendants_tracker (~> 0.0, >= 0.0.3)
+      equalizer (~> 0.0, >= 0.0.9)
+    warden (1.2.3)
+      rack (>= 1.0)
     yard (0.8.7.6)
     zbxapi (0.3.8)
       json
@@ -313,38 +371,40 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  actionpack
-  activerecord
-  activesupport
+  activerecord-session_store
   aws-sdk (~> 1.0)
+  binding_of_caller
   byebug
+  cancancan
   cfn_converter!
   database_cleaner
-  factory_girl
+  devise
+  devise-token_authenticatable
+  factory_girl_rails
   faraday
-  fog (~> 1.27.0)
+  fog
+  grape
   guard
   guard-rspec
   guard-rubocop
-  guard-spork (~> 2)
+  json_expressions
   mixlib-config
   mixlib-log
+  netaddr
   pry-byebug
   pry-doc
+  pry-rails
   pry-stack_explorer
-  rack
-  rack-parser
-  rake
+  rails (= 4.1.8)
   rb-readline
   rspec
   rspec-mocks
+  rspec-rails
   rspec_junit_formatter
   simplecov
   simplecov-rcov
-  sinatra
-  sinatra-activerecord
-  sinatra-contrib
-  spork!
+  spring
+  spring-commands-rspec
   sqlite3
   systemu
   unicorn

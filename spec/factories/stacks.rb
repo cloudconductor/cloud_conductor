@@ -14,21 +14,22 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :stack, class: Stack do
-    system { create(:system) }
-    pattern { create(:pattern) }
-    cloud { create(:cloud_aws) }
+    environment { create(:environment) }
+    pattern { create(:pattern, :platform) }
+    cloud { create(:cloud, :aws) }
 
     sequence(:name) { |n| "stack-#{n}" }
     template_parameters '{}'
     parameters '{ "dummy": "value" }'
-    status nil
 
     before(:create) do
       Stack.skip_callback :save, :before, :create_stack
+      Stack.skip_callback :save, :before, :update_stack
     end
 
     after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready? }
+      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
+      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
     end
   end
 end

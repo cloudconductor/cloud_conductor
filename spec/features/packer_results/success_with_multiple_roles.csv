@@ -1,0 +1,25 @@
+1425966019,,ui,message,    aws-centos----web-ap: + sync
+1425966020,,ui,say,==> aws-centos----web-ap: Stopping the source instance...
+1425966020,,ui,say,==> aws-centos----web-ap: Waiting for the instance to stop...
+1425966043,,ui,say,==> aws-centos----web-ap: Creating the AMI: tomcat_cluster_pattern-web-ap-centos-54fe8228-31aa-7c64-4459-73d978df69aa
+1425966043,,ui,message,    aws-centos----web-ap: AMI: ami-77df3833
+1425966043,,ui,say,==> aws-centos----web-ap: Waiting for AMI to become ready...
+1425966247,,ui,say,==> aws-centos----web-ap: Adding tags to AMI (ami-77df3833)...
+1425966247,,ui,message,    aws-centos----web-ap: Adding tag: "Name": "tomcat_cluster_pattern-web-ap-centos"
+1425966247,,ui,say,==> aws-centos----web-ap: Terminating the source AWS instance...
+1425966253,,ui,say,==> aws-centos----web-ap: Deleting temporary security group...
+1425966254,,ui,say,==> aws-centos----web-ap: Deleting temporary keypair...
+1425966254,,ui,say,Build 'aws-centos----web-ap' finished.
+1425966254,,ui,say,\n==> Builds finished. The artifacts of successful builds are:
+1425966254,aws-centos----web-ap,artifact-count,1
+1425966254,aws-centos----web-ap,artifact,0,builder-id,mitchellh.amazonebs
+1425966254,aws-centos----web-ap,artifact,0,id,us-west-1:ami-77df3833
+1425966254,aws-centos----web-ap,artifact,0,string,AMIs were created:\n\nus-west-1: ami-77df3833
+1425966254,aws-centos----web-ap,artifact,0,files-count,0
+1425966254,aws-centos----web-ap,artifact,0,end
+1425966254,,ui,say,--> aws-centos----web-ap: AMIs were created:\n\nus-west-1: ami-77df3833
+
+[2015-03-10T05:44:14.200+00:00] DEBUG -- (CloudConductor::PackerClient.block in build:50): -------------stderr------------
+[2015-03-10T05:44:14.200+00:00] DEBUG -- (CloudConductor::PackerClient.block in build:51):
+[2015-03-10T05:44:14.200+00:00]  INFO -- Packer finished in #<Thread:0x007f26619fa040> (Elapsed time: 647.286929418 sec)
+[2015-03-10T05:48:09.354+00:00] DEBUG -- (CloudConductor::PackerClient.block in build:48): --------------stdout------------

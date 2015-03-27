@@ -14,152 +14,132 @@
 # limitations under the License.
 module CloudConductor
   describe Client do
+    include_context 'default_resources'
+
+    before do
+      allow_any_instance_of(Adapters::AWSAdapter).to receive(:get_availability_zones).and_return(['ap-southeast-2a'])
+      allow_any_instance_of(Adapters::OpenStackAdapter).to receive(:get_availability_zones).and_return(['nova'])
+      allow_any_instance_of(Adapters::DummyAdapter).to receive(:get_availability_zones).and_return(['dummy'])
+      allow(CloudConductor::Converter::Duplicators).to receive(:increase_instance).and_return('{ "dummy": "dummy_value" }')
+      allow(CloudConductor::Converter).to receive_message_chain(:new, :update_cluster_addresses).and_return('{ "dummy": "dummy_value" }')
+      @client = Client.new cloud
+    end
+
     describe '#new' do
       it 'returns initialized client with aws adapter' do
-        cloud_aws = FactoryGirl.create(:cloud_aws)
+        cloud_aws = FactoryGirl.create(:cloud, :aws)
         client = Client.new cloud_aws
-        expect(client.type).to eq(:aws)
+        expect(client.type).to eq('aws')
         expect(client.adapter.class).to eq(Adapters::AWSAdapter)
       end
 
       it 'returns initialized client with openstack adapter' do
-        cloud_openstack = FactoryGirl.create(:cloud_openstack)
+        cloud_openstack = FactoryGirl.create(:cloud, :openstack)
         client = Client.new cloud_openstack
-        expect(client.type).to eq(:openstack)
+        expect(client.type).to eq('openstack')
         expect(client.adapter.class).to eq(Adapters::OpenStackAdapter)
       end
     end
 
     describe '#create_stack' do
       before do
-        @name = 'stack_name'
-        @cloud = FactoryGirl.create(:cloud_aws)
-        @operating_system = FactoryGirl.create(:operating_system, name: 'centos')
-        @pattern = FactoryGirl.create(:pattern)
-
-        @parameters = {}
-        @client = Client.new @cloud
-
-        path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-        allow(@pattern).to receive(:clone_repository).and_yield(path)
-        @pattern.images << FactoryGirl.create(:image, cloud: @cloud, operating_system: @operating_system)
-
-        @template_content = '{ "dummy": "dummy_value" }'
-        allow(@client).to receive_message_chain(:open, :read).and_return(@template_content)
-
-        allow_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
+        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
-          .with(kind_of(String), anything, kind_of(Hash), kind_of(Hash))
-
-        @client.create_stack @name, @pattern, @parameters
+        expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
+        @client.create_stack 'stack_name', pattern, {}
       end
 
-      it 'will clone repository' do
-        path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-        expect(@pattern).to receive(:clone_repository).and_yield(path)
-
-        @client.create_stack @name, @pattern, @parameters
-      end
-
-      it 'will load template.json in repository' do
-        path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}/template\.json}
-
-        expect(@client).to receive(:open).with(path_pattern) do
-          double('file').tap do |stub|
-            expect(stub).to receive(:read).and_return('{}')
-          end
-        end
-
-        @client.create_stack @name, @pattern, @parameters
-      end
-
-      it 'will get images to suit conditions that has been registered in pattern' do
-        @client.create_stack @name, @pattern, @parameters
-        result = @parameters.select { |key, _| !key.to_s.match(/[a-z0-9_]*ImageId/).nil? }
-        expect(result.size).to eq(1)
-      end
-
-      it 'remove operating_system from parameter-hash' do
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, hash_excluding(:operating_system), anything)
-
-        client = Client.new @cloud
-        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+      it 'call adapter#create_stack with template.json in repository' do
+        expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
-        @pattern.images << FactoryGirl.create(:image, cloud: @cloud, operating_system: @operating_system)
-
+        image1 = pattern.images.first
+        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
         expected_parameters = satisfy do |parameters|
-          @pattern.images.all? do |image|
-            parameters["#{image.role}ImageId"] == image.image
-          end
+          expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
+
+          expect(parameters["#{image1.role.camelize}ImageId"]).to eq(image1.image)
+          expect(parameters["#{image2.role.camelize}ImageId"]).to eq(image2.image)
         end
 
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
-
-        client = Client.new @cloud
-        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        image = @pattern.images.first
-        image.role = 'web, ap, db'
-        image.save!
+        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
+        expected_parameters = satisfy do |parameters|
+          expect(parameters.keys).to be_include('WebApDbImageId')
+        end
 
-        expected_parameters = hash_including('webapdbImageId' => image.image)
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        @client.create_stack 'stack_name', pattern, {}
+      end
+    end
 
-        client = Client.new @cloud
-        allow(client).to receive_message_chain(:open, :read).and_return(@template_content)
-        client.create_stack @name, @pattern, @parameters
+    describe '#update_stack' do
+      before do
+        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
       end
 
-      it 'will call create_stack with content of template.json' do
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:create_stack)
-          .with(anything, @template_content, anything, anything)
+      it 'call adapter#update_stack with same arguments without pattern' do
+        expect(@client.adapter).to receive(:update_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
+        @client.update_stack 'stack_name', pattern, {}
+      end
 
-        @client.create_stack @name, @pattern, @parameters
+      it 'call adapter#update_stack with template.json in repository' do
+        expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
+        @client.update_stack 'stack_name', pattern, {}
+      end
+
+      it 'add ImageId/Image pair to parameter-hash' do
+        image1 = pattern.images.first
+        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        expected_parameters = satisfy do |parameters|
+          expect(parameters.keys.count { |key| key.match(/[a-zA-Z0-9_]*ImageId/) }).to eq(2)
+          expect(parameters["#{image1.role.camelize}ImageId"]).to eq(image1.image)
+          expect(parameters["#{image2.role.camelize}ImageId"]).to eq(image2.image)
+        end
+
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        @client.update_stack 'stack_name', pattern, {}
+      end
+
+      it 'use key of ImageId that remove special characters from image.role' do
+        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
+        expected_parameters = satisfy do |parameters|
+          expect(parameters.keys).to be_include('WebApDbImageId')
+        end
+
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        @client.update_stack 'stack_name', pattern, {}
       end
     end
 
     describe '#get_stack_status' do
       it 'call adapter#get_stack_status with same arguments' do
-        name = 'stack_name'
-
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:get_stack_status)
-          .with(kind_of(String), kind_of(Hash))
-
-        client = Client.new FactoryGirl.create(:cloud_aws)
-        client.get_stack_status name
+        expect(@client.adapter).to receive(:get_stack_status).with('stack_name', kind_of(Hash))
+        @client.get_stack_status 'stack_name'
       end
     end
 
     describe '#get_outputs' do
       it 'call adapter#get_outputs with same arguments' do
-        name = 'stack_name'
-
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:get_outputs)
-          .with(kind_of(String), kind_of(Hash))
-
-        client = Client.new FactoryGirl.create(:cloud_aws)
-        client.get_outputs name
+        expect(@client.adapter).to receive(:get_outputs).with('stack_name', kind_of(Hash))
+        @client.get_outputs 'stack_name'
       end
     end
 
     describe '#destroy_stack' do
       it 'call adapter#destroy_stack with same arguments' do
-        name = 'stack_name'
-
-        expect_any_instance_of(Adapters::AWSAdapter).to receive(:destroy_stack)
-          .with(kind_of(String), kind_of(Hash))
-
-        client = Client.new FactoryGirl.create(:cloud_aws)
-        client.destroy_stack name
+        expect(@client.adapter).to receive(:destroy_stack).with('stack_name', kind_of(Hash))
+        @client.destroy_stack 'stack_name'
       end
     end
   end

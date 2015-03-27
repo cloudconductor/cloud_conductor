@@ -30,7 +30,28 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks.create name, template, parameters: parameters
+        cf.stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
+      end
+
+      def update_stack(name, template, parameters, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        cf = AWS::CloudFormation.new aws_options
+        cf.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
+      rescue => e
+        if e.message == 'No updates are to be performed.'
+          Log.info "Ignore updating stack(#{name})"
+          Log.info e.message
+        else
+          Log.warn "Some error has occurred while updating stack(#{name})"
+          Log.warn e.message
+          raise
+        end
       end
 
       def get_stack_status(name, options = {})
@@ -42,7 +63,7 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        cf.stacks[name].status.to_sym
+        cf.stacks[convert_name(name)].status.to_sym
       end
 
       def get_outputs(name, options = {})
@@ -55,11 +76,23 @@ module CloudConductor
 
         cf = AWS::CloudFormation.new aws_options
         outputs = {}
-        cf.stacks[name].outputs.each do |output|
+        cf.stacks[convert_name(name)].outputs.each do |output|
           outputs[output.key] = output.value
         end
 
         outputs
+      end
+
+      def get_availability_zones(options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        ec2 = AWS::EC2.new aws_options
+        ec2.availability_zones.map(&:name)
       end
 
       def destroy_stack(name, options = {})
@@ -71,12 +104,35 @@ module CloudConductor
         aws_options[:region] = options[:entry_point] if options[:entry_point]
 
         cf = AWS::CloudFormation.new aws_options
-        stack = cf.stacks[name]
+        stack = cf.stacks[convert_name(name)]
         stack.delete if stack
+      end
+
+      def destroy_image(name, options = {})
+        options = options.with_indifferent_access
+
+        aws_options = {}
+        aws_options[:access_key_id] = options[:key]
+        aws_options[:secret_access_key] = options[:secret]
+        aws_options[:region] = options[:entry_point] if options[:entry_point]
+
+        ec2 = AWS::EC2.new aws_options
+        image = ec2.images[name]
+        image.deregister if image.exists?
       end
 
       def post_process
         @post_processes.each(&:call)
+      end
+
+      private
+
+      def convert_name(name)
+        name.gsub('_', '-')
+      end
+
+      def convert_parameters(parameters)
+        parameters.each_with_object({}) { |(key, value), hash| hash[key] = value.to_s }
       end
     end
   end

@@ -14,21 +14,20 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :system, class: System do
+    project
     sequence(:name) { |n| "system-#{n}" }
     domain 'example.com'
-    template_parameters '{ "dummy": "value" }'
+    description 'sample system'
+    primary_environment_id nil
 
-    before(:create) do |system|
-      System.skip_callback :save, :before, :enable_monitoring
+    before(:create) do
       System.skip_callback :save, :before, :update_dns
-
-      system.add_cloud create(:cloud_aws), 1
-      system.add_cloud create(:cloud_openstack), 2
+      System.skip_callback :save, :before, :enable_monitoring
     end
 
     after(:create) do
-      System.set_callback :save, :before, :enable_monitoring, if: -> { monitoring_host_changed? }
-      System.set_callback :save, :before, :update_dns, if: -> { ip_address }
+      System.set_callback :save, :before, :update_dns, if: -> { primary_environment && domain }
+      System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
     end
   end
 end

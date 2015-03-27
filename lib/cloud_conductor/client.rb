@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'cloud_conductor/adapters'
+require 'cloud_conductor/converter'
 
 module CloudConductor
   class Client
@@ -21,20 +22,14 @@ module CloudConductor
     def initialize(cloud)
       @cloud = cloud
       @type = cloud.type
-
-      # load adapters
-      if Adapters.constants.empty?
-        Dir.glob(File.expand_path('./adapters/*.rb', File.dirname(__FILE__))) do |file|
-          require file
-        end
+      case cloud.type
+      when 'aws'
+        @adapter = CloudConductor::Adapters::AWSAdapter.new
+      when 'openstack'
+        @adapter = CloudConductor::Adapters::OpenStackAdapter.new
+      else
+        fail "Cannot find #{cloud.type} adapter"
       end
-
-      adapter_name = Adapters.constants.find do |klass_name|
-        klass = Adapters.const_get(klass_name)
-        klass.const_get(:TYPE) == @type if klass.constants.include? :TYPE
-      end
-
-      @adapter = Adapters.const_get(adapter_name).new
     end
 
     def create_stack(name, pattern, parameters)
@@ -43,15 +38,38 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      operating_system = OperatingSystem.where(name: 'centos')
-      images = pattern.images.where(cloud: @cloud, operating_system: operating_system)
-      fail 'Appropriate image does not exist' if images.empty?
+      az_list = @adapter.get_availability_zones @cloud.attributes
+      template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
+      template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
+
+      images = pattern.images.where(cloud: @cloud)
 
       images.each do |image|
-        parameters["#{image.role.gsub(/\s*,\s*/, '')}ImageId"] = image.image
+        camelized_roles = image.role.split(/\s*,\s*/).map(&:camelize).join
+        parameters["#{camelized_roles}ImageId"] = image.image
       end
 
       @adapter.create_stack name, template, parameters, @cloud.attributes
+    end
+
+    def update_stack(name, pattern, parameters)
+      template = ''
+      pattern.clone_repository do |path|
+        template = open(File.expand_path('template.json', path)).read
+      end
+
+      az_list = @adapter.get_availability_zones @cloud.attributes
+      template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
+      template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
+
+      images = pattern.images.where(cloud: @cloud)
+
+      images.each do |image|
+        camelized_roles = image.role.split(/\s*,\s*/).map(&:camelize).join
+        parameters["#{camelized_roles}ImageId"] = image.image
+      end
+
+      @adapter.update_stack name, template, parameters, @cloud.attributes
     end
 
     def get_stack_status(name)
@@ -64,6 +82,10 @@ module CloudConductor
 
     def destroy_stack(name)
       @adapter.destroy_stack name, @cloud.attributes
+    end
+
+    def destroy_image(name)
+      @adapter.destroy_image name, @cloud.attributes
     end
 
     def post_process

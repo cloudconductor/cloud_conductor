@@ -38,31 +38,16 @@ module CloudConductor
         it 'execute without exception' do
           @adapter.create_stack 'stack_name', '{}', {}, {}
         end
-
-        it 'output log' do
-          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.create_stack')
-          @adapter.create_stack 'stack_name', '{}', {}, {}
-        end
       end
 
       describe '#get_stack_status' do
         it 'execute without exception' do
           @adapter.get_stack_status 'stack_name', {}
         end
-
-        it 'output log' do
-          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.get_stack_status')
-          @adapter.get_stack_status 'stack_name', {}
-        end
       end
 
       describe '#destroy_stack' do
         it 'execute without exception' do
-          @adapter.destroy_stack 'stack_name', {}
-        end
-
-        it 'output log' do
-          expect(Log).to receive(:debug).with('Starting method CloudConductor::Adapters::DummyAdapter.destroy_stack')
           @adapter.destroy_stack 'stack_name', {}
         end
       end

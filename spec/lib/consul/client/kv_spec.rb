@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 module Consul
-  module Client
+  class Client
     describe KV do
       before do
         @stubs  = Faraday::Adapter::Test::Stubs.new
@@ -26,7 +26,8 @@ module Consul
           end
         end
 
-        @client = KV.new host: 'localhost'
+        @faraday = Faraday.new('http://localhost/v1')
+        @client = KV.new @faraday, token: 'dummy_token'
       end
 
       describe '#get' do
@@ -56,9 +57,52 @@ module Consul
           expect(@client.get('json')).to be_is_a Hash
         end
 
+        it 'return hash if recursive response' do
+          encoded_value1 = Base64.encode64('value1').chomp
+          encoded_value2 = Base64.encode64('value2').chomp
+          body = %([
+            {"CreateIndex":5158,"ModifyIndex":5158,"LockIndex":0,"Key":"json/1","Flags":0,"Value":"#{encoded_value1}"},
+            {"CreateIndex":5159,"ModifyIndex":5159,"LockIndex":0,"Key":"json/2","Flags":0,"Value":"#{encoded_value2}"}
+          ])
+          @stubs.get('/v1/kv/json') { [200, {}, body] }
+
+          result = @client.get('json', true)
+          expect(result).to be_is_a Hash
+          expect(result).to eq('json/1' => 'value1', 'json/2' => 'value2')
+        end
+
+        it 'return hash that contains hashes if recursive response has json string' do
+          encoded_value1 = Base64.encode64('{ "dummy": "value" }').chomp
+          encoded_value2 = Base64.encode64('value2').chomp
+          body = %([
+            {"CreateIndex":5158,"ModifyIndex":5158,"LockIndex":0,"Key":"json/1","Flags":0,"Value":"#{encoded_value1}"},
+            {"CreateIndex":5159,"ModifyIndex":5159,"LockIndex":0,"Key":"json/2","Flags":0,"Value":"#{encoded_value2}"}
+          ])
+          @stubs.get('/v1/kv/json') { [200, {}, body] }
+
+          result = @client.get('json', true)
+          expect(result).to be_is_a Hash
+          expect(result['json/1']).to be_is_a Hash
+          expect(result['json/2']).to be_is_a String
+        end
+
         it 'request GET /v1/kv with key and return parsed decoded response body' do
           add_stub '/v1/kv/json', '{ "key": "value" }'
           expect(@client.get 'json').to eq('key' => 'value')
+        end
+
+        it 'send GET request with token' do
+          @stubs.get('/v1/kv/json') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
+          end
+          @client.get 'json'
+        end
+
+        it 'send GET request with recursive option and token' do
+          @stubs.get('/v1/kv/json') do |env|
+            expect(env.url.query).to eq('recurse=true&token=dummy_token')
+          end
+          @client.get 'json', true
         end
       end
 
@@ -82,6 +126,13 @@ module Consul
         it 'will request PUT /v1/kv with JSON encoded value if value is Hash' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('{"key":"value"}')
+          end
+          @client.put 'dummy', key: 'value'
+        end
+
+        it 'send PUT request with token' do
+          @stubs.put('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
           end
           @client.put 'dummy', key: 'value'
         end
@@ -118,6 +169,22 @@ module Consul
           expect(@client).to receive(:put).with('dummy', key: 'value', key2: { subkey: 'previous2', subkey2: 'value' })
 
           @client.merge 'dummy', key: 'value', key2: { subkey2: 'value' }
+        end
+      end
+
+      describe '#safety_parse' do
+        it 'return Hash if arguments has json string' do
+          value = '{ "key": "value" }'
+          result = @client.send(:safety_parse, value)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq('key' => 'value')
+        end
+
+        it 'return String if arguments has not json string' do
+          value = 'dummy string'
+          result = @client.send(:safety_parse, value)
+          expect(result).to be_is_a(String)
+          expect(result).to eq('dummy string')
         end
       end
     end

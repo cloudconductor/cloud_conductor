@@ -13,36 +13,33 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 require 'consul/client/kv'
+require 'consul/client/event'
 
 module Consul
-  module Client
-    def self.connect(options = {})
-      Consul::Client::Client.new options
+  class Client
+    attr_reader :kv, :event, :catalog
+
+    def initialize(host, port = 8500, options = {})
+      fail 'Consul::Client require host option' unless host
+
+      if options[:ssl]
+        url = URI::HTTPS.build(host: host, port: port, path: '/v1')
+        @faraday = Faraday.new url, ssl: options[:ssl_options]
+      else
+        url = URI::HTTP.build(host: host, port: port, path: '/v1')
+        @faraday = Faraday.new url
+      end
+
+      @kv = Consul::Client::KV.new @faraday, options
+      @event = Consul::Client::Event.new @faraday
+      @catalog = Consul::Client::Catalog.new @faraday
     end
 
-    class Client
-      DEFAULT_OPTIONS = {
-        port: 8500
-      }
-
-      def initialize(options = {})
-        fail 'Consul::Client require host option' unless options[:host]
-        @options = DEFAULT_OPTIONS.merge(options)
-      end
-
-      def kv
-        Consul::Client::KV.new @options
-      end
-
-      def running?
-        url = URI::HTTP.build(host: @options[:host], port: @options[:port], path: '/')
-        @faraday = Faraday.new url
-
-        response = @faraday.get('/')
-        response.success?
-      rescue
-        false
-      end
+    def running?
+      response = @faraday.get('/')
+      response.success?
+    rescue
+      false
     end
   end
 end

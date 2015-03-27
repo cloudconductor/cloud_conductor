@@ -14,6 +14,8 @@
 # limitations under the License.
 module CloudConductor
   describe ZabbixClient do
+    include_context 'default_resources'
+
     before do
       allow(CloudConductor::Config).to receive_message_chain(:zabbix, :url).and_return('http://example.com')
       allow(CloudConductor::Config).to receive_message_chain(:zabbix, :user).and_return('user')
@@ -45,17 +47,11 @@ module CloudConductor
         allow(@client).to receive(:register_action).and_return(3)
         allow(@client).to receive(:operation).and_return('dummy command')
 
-        @system = FactoryGirl.create(:system, name: 'example', monitoring_host: 'example.com')
+        @system = environment.system
       end
 
       it 'register hostgroup' do
-        expect(@client).to receive(:register_hostgroup).with('example')
-        @client.register(@system)
-      end
-
-      it 'use System#name without UUID' do
-        @system.name = 'example-6b6ee787-25ad-4245-a370-5e1a6c30d7d2'
-        expect(@client).to receive(:register_hostgroup).with('example')
+        expect(@client).to receive(:register_hostgroup).with(@system.name)
         @client.register(@system)
       end
 
@@ -196,9 +192,19 @@ module CloudConductor
     end
 
     describe '#operation' do
+      before do
+        account = double('account', authentication_token: 'dummy_token')
+        accounts = double('accounts')
+        allow(accounts).to receive(:where).and_return([account])
+        project = double('project', accounts: accounts, name: 'dummy')
+        system = double('system', project: project)
+        environment = double('environment', system: system)
+        allow(Environment).to receive_message_chain(:find).and_return(environment)
+      end
+
       it 'return curl command' do
-        expected_command = 'curl -H "Content-Type:application/json" -X POST -d \'{"system_id": "1"}\' http://example.com/'
-        expect(@client.send(:operation, 1, 'http://example.com/')).to eq(expected_command)
+        expected_command = %q(curl -H "Content-Type:application/json" -X POST -d '{"switch":true,"auth_token":"dummy_token"}' http://example.com/environments/1/rebuild)
+        expect(@client.send(:operation, 1, 'http://example.com')).to eq(expected_command)
       end
     end
   end

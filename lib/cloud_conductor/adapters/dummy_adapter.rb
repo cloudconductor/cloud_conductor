@@ -22,15 +22,12 @@ module CloudConductor
 
       # rubocop: disable UnusedMethodArgument
       def create_stack(name, template, parameters, options = {})
-        Log.debug(Log.format_method_start(self.class, __method__))
       end
 
       def get_stack_status(name, options = {})
-        Log.debug(Log.format_method_start(self.class, __method__))
       end
 
       def destroy_stack(name, options = {})
-        Log.debug(Log.format_method_start(self.class, __method__))
       end
       # rubocop: enable UnusedMethodArgument
     end

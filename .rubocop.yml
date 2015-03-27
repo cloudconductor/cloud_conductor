@@ -4,6 +4,8 @@ AllCops:
     - db/seeds.rb
     - node_modules/**/*
     - public/js/ext/**/*
+    - bin/**/*
+    - config/**/*
     - vendor/bundle/**/*
     - tmp/**/*
 
@@ -27,3 +29,9 @@ Style/RegexpLiteral:
 
 NumericLiterals:
   MinDigits: 7
+
+ShadowingOuterLocalVariable:
+  Enabled: false
+
+GuardClause:
+  MinBodyLength: 4

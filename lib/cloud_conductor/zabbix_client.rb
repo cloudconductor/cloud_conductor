@@ -22,10 +22,15 @@ module CloudConductor
     end
 
     def register(system)
-      hostname = system.name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
+      hostname = system.name
       hostgroup_id = register_hostgroup(hostname)
-      host_id = register_host(hostgroup_id, system.monitoring_host)
-      register_action("FailOver_#{hostname}", host_id, operation(system.id, CloudConductor::Config.cloudconductor.url))
+      host_id = register_host(hostgroup_id, system.domain)
+      environment_id = system.primary_environment.id
+      register_action("FailOver_#{hostname}", host_id, operation(environment_id, CloudConductor::Config.cloudconductor.url))
+    rescue => e
+      Log.error('Some error occurred while requesting to zabbix')
+      Log.error(e)
+      raise
     end
 
     private
@@ -133,8 +138,12 @@ module CloudConductor
       @zabbix.action.update(params)
     end
 
-    def operation(system_id, url)
-      "curl -H \"Content-Type:application/json\" -X POST -d '{\"system_id\": \"#{system_id}\"}' #{url}"
+    def operation(environment_id, url)
+      project = Environment.find(environment_id).system.project
+      monitoring_account = project.accounts.where(email: "monitoring@#{project.name}.example.com").first
+
+      parameter = { switch: true, auth_token: monitoring_account.authentication_token }
+      %(curl -H "Content-Type:application/json" -X POST -d '#{parameter.to_json}' #{url}/environments/#{environment_id}/rebuild)
     end
   end
 end

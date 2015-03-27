@@ -12,6 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'fog/openstack/models/orchestration/stack'
 
 module CloudConductor
   module Adapters
@@ -21,7 +22,7 @@ module CloudConductor
         @post_processes = []
       end
 
-      def create_orchestration(options)
+      def create_connector(options)
         ::Fog::Orchestration.new(
           provider: :OpenStack,
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
@@ -43,39 +44,64 @@ module CloudConductor
 
       def create_stack(name, template, parameters, options = {})
         @post_processes << lambda do
-          add_security_rule(name, template, parameters, options)
+          add_security_rules(name, template, parameters, options)
         end
 
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
-        orc = create_orchestration options
+        connector = create_connector options
+        stack_params = {
+          stack_name: name,
+          template: converted_template,
+          parameters: parameters
+        }
+        connector.create_stack stack_params
+      end
+
+      def update_stack(name, template, parameters, options = {})
+        converter = CfnConverter.create_converter(:heat)
+        converted_template = converter.convert(template, parameters)
+
+        options = options.with_indifferent_access
+        connector = create_connector options
+        id = get_stack_id(name, options)
+        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
         stack_params = {
           template: converted_template,
           parameters: parameters
         }
-        orc.create_stack name, stack_params
+        Log.info "Start updating #{name} stack"
+        connector.update_stack stack, stack_params
+      end
+
+      def get_stack_id(name, options = {})
+        options = options.with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
+        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
+        target_stack[:id]
       end
 
       def get_stack_status(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
 
       def get_outputs(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
+        connector = create_connector options
+        body = (connector.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
         url = URI.parse "#{target_link[:href]}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
-        request.add_field 'X-Auth-Token', orc.auth_token
+        request.add_field 'X-Auth-Token', connector.auth_token
         response = Net::HTTP.start url.host, url.port do |http|
           http.request request
         end
@@ -89,37 +115,52 @@ module CloudConductor
         outputs
       end
 
-      def add_security_rule(name, template, parameters, options = {}) # rubocop:disable MethodLength
-        return if parameters[:SharedSecurityGroup].blank?
+      def get_availability_zones(options = {})
+        options = options.with_indifferent_access
+        compute = create_compute(options)
+        compute.hosts.map(&:zone).uniq
+      end
 
+      def add_security_rules(name, template, parameters, options = {})
         options = options.with_indifferent_access
         compute = create_compute(options)
         security_group_ingresses = JSON.parse(template)['Resources'].select do |_, resource|
           resource['Type'] == 'AWS::EC2::SecurityGroupIngress'
         end
+
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
-          rule = {
-            ip_protocol: properties[:IpProtocol],
-            from_port: properties[:FromPort],
-            to_port: properties[:ToPort],
-            parent_group_id: parameters[:SharedSecurityGroup]
-          }.with_indifferent_access
-
-          if properties[:SourceSecurityGroupId]
-            security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"
-            security_group_id = get_security_group_id(compute, security_group_name)
-            return if security_group_id.nil?
-            rule[:group] = security_group_id
-          else
-            rule[:ip_range] = { cidr: properties[:CidrIp] }
-          end
-
-          compute.security_group_rules.new(rule).save
+          add_security_rule(compute, name, properties, parameters)
         end
       rescue => e
         Log.error 'Failed to add security rule.'
         Log.error e
+      end
+
+      def add_security_rule(compute, name, properties, parameters)
+        rule = {
+          ip_protocol: properties[:IpProtocol],
+          from_port: properties[:FromPort],
+          to_port: properties[:ToPort]
+        }.with_indifferent_access
+
+        if properties[:GroupId][:Ref] == 'SharedSecurityGroup' && parameters[:SharedSecurityGroup]
+          rule[:parent_group_id] = parameters[:SharedSecurityGroup]
+        else
+          parent_group_name = "#{name}-#{properties[:GroupId][:Ref]}"
+          rule[:parent_group_id] = get_security_group_id(compute, parent_group_name)
+        end
+
+        if properties[:SourceSecurityGroupId]
+          security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"
+          security_group_id = get_security_group_id(compute, security_group_name)
+          return if security_group_id.nil?
+          rule[:group] = security_group_id
+        else
+          rule[:ip_range] = { cidr: properties[:CidrIp] }
+        end
+
+        compute.security_group_rules.new(rule).save
       end
 
       def get_security_group_id(compute, security_group_name)
@@ -131,15 +172,21 @@ module CloudConductor
 
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
-        orc = create_orchestration options
-        body = (orc.list_stacks)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        if target_stack.nil?
+        connector = create_connector options
+        stack = connector.stacks.find { |stack| stack.stack_name == name }
+        unless stack
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
         end
-        stack_id = target_stack[:id].to_sym
-        orc.delete_stack name, stack_id
+        stack.delete
+      end
+
+      def destroy_image(name, options = {})
+        options = options.with_indifferent_access
+        compute = create_compute options
+        image = compute.images.get(name)
+
+        image.destroy if image
       end
 
       def post_process
