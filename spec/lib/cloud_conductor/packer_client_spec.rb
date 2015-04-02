@@ -36,6 +36,7 @@ module CloudConductor
         template_path = File.expand_path('../../../config/packer.json', File.dirname(__FILE__))
 
         client = PackerClient.new
+        expect(client.instance_variable_get(:@packer_path)).to eq('/opt/packer/packer')
         expect(client.instance_variable_get(:@template_path)).to eq(template_path)
       end
 
@@ -92,18 +93,6 @@ module CloudConductor
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
         expect { @client.build(@images, @parameters) { fail } }.to raise_exception
-      end
-    end
-
-    describe '#packer_path' do
-      it 'return "/opt/packer/packer" if packer command not set in environment path' do
-        allow(@client).to receive(:system).with(/which packer/).and_return(false)
-        expect(@client.packer_path).to eq('/opt/packer/packer')
-      end
-
-      it 'return "packer" if packer command set in environment path' do
-        allow(@client).to receive(:system).with(/which packer/).and_return(true)
-        expect(@client.packer_path).to eq('packer')
       end
     end
 
