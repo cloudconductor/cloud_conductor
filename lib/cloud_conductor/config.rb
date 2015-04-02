@@ -25,6 +25,9 @@ module CloudConductor
     end
     config_context :cloudconductor_init do
     end
+    config_context :packer do
+      default :path, '/opt/packer/packer'
+    end
     config_context :dns do
     end
     config_context :zabbix do

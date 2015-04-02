@@ -33,10 +33,11 @@ module CloudConductor
 
     describe '#initialize' do
       it 'set default option when initialized without options' do
+        packer_path = CloudConductor::Config.packer.path
         template_path = File.expand_path('../../../config/packer.json', File.dirname(__FILE__))
 
         client = PackerClient.new
-        expect(client.instance_variable_get(:@packer_path)).to eq('/opt/packer/packer')
+        expect(client.instance_variable_get(:@packer_path)).to eq(packer_path)
         expect(client.instance_variable_get(:@template_path)).to eq(template_path)
       end
 

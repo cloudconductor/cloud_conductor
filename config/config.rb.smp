@@ -20,6 +20,9 @@ cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
 cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
 cloudconductor_init.revision 'master'
 
+# packer settings
+packer.path '/opt/packer/packer'
+
 # dns settings
 dns.service 'route53'
 dns.access_key 'your_access_key'
