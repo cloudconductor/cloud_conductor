@@ -17,7 +17,6 @@ require 'csv'
 module CloudConductor
   class PackerClient # rubocop:disable ClassLength
     DEFAULT_OPTIONS = {
-      packer_path: '/opt/packer/packer',
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
       cloudconductor_root: '/opt/cloudconductor',
       cloudconductor_init_url: CloudConductor::Config.cloudconductor_init.url,
@@ -27,13 +26,17 @@ module CloudConductor
 
     def initialize(options = {})
       options.reverse_merge! DEFAULT_OPTIONS
-      @packer_path = options[:packer_path]
+      @packer_path = options[:packer_path] || packer_path
       @template_path = options[:template_path]
       @cloudconductor_root = options[:cloudconductor_root]
       @cloudconductor_init_url = options[:cloudconductor_init_url]
       @cloudconductor_init_revision = options[:cloudconductor_init_revision]
 
       @vars = options[:variables]
+    end
+
+    def packer_path
+      system('which packer >/dev/null 2>&1') ? 'packer' : '/opt/packer/packer'
     end
 
     def build(images, parameters) # rubocop:disable MethodLength
