@@ -158,6 +158,37 @@ module CloudConductor
         end
       end
 
+      describe '#destroy_image' do
+        before do
+          @image = double('image')
+          allow(AWS::EC2).to receive_message_chain(:new, :images, :[]).and_return(@image)
+          allow(@image).to receive(:deregister)
+          allow(@image).to receive(:exists?).and_return(true)
+          dummy_device_mapping = { dummy: { snapshot_id: 'snap-xxxxxxxx' } }
+          allow(@image).to receive(:block_device_mappings).and_return(dummy_device_mapping)
+
+          @snapshot = double('snapshot')
+          allow(AWS::EC2).to receive_message_chain(:new, :snapshots, :[]).and_return(@snapshot)
+          allow(@snapshot).to receive(:delete)
+        end
+
+        it 'execute without exception' do
+          @adapter.destroy_image 'ami-xxxxxx'
+        end
+
+        it 'call EC2::image#deregister to delete created image on aws' do
+          expect(@image).to receive(:deregister)
+
+          @adapter.destroy_image 'ami-xxxxxx'
+        end
+
+        it 'call EC2::snapshot#delete to delete created snapshot on aws' do
+          expect(@snapshot).to receive(:delete)
+
+          @adapter.destroy_image 'ami-xxxxxx'
+        end
+      end
+
       describe '#aws_options' do
         it 'return converted options for aws' do
           options = {
