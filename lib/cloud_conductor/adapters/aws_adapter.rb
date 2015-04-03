@@ -61,8 +61,8 @@ module CloudConductor
         stack.delete if stack
       end
 
-      def destroy_image(name)
-        image = ec2.images[name]
+      def destroy_image(image_id)
+        image = ec2.images[image_id]
         image.deregister if image.exists?
       end
 
