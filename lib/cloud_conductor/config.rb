@@ -27,6 +27,7 @@ module CloudConductor
     end
     config_context :packer do
       default :path, '/opt/packer/packer'
+      default :aws_instance_type, 'c3.large'
     end
     config_context :dns do
     end
