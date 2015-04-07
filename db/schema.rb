@@ -13,6 +13,9 @@
 
 ActiveRecord::Schema.define(version: 20150220082849) do
 
+  # These are extensions that must be enabled in order to support this database
+  enable_extension "plpgsql"
+
   create_table "accounts", force: true do |t|
     t.string   "email",                  default: "",    null: false
     t.string   "encrypted_password",     default: "",    null: false
@@ -31,9 +34,9 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.datetime "updated_at",                             null: false
   end
 
-  add_index "accounts", ["authentication_token"], name: "index_accounts_on_authentication_token", unique: true
-  add_index "accounts", ["email"], name: "index_accounts_on_email", unique: true
-  add_index "accounts", ["reset_password_token"], name: "index_accounts_on_reset_password_token", unique: true
+  add_index "accounts", ["authentication_token"], name: "index_accounts_on_authentication_token", unique: true, using: :btree
+  add_index "accounts", ["email"], name: "index_accounts_on_email", unique: true, using: :btree
+  add_index "accounts", ["reset_password_token"], name: "index_accounts_on_reset_password_token", unique: true, using: :btree
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
@@ -66,7 +69,7 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.datetime "updated_at",             null: false
   end
 
-  add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true
+  add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true, using: :btree
 
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
@@ -167,8 +170,8 @@ ActiveRecord::Schema.define(version: 20150220082849) do
     t.datetime "updated_at"
   end
 
-  add_index "sessions", ["session_id"], name: "index_sessions_on_session_id", unique: true
-  add_index "sessions", ["updated_at"], name: "index_sessions_on_updated_at"
+  add_index "sessions", ["session_id"], name: "index_sessions_on_session_id", unique: true, using: :btree
+  add_index "sessions", ["updated_at"], name: "index_sessions_on_updated_at", using: :btree
 
   create_table "stacks", force: true do |t|
     t.integer  "environment_id"

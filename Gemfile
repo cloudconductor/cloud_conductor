@@ -7,7 +7,7 @@ gem 'devise'
 gem 'devise-token_authenticatable'
 gem 'cancancan'
 # gem 'activeadmin', github: 'activeadmin'
-gem 'sqlite3'
+gem 'pg'
 
 gem 'systemu'
 gem 'faraday'
