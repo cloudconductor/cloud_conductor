@@ -60,7 +60,7 @@ module CloudConductor
       events = @client.kv.get('event', true)
       return [] unless events
 
-      events.group_by { |_, event| event['event_id'] }.map do |_, event|
+      events.group_by { |key, _| key.match(%r{event/([0-9a-f\-]+/)})[1] }.map do |_, event|
         CloudConductor::EventLog.new(Hash[*event.flatten])
       end
     end

@@ -133,25 +133,25 @@ module CloudConductor
             'type' => 'configure',
             'result' => '0',
             'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900',
-            'log' => 'Dummy consul event log1'
+            'end_datetime' => '2014-12-16T14:44:09+0900'
           },
           'event/11111111-1111-1111-1111-111111111111/host2' => {
             'event_id' => '11111111-1111-1111-1111-111111111111',
             'type' => 'configure',
             'result' => '0',
             'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900',
-            'log' => 'Dummy consul event log2'
+            'end_datetime' => '2014-12-16T14:44:09+0900'
           },
           'event/22222222-2222-2222-2222-222222222222/host1' => {
             'event_id' => '22222222-2222-2222-2222-222222222222',
             'type' => 'configure',
             'result' => '0',
             'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900',
-            'log' => 'Dummy consul event log1'
-          }
+            'end_datetime' => '2014-12-16T14:44:09+0900'
+          },
+          'event/11111111-1111-1111-1111-111111111111/host1/log' => 'Dummy consul event log1',
+          'event/11111111-1111-1111-1111-111111111111/host2/log' => 'Dummy consul event log2',
+          'event/22222222-2222-2222-2222-222222222222/host1/log' => 'Dummy consul event log3'
         }
 
         allow(@client).to receive_message_chain(:kv, :get).and_return(value)
@@ -176,17 +176,17 @@ module CloudConductor
             'type' => 'configure',
             'result' => '0',
             'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900',
-            'log' => 'Dummy consul event log1'
+            'end_datetime' => '2014-12-16T14:44:09+0900'
           },
           'event/12345678-1234-1234-1234-1234567890ab/host2' => {
             'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
             'type' => 'configure',
             'result' => '0',
             'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900',
-            'log' => 'Dummy consul event log2'
-          }
+            'end_datetime' => '2014-12-16T14:44:09+0900'
+          },
+          'event/12345678-1234-1234-1234-1234567890ab/host1' => 'Dummy consul event log1',
+          'event/12345678-1234-1234-1234-1234567890ab/host2' => 'Dummy consul event log2'
         }
 
         allow(@client).to receive_message_chain(:kv, :get).and_return(value)
