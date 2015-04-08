@@ -68,6 +68,9 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     end
 
     true
+  rescue Errno::ENOENT => e
+    Log.error 'Pattern does not have metadata.yml or template.json'
+    Log.debug e
   end
 
   def type?(type)
