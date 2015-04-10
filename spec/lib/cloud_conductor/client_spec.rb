@@ -48,12 +48,12 @@ module CloudConductor
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
-        expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
+        expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash))
         @client.create_stack 'stack_name', pattern, {}
       end
 
       it 'call adapter#create_stack with template.json in repository' do
-        expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
+        expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
         @client.create_stack 'stack_name', pattern, {}
       end
 
@@ -67,7 +67,7 @@ module CloudConductor
           expect(parameters["#{image2.role.camelize}ImageId"]).to eq(image2.image)
         end
 
-        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters)
         @client.create_stack 'stack_name', pattern, {}
       end
 
@@ -77,7 +77,7 @@ module CloudConductor
           expect(parameters.keys).to be_include('WebApDbImageId')
         end
 
-        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters, anything)
+        expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters)
         @client.create_stack 'stack_name', pattern, {}
       end
     end
@@ -89,12 +89,12 @@ module CloudConductor
       end
 
       it 'call adapter#update_stack with same arguments without pattern' do
-        expect(@client.adapter).to receive(:update_stack).with('stack_name', anything, kind_of(Hash), kind_of(Hash))
+        expect(@client.adapter).to receive(:update_stack).with('stack_name', anything, kind_of(Hash))
         @client.update_stack 'stack_name', pattern, {}
       end
 
       it 'call adapter#update_stack with template.json in repository' do
-        expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything, anything)
+        expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
         @client.update_stack 'stack_name', pattern, {}
       end
 
@@ -107,7 +107,7 @@ module CloudConductor
           expect(parameters["#{image2.role.camelize}ImageId"]).to eq(image2.image)
         end
 
-        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters)
         @client.update_stack 'stack_name', pattern, {}
       end
 
@@ -117,28 +117,28 @@ module CloudConductor
           expect(parameters.keys).to be_include('WebApDbImageId')
         end
 
-        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters, anything)
+        expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters)
         @client.update_stack 'stack_name', pattern, {}
       end
     end
 
     describe '#get_stack_status' do
       it 'call adapter#get_stack_status with same arguments' do
-        expect(@client.adapter).to receive(:get_stack_status).with('stack_name', kind_of(Hash))
+        expect(@client.adapter).to receive(:get_stack_status).with('stack_name')
         @client.get_stack_status 'stack_name'
       end
     end
 
     describe '#get_outputs' do
       it 'call adapter#get_outputs with same arguments' do
-        expect(@client.adapter).to receive(:get_outputs).with('stack_name', kind_of(Hash))
+        expect(@client.adapter).to receive(:get_outputs).with('stack_name')
         @client.get_outputs 'stack_name'
       end
     end
 
     describe '#destroy_stack' do
       it 'call adapter#destroy_stack with same arguments' do
-        expect(@client.adapter).to receive(:destroy_stack).with('stack_name', kind_of(Hash))
+        expect(@client.adapter).to receive(:destroy_stack).with('stack_name')
         @client.destroy_stack 'stack_name'
       end
     end

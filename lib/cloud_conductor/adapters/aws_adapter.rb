@@ -17,16 +17,17 @@ module CloudConductor
     class AWSAdapter < AbstractAdapter
       TYPE = :aws
 
-      def initialize
+      def initialize(options = {})
         @post_processes = []
+        @options = options
       end
 
-      def create_stack(name, template, parameters, options = {})
-        cloud_formation(options).stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
+      def create_stack(name, template, parameters)
+        cloud_formation.stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
       end
 
-      def update_stack(name, template, parameters, options = {})
-        cloud_formation(options).stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
+      def update_stack(name, template, parameters)
+        cloud_formation.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
       rescue => e
         if e.message == 'No updates are to be performed.'
           Log.info "Ignore updating stack(#{name})"
@@ -38,30 +39,30 @@ module CloudConductor
         end
       end
 
-      def get_stack_status(name, options = {})
-        cloud_formation(options).stacks[convert_name(name)].status.to_sym
+      def get_stack_status(name)
+        cloud_formation.stacks[convert_name(name)].status.to_sym
       end
 
-      def get_outputs(name, options = {})
+      def get_outputs(name)
         outputs = {}
-        cloud_formation(options).stacks[convert_name(name)].outputs.each do |output|
+        cloud_formation.stacks[convert_name(name)].outputs.each do |output|
           outputs[output.key] = output.value
         end
 
         outputs
       end
 
-      def availability_zones(options = {})
-        ec2(options).availability_zones.map(&:name)
+      def availability_zones
+        ec2.availability_zones.map(&:name)
       end
 
-      def destroy_stack(name, options = {})
-        stack = cloud_formation(options).stacks[convert_name(name)]
+      def destroy_stack(name)
+        stack = cloud_formation.stacks[convert_name(name)]
         stack.delete if stack
       end
 
-      def destroy_image(name, options = {})
-        image = ec2(options).images[name]
+      def destroy_image(name)
+        image = ec2.images[name]
         image.deregister if image.exists?
       end
 
@@ -82,12 +83,12 @@ module CloudConductor
         aws_options
       end
 
-      def cloud_formation(options = {})
-        AWS::CloudFormation.new aws_options(options)
+      def cloud_formation
+        AWS::CloudFormation.new aws_options(@options)
       end
 
-      def ec2(options = {})
-        AWS::EC2.new aws_options(options)
+      def ec2
+        AWS::EC2.new aws_options(@options)
       end
 
       def convert_name(name)

@@ -16,7 +16,13 @@ module CloudConductor
   module Adapters
     describe OpenStackAdapter do
       before do
-        @adapter = OpenStackAdapter.new
+        options = {
+          entry_point: 'http://127.0.0.1:5000/',
+          key: 'test_key',
+          secret: 'test_secret',
+          tenant_name: 'test_tenant'
+        }
+        @adapter = OpenStackAdapter.new options
       end
 
       it 'extend AbstractAdapter class' do
@@ -31,33 +37,25 @@ module CloudConductor
         before do
           allow(::Fog::Orchestration).to receive_message_chain(:new, :create_stack)
 
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'test_user'
-          @options[:secret] = 'test_secret'
-          @options[:tenant_name] = 'test_tenant'
-
           @converter_stub = double('converter', convert: '{}')
           allow(CfnConverter).to receive(:create_converter).and_return(@converter_stub)
         end
 
         it 'execute without exception' do
-          @adapter.create_stack 'stack_name', '{}', {}, {}
+          @adapter.create_stack 'stack_name', '{}', {}
         end
 
         it 'instantiate' do
-          @options[:dummy] = 'dummy'
-
           expect(::Fog::Orchestration).to receive(:new)
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
               openstack_api_key: 'test_secret',
-              openstack_username: 'test_user',
+              openstack_username: 'test_key',
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
 
         it 'call Fog::Orchestration#create_stack to create stack on openstack' do
@@ -67,13 +65,13 @@ module CloudConductor
             end
           end
 
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
 
         it 'call OpenStackConverter to convert template before create stack' do
           expect(@converter_stub).to receive(:convert)
 
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
 
         it 'use converted template to create stack' do
@@ -84,19 +82,13 @@ module CloudConductor
           expect(heat_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
           allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
 
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
       end
 
       describe '#update_stack' do
         before do
           allow(::Fog::Orchestration).to receive_message_chain(:new, :update_stack)
-
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'test_user'
-          @options[:secret] = 'test_secret'
-          @options[:tenant_name] = 'test_tenant'
 
           @converter_stub = double('converter', convert: '{}')
           allow(CfnConverter).to receive(:create_converter).and_return(@converter_stub)
@@ -106,22 +98,20 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.update_stack 'stack_name', '{}', {}, {}
+          @adapter.update_stack 'stack_name', '{}', {}
         end
 
         it 'instantiate' do
-          @options[:dummy] = 'dummy'
-
           expect(::Fog::Orchestration).to receive(:new)
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
               openstack_api_key: 'test_secret',
-              openstack_username: 'test_user',
+              openstack_username: 'test_key',
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.update_stack 'stack_name', '{}', {}, @options
+          @adapter.update_stack 'stack_name', '{}', {}
         end
 
         it 'call Fog::Orchestration#update_stack to update stack on openstack' do
@@ -131,13 +121,13 @@ module CloudConductor
             end
           end
 
-          @adapter.update_stack 'stack_name', '{}', {}, @options
+          @adapter.update_stack 'stack_name', '{}', {}
         end
 
         it 'call OpenStackConverter to convert template before update stack' do
           expect(@converter_stub).to receive(:convert)
 
-          @adapter.update_stack 'stack_name', '{}', {}, @options
+          @adapter.update_stack 'stack_name', '{}', {}
         end
 
         it 'use converted template to create stack' do
@@ -148,18 +138,12 @@ module CloudConductor
           expect(heat_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
           allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
 
-          @adapter.update_stack 'stack_name', '{}', {}, @options
+          @adapter.update_stack 'stack_name', '{}', {}
         end
       end
 
       describe '#get_stack_status' do
         before do
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'test_user'
-          @options[:secret] = 'test_secret'
-          @options[:tenant_name] = 'test_tenant'
-
           @stacks = {
             body: {
               stacks: [
@@ -179,42 +163,34 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.get_stack_status 'stack_name', @options
+          @adapter.get_stack_status 'stack_name'
         end
 
         it 'instantiate' do
-          @options[:dummy] = 'dummy'
-
           expect(::Fog::Orchestration).to receive(:new)
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
               openstack_api_key: 'test_secret',
-              openstack_username: 'test_user',
+              openstack_username: 'test_key',
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.get_stack_status 'stack_name', @options
+          @adapter.get_stack_status 'stack_name'
         end
 
         it 'return stack status' do
-          status = @adapter.get_stack_status 'stack_name', @options
+          status = @adapter.get_stack_status 'stack_name'
           expect(status).to eq(:TESTSTATUS)
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_status 'undefined_stack', @options }.to raise_error
+          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error
         end
       end
 
       describe '#get_outputs' do
         before do
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'test_user'
-          @options[:secret] = 'test_secret'
-          @options[:tenant_name] = 'test_tenant'
-
           @stacks = double(
             'stacks', :[] => double(
               'body', with_indifferent_access: double(
@@ -255,26 +231,24 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.get_outputs 'stack_name', @options
+          @adapter.get_outputs 'stack_name'
         end
 
         it 'instantiate' do
-          @options[:dummy] = 'dummy'
-
           expect(::Fog::Orchestration).to receive(:new)
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
               openstack_api_key: 'test_secret',
-              openstack_username: 'test_user',
+              openstack_username: 'test_key',
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.get_outputs 'stack_name', @options
+          @adapter.get_outputs 'stack_name'
         end
 
         it 'return outputs' do
-          outputs = @adapter.get_outputs 'stack_name', @options
+          outputs = @adapter.get_outputs 'stack_name'
           outputs = outputs.with_indifferent_access
           expect(outputs[:testkey]).to eq('testvalue')
         end
@@ -282,43 +256,35 @@ module CloudConductor
 
       describe '#availability_zones' do
         before do
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'test_user'
-          @options[:secret] = 'test_secret'
-          @options[:tenant_name] = 'test_tenant'
-
           @availability_zones = [double('availability_zone', zone: 'nova'), double('availability_zone', zone: '')]
           allow(::Fog::Compute).to receive_message_chain(:new, :hosts).and_return(@availability_zones)
         end
 
         it 'execute without exception' do
-          @adapter.availability_zones @options
+          @adapter.availability_zones
         end
 
         it 'instantiate' do
-          @options[:dummy] = 'dummy'
-
           expect(::Fog::Compute).to receive(:new)
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
               openstack_api_key: 'test_secret',
-              openstack_username: 'test_user',
+              openstack_username: 'test_key',
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.availability_zones @options
+          @adapter.availability_zones
         end
 
         it 'return AvailabilityZone names' do
-          availability_zones = @adapter.availability_zones @options
+          availability_zones = @adapter.availability_zones
           expect(availability_zones).to eq(['nova', ''])
         end
 
         it 'return nil when target AvailabilityZone does not exist' do
           allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.availability_zones @options }.to raise_error
+          expect { @adapter.availability_zones }.to raise_error
         end
       end
 
@@ -342,11 +308,6 @@ module CloudConductor
           EOS
           @name = 'DummyStackName'
           @parameters = { SharedSecurityGroup: 'dummy_id' }.with_indifferent_access
-          @options = {}
-          @options[:entry_point] = 'http://127.0.0.1:5000/'
-          @options[:key] = 'dummy_key'
-          @options[:secret] = 'dummy_secret'
-          @options[:tenant_name] = 'dummy_tenant'
 
           @rules = double(:security_group_rules)
           allow(@rules).to receive(:save)
@@ -360,7 +321,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.add_security_rules(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters)
         end
 
         it 'instantiate a Fog Compute' do
@@ -368,12 +329,12 @@ module CloudConductor
             .with(
               provider: :OpenStack,
               openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'dummy_secret',
-              openstack_username: 'dummy_key',
-              openstack_tenant: 'dummy_tenant'
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_key',
+              openstack_tenant: 'test_tenant'
             )
 
-          @adapter.add_security_rules(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters)
         end
 
         it 'do nothing when AWS::EC2::SecurityGroupIngress in template is blank' do
@@ -381,7 +342,7 @@ module CloudConductor
           expect(@rules).not_to receive(:save)
 
           @template = '{ "Resources": {} }'
-          @adapter.add_security_rules(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters)
         end
 
         it 'instantiate a security_group_rules in the case of CidrIp in template' do
@@ -394,7 +355,7 @@ module CloudConductor
           }.with_indifferent_access
           expect(@nova.security_group_rules).to receive(:new).with(rule)
 
-          @adapter.add_security_rules(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters)
         end
 
         it 'instantiate a security_group_rules in the case of SourceSecurityGroupId in template' do
@@ -424,13 +385,13 @@ module CloudConductor
               }
             }
           EOS
-          @adapter.add_security_rules(@name, template, @parameters, @options)
+          @adapter.add_security_rules(@name, template, @parameters)
         end
 
         it 'call save to add security rule' do
           expect(@rules).to receive(:save)
 
-          @adapter.add_security_rules(@name, @template, @parameters, @options)
+          @adapter.add_security_rules(@name, @template, @parameters)
         end
       end
 

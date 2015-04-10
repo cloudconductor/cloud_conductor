@@ -16,7 +16,12 @@ module CloudConductor
   module Adapters
     describe AWSAdapter do
       before do
-        @adapter = AWSAdapter.new
+        options = {
+          key: 'dummy_key',
+          secret: 'dummy_secret',
+          entry_point: 'ap-northeast-1'
+        }
+        @adapter = AWSAdapter.new options
       end
 
       it 'extend AbstractAdapter class' do
@@ -30,30 +35,10 @@ module CloudConductor
       describe '#create_stack' do
         before do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :create)
-
-          @options = {}
-          @options[:key] = '1234567890abcdef'
-          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.create_stack 'stack_name', '{}', {}, {}
-        end
-
-        it 'set credentials for aws-sdk' do
-          @options[:dummy] = 'dummy'
-
-          expect(AWS::CloudFormation).to receive(:new)
-            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
-
-          @adapter.create_stack 'stack_name', '{}', {}, @options
-        end
-
-        it 'set region for aws-sdk' do
-          @options[:entry_point] = 'ap-northeast-1'
-          expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
-
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
 
         it 'call CloudFormation#create to create stack on aws' do
@@ -63,7 +48,7 @@ module CloudConductor
             end
           end
 
-          @adapter.create_stack 'stack_name', '{}', {}, @options
+          @adapter.create_stack 'stack_name', '{}', {}
         end
       end
 
@@ -72,36 +57,23 @@ module CloudConductor
           @stack = double('stack', status: '')
           @stacks = double('stacks', :[] => @stack)
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks).and_return(@stacks)
-
-          @options = {}
-          @options[:key] = '1234567890abcdef'
-          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.get_stack_status 'stack_name', @options
-        end
-
-        it 'set credentials for aws-sdk' do
-          @options[:dummy] = 'dummy'
-
-          expect(AWS::CloudFormation).to receive(:new)
-            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
-
-          @adapter.get_stack_status 'stack_name', @options
+          @adapter.get_stack_status 'stack_name'
         end
 
         it 'return stack status via aws-sdk' do
           expect(@stack).to receive(:status).and_return('dummy_status')
           expect(@stacks).to receive(:[]).with('stack-name').and_return(@stack)
 
-          status = @adapter.get_stack_status 'stack_name', @options
+          status = @adapter.get_stack_status 'stack_name'
           expect(status).to eq(:dummy_status)
         end
 
         it 'raise error  when target stack does not exist' do
           allow(@stacks).to receive(:[]).and_return nil
-          expect { @adapter.get_stack_status 'undefined_stack', @options }.to raise_error
+          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error
         end
       end
 
@@ -109,23 +81,10 @@ module CloudConductor
         before do
           @outputs = []
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :outputs).and_return(@outputs)
-
-          @options = {}
-          @options[:key] = '1234567890abcdef'
-          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.get_outputs 'stack_name', @options
-        end
-
-        it 'set credentials for aws-sdk' do
-          @options[:dummy] = 'dummy'
-
-          expect(AWS::CloudFormation).to receive(:new)
-            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
-
-          @adapter.get_outputs 'stack_name', @options
+          @adapter.get_outputs 'stack_name'
         end
 
         it 'returns outputs hash that is converted from Array<StackOutput>' do
@@ -133,7 +92,7 @@ module CloudConductor
           @outputs << AWS::CloudFormation::StackOutput.new(stack, 'key1', 'value1', 'description1')
           @outputs << AWS::CloudFormation::StackOutput.new(stack, 'key2', 'value2', 'description2')
 
-          results = @adapter.get_outputs 'stack_name', @options
+          results = @adapter.get_outputs 'stack_name'
           expect(results).to eq('key1' => 'value1', 'key2' => 'value2')
         end
       end
@@ -142,63 +101,30 @@ module CloudConductor
         before do
           @availability_zones = [double('availability_zone', name: 'ap-southeast-2a'), double('availability_zone', name: 'ap-southeast-2b')]
           allow(AWS::EC2).to receive_message_chain(:new, :availability_zones).and_return(@availability_zones)
-
-          @options = {}
-          @options[:key] = '1234567890abcdef'
-          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.availability_zones @options
-        end
-
-        it 'set credentials for aws-sdk' do
-          @options[:dummy] = 'dummy'
-
-          expect(AWS::EC2).to receive(:new)
-            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
-
-          @adapter.availability_zones @options
+          @adapter.availability_zones
         end
 
         it 'return AvailabilityZone names' do
-          availability_zones = @adapter.availability_zones @options
+          availability_zones = @adapter.availability_zones
           expect(availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
         end
 
         it 'raise error  when target AvailabilityZones does not exist' do
           allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.adapter.availability_zones @options }.to raise_error
+          expect { @adapter.adapter.availability_zones }.to raise_error
         end
       end
 
       describe '#destroy_stack' do
         before do
           allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :delete)
-
-          @options = {}
-          @options[:key] = '1234567890abcdef'
-          @options[:secret] = 'abcdef1234567890'
         end
 
         it 'execute without exception' do
-          @adapter.destroy_stack 'stack_name', {}
-        end
-
-        it 'set credentials for aws-sdk' do
-          @options[:dummy] = 'dummy'
-
-          expect(AWS::CloudFormation).to receive(:new)
-            .with(access_key_id: '1234567890abcdef', secret_access_key: 'abcdef1234567890')
-
-          @adapter.destroy_stack 'stack_name', @options
-        end
-
-        it 'set region for aws-sdk' do
-          @options[:entry_point] = 'ap-northeast-1'
-          expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
-
-          @adapter.destroy_stack 'stack_name', @options
+          @adapter.destroy_stack 'stack_name'
         end
 
         it 'call CloudFormation::Stack#delete to delete created stack on aws' do
@@ -208,7 +134,7 @@ module CloudConductor
             end
           end
 
-          @adapter.destroy_stack 'stack_name', @options
+          @adapter.destroy_stack 'stack_name'
         end
       end
 
@@ -230,56 +156,40 @@ module CloudConductor
       end
 
       describe '#cloud_formation' do
-        before do
-          @options = {
-            key: 'dummy_key',
-            secret: 'dummy_secret',
-            entry_point: 'ap-northeast-1'
-          }
-        end
-
         it 'set credentials for aws-sdk' do
           expect(AWS::CloudFormation).to receive(:new)
             .with(hash_including(access_key_id: 'dummy_key', secret_access_key: 'dummy_secret'))
 
-          @adapter.send(:cloud_formation, @options)
+          @adapter.send(:cloud_formation)
         end
 
         it 'set region for aws-sdk' do
           expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
 
-          @adapter.send(:cloud_formation, @options)
+          @adapter.send(:cloud_formation)
         end
 
         it 'return AWS::CloudFormation variable' do
-          expect(@adapter.send(:cloud_formation, @options)).to be_a_kind_of(AWS::CloudFormation)
+          expect(@adapter.send(:cloud_formation)).to be_a_kind_of(AWS::CloudFormation)
         end
       end
 
       describe '#ec2' do
-        before do
-          @options = {
-            key: 'dummy_key',
-            secret: 'dummy_secret',
-            entry_point: 'ap-northeast-1'
-          }
-        end
-
         it 'set credentials for aws-sdk' do
           expect(AWS::EC2).to receive(:new)
             .with(hash_including(access_key_id: 'dummy_key', secret_access_key: 'dummy_secret'))
 
-          @adapter.send(:ec2, @options)
+          @adapter.send(:ec2)
         end
 
         it 'set region for aws-sdk' do
           expect(AWS::EC2).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
 
-          @adapter.send(:ec2, @options)
+          @adapter.send(:ec2)
         end
 
         it 'return AWS::EC2 variable' do
-          expect(@adapter.send(:ec2, @options)).to be_a_kind_of(AWS::EC2)
+          expect(@adapter.send(:ec2)).to be_a_kind_of(AWS::EC2)
         end
       end
 

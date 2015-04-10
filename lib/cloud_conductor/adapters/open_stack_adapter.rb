@@ -18,85 +18,82 @@ module CloudConductor
   module Adapters
     class OpenStackAdapter < AbstractAdapter # rubocop:disable ClassLength
       TYPE = :openstack
-      def initialize
+
+      def initialize(options = {})
         @post_processes = []
+        @options = options.with_indifferent_access
       end
 
-      def heat(options)
+      def heat
         ::Fog::Orchestration.new(
           provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_name]
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
         )
       end
 
-      def nova(options)
+      def nova
         ::Fog::Compute.new(
           provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_name]
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
         )
       end
 
-      def create_stack(name, template, parameters, options = {})
+      def create_stack(name, template, parameters)
         @post_processes << lambda do
-          add_security_rules(name, template, parameters, options)
+          add_security_rules(name, template, parameters)
         end
 
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
-        options = options.with_indifferent_access
         stack_params = {
           stack_name: name,
           template: converted_template,
           parameters: parameters
         }
-        heat(options).create_stack stack_params
+        heat.create_stack stack_params
       end
 
-      def update_stack(name, template, parameters, options = {})
+      def update_stack(name, template, parameters)
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
-        options = options.with_indifferent_access
-        id = get_stack_id(name, options)
+        id = get_stack_id(name)
         stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
         stack_params = {
           template: converted_template,
           parameters: parameters
         }
         Log.info "Start updating #{name} stack"
-        heat(options).update_stack stack, stack_params
+        heat.update_stack stack, stack_params
       end
 
-      def get_stack_id(name, options = {})
-        options = options.with_indifferent_access
-        body = (heat(options).list_stack_data)[:body].with_indifferent_access
+      def get_stack_id(name)
+        body = (heat.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:id]
       end
 
-      def get_stack_status(name, options = {})
-        options = options.with_indifferent_access
-        body = (heat(options).list_stack_data)[:body].with_indifferent_access
+      def get_stack_status(name)
+        body = (heat.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
 
-      def get_outputs(name, options = {})
-        options = options.with_indifferent_access
-        body = (heat(options).list_stack_data)[:body].with_indifferent_access
+      def get_outputs(name)
+        body = (heat.list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
         url = URI.parse "#{target_link[:href]}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
-        request.add_field 'X-Auth-Token', heat(options).auth_token
+        request.add_field 'X-Auth-Token', heat.auth_token
         response = Net::HTTP.start url.host, url.port do |http|
           http.request request
         end
@@ -110,20 +107,18 @@ module CloudConductor
         outputs
       end
 
-      def availability_zones(options = {})
-        options = options.with_indifferent_access
-        nova(options).hosts.map(&:zone).uniq
+      def availability_zones
+        nova.hosts.map(&:zone).uniq
       end
 
-      def add_security_rules(name, template, parameters, options = {})
-        options = options.with_indifferent_access
+      def add_security_rules(name, template, parameters)
         security_group_ingresses = JSON.parse(template)['Resources'].select do |_, resource|
           resource['Type'] == 'AWS::EC2::SecurityGroupIngress'
         end
 
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
-          add_security_rule(nova(options), name, properties, parameters)
+          add_security_rule(nova, name, properties, parameters)
         end
       rescue => e
         Log.error 'Failed to add security rule.'
@@ -163,9 +158,8 @@ module CloudConductor
         target_security_group.id if target_security_group
       end
 
-      def destroy_stack(name, options = {})
-        options = options.with_indifferent_access
-        stack = heat(options).stacks.find { |stack| stack.stack_name == name }
+      def destroy_stack(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
         unless stack
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
@@ -173,9 +167,8 @@ module CloudConductor
         stack.delete
       end
 
-      def destroy_image(name, options = {})
-        options = options.with_indifferent_access
-        image = nova(options).images.get(name)
+      def destroy_image(name)
+        image = nova.images.get(name)
 
         image.destroy if image
       end
