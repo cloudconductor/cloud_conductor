@@ -97,6 +97,31 @@ module CloudConductor
         end
       end
 
+      describe '#get_stack_events' do
+        before do
+          @stack = double('stack', events: [])
+          @stacks = double('stacks', :[] => @stack)
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks).and_return(@stacks)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_stack_events 'stack_name'
+        end
+
+        it 'return events via aws-sdk' do
+          expect(@stack).to receive(:events).and_return([])
+          expect(@stacks).to receive(:[]).with('stack-name').and_return(@stack)
+
+          status = @adapter.get_stack_events 'stack_name'
+          expect(status).to eq([])
+        end
+
+        it 'raise error  when target stack does not exist' do
+          allow(@stacks).to receive(:[]).and_return nil
+          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error
+        end
+      end
+
       describe '#get_outputs' do
         before do
           @outputs = []

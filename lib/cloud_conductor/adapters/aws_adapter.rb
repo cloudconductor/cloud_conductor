@@ -43,6 +43,10 @@ module CloudConductor
         cloud_formation.stacks[convert_name(name)].status.to_sym
       end
 
+      def get_stack_events(name)
+        cloud_formation.stacks[convert_name(name)].events
+      end
+
       def get_outputs(name)
         outputs = {}
         cloud_formation.stacks[convert_name(name)].outputs.each do |output|

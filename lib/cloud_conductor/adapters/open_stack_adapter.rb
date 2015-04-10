@@ -83,6 +83,11 @@ module CloudConductor
         stack.stack_status.to_sym
       end
 
+      def get_stack_events(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.events
+      end
+
       def get_outputs(name)
         stack = heat.stacks.find { |stack| stack.stack_name == name }
         link = stack.links.find { |link| link['rel'] == 'self' }

@@ -233,6 +233,18 @@ describe Stack do
     end
   end
 
+  describe '#events' do
+    before do
+      @client = double(:client, get_stack_events: [])
+      allow(@stack).to receive(:client).and_return(@client)
+    end
+
+    it 'call get_stack_events on adapter that related active cloud' do
+      expect(@stack).to receive_message_chain(:client, :get_stack_events).with(@stack.name).and_return([])
+      expect(@stack.events).to eq([])
+    end
+  end
+
   describe '#outputs' do
     it 'call get_outputs on adapter that related active cloud' do
       expect(@stack).to receive_message_chain(:client, :get_outputs).with(@stack.name).and_return(key: 'value')
