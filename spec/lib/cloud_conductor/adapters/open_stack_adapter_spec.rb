@@ -280,7 +280,7 @@ module CloudConductor
         end
       end
 
-      describe '#get_availability_zones' do
+      describe '#availability_zones' do
         before do
           @options = {}
           @options[:entry_point] = 'http://127.0.0.1:5000/'
@@ -293,7 +293,7 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.get_availability_zones @options
+          @adapter.availability_zones @options
         end
 
         it 'instantiate' do
@@ -308,17 +308,17 @@ module CloudConductor
               openstack_tenant: 'test_tenant'
             )
 
-          @adapter.get_availability_zones @options
+          @adapter.availability_zones @options
         end
 
         it 'return AvailabilityZone names' do
-          availability_zones = @adapter.get_availability_zones @options
+          availability_zones = @adapter.availability_zones @options
           expect(availability_zones).to eq(['nova', ''])
         end
 
         it 'return nil when target AvailabilityZone does not exist' do
           allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.get_availability_zones @options }.to raise_error
+          expect { @adapter.availability_zones @options }.to raise_error
         end
       end
 

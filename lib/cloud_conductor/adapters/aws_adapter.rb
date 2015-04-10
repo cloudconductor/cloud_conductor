@@ -51,7 +51,7 @@ module CloudConductor
         outputs
       end
 
-      def get_availability_zones(options = {})
+      def availability_zones(options = {})
         ec2(options).availability_zones.map(&:name)
       end
 

@@ -38,7 +38,7 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      az_list = @adapter.get_availability_zones @cloud.attributes
+      az_list = @adapter.availability_zones @cloud.attributes
       template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
       template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
 
@@ -58,7 +58,7 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      az_list = @adapter.get_availability_zones @cloud.attributes
+      az_list = @adapter.availability_zones @cloud.attributes
       template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
       template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
 

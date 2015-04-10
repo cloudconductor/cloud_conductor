@@ -110,7 +110,7 @@ module CloudConductor
         outputs
       end
 
-      def get_availability_zones(options = {})
+      def availability_zones(options = {})
         options = options.with_indifferent_access
         nova(options).hosts.map(&:zone).uniq
       end
