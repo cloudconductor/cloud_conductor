@@ -80,9 +80,9 @@ module CloudConductor
           converted_template = '{ dummy: "dummy" }'
           allow(@converter_stub).to receive(:convert).and_return converted_template
 
-          connector_stub = double('connector')
-          expect(connector_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(connector_stub)
+          heat_stub = double('heat')
+          expect(heat_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
+          allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
 
           @adapter.create_stack 'stack_name', '{}', {}, @options
         end
@@ -144,9 +144,9 @@ module CloudConductor
           converted_template = '{ dummy: "dummy" }'
           allow(@converter_stub).to receive(:convert).and_return converted_template
 
-          connector_stub = double('connector')
-          expect(connector_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(connector_stub)
+          heat_stub = double('heat')
+          expect(heat_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
+          allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
 
           @adapter.update_stack 'stack_name', '{}', {}, @options
         end
@@ -230,8 +230,8 @@ module CloudConductor
               )
             )
           )
-          @connector = double('connector', list_stack_data: @stacks, auth_token: 'dummy_token')
-          allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@connector)
+          @heat = double('heat', list_stack_data: @stacks, auth_token: 'dummy_token')
+          allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@heat)
 
           @request = double('request')
           allow(@request).to receive(:content_type=)
@@ -350,13 +350,13 @@ module CloudConductor
 
           @rules = double(:security_group_rules)
           allow(@rules).to receive(:save)
-          @compute = double(:compute)
-          allow(@compute).to receive_message_chain(:security_group_rules, :new).and_return(@rules)
+          @nova = double(:nova)
+          allow(@nova).to receive_message_chain(:security_group_rules, :new).and_return(@rules)
           @security_group = double(:security_group)
           allow(@security_group).to receive(:name).and_return('DummyStackName-DummySourceGroup-1234567890ab')
           allow(@security_group).to receive(:id).and_return('dummy_security_group_id')
-          allow(@compute).to receive_message_chain(:security_groups, :all).and_return([@security_group])
-          allow(::Fog::Compute).to receive(:new).and_return(@compute)
+          allow(@nova).to receive_message_chain(:security_groups, :all).and_return([@security_group])
+          allow(::Fog::Compute).to receive(:new).and_return(@nova)
         end
 
         it 'execute without exception' do
@@ -392,7 +392,7 @@ module CloudConductor
             parent_group_id: 'dummy_id',
             ip_range: { cidr: '10.0.0.0/16' }
           }.with_indifferent_access
-          expect(@compute.security_group_rules).to receive(:new).with(rule)
+          expect(@nova.security_group_rules).to receive(:new).with(rule)
 
           @adapter.add_security_rules(@name, @template, @parameters, @options)
         end
@@ -405,7 +405,7 @@ module CloudConductor
             parent_group_id: 'dummy_security_group_id',
             group: 'dummy_security_group_id'
           }.with_indifferent_access
-          expect(@compute.security_group_rules).to receive(:new).with(rule)
+          expect(@nova.security_group_rules).to receive(:new).with(rule)
 
           template = <<-EOS
             {
@@ -437,8 +437,8 @@ module CloudConductor
       describe '#destroy_stack' do
         before do
           @stack = double(:stack, stack_name: 'stack_name')
-          @connector = double(:connector, stacks: [@stack])
-          allow(@adapter).to receive(:create_connector).and_return(@connector)
+          @heat = double(:heat, stacks: [@stack])
+          allow(@adapter).to receive(:heat).and_return(@heat)
         end
 
         it 'will request delete_stack API' do

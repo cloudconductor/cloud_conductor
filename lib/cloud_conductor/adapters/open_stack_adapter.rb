@@ -22,7 +22,7 @@ module CloudConductor
         @post_processes = []
       end
 
-      def create_connector(options)
+      def heat(options)
         ::Fog::Orchestration.new(
           provider: :OpenStack,
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
@@ -32,7 +32,7 @@ module CloudConductor
         )
       end
 
-      def create_compute(options)
+      def nova(options)
         ::Fog::Compute.new(
           provider: :OpenStack,
           openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
@@ -51,13 +51,12 @@ module CloudConductor
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
-        connector = create_connector options
         stack_params = {
           stack_name: name,
           template: converted_template,
           parameters: parameters
         }
-        connector.create_stack stack_params
+        heat(options).create_stack stack_params
       end
 
       def update_stack(name, template, parameters, options = {})
@@ -65,7 +64,6 @@ module CloudConductor
         converted_template = converter.convert(template, parameters)
 
         options = options.with_indifferent_access
-        connector = create_connector options
         id = get_stack_id(name, options)
         stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
         stack_params = {
@@ -73,35 +71,32 @@ module CloudConductor
           parameters: parameters
         }
         Log.info "Start updating #{name} stack"
-        connector.update_stack stack, stack_params
+        heat(options).update_stack stack, stack_params
       end
 
       def get_stack_id(name, options = {})
         options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
+        body = (heat(options).list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:id]
       end
 
       def get_stack_status(name, options = {})
         options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
+        body = (heat(options).list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_stack[:stack_status].to_sym
       end
 
       def get_outputs(name, options = {})
         options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
+        body = (heat(options).list_stack_data)[:body].with_indifferent_access
         target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
         target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
         url = URI.parse "#{target_link[:href]}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
-        request.add_field 'X-Auth-Token', connector.auth_token
+        request.add_field 'X-Auth-Token', heat(options).auth_token
         response = Net::HTTP.start url.host, url.port do |http|
           http.request request
         end
@@ -117,27 +112,25 @@ module CloudConductor
 
       def get_availability_zones(options = {})
         options = options.with_indifferent_access
-        compute = create_compute(options)
-        compute.hosts.map(&:zone).uniq
+        nova(options).hosts.map(&:zone).uniq
       end
 
       def add_security_rules(name, template, parameters, options = {})
         options = options.with_indifferent_access
-        compute = create_compute(options)
         security_group_ingresses = JSON.parse(template)['Resources'].select do |_, resource|
           resource['Type'] == 'AWS::EC2::SecurityGroupIngress'
         end
 
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
-          add_security_rule(compute, name, properties, parameters)
+          add_security_rule(nova(options), name, properties, parameters)
         end
       rescue => e
         Log.error 'Failed to add security rule.'
         Log.error e
       end
 
-      def add_security_rule(compute, name, properties, parameters)
+      def add_security_rule(nova, name, properties, parameters)
         rule = {
           ip_protocol: properties[:IpProtocol],
           from_port: properties[:FromPort],
@@ -148,23 +141,23 @@ module CloudConductor
           rule[:parent_group_id] = parameters[:SharedSecurityGroup]
         else
           parent_group_name = "#{name}-#{properties[:GroupId][:Ref]}"
-          rule[:parent_group_id] = get_security_group_id(compute, parent_group_name)
+          rule[:parent_group_id] = get_security_group_id(nova, parent_group_name)
         end
 
         if properties[:SourceSecurityGroupId]
           security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"
-          security_group_id = get_security_group_id(compute, security_group_name)
+          security_group_id = get_security_group_id(nova, security_group_name)
           return if security_group_id.nil?
           rule[:group] = security_group_id
         else
           rule[:ip_range] = { cidr: properties[:CidrIp] }
         end
 
-        compute.security_group_rules.new(rule).save
+        nova.security_group_rules.new(rule).save
       end
 
-      def get_security_group_id(compute, security_group_name)
-        target_security_group = compute.security_groups.all.find do |security_group|
+      def get_security_group_id(nova, security_group_name)
+        target_security_group = nova.security_groups.all.find do |security_group|
           security_group.name.sub(/-[0-9a-zA-Z]{12}$/, '') == security_group_name
         end
         target_security_group.id if target_security_group
@@ -172,8 +165,7 @@ module CloudConductor
 
       def destroy_stack(name, options = {})
         options = options.with_indifferent_access
-        connector = create_connector options
-        stack = connector.stacks.find { |stack| stack.stack_name == name }
+        stack = heat(options).stacks.find { |stack| stack.stack_name == name }
         unless stack
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
@@ -183,8 +175,7 @@ module CloudConductor
 
       def destroy_image(name, options = {})
         options = options.with_indifferent_access
-        compute = create_compute options
-        image = compute.images.get(name)
+        image = nova(options).images.get(name)
 
         image.destroy if image
       end
