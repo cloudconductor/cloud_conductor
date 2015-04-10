@@ -144,22 +144,12 @@ module CloudConductor
 
       describe '#get_stack_status' do
         before do
-          @stacks = {
-            body: {
-              stacks: [
-                {
-                  stack_name: 'abc',
-                  stack_status: 'DUMMY'
-                },
-                {
-                  stack_name: 'stack_name',
-                  stack_status: 'TESTSTATUS'
-                }
-              ]
-            }
-          }
+          @stacks = [
+            double('stack', stack_name: 'abc', stack_status: 'TEST'),
+            double('stack', stack_name: 'stack_name', stack_status: 'DUMMY')
+          ]
 
-          allow(::Fog::Orchestration).to receive_message_chain(:new, :list_stack_data).and_return(@stacks)
+          allow(::Fog::Orchestration).to receive_message_chain(:new, :stacks).and_return(@stacks)
         end
 
         it 'execute without exception' do
@@ -181,7 +171,7 @@ module CloudConductor
 
         it 'return stack status' do
           status = @adapter.get_stack_status 'stack_name'
-          expect(status).to eq(:TESTSTATUS)
+          expect(status).to eq(:DUMMY)
         end
 
         it 'return nil when target stack does not exist' do
@@ -191,22 +181,11 @@ module CloudConductor
 
       describe '#get_outputs' do
         before do
-          @stacks = double(
-            'stacks', :[] => double(
-              'body', with_indifferent_access: double(
-                'stacks', :[] => double(
-                  'ary', find: double(
-                    'stack', :[] => double(
-                      'href', find: double(
-                        'rel', :[] => 'http://dummy/'
-                      )
-                    )
-                  )
-                )
-              )
-            )
-          )
-          @heat = double('heat', list_stack_data: @stacks, auth_token: 'dummy_token')
+          @stacks = [
+            double('stack', stack_name: 'abc', links: [{ 'rel' => 'dummy', 'href' => 'http://dummy/' }]),
+            double('stack', stack_name: 'stack_name', links: [{ 'rel' => 'self', 'href' => 'http://example/' }])
+          ]
+          @heat = double('heat', stacks: @stacks, auth_token: 'dummy_token')
           allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@heat)
 
           @request = double('request')

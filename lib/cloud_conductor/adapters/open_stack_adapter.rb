@@ -64,8 +64,7 @@ module CloudConductor
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
-        id = get_stack_id(name)
-        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
+        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: get_stack_id(name), stack_name: name)
         stack_params = {
           template: converted_template,
           parameters: parameters
@@ -75,22 +74,19 @@ module CloudConductor
       end
 
       def get_stack_id(name)
-        body = (heat.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack[:id]
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.id
       end
 
       def get_stack_status(name)
-        body = (heat.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack[:stack_status].to_sym
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.stack_status.to_sym
       end
 
       def get_outputs(name)
-        body = (heat.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
-        url = URI.parse "#{target_link[:href]}"
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        link = stack.links.find { |link| link['rel'] == 'self' }
+        url = URI.parse "#{link['href']}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
         request.add_field 'X-Auth-Token', heat.auth_token
