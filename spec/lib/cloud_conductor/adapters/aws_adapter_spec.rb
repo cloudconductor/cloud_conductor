@@ -212,6 +212,77 @@ module CloudConductor
         end
       end
 
+      describe '#aws_options' do
+        it 'return converted options for aws' do
+          options = {
+            key: 'dummy_key',
+            secret: 'dummy_secret',
+            entry_point: 'ap-northeast-1'
+          }
+          expected_options = {
+            access_key_id: 'dummy_key',
+            secret_access_key: 'dummy_secret',
+            region: 'ap-northeast-1'
+          }
+
+          expect(@adapter.send(:aws_options, options)).to eq(expected_options)
+        end
+      end
+
+      describe '#cloud_formation' do
+        before do
+          @options = {
+            key: 'dummy_key',
+            secret: 'dummy_secret',
+            entry_point: 'ap-northeast-1'
+          }
+        end
+
+        it 'set credentials for aws-sdk' do
+          expect(AWS::CloudFormation).to receive(:new)
+            .with(hash_including(access_key_id: 'dummy_key', secret_access_key: 'dummy_secret'))
+
+          @adapter.send(:cloud_formation, @options)
+        end
+
+        it 'set region for aws-sdk' do
+          expect(AWS::CloudFormation).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
+
+          @adapter.send(:cloud_formation, @options)
+        end
+
+        it 'return AWS::CloudFormation variable' do
+          expect(@adapter.send(:cloud_formation, @options)).to be_a_kind_of(AWS::CloudFormation)
+        end
+      end
+
+      describe '#ec2' do
+        before do
+          @options = {
+            key: 'dummy_key',
+            secret: 'dummy_secret',
+            entry_point: 'ap-northeast-1'
+          }
+        end
+
+        it 'set credentials for aws-sdk' do
+          expect(AWS::EC2).to receive(:new)
+            .with(hash_including(access_key_id: 'dummy_key', secret_access_key: 'dummy_secret'))
+
+          @adapter.send(:ec2, @options)
+        end
+
+        it 'set region for aws-sdk' do
+          expect(AWS::EC2).to receive(:new).with(hash_including(region: 'ap-northeast-1'))
+
+          @adapter.send(:ec2, @options)
+        end
+
+        it 'return AWS::EC2 variable' do
+          expect(@adapter.send(:ec2, @options)).to be_a_kind_of(AWS::EC2)
+        end
+      end
+
       describe '#convert_name' do
         it 'replace from underscore to hyphen to follow AWS constraint' do
           expect(@adapter.send(:convert_name, 'dummy_name-test')).to eq('dummy-name-test')
