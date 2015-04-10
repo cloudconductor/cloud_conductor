@@ -52,6 +52,26 @@ module CloudConductor
         end
       end
 
+      describe '#update_stack' do
+        before do
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :update)
+        end
+
+        it 'execute without exception' do
+          @adapter.update_stack 'stack_name', '{}', {}
+        end
+
+        it 'call CloudFormation#create to create stack on aws' do
+          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[]) do
+            double('stack').tap do |stack|
+              expect(stack).to receive(:update).with(template: '{}', parameters: {})
+            end
+          end
+
+          @adapter.update_stack 'stack_name', '{}', {}
+        end
+      end
+
       describe '#get_stack_status' do
         before do
           @stack = double('stack', status: '')
