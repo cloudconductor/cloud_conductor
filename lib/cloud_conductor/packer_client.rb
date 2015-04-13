@@ -40,22 +40,20 @@ module CloudConductor
       parameters[:packer_json_path] = create_json(images)
 
       command = build_command parameters
+      log_path = log_path(images.first.pattern, parameters[:role])
       Thread.new do
         Log.info("Start Packer in #{Thread.current}")
+        Log.info("Output packer log to #{log_path}")
         start = Time.now
-        status, stdout, stderr = systemu(command)
 
-        Log.debug('--------------stdout------------')
-        Log.debug(stdout)
-        Log.debug('-------------stderr------------')
-        Log.debug(stderr)
+        status, _stdout, _stderr = systemu("#{command} > #{log_path} 2>&1")
 
         Log.error('Packer failed') unless status.success?
         Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
 
         begin
           ActiveRecord::Base.connection_pool.with_connection do
-            yield parse(stdout, images) if block_given?
+            yield parse(IO.read(log_path), images) if block_given?
           end
         rescue => e
           Log.error(e)
@@ -99,6 +97,14 @@ module CloudConductor
       vars_text << " -var 'consul_secret_key=#{parameters[:consul_secret_key]}'"
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
+    end
+
+    def log_path(pattern, role)
+      log_directory = File.expand_path('../../log/packer', File.dirname(__FILE__))
+      FileUtils.mkdir_p log_directory unless Dir.exists? log_directory
+
+      date = DateTime.now.strftime('%Y%m%d%H%M%S')
+      File.expand_path("#{pattern.name}-#{role.gsub(/,\s*/, '-')}_#{date}", log_directory)
     end
 
     def parse(stdout, images) # rubocop:disable MethodLength
