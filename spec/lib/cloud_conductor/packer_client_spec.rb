@@ -98,6 +98,13 @@ module CloudConductor
         expect(@images.map(&:status)).to all(eq(:ERROR))
       end
 
+      it 'set status to ERROR on images when exit status of packer is non zero' do
+        status_stub = double('status', 'success?' => false, exitstatus: 5)
+        allow(@client).to receive(:systemu).and_return([status_stub, '', ''])
+        @client.build(@images, @parameters)
+        expect(@images.map(&:status)).to all(eq(:ERROR))
+      end
+
       it 'set status to ERROR on images when some error occurred while executing packer' do
         allow(@client).to receive(:systemu).and_raise
         @client.build(@images, @parameters)

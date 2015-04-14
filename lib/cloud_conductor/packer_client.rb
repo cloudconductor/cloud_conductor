@@ -42,15 +42,13 @@ module CloudConductor
       command = build_command parameters
       log_path = log_path(images.first.pattern, parameters[:role])
       Thread.new do
+        start = Time.now
         begin
           Log.info("Start Packer in #{Thread.current}")
           Log.info("Output packer log to #{log_path}")
-          start = Time.now
 
           status, _stdout, _stderr = systemu("#{command} > #{log_path} 2>&1")
-
-          Log.error('Packer failed') unless status.success?
-          Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
+          fail "Packer failed(exitstatus: #{status.exitstatus})" unless status.success?
 
           ActiveRecord::Base.connection_pool.with_connection do
             yield parse(IO.read(log_path), images) if block_given?
@@ -62,6 +60,7 @@ module CloudConductor
             image.update_attributes(status: :ERROR)
           end
         ensure
+          Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
           FileUtils.rm parameters[:packer_json_path]
         end
       end
