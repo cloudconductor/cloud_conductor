@@ -62,6 +62,7 @@ module CloudConductor
         allow(@client).to receive(:build_command)
         allow(Thread).to receive(:new).and_yield
         allow(@client).to receive(:systemu).and_return([double('status', 'success?' => true), '', ''])
+        allow(IO).to receive(:read).and_return('')
         allow(@client).to receive(:parse).and_return('dummy' => { status: :SUCCESS })
         allow(FileUtils).to receive(:rm)
 
