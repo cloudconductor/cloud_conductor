@@ -56,8 +56,11 @@ module CloudConductor
             yield parse(IO.read(log_path), images) if block_given?
           end
         rescue => e
+          Log.error('Error occurred while executing packer')
           Log.error(e)
-          raise
+          images.each do |image|
+            image.update_attributes(status: :ERROR)
+          end
         ensure
           FileUtils.rm parameters[:packer_json_path]
         end

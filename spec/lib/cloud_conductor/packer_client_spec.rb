@@ -94,7 +94,14 @@ module CloudConductor
       it 'remove temporary json for packer when some errors occurred while yielding block' do
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
-        expect { @client.build(@images, @parameters) { fail } }.to raise_exception
+        @client.build(@images, @parameters) { fail }
+        expect(@images.map(&:status)).to all(eq(:ERROR))
+      end
+
+      it 'set status to ERROR on images when some error occurred while executing packer' do
+        allow(@client).to receive(:systemu).and_raise
+        @client.build(@images, @parameters)
+        expect(@images.map(&:status)).to all(eq(:ERROR))
       end
     end
 
