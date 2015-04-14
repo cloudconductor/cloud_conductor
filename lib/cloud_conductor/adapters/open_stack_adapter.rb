@@ -163,8 +163,8 @@ module CloudConductor
         stack.delete
       end
 
-      def destroy_image(name)
-        image = nova.images.get(name)
+      def destroy_image(image_id)
+        image = nova.images.get(image_id)
 
         image.destroy if image
       end
