@@ -102,7 +102,7 @@ describe BaseImage do
           access_key: <%= cloud.key %>
           instance_type: <%= CloudConductor::Config.packer.aws_instance_type %>
       EOS
-      allow(CloudConductor::Config).to receive_message_chain(:packer, :aws_instance_type).and_return('dummy')
+      allow(CloudConductor::Config).to receive_message_chain(:packer, :aws_instance_type).and_return('dummy_instance_type')
     end
 
     it 'return builder options that is generated from templates.yml.erb' do
@@ -114,7 +114,7 @@ describe BaseImage do
       result = @base_image.builder
       expect(result[:name]).to eq("#{@base_image.name}----{{user `role`}}")
       expect(result[:access_key]).to eq(cloud.key)
-      expect(result[:instance_type]).to eq('dummy')
+      expect(result[:instance_type]).to eq('dummy_instance_type')
     end
   end
 end
