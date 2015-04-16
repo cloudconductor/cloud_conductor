@@ -34,7 +34,7 @@ module CloudConductor
 
       describe '#create_stack' do
         before do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :create)
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :create)
         end
 
         it 'execute without exception' do
@@ -42,7 +42,7 @@ module CloudConductor
         end
 
         it 'call CloudFormation#create to create stack on aws' do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks) do
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks) do
             double('stacks').tap do |stacks|
               expect(stacks).to receive(:create).with('stack-name', '{}', hash_including(parameters: {}))
             end
@@ -54,7 +54,7 @@ module CloudConductor
 
       describe '#update_stack' do
         before do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :update)
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :[], :update)
         end
 
         it 'execute without exception' do
@@ -62,7 +62,7 @@ module CloudConductor
         end
 
         it 'call CloudFormation#create to create stack on aws' do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[]) do
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :[]) do
             double('stack').tap do |stack|
               expect(stack).to receive(:update).with(template: '{}', parameters: {})
             end
@@ -76,7 +76,7 @@ module CloudConductor
         before do
           @stack = double('stack', status: '')
           @stacks = double('stacks', :[] => @stack)
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks).and_return(@stacks)
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks).and_return(@stacks)
         end
 
         it 'execute without exception' do
@@ -100,7 +100,7 @@ module CloudConductor
       describe '#get_outputs' do
         before do
           @outputs = []
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :outputs).and_return(@outputs)
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :[], :outputs).and_return(@outputs)
         end
 
         it 'execute without exception' do
@@ -120,7 +120,7 @@ module CloudConductor
       describe '#availability_zones' do
         before do
           @availability_zones = [double('availability_zone', name: 'ap-southeast-2a'), double('availability_zone', name: 'ap-southeast-2b')]
-          allow(AWS::EC2).to receive_message_chain(:new, :availability_zones).and_return(@availability_zones)
+          allow(@adapter).to receive_message_chain(:ec2, :availability_zones).and_return(@availability_zones)
         end
 
         it 'execute without exception' do
@@ -140,7 +140,7 @@ module CloudConductor
 
       describe '#destroy_stack' do
         before do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[], :delete)
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :[], :delete)
         end
 
         it 'execute without exception' do
@@ -148,7 +148,7 @@ module CloudConductor
         end
 
         it 'call CloudFormation::Stack#delete to delete created stack on aws' do
-          allow(AWS::CloudFormation).to receive_message_chain(:new, :stacks, :[]) do
+          allow(@adapter).to receive_message_chain(:cloud_formation, :stacks, :[]) do
             double('stack').tap do |stack|
               expect(stack).to receive(:delete)
             end
@@ -161,14 +161,14 @@ module CloudConductor
       describe '#destroy_image' do
         before do
           @image = double('image')
-          allow(AWS::EC2).to receive_message_chain(:new, :images, :[]).and_return(@image)
+          allow(@adapter).to receive_message_chain(:ec2, :images, :[]).and_return(@image)
           allow(@image).to receive(:deregister)
           allow(@image).to receive(:exists?).and_return(true)
           dummy_device_mapping = { dummy: { snapshot_id: 'snap-xxxxxxxx' } }
           allow(@image).to receive(:block_device_mappings).and_return(dummy_device_mapping)
 
           @snapshot = double('snapshot')
-          allow(AWS::EC2).to receive_message_chain(:new, :snapshots, :[]).and_return(@snapshot)
+          allow(@adapter).to receive_message_chain(:ec2, :snapshots, :[]).and_return(@snapshot)
           allow(@snapshot).to receive(:delete)
         end
 

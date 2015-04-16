@@ -35,7 +35,7 @@ module CloudConductor
 
       describe '#create_stack' do
         before do
-          allow(::Fog::Orchestration).to receive_message_chain(:new, :create_stack)
+          allow(@adapter).to receive_message_chain(:heat, :create_stack)
 
           @converter_stub = double('converter', convert: '{}')
           allow(CfnConverter).to receive(:create_converter).and_return(@converter_stub)
@@ -45,8 +45,8 @@ module CloudConductor
           @adapter.create_stack 'stack_name', '{}', {}
         end
 
-        it 'call Fog::Orchestration#create_stack to create stack on openstack' do
-          allow(::Fog::Orchestration).to receive_message_chain(:new) do
+        it 'call heat#create_stack to create stack on openstack' do
+          allow(@adapter).to receive(:heat) do
             double('newfog').tap do |newfog|
               expect(newfog).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: '{}', parameters: {}))
             end
@@ -67,7 +67,7 @@ module CloudConductor
 
           heat_stub = double('heat')
           expect(heat_stub).to receive(:create_stack).with(hash_including(stack_name: 'stack_name', template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
+          allow(@adapter).to receive(:heat).and_return(heat_stub)
 
           @adapter.create_stack 'stack_name', '{}', {}
         end
@@ -75,7 +75,7 @@ module CloudConductor
 
       describe '#update_stack' do
         before do
-          allow(::Fog::Orchestration).to receive_message_chain(:new, :update_stack)
+          allow(@adapter).to receive_message_chain(:heat, :update_stack)
 
           @converter_stub = double('converter', convert: '{}')
           allow(CfnConverter).to receive(:create_converter).and_return(@converter_stub)
@@ -88,8 +88,8 @@ module CloudConductor
           @adapter.update_stack 'stack_name', '{}', {}
         end
 
-        it 'call Fog::Orchestration#update_stack to update stack on openstack' do
-          allow(::Fog::Orchestration).to receive_message_chain(:new) do
+        it 'call heat#update_stack to update stack on openstack' do
+          allow(@adapter).to receive(:heat) do
             double('newfog').tap do |newfog|
               expect(newfog).to receive(:update_stack).with(@stack, hash_including(template: '{}', parameters: {}))
             end
@@ -110,7 +110,7 @@ module CloudConductor
 
           heat_stub = double('heat')
           expect(heat_stub).to receive(:update_stack).with(@stack, hash_including(template: converted_template, parameters: {}))
-          allow(::Fog::Orchestration).to receive(:new).and_return(heat_stub)
+          allow(@adapter).to receive(:heat).and_return(heat_stub)
 
           @adapter.update_stack 'stack_name', '{}', {}
         end
@@ -123,7 +123,7 @@ module CloudConductor
             double('stack', stack_name: 'stack_name', stack_status: 'DUMMY')
           ]
 
-          allow(::Fog::Orchestration).to receive_message_chain(:new, :stacks).and_return(@stacks)
+          allow(@adapter).to receive_message_chain(:heat, :stacks).and_return(@stacks)
         end
 
         it 'execute without exception' do
@@ -147,12 +147,12 @@ module CloudConductor
             double('stack', stack_name: 'stack_name', links: [{ 'rel' => 'self', 'href' => 'http://example/' }])
           ]
           @heat = double('heat', stacks: @stacks, auth_token: 'dummy_token')
-          allow(::Fog::Orchestration).to receive_message_chain(:new).and_return(@heat)
+          allow(@adapter).to receive(:heat).and_return(@heat)
 
           @request = double('request')
           allow(@request).to receive(:content_type=)
           allow(@request).to receive(:add_field)
-          allow(Net::HTTP::Get).to receive_message_chain(:new).and_return(@request)
+          allow(Net::HTTP::Get).to receive(:new).and_return(@request)
 
           @response = double('response')
           allow(@response).to receive(:body).and_return(
@@ -184,7 +184,7 @@ module CloudConductor
       describe '#availability_zones' do
         before do
           @availability_zones = [double('availability_zone', zone: 'nova'), double('availability_zone', zone: '')]
-          allow(::Fog::Compute).to receive_message_chain(:new, :hosts).and_return(@availability_zones)
+          allow(@adapter).to receive_message_chain(:nova, :hosts).and_return(@availability_zones)
         end
 
         it 'execute without exception' do
@@ -231,7 +231,7 @@ module CloudConductor
           allow(@security_group).to receive(:name).and_return('DummyStackName-DummySourceGroup-1234567890ab')
           allow(@security_group).to receive(:id).and_return('dummy_security_group_id')
           allow(@nova).to receive_message_chain(:security_groups, :all).and_return([@security_group])
-          allow(::Fog::Compute).to receive(:new).and_return(@nova)
+          allow(@adapter).to receive(:nova).and_return(@nova)
         end
 
         it 'execute without exception' do
