@@ -94,14 +94,14 @@ module CloudConductor
 
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
-          add_security_rule(nova, name, properties, parameters)
+          add_security_rule(name, properties, parameters)
         end
       rescue => e
         Log.error 'Failed to add security rule.'
         Log.error e
       end
 
-      def add_security_rule(nova, name, properties, parameters)
+      def add_security_rule(name, properties, parameters)
         rule = {
           ip_protocol: properties[:IpProtocol],
           from_port: properties[:FromPort],
@@ -112,12 +112,12 @@ module CloudConductor
           rule[:parent_group_id] = parameters[:SharedSecurityGroup]
         else
           parent_group_name = "#{name}-#{properties[:GroupId][:Ref]}"
-          rule[:parent_group_id] = get_security_group_id(nova, parent_group_name)
+          rule[:parent_group_id] = get_security_group_id(parent_group_name)
         end
 
         if properties[:SourceSecurityGroupId]
           security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"
-          security_group_id = get_security_group_id(nova, security_group_name)
+          security_group_id = get_security_group_id(security_group_name)
           return if security_group_id.nil?
           rule[:group] = security_group_id
         else
@@ -127,7 +127,7 @@ module CloudConductor
         nova.security_group_rules.new(rule).save
       end
 
-      def get_security_group_id(nova, security_group_name)
+      def get_security_group_id(security_group_name)
         target_security_group = nova.security_groups.all.find do |security_group|
           security_group.name.sub(/-[0-9a-zA-Z]{12}$/, '') == security_group_name
         end
