@@ -1,0 +1,13 @@
+name: <%= name %>----{{user `image_name`}}
+type: openstack
+username: <%= cloud.key %>
+password: <%= cloud.secret %>
+project: <%= cloud.tenant_name %>
+provider: <%= cloud.entry_point %>v2.0/tokens
+region: RegionOne
+flavor: <%= CloudConductor::Config.packer.openstack_flavor_id %>
+image_name: '{{user `pattern_name`}}-{{user `image_name`}}-<%= os %>-{{uuid}}'
+source_image: <%= source_image %>
+ssh_username: <%= ssh_username %>
+use_floating_ip: true
+floating_ip_pool: public
