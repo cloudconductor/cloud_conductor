@@ -1,6 +1,12 @@
 CHANGELOG
 =========
 
+## version 1.0.1 (2015/04/16)
+
+  - Use same salt on rebuilded environment.
+  - Move event log nodes to under event nodes in consul key-value store to simplify event nodes structure.
+  - Use PostgreSQL instead of SQLite3.
+
 ## version 1.0.0 (2015/03/27)
 
   - DB schema has been redesigned. This is not compatible with previous versions. Please build a new environment.
