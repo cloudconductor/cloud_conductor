@@ -154,7 +154,7 @@ module CloudConductor
     def configure_payload(environment)
       payload = {
         cloudconductor: {
-          salt: SecureRandom.hex,
+          salt: OpenSSL::Digest::SHA256.hexdigest(environment.system.created_at.iso8601(6)),
           patterns: {
           }
         }

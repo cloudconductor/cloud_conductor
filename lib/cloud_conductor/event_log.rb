@@ -17,17 +17,19 @@ module CloudConductor
     attr_reader :id, :name, :nodes
 
     def initialize(response)
-      @id = response.values.first['event_id']
-      @name = response.values.first['type']
+      results = response.reject(&log_entity?)
+      logs = response.select(&log_entity?)
+      @id = results.first.last['event_id']
+      @name = results.first.last['type']
 
-      @nodes = response.map do |key, value|
+      @nodes = results.map do |key, value|
         hostname = key.split('/').last
         {
           hostname: hostname,
           return_code: value['return_code'] && value['return_code'].to_i,
           started_at: value['started_at'] && DateTime.parse(value['started_at']),
           finished_at: value['finished_at'] && DateTime.parse(value['finished_at']),
-          log: value['log']
+          log: logs["#{key}/log"]
         }
       end
     end
@@ -49,6 +51,12 @@ module CloudConductor
       }
       result[:results] = @nodes if options[:detail]
       result
+    end
+
+    private
+
+    def log_entity?
+      ->(k, _) { k.match(%r{^event/[0-9a-f\-]+/[^/]+/log$}) }
     end
   end
 end

@@ -226,7 +226,7 @@ module CloudConductor
 
       it 'return payload that contains random salt' do
         payload = @builder.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:salt]).to match(/[0-9a-f]{32}/)
+        expect(payload[:cloudconductor][:salt]).to match(/^[0-9a-f]{64}$/)
       end
 
       it 'will request configure event to serf with payload' do

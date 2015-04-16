@@ -21,17 +21,17 @@ module CloudConductor
           'type' => 'configure',
           'return_code' => '0',
           'started_at' => '2014-12-16T14:44:07+0900',
-          'finished_at' => '2014-12-16T14:44:09+0900',
-          'log' => 'Dummy consul event log'
+          'finished_at' => '2014-12-16T14:44:09+0900'
         },
         'event/4ee5d2a6-853a-21a9-7463-ef1866468b76/host2' => {
           'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
           'type' => 'configure',
           'return_code' => '0',
           'started_at' => '2014-12-16T14:44:07+0900',
-          'finished_at' => '2014-12-16T14:44:09+0900',
-          'log' => 'Dummy consul event log'
-        }
+          'finished_at' => '2014-12-16T14:44:09+0900'
+        },
+        'event/4ee5d2a6-853a-21a9-7463-ef1866468b76/host1/log' => 'Dummy consul event log1',
+        'event/4ee5d2a6-853a-21a9-7463-ef1866468b76/host2/log' => 'Dummy consul event log2'
       }
 
       @event_log = EventLog.new(response)
@@ -59,7 +59,7 @@ module CloudConductor
           return_code: 0,
           started_at: DateTime.new(2014, 12, 16, 14, 44, 7, 'JST'),
           finished_at: DateTime.new(2014, 12, 16, 14, 44, 9, 'JST'),
-          log: 'Dummy consul event log'
+          log: 'Dummy consul event log1'
         )
       end
     end
@@ -120,7 +120,7 @@ module CloudConductor
         expect(result[:results][0][:return_code]).to eq(0)
         expect(result[:results][0][:started_at]).to eq('2014-12-16T14:44:07.000+09:00')
         expect(result[:results][0][:finished_at]).to eq('2014-12-16T14:44:09.000+09:00')
-        expect(result[:results][0][:log]).to eq('Dummy consul event log')
+        expect(result[:results][0][:log]).to eq('Dummy consul event log1')
       end
     end
   end
