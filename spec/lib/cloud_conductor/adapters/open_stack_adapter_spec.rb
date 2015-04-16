@@ -116,6 +116,30 @@ module CloudConductor
         end
       end
 
+      describe '#get_stack_id' do
+        before do
+          @stacks = [
+            double('stack', stack_name: 'abc', id: '1'),
+            double('stack', stack_name: 'stack_name', id: '2')
+          ]
+
+          allow(@adapter).to receive_message_chain(:heat, :stacks).and_return(@stacks)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_stack_id 'stack_name'
+        end
+
+        it 'return stack status' do
+          id = @adapter.get_stack_id 'stack_name'
+          expect(id).to eq('2')
+        end
+
+        it 'return nil when target stack does not exist' do
+          expect { @adapter.get_stack_id 'undefined_stack' }.to raise_error
+        end
+      end
+
       describe '#get_stack_status' do
         before do
           @stacks = [
@@ -204,95 +228,167 @@ module CloudConductor
 
       describe '#add_security_rules' do
         before do
+          allow(@adapter).to receive(:add_security_rule)
+
+          @name = 'DummyStackName'
           @template = <<-EOS
             {
               "Resources": {
-                "SharedSecurityGroupInboundRule":{
-                  "Type":"AWS::EC2::SecurityGroupIngress",
-                  "Properties":{
-                    "IpProtocol":"tcp",
-                    "FromPort":"10050",
-                    "ToPort":"10050",
-                    "CidrIp":"10.0.0.0/16",
-                    "GroupId":{"Ref":"SharedSecurityGroup"}
+                "SharedSecurityGroupInboundRule": {
+                  "Type": "AWS::EC2::SecurityGroupIngress",
+                  "Properties": {
+                    "IpProtocol": "tcp",
+                    "FromPort": "10050",
+                    "ToPort": "10050",
+                    "CidrIp": "10.0.0.0/16",
+                    "GroupId": {
+                      "Ref":"SharedSecurityGroup"
+                    }
                   }
                 }
               }
             }
           EOS
-          @name = 'DummyStackName'
-          @parameters = { SharedSecurityGroup: 'dummy_id' }.with_indifferent_access
-
-          @rules = double(:security_group_rules)
-          allow(@rules).to receive(:save)
-          @nova = double(:nova)
-          allow(@nova).to receive_message_chain(:security_group_rules, :new).and_return(@rules)
-          @security_group = double(:security_group)
-          allow(@security_group).to receive(:name).and_return('DummyStackName-DummySourceGroup-1234567890ab')
-          allow(@security_group).to receive(:id).and_return('dummy_security_group_id')
-          allow(@nova).to receive_message_chain(:security_groups, :all).and_return([@security_group])
-          allow(@adapter).to receive(:nova).and_return(@nova)
         end
 
         it 'execute without exception' do
-          @adapter.add_security_rules(@name, @template, @parameters)
+          @adapter.add_security_rules(@name, @template, {})
         end
 
-        it 'do nothing when AWS::EC2::SecurityGroupIngress in template is blank' do
-          expect(@rules).not_to receive(:new)
-          expect(@rules).not_to receive(:save)
+        it 'call add_security_rule' do
+          expected_arguments = {
+            IpProtocol: 'tcp',
+            FromPort: '10050',
+            ToPort: '10050',
+            CidrIp: '10.0.0.0/16',
+            GroupId: {
+              Ref: 'SharedSecurityGroup'
+            }
+          }
 
-          @template = '{ "Resources": {} }'
-          @adapter.add_security_rules(@name, @template, @parameters)
+          expect(@adapter).to receive(:add_security_rule).with('DummyStackName', expected_arguments, {})
+          @adapter.add_security_rules(@name, @template, {})
+        end
+      end
+
+      describe '#add_security_rule' do
+        before do
+          new_rule = double(:rule)
+          allow(new_rule).to receive(:save)
+          @security_group_rules = double(:security_group_rules)
+          allow(@security_group_rules).to receive(:new).and_return(new_rule)
+          allow(@adapter).to receive_message_chain(:nova, :security_group_rules).and_return(@security_group_rules)
+          allow(@adapter).to receive(:get_security_group_id).and_return('dummy_security_group_id')
+
+          @name = 'DummyStackName'
+          @properties = {
+            IpProtocol: 'tcp',
+            FromPort: '10050',
+            ToPort: '10050',
+            CidrIp: '10.0.0.0/16',
+            GroupId: {
+              Ref: 'SharedSecurityGroup'
+            },
+            SourceSecurityGroupId: {
+              Ref: 'SourceSecurityGroup'
+            }
+          }
+          @parameters = { SharedSecurityGroup: 'dummy_id' }.with_indifferent_access
         end
 
-        it 'instantiate a security_group_rules in the case of CidrIp in template' do
-          rule = {
+        it 'execute without exception' do
+          @adapter.add_security_rule(@name, @properties, @parameters)
+        end
+
+        it 'if properties include SharedSecurityGroup' do
+          expected_rule = {
             ip_protocol: 'tcp',
             from_port: '10050',
             to_port: '10050',
             parent_group_id: 'dummy_id',
             ip_range: { cidr: '10.0.0.0/16' }
           }.with_indifferent_access
-          expect(@nova.security_group_rules).to receive(:new).with(rule)
 
-          @adapter.add_security_rules(@name, @template, @parameters)
+          properties = {
+            IpProtocol: 'tcp',
+            FromPort: '10050',
+            ToPort: '10050',
+            CidrIp: '10.0.0.0/16',
+            GroupId: {
+              Ref: 'SharedSecurityGroup'
+            }
+          }
+
+          expect(@security_group_rules).to receive(:new).with(expected_rule)
+          @adapter.add_security_rule(@name, properties, @parameters)
         end
 
-        it 'instantiate a security_group_rules in the case of SourceSecurityGroupId in template' do
-          rule = {
+        it 'call get_security_group_id if properties not include SharedSecurityGroup' do
+          expected_rule = {
             ip_protocol: 'tcp',
             from_port: '10050',
             to_port: '10050',
             parent_group_id: 'dummy_security_group_id',
             group: 'dummy_security_group_id'
           }.with_indifferent_access
-          expect(@nova.security_group_rules).to receive(:new).with(rule)
 
-          template = <<-EOS
-            {
-              "Resources": {
-                "SharedSecurityGroupInboundRule":{
-                  "Type":"AWS::EC2::SecurityGroupIngress",
-                  "Properties":{
-                    "GroupId":{ "Ref": "DummySourceGroup" },
-                    "IpProtocol":"tcp",
-                    "FromPort":"10050",
-                    "ToPort":"10050",
-                    "CidrIp":"10.0.0.0/16",
-                    "SourceSecurityGroupId":{"Ref":"DummySourceGroup"}
-                  }
-                }
-              }
-            }
-          EOS
-          @adapter.add_security_rules(@name, template, @parameters)
+          expect(@security_group_rules).to receive(:new).with(expected_rule)
+          @adapter.add_security_rule(@name, @properties, {})
         end
 
-        it 'call save to add security rule' do
-          expect(@rules).to receive(:save)
+        it 'if properties include SharedSecurityGroupId' do
+          expected_rule = {
+            ip_protocol: 'tcp',
+            from_port: '10050',
+            to_port: '10050',
+            parent_group_id: 'dummy_id',
+            group: 'dummy_security_group_id'
+          }.with_indifferent_access
 
-          @adapter.add_security_rules(@name, @template, @parameters)
+          expect(@security_group_rules).to receive(:new).with(expected_rule)
+          @adapter.add_security_rule(@name, @properties, @parameters)
+        end
+
+        it 'if properties not include SharedSecurityGroupId' do
+          expected_rule = {
+            ip_protocol: 'tcp',
+            from_port: '10050',
+            to_port: '10050',
+            parent_group_id: 'dummy_id',
+            ip_range: { cidr: '10.0.0.0/16' }
+          }.with_indifferent_access
+
+          properties = {
+            IpProtocol: 'tcp',
+            FromPort: '10050',
+            ToPort: '10050',
+            CidrIp: '10.0.0.0/16',
+            GroupId: {
+              Ref: 'SharedSecurityGroup'
+            }
+          }
+
+          expect(@security_group_rules).to receive(:new).with(expected_rule)
+          @adapter.add_security_rule(@name, properties, @parameters)
+        end
+      end
+
+      describe '#get_security_group_id' do
+        before do
+          security_groups = [
+            double('security_group', name: 'test_name1-1234567890ab', id: '1'),
+            double('security_group', name: 'test_name2-1234567890ab', id: '2')
+          ]
+          allow(@adapter).to receive_message_chain(:nova, :security_groups, :all).and_return(security_groups)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_security_group_id 'test_name1'
+        end
+
+        it 'return stack status' do
+          id = @adapter.get_security_group_id 'test_name2'
+          expect(id).to eq('2')
         end
       end
 
@@ -311,6 +407,24 @@ module CloudConductor
         it 'doesn\'t raise any error when target stack was already deleted' do
           expect(@stack).not_to receive(:delete)
           @adapter.destroy_stack 'already_deleted_stack'
+        end
+      end
+
+      describe '#destroy_image' do
+        before do
+          @image = double('image')
+          allow(@adapter).to receive_message_chain(:nova, :images, :get).and_return(@image)
+          allow(@image).to receive(:destroy)
+        end
+
+        it 'execute without exception' do
+          @adapter.destroy_image 'dummy_image'
+        end
+
+        it 'call destroy to delete created image on openstack' do
+          expect(@image).to receive(:destroy)
+
+          @adapter.destroy_image 'dummy_image'
         end
       end
 
