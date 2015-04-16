@@ -45,19 +45,6 @@ module CloudConductor
           @adapter.create_stack 'stack_name', '{}', {}
         end
 
-        it 'instantiate' do
-          expect(::Fog::Orchestration).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
-          @adapter.create_stack 'stack_name', '{}', {}
-        end
-
         it 'call Fog::Orchestration#create_stack to create stack on openstack' do
           allow(::Fog::Orchestration).to receive_message_chain(:new) do
             double('newfog').tap do |newfog|
@@ -101,19 +88,6 @@ module CloudConductor
           @adapter.update_stack 'stack_name', '{}', {}
         end
 
-        it 'instantiate' do
-          expect(::Fog::Orchestration).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
-          @adapter.update_stack 'stack_name', '{}', {}
-        end
-
         it 'call Fog::Orchestration#update_stack to update stack on openstack' do
           allow(::Fog::Orchestration).to receive_message_chain(:new) do
             double('newfog').tap do |newfog|
@@ -153,19 +127,6 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.get_stack_status 'stack_name'
-        end
-
-        it 'instantiate' do
-          expect(::Fog::Orchestration).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
           @adapter.get_stack_status 'stack_name'
         end
 
@@ -213,19 +174,6 @@ module CloudConductor
           @adapter.get_outputs 'stack_name'
         end
 
-        it 'instantiate' do
-          expect(::Fog::Orchestration).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
-          @adapter.get_outputs 'stack_name'
-        end
-
         it 'return outputs' do
           outputs = @adapter.get_outputs 'stack_name'
           outputs = outputs.with_indifferent_access
@@ -240,19 +188,6 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.availability_zones
-        end
-
-        it 'instantiate' do
-          expect(::Fog::Compute).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
           @adapter.availability_zones
         end
 
@@ -300,19 +235,6 @@ module CloudConductor
         end
 
         it 'execute without exception' do
-          @adapter.add_security_rules(@name, @template, @parameters)
-        end
-
-        it 'instantiate a Fog Compute' do
-          expect(::Fog::Compute).to receive(:new)
-            .with(
-              provider: :OpenStack,
-              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
-              openstack_api_key: 'test_secret',
-              openstack_username: 'test_key',
-              openstack_tenant: 'test_tenant'
-            )
-
           @adapter.add_security_rules(@name, @template, @parameters)
         end
 
