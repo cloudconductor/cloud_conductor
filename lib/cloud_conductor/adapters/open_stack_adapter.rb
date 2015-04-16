@@ -24,26 +24,6 @@ module CloudConductor
         @options = options.with_indifferent_access
       end
 
-      def heat
-        ::Fog::Orchestration.new(
-          provider: :OpenStack,
-          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: @options[:secret],
-          openstack_username: @options[:key],
-          openstack_tenant: @options[:tenant_name]
-        )
-      end
-
-      def nova
-        ::Fog::Compute.new(
-          provider: :OpenStack,
-          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: @options[:secret],
-          openstack_username: @options[:key],
-          openstack_tenant: @options[:tenant_name]
-        )
-      end
-
       def create_stack(name, template, parameters)
         @post_processes << lambda do
           add_security_rules(name, template, parameters)
@@ -171,6 +151,28 @@ module CloudConductor
 
       def post_process
         @post_processes.each(&:call)
+      end
+
+      private
+
+      def heat
+        ::Fog::Orchestration.new(
+          provider: :OpenStack,
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
+        )
+      end
+
+      def nova
+        ::Fog::Compute.new(
+          provider: :OpenStack,
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
+        )
       end
     end
   end

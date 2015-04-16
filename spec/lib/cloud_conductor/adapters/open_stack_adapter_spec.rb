@@ -391,6 +391,38 @@ module CloudConductor
           @adapter.destroy_stack 'already_deleted_stack'
         end
       end
+
+      describe '#heat' do
+        it 'call Fog::Orchestration with necessary options' do
+          allow(::Fog::Orchestration).to receive(:new)
+
+          expected_arguments = {
+            provider: :OpenStack,
+            openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+            openstack_api_key: 'test_secret',
+            openstack_username: 'test_key',
+            openstack_tenant: 'test_tenant'
+          }
+          expect(::Fog::Orchestration).to receive(:new).with(expected_arguments)
+          @adapter.send(:heat)
+        end
+      end
+
+      describe '#nova' do
+        it 'call Fog::Compute necessary options' do
+          allow(::Fog::Compute).to receive(:new)
+
+          expected_arguments = {
+            provider: :OpenStack,
+            openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+            openstack_api_key: 'test_secret',
+            openstack_username: 'test_key',
+            openstack_tenant: 'test_tenant'
+          }
+          expect(::Fog::Compute).to receive(:new).with(expected_arguments)
+          @adapter.send(:nova)
+        end
+      end
     end
   end
 end
