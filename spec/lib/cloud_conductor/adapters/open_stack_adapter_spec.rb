@@ -391,6 +391,18 @@ module CloudConductor
           @adapter.destroy_stack 'already_deleted_stack'
         end
       end
+
+      describe '#flavor' do
+        before do
+          @flavor = double(:flavor, name: 'dummy_flavor_name')
+          @nova = double(:nova, flavors: [@flavor])
+          allow(::Fog::Compute).to receive(:new).and_return(@nova)
+        end
+
+        it 'return flavor id' do
+          expect(@adapter.flavor 'dummy_flavor_name').to eq(@flavor)
+        end
+      end
     end
   end
 end
