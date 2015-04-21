@@ -20,7 +20,6 @@ describe ApplicationHistory do
   before do
     @history = ApplicationHistory.new
     @history.application = application
-    @history.domain = 'example.com'
     @history.type = 'static'
     @history.protocol = 'http'
     @history.url = 'http://example.com/'
@@ -128,8 +127,7 @@ describe ApplicationHistory do
         application_payload = payload[:cloudconductor][:applications][application.name]
         expect(application_payload).to be_a Hash
 
-        expect(application_payload.keys).to eq(%i(domain type version protocol url revision pre_deploy post_deploy parameters))
-        expect(application_payload[:domain]).to eq(@history.domain)
+        expect(application_payload.keys).to eq(%i(type version protocol url revision pre_deploy post_deploy parameters))
         expect(application_payload[:type]).to eq(@history.type)
         expect(application_payload[:version]).to eq(@history.version)
         expect(application_payload[:protocol]).to eq(@history.protocol)

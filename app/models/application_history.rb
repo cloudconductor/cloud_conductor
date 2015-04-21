@@ -37,7 +37,6 @@ class ApplicationHistory < ActiveRecord::Base
     }
 
     application_payload = {}
-    application_payload[:domain] = domain
     application_payload[:type] = type
     application_payload[:version] = version
     application_payload[:protocol] = protocol

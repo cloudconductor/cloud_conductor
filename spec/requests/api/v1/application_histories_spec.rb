@@ -64,7 +64,6 @@ describe API do
       let(:result) do
         params.merge(
           id: Fixnum,
-          domain: nil,
           created_at: String,
           updated_at: String,
           version: Date.today.strftime('%Y%m%d') + '-002'
