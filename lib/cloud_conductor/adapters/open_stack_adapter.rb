@@ -158,6 +158,12 @@ module CloudConductor
         @post_processes.each(&:call)
       end
 
+      def flavor(flavor_name)
+        found_flavor = nova.flavors.find { |flavor| flavor.name == flavor_name }
+        fail "Target flavor(#{flavor_name}) does not exist" unless found_flavor
+        found_flavor
+      end
+
       private
 
       def heat

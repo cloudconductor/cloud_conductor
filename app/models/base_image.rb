@@ -15,8 +15,7 @@ class BaseImage < ActiveRecord::Base
   end
 
   def builder
-    packer_builder_template_erb = File.read(File.join(Rails.root, 'config/templates.yml.erb'))
-    packer_builder_template = YAML.load(ERB.new(packer_builder_template_erb).result(binding))
-    packer_builder_template[cloud.type].with_indifferent_access
+    template_path = File.join(Rails.root, "config/template_#{cloud.type}.yml.erb")
+    YAML.load(ERB.new(File.read(template_path)).result(binding)).with_indifferent_access
   end
 end

@@ -465,6 +465,18 @@ module CloudConductor
         end
       end
 
+      describe '#flavor' do
+        before do
+          @flavor = double(:flavor, name: 'dummy_flavor_name')
+          @nova = double(:nova, flavors: [@flavor])
+          allow(::Fog::Compute).to receive(:new).and_return(@nova)
+        end
+
+        it 'return flavor id' do
+          expect(@adapter.flavor 'dummy_flavor_name').to eq(@flavor)
+        end
+      end
+
       describe '#heat' do
         it 'call Fog::Orchestration with necessary options' do
           allow(::Fog::Orchestration).to receive(:new)

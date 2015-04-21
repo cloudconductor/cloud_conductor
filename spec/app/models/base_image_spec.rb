@@ -93,14 +93,13 @@ describe BaseImage do
   end
 
   describe '#builder' do
-    let(:template_path) { File.join(Rails.root, 'config/templates.yml.erb') }
+    let(:template_path) { File.join(Rails.root, 'config/template_aws.yml.erb') }
 
     before do
       allow(IO).to receive(:read).with(template_path).and_return <<-EOS
-        aws:
-          name: <%= name %>----{{user `role`}}
-          access_key: <%= cloud.key %>
-          instance_type: <%= CloudConductor::Config.packer.aws_instance_type %>
+        name: <%= name %>----{{user `role`}}
+        access_key: <%= cloud.key %>
+        instance_type: <%= CloudConductor::Config.packer.aws_instance_type %>
       EOS
       allow(CloudConductor::Config).to receive_message_chain(:packer, :aws_instance_type).and_return('dummy_instance_type')
     end
