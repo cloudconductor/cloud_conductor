@@ -83,6 +83,7 @@ describe Deployment do
     before do
       allow(Thread).to receive(:new).and_yield
       allow(@deployment).to receive(:consul_request)
+      allow(@deployment).to receive(:update_dns_record)
       @deployment.save!
     end
 
@@ -122,6 +123,30 @@ describe Deployment do
     it 'clear status to :NOT_DEPLOYED' do
       @deployment.status = :DEPLOY_COMPLETE
       expect(@deployment.dup.status).to eq(:NOT_DEPLOYED)
+    end
+  end
+
+  describe '#update_dns_record' do
+    before do
+      @client = double(:dns_client, update: true)
+      allow(CloudConductor::DNSClient).to receive(:new).and_return(@client)
+    end
+
+    it 'register CNAME record to DNS server' do
+      expect(@client).to receive(:update).with('app.example.com', 'example.com', 'CNAME')
+      @deployment.send(:update_dns_record)
+    end
+
+    it 'does not register CNAME record to DNS server when system domain is null' do
+      system.domain = nil
+      expect(@client).not_to receive(:update)
+      @deployment.send(:update_dns_record)
+    end
+
+    it 'does not register CNAME record to DNS server when application domain is null' do
+      application_history.application.domain = nil
+      expect(@client).not_to receive(:update)
+      @deployment.send(:update_dns_record)
     end
   end
 end

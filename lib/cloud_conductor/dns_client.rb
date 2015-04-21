@@ -31,8 +31,8 @@ module CloudConductor
       end
     end
 
-    def update(domain, ip_address)
-      @client.update(domain, ip_address)
+    def update(domain, value, type = 'A')
+      @client.update(domain, value, type)
     rescue => e
       Log.error('Some error occurred while requesting to DNS')
       Log.error(e)
@@ -45,14 +45,14 @@ module CloudConductor
       @config = config
     end
 
-    def update(domain, ip_address)
+    def update(domain, value, type = 'A')
       dns_keyfile = @config[:key_file]
       dns_server = @config[:server]
       ttl = @config[:ttl]
       command = "server #{dns_server}\n" \
       "update delete #{domain}\n" \
       "send\n" \
-      "update add #{domain} #{ttl} A #{ip_address}\n" \
+      "update add #{domain} #{ttl} #{type} #{value}\n" \
       "send\n"
       Log.debug command
       nsupdate = "sudo /usr/bin/nsupdate -k #{dns_keyfile}"
@@ -74,7 +74,7 @@ module CloudConductor
       @client = route53.client
     end
 
-    def update(domain, ip_address)
+    def update(domain, value, type = 'A')
       base_domain_name = domain.split('.', 2).last
       hosted_zone = find_hosted_zone(base_domain_name)
       if hosted_zone.nil?
@@ -82,9 +82,9 @@ module CloudConductor
         Log.error error_message
         fail error_message
       end
-      existing_record = find_resource_record_set(hosted_zone, domain, 'A')
+      existing_record = find_resource_record_set(hosted_zone, domain, type)
       action = existing_record.nil? ? 'CREATE' : 'UPSERT'
-      result = create_or_update_resource_record_set(hosted_zone, domain, ip_address, action)
+      result = create_or_update_resource_record_set(hosted_zone, domain, value, action, type)
 
       sleep 30 if existing_record.nil?
 
