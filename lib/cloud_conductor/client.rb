@@ -76,6 +76,10 @@ module CloudConductor
       @adapter.get_stack_status name
     end
 
+    def get_stack_events(name)
+      @adapter.get_stack_events name
+    end
+
     def get_outputs(name)
       @adapter.get_outputs name
     end

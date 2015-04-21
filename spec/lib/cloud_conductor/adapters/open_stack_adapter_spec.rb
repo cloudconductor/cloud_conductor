@@ -164,6 +164,43 @@ module CloudConductor
         end
       end
 
+      describe '#get_stack_events' do
+        before do
+          @stacks = [
+            double('stack', stack_name: 'abc', events: ['dummy']),
+            double('stack', stack_name: 'stack_name', events: %w(event1 events2))
+          ]
+
+          allow(::Fog::Orchestration).to receive_message_chain(:new, :stacks).and_return(@stacks)
+        end
+
+        it 'execute without exception' do
+          @adapter.get_stack_events 'stack_name'
+        end
+
+        it 'instantiate' do
+          expect(::Fog::Orchestration).to receive(:new)
+            .with(
+              provider: :OpenStack,
+              openstack_auth_url: 'http://127.0.0.1:5000/v2.0/tokens',
+              openstack_api_key: 'test_secret',
+              openstack_username: 'test_key',
+              openstack_tenant: 'test_tenant'
+            )
+
+          @adapter.get_stack_events 'stack_name'
+        end
+
+        it 'return stack events' do
+          events = @adapter.get_stack_events 'stack_name'
+          expect(events).to eq(%w(event1 events2))
+        end
+
+        it 'return nil when target stack does not exist' do
+          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error
+        end
+      end
+
       describe '#get_outputs' do
         before do
           @stacks = [

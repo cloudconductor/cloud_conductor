@@ -129,6 +129,13 @@ module CloudConductor
       end
     end
 
+    describe '#get_stack_events' do
+      it 'call adapter#get_stack_events with same arguments' do
+        expect(@client.adapter).to receive(:get_stack_events).with('stack_name')
+        @client.get_stack_events 'stack_name'
+      end
+    end
+
     describe '#get_outputs' do
       it 'call adapter#get_outputs with same arguments' do
         expect(@client.adapter).to receive(:get_outputs).with('stack_name')

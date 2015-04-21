@@ -87,7 +87,17 @@ module CloudConductor
         status = stack.status
 
         unless %i(CREATE_IN_PROGRESS CREATE_COMPLETE).include? status
-          fail "Unknown error has occurred while create stack(#{status})"
+          failed_events = stack.events.select { |event| %w(CREATE_FAILED).include?(event.resource_status) }
+          details = failed_events.map do |event|
+            format('  %s %s %s(%s):%s',
+                   event.timestamp.localtime.iso8601,
+                   event.resource_status,
+                   event.resource_type,
+                   event.logical_resource_id,
+                   event.resource_status_reason
+                  )
+          end
+          fail "Some error has occurred while create stack(#{status})\n#{details.join("\n")}"
         end
 
         next if status == :CREATE_IN_PROGRESS
