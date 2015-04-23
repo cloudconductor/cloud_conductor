@@ -31,6 +31,11 @@ describe System do
       expect { @system.save! }.to change { System.count }.by(1)
     end
 
+    it 'create with long text' do
+      @system.description = '*' * 256
+      @system.save!
+    end
+
     it 'call #update_dns callback if system has primary environment' do
       @system.environments << environment
       @system.primary_environment = @system.environments.first

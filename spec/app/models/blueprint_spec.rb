@@ -34,6 +34,11 @@ describe Blueprint do
       expect(@blueprint).to receive(:set_consul_secret_key)
       @blueprint.save!
     end
+
+    it 'create with long text' do
+      @blueprint.description = '*' * 256
+      @blueprint.save!
+    end
   end
 
   describe '#destroy' do

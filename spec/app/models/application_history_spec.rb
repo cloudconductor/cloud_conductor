@@ -43,6 +43,11 @@ describe ApplicationHistory do
       expect(@history).to receive(:allocate_version)
       @history.save!
     end
+
+    it 'create with long text' do
+      @history.parameters = %({ "key": "#{'*' * 256}" })
+      @history.save!
+    end
   end
 
   describe '#allocate_version' do
