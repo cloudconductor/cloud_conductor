@@ -158,48 +158,5 @@ describe API do
         it_behaves_like('204 No Content')
       end
     end
-
-    describe 'POST /applications/:application_id/histories/:history_id/deploy' do
-      let(:method) { 'post' }
-      let(:url) { "/api/v1/applications/#{application.id}/histories/#{application_history.id}/deploy" }
-      let(:params) { { environment_id: environment.id } }
-      let(:result) do
-        deployment = FactoryGirl.attributes_for(
-          :deployment,
-          application_history_id: application_history.id,
-          environment_id: environment.id
-        )
-        deployment.merge(
-          id: Fixnum,
-          created_at: String,
-          updated_at: String,
-          status: 'PROGRESS'
-        )
-      end
-
-      before do
-        allow_any_instance_of(Deployment).to receive(:deploy_application).and_return(true)
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('202 Accepted')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('202 Accepted')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('202 Accepted')
-      end
-    end
   end
 end
