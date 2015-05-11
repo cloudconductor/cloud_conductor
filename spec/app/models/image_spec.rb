@@ -33,6 +33,11 @@ describe Image do
     it 'create with valid parameters' do
       expect { @image.save! }.to change { Image.count }.by(1)
     end
+
+    it 'create with long text' do
+      @image.message = '*' * 256
+      @image.save!
+    end
   end
 
   describe '#update_name' do

@@ -34,6 +34,11 @@ describe Environment do
       expect(@environment).to receive(:create_or_update_stacks)
       @environment.save!
     end
+
+    it 'create with long text' do
+      @environment.description = '*' * 256
+      @environment.save!
+    end
   end
 
   describe '#initialize' do

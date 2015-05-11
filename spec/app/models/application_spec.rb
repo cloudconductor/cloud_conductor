@@ -25,6 +25,11 @@ describe Application do
     it 'create with valid parameters' do
       expect { @application.save! }.to change { Application.count }.by(1)
     end
+
+    it 'create with long text' do
+      @application.description = '*' * 256
+      @application.save!
+    end
   end
 
   describe '#valid?' do
