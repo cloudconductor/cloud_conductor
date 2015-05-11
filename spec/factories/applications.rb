@@ -3,5 +3,6 @@ FactoryGirl.define do
     system
     sequence(:name) { |n| "application_#{n}" }
     description 'application description'
+    domain 'app.example.com'
   end
 end

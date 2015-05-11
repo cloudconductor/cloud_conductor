@@ -32,6 +32,8 @@ class Deployment < ActiveRecord::Base
           environment.event.sync_fire(:spec)
           update_attributes!(status: :DEPLOY_COMPLETE)
 
+          update_dns_record
+
           Log.info "Deploy #{application_name} has completed successfully"
         rescue => e
           update_attributes(status: :ERROR)
@@ -49,5 +51,13 @@ class Deployment < ActiveRecord::Base
     deployment.environment = nil
     deployment.status = :NOT_DEPLOYED
     deployment
+  end
+
+  private
+
+  def update_dns_record
+    return unless environment.system.domain && application_history.application.domain
+
+    CloudConductor::DNSClient.new.update(application_history.application.domain, environment.system.domain, 'CNAME')
   end
 end

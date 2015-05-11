@@ -1,7 +1,6 @@
 FactoryGirl.define do
   factory :application_history, class: ApplicationHistory do
     application
-    domain 'app.example.com'
     type 'dynamic'
     protocol 'git'
     url 'https://example.com/app_repository.git'
