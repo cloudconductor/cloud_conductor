@@ -239,6 +239,13 @@ module CloudConductor
       end
     end
 
+    describe '#escape' do
+      it 'return escaped value' do
+        escaped_value = @client.send(:escape, "dummy 'value'")
+        expect(escaped_value).to eq("dummy '\\''value'\\''")
+      end
+    end
+
     describe '#parse' do
       before do
         @cloud_aws = FactoryGirl.create(:cloud, :aws, name: 'aws')

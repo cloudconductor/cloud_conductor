@@ -149,7 +149,8 @@ describe Pattern do
     before do
       allow(Dir).to receive(:chdir).and_yield
       allow(FileUtils).to receive(:rm_r)
-      allow(@pattern).to receive(:system).and_return(true)
+      status = double('status', success?: true)
+      allow(Open3).to receive(:capture3).and_return(['', '', status])
     end
 
     it 'will raise error when block does not given' do
@@ -157,8 +158,7 @@ describe Pattern do
     end
 
     it 'will clone repository to temporary directory' do
-      command = %r(git clone #{@pattern.url} .*tmp/patterns/[a-f0-9-]{36})
-      expect(@pattern).to receive(:system).with(command).and_return(true)
+      expect(Open3).to receive(:capture3).with('git', 'clone', @pattern.url, %r(.*tmp\/patterns\/[a-f0-9-]{36}))
       @pattern.send(:clone_repository) {}
     end
 
@@ -168,8 +168,7 @@ describe Pattern do
     end
 
     it 'will change branch to specified revision when revision has specified' do
-      command = 'git checkout dummy'
-      expect(@pattern).to receive(:system).with(command).and_return(true)
+      expect(Open3).to receive(:capture3).with('git', 'checkout', 'dummy')
 
       @pattern.revision = 'dummy'
       @pattern.send(:clone_repository) {}
@@ -177,7 +176,7 @@ describe Pattern do
 
     it 'won\'t change branch when revision is nil' do
       command = /git checkout/
-      expect(@pattern).not_to receive(:system).with(command)
+      expect(Open3).not_to receive(:capture3).with(command)
 
       @pattern.send(:clone_repository) {}
     end
