@@ -97,14 +97,9 @@ module CloudConductor
       vars[:cloudconductor_init_url] = @cloudconductor_init_url
       vars[:cloudconductor_init_revision] = @cloudconductor_init_revision
       vars[:consul_secret_key] = parameters[:consul_secret_key]
-      vars_text = vars.map { |key, value| " -var '#{key}=#{escape(value)}'" }.join(' ')
+      vars_text = vars.map { |key, value| " -var #{key}=#{value.shellescape}" }.join(' ')
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
-    end
-
-    def escape(value)
-      return nil unless value
-      value.gsub("'", Regexp.escape("'\\''"))
     end
 
     def log_path(pattern, role)
