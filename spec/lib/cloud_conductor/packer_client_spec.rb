@@ -157,15 +157,19 @@ module CloudConductor
     describe '#build_command' do
       before do
         @parameters = {
+          repository_url: 'http://example.com/default',
+          revision: 'default_revision',
           role: 'nginx',
+          pattern_name: 'default_pattern_name',
+          consul_secret_key: 'default_key',
           packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json'
         }
       end
 
       it 'return command with repository_url and revision' do
         vars = []
-        vars << "-var 'repository_url=http://example.com'"
-        vars << "-var 'revision=dummy_revision'"
+        vars << '-var repository_url=http://example.com'
+        vars << '-var revision=dummy_revision'
 
         @parameters.merge!(repository_url: 'http://example.com', revision: 'dummy_revision')
         command = @client.send(:build_command, @parameters)
@@ -174,7 +178,7 @@ module CloudConductor
 
       it 'return command with cloudconductor_root' do
         vars = []
-        vars << "-var 'cloudconductor_root=/opt/cloudconductor'"
+        vars << '-var cloudconductor_root=/opt/cloudconductor'
 
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
@@ -182,7 +186,7 @@ module CloudConductor
 
       it 'return command with Role option' do
         vars = []
-        vars << "-var 'role=nginx'"
+        vars << '-var role=nginx'
 
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
@@ -190,7 +194,7 @@ module CloudConductor
 
       it 'return command with image_name option' do
         vars = []
-        vars << "-var 'image_name=nginx-dummy'"
+        vars << '-var image_name=nginx-dummy'
 
         @parameters.merge!(role: 'nginx, dummy')
         command = @client.send(:build_command, @parameters)
@@ -199,8 +203,8 @@ module CloudConductor
 
       it 'return command with aws_access_key and aws_secret_key option' do
         vars = []
-        vars << "-var 'aws_access_key=dummy_access_key'"
-        vars << "-var 'aws_secret_key=dummy_secret_key'"
+        vars << '-var aws_access_key=dummy_access_key'
+        vars << '-var aws_secret_key=dummy_secret_key'
 
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
@@ -208,10 +212,10 @@ module CloudConductor
 
       it 'return command with openstack host, username, password and tenant_id option' do
         vars = []
-        vars << "-var 'openstack_host=dummy_host'"
-        vars << "-var 'openstack_username=dummy_user'"
-        vars << "-var 'openstack_password=dummy_password'"
-        vars << "-var 'openstack_tenant_id=dummy_tenant_id'"
+        vars << '-var openstack_host=dummy_host'
+        vars << '-var openstack_username=dummy_user'
+        vars << '-var openstack_password=dummy_password'
+        vars << '-var openstack_tenant_id=dummy_tenant_id'
 
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
@@ -231,9 +235,9 @@ module CloudConductor
 
       it 'return command with consul_secret_key that is created by `consul keygen`' do
         vars = []
-        vars << "-var 'consul_secret_key=dummy key'"
+        vars << '-var consul_secret_key=dummy_key'
 
-        @parameters.merge!(consul_secret_key: 'dummy key')
+        @parameters.merge!(consul_secret_key: 'dummy_key')
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
       end

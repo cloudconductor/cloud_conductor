@@ -87,16 +87,17 @@ module CloudConductor
     end
 
     def build_command(parameters)
-      @vars.update(repository_url: parameters[:repository_url])
-      @vars.update(revision: parameters[:revision])
-      vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      vars_text << " -var 'role=#{parameters[:role]}'"
-      vars_text << " -var 'pattern_name=#{parameters[:pattern_name]}'"
-      vars_text << " -var 'image_name=#{parameters[:role].gsub(/,\s*/, '-')}'"
-      vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
-      vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
-      vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
-      vars_text << " -var 'consul_secret_key=#{parameters[:consul_secret_key]}'"
+      vars = @vars.dup
+      vars[:repository_url] = parameters[:repository_url]
+      vars[:revision] = parameters[:revision]
+      vars[:role] = parameters[:role]
+      vars[:pattern_name] = parameters[:pattern_name]
+      vars[:image_name] = parameters[:role].gsub(/,\s*/, '-')
+      vars[:cloudconductor_root] = @cloudconductor_root
+      vars[:cloudconductor_init_url] = @cloudconductor_init_url
+      vars[:cloudconductor_init_revision] = @cloudconductor_init_revision
+      vars[:consul_secret_key] = parameters[:consul_secret_key]
+      vars_text = vars.map { |key, value| " -var #{key}=#{value.shellescape}" }.join(' ')
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
     end

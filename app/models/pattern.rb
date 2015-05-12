@@ -33,11 +33,13 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
     path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
 
-    fail 'An error has occurred while git clone' unless system("git clone #{url} #{path}")
+    _, _, status = Open3.capture3('git', 'clone', url, path)
+    fail 'An error has occurred while git clone' unless status.success?
 
     Dir.chdir path do
       unless revision.blank?
-        fail 'An error has occurred while git checkout' unless system("git checkout #{revision}")
+        _, _, status = Open3.capture3('git', 'checkout', revision)
+        fail 'An error has occurred while git checkout' unless status.success?
       end
     end
 
