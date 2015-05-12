@@ -151,7 +151,7 @@ module CloudConductor
       def destroy_image(image_id)
         image = nova.images.get(image_id)
 
-        image.destroy if image
+        image.destroy if image && image.status != 'DELETED'
       end
 
       def post_process
