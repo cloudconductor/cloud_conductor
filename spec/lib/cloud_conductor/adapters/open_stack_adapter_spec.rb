@@ -449,7 +449,7 @@ module CloudConductor
 
       describe '#destroy_image' do
         before do
-          @image = double('image')
+          @image = double('image', status: 'ACTIVE')
           allow(@adapter).to receive_message_chain(:nova, :images, :get).and_return(@image)
           allow(@image).to receive(:destroy)
         end
