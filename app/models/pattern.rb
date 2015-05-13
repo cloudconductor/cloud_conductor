@@ -1,3 +1,5 @@
+require 'open3'
+
 class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   self.inheritance_column = nil
 
