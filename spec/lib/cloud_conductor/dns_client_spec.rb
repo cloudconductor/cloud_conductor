@@ -34,7 +34,7 @@ module CloudConductor
 
     describe '#update' do
       it 'call @client.update' do
-        expect(dns_client.instance_variable_get(:@client)).to receive(:update).with('www.example.com', '127.0.1.1')
+        expect(dns_client.instance_variable_get(:@client)).to receive(:update).with('www.example.com', '127.0.1.1', 'A')
         dns_client.update('www.example.com', '127.0.1.1')
       end
     end

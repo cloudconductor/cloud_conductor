@@ -124,6 +124,12 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     :ERROR
   end
 
+  def events
+    client.get_stack_events name if client
+  rescue
+    []
+  end
+
   def outputs
     client.get_outputs name
   rescue

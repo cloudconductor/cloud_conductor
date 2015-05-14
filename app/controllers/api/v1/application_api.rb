@@ -25,6 +25,7 @@ module API
           requires :system_id, type: Integer, desc: 'Target system id'
           requires :name, type: String, desc: 'Application name'
           optional :description, type: String, desc: 'Application description'
+          optional :domain, type: String, desc: 'Application domain name'
         end
         post '/' do
           authorize!(:create, ::Application)
@@ -36,6 +37,7 @@ module API
           requires :id, type: Integer, desc: 'Application id'
           optional :name, type: String, desc: 'Application name'
           optional :description, type: String, desc: 'Application description'
+          optional :domain, type: String, desc: 'Application domain name'
         end
         put '/:id' do
           application = ::Application.find(params[:id])

@@ -46,7 +46,6 @@ module CloudConductor
     end
 
     def wait(event_id)
-      event_log = nil
       Timeout.timeout(TIMEOUT) do
         loop do
           event_log = find(event_id)

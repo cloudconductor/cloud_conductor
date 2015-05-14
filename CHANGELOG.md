@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+## version 1.0.2 (2015/05/14)
+
+  - Fix the vulnerability of OS command injection.
+  - Change type of columns, which are expected to input long sentence, from string to text.
+  - Move log_level setting from config/config.rb to config/environments/[environment].rb.
+  - Move application domain column from application_histories to applications.
+  - Remove unnecessary API.
+  - Add error log of CloudFormation/Heat.
+  - Add packer log.
+  - Add packer settings to specify instance_type/flavor_name.
+  - Delete snapshot when deregister image.
+
 ## version 1.0.1 (2015/04/16)
 
   - Use same salt on rebuilded environment.

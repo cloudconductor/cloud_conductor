@@ -111,9 +111,11 @@ module CloudConductor
 
         allow(@platform_stack).to receive(:status).and_return(:CREATE_COMPLETE)
         allow(@platform_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+        allow(@platform_stack).to receive(:events).and_return([])
 
         allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
         allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+        allow(@optional_stack).to receive(:events).and_return([])
 
         allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
       end
@@ -131,9 +133,23 @@ module CloudConductor
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
       end
 
-      it 'raise error when timeout' do
+      it 'raise error when some error occurred while create stack' do
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+      end
+
+      it 'include event message of stack in exception' do
+        event = double(
+          'event',
+          timestamp: Time.now,
+          resource_status: 'CREATE_FAILED',
+          resource_type: 'dummy_type',
+          logical_resource_id: 'dummy_resource_id',
+          resource_status_reason: 'dummy error message'
+        )
+        allow(@platform_stack).to receive(:status).and_return(:ERROR)
+        allow(@platform_stack).to receive(:events).and_return([event])
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(/dummy error message/)
       end
 
       it 'infinity loop and timeout while status still :CREATE_IN_PROGRESS' do

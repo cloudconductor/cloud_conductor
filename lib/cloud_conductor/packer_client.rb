@@ -17,7 +17,7 @@ require 'csv'
 module CloudConductor
   class PackerClient # rubocop:disable ClassLength
     DEFAULT_OPTIONS = {
-      packer_path: '/opt/packer/packer',
+      packer_path: CloudConductor::Config.packer.path,
       template_path: File.expand_path('../../config/packer.json', File.dirname(__FILE__)),
       cloudconductor_root: '/opt/cloudconductor',
       cloudconductor_init_url: CloudConductor::Config.cloudconductor_init.url,
@@ -40,27 +40,27 @@ module CloudConductor
       parameters[:packer_json_path] = create_json(images)
 
       command = build_command parameters
+      log_path = log_path(images.first.pattern, parameters[:role])
       Thread.new do
-        Log.info("Start Packer in #{Thread.current}")
         start = Time.now
-        status, stdout, stderr = systemu(command)
-
-        Log.debug('--------------stdout------------')
-        Log.debug(stdout)
-        Log.debug('-------------stderr------------')
-        Log.debug(stderr)
-
-        Log.error('Packer failed') unless status.success?
-        Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
-
         begin
+          Log.info("Start Packer in #{Thread.current}")
+          Log.info("Output packer log to #{log_path}")
+
+          status, _stdout, _stderr = systemu("#{command} > #{log_path} 2>&1")
+          fail "Packer failed(exitstatus: #{status.exitstatus})" unless status.success?
+
           ActiveRecord::Base.connection_pool.with_connection do
-            yield parse(stdout, images) if block_given?
+            yield parse(IO.read(log_path), images) if block_given?
           end
         rescue => e
+          Log.error('Error occurred while executing packer')
           Log.error(e)
-          raise
+          images.each do |image|
+            image.update_attributes(status: :ERROR)
+          end
         ensure
+          Log.info("Packer finished in #{Thread.current} (Elapsed time: #{Time.now - start} sec)")
           FileUtils.rm parameters[:packer_json_path]
         end
       end
@@ -87,18 +87,27 @@ module CloudConductor
     end
 
     def build_command(parameters)
-      @vars.update(repository_url: parameters[:repository_url])
-      @vars.update(revision: parameters[:revision])
-      vars_text = @vars.map { |key, value| "-var '#{key}=#{value}'" }.join(' ')
-      vars_text << " -var 'role=#{parameters[:role]}'"
-      vars_text << " -var 'pattern_name=#{parameters[:pattern_name]}'"
-      vars_text << " -var 'image_name=#{parameters[:role].gsub(/,\s*/, '-')}'"
-      vars_text << " -var 'cloudconductor_root=#{@cloudconductor_root}'"
-      vars_text << " -var 'cloudconductor_init_url=#{@cloudconductor_init_url}'"
-      vars_text << " -var 'cloudconductor_init_revision=#{@cloudconductor_init_revision}'"
-      vars_text << " -var 'consul_secret_key=#{parameters[:consul_secret_key]}'"
+      vars = @vars.dup
+      vars[:repository_url] = parameters[:repository_url]
+      vars[:revision] = parameters[:revision]
+      vars[:role] = parameters[:role]
+      vars[:pattern_name] = parameters[:pattern_name]
+      vars[:image_name] = parameters[:role].gsub(/,\s*/, '-')
+      vars[:cloudconductor_root] = @cloudconductor_root
+      vars[:cloudconductor_init_url] = @cloudconductor_init_url
+      vars[:cloudconductor_init_revision] = @cloudconductor_init_revision
+      vars[:consul_secret_key] = parameters[:consul_secret_key]
+      vars_text = vars.map { |key, value| " -var #{key}=#{value.shellescape}" }.join(' ')
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
+    end
+
+    def log_path(pattern, role)
+      log_directory = File.expand_path('../../log/packer', File.dirname(__FILE__))
+      FileUtils.mkdir_p log_directory unless Dir.exist? log_directory
+
+      date = DateTime.now.strftime('%Y%m%d%H%M%S')
+      File.expand_path("#{pattern.name}-#{role.gsub(/,\s*/, '-')}_#{date}", log_directory)
     end
 
     def parse(stdout, images) # rubocop:disable MethodLength

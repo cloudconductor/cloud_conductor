@@ -66,7 +66,8 @@ describe API do
         params.merge(
           'id' => Fixnum,
           'created_at' => String,
-          'updated_at' => String
+          'updated_at' => String,
+          'domain' => 'app.example.com'
         )
       end
 

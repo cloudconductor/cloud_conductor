@@ -18,90 +18,63 @@ module CloudConductor
   module Adapters
     class OpenStackAdapter < AbstractAdapter # rubocop:disable ClassLength
       TYPE = :openstack
-      def initialize
+
+      def initialize(options = {})
         @post_processes = []
+        @options = options.with_indifferent_access
       end
 
-      def create_connector(options)
-        ::Fog::Orchestration.new(
-          provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_name]
-        )
-      end
-
-      def create_compute(options)
-        ::Fog::Compute.new(
-          provider: :OpenStack,
-          openstack_auth_url: options[:entry_point].to_s + 'v2.0/tokens',
-          openstack_api_key: options[:secret],
-          openstack_username: options[:key],
-          openstack_tenant: options[:tenant_name]
-        )
-      end
-
-      def create_stack(name, template, parameters, options = {})
+      def create_stack(name, template, parameters)
         @post_processes << lambda do
-          add_security_rules(name, template, parameters, options)
+          add_security_rules(name, template, parameters)
         end
 
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
-        options = options.with_indifferent_access
-        connector = create_connector options
         stack_params = {
           stack_name: name,
           template: converted_template,
           parameters: parameters
         }
-        connector.create_stack stack_params
+        heat.create_stack stack_params
       end
 
-      def update_stack(name, template, parameters, options = {})
+      def update_stack(name, template, parameters)
         converter = CfnConverter.create_converter(:heat)
         converted_template = converter.convert(template, parameters)
 
-        options = options.with_indifferent_access
-        connector = create_connector options
-        id = get_stack_id(name, options)
-        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: id, stack_name: name)
+        stack = ::Fog::Orchestration::OpenStack::Stack.new(id: get_stack_id(name), stack_name: name)
         stack_params = {
           template: converted_template,
           parameters: parameters
         }
         Log.info "Start updating #{name} stack"
-        connector.update_stack stack, stack_params
+        heat.update_stack stack, stack_params
       end
 
-      def get_stack_id(name, options = {})
-        options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack[:id]
+      def get_stack_id(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.id
       end
 
-      def get_stack_status(name, options = {})
-        options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_stack[:stack_status].to_sym
+      def get_stack_status(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.stack_status.to_sym
       end
 
-      def get_outputs(name, options = {})
-        options = options.with_indifferent_access
-        connector = create_connector options
-        body = (connector.list_stack_data)[:body].with_indifferent_access
-        target_stack = body[:stacks].find { |stack| stack[:stack_name] == name }
-        target_link = target_stack[:links].find { |link| link[:rel] == 'self' }
-        url = URI.parse "#{target_link[:href]}"
+      def get_stack_events(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        stack.events
+      end
+
+      def get_outputs(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
+        link = stack.links.find { |link| link['rel'] == 'self' }
+        url = URI.parse "#{link['href']}"
         request = Net::HTTP::Get.new url.path
         request.content_type = 'application/json'
-        request.add_field 'X-Auth-Token', connector.auth_token
+        request.add_field 'X-Auth-Token', heat.auth_token
         response = Net::HTTP.start url.host, url.port do |http|
           http.request request
         end
@@ -115,29 +88,25 @@ module CloudConductor
         outputs
       end
 
-      def get_availability_zones(options = {})
-        options = options.with_indifferent_access
-        compute = create_compute(options)
-        compute.hosts.map(&:zone).uniq
+      def availability_zones
+        nova.hosts.map(&:zone).uniq
       end
 
-      def add_security_rules(name, template, parameters, options = {})
-        options = options.with_indifferent_access
-        compute = create_compute(options)
+      def add_security_rules(name, template, parameters)
         security_group_ingresses = JSON.parse(template)['Resources'].select do |_, resource|
           resource['Type'] == 'AWS::EC2::SecurityGroupIngress'
         end
 
         security_group_ingresses.each do |_, security_group_ingress|
           properties = security_group_ingress['Properties'].with_indifferent_access
-          add_security_rule(compute, name, properties, parameters)
+          add_security_rule(name, properties, parameters)
         end
       rescue => e
         Log.error 'Failed to add security rule.'
         Log.error e
       end
 
-      def add_security_rule(compute, name, properties, parameters)
+      def add_security_rule(name, properties, parameters)
         rule = {
           ip_protocol: properties[:IpProtocol],
           from_port: properties[:FromPort],
@@ -148,32 +117,30 @@ module CloudConductor
           rule[:parent_group_id] = parameters[:SharedSecurityGroup]
         else
           parent_group_name = "#{name}-#{properties[:GroupId][:Ref]}"
-          rule[:parent_group_id] = get_security_group_id(compute, parent_group_name)
+          rule[:parent_group_id] = get_security_group_id(parent_group_name)
         end
 
         if properties[:SourceSecurityGroupId]
           security_group_name = "#{name}-#{properties[:SourceSecurityGroupId][:Ref]}"
-          security_group_id = get_security_group_id(compute, security_group_name)
+          security_group_id = get_security_group_id(security_group_name)
           return if security_group_id.nil?
           rule[:group] = security_group_id
         else
           rule[:ip_range] = { cidr: properties[:CidrIp] }
         end
 
-        compute.security_group_rules.new(rule).save
+        nova.security_group_rules.new(rule).save
       end
 
-      def get_security_group_id(compute, security_group_name)
-        target_security_group = compute.security_groups.all.find do |security_group|
+      def get_security_group_id(security_group_name)
+        target_security_group = nova.security_groups.all.find do |security_group|
           security_group.name.sub(/-[0-9a-zA-Z]{12}$/, '') == security_group_name
         end
         target_security_group.id if target_security_group
       end
 
-      def destroy_stack(name, options = {})
-        options = options.with_indifferent_access
-        connector = create_connector options
-        stack = connector.stacks.find { |stack| stack.stack_name == name }
+      def destroy_stack(name)
+        stack = heat.stacks.find { |stack| stack.stack_name == name }
         unless stack
           Log.warn("Target stack was already deleted( stack_name = #{name})")
           return
@@ -181,16 +148,42 @@ module CloudConductor
         stack.delete
       end
 
-      def destroy_image(name, options = {})
-        options = options.with_indifferent_access
-        compute = create_compute options
-        image = compute.images.get(name)
+      def destroy_image(image_id)
+        image = nova.images.get(image_id)
 
-        image.destroy if image
+        image.destroy if image && image.status != 'DELETED'
       end
 
       def post_process
         @post_processes.each(&:call)
+      end
+
+      def flavor(flavor_name)
+        found_flavor = nova.flavors.find { |flavor| flavor.name == flavor_name }
+        fail "Target flavor(#{flavor_name}) does not exist" unless found_flavor
+        found_flavor
+      end
+
+      private
+
+      def heat
+        ::Fog::Orchestration.new(
+          provider: :OpenStack,
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
+        )
+      end
+
+      def nova
+        ::Fog::Compute.new(
+          provider: :OpenStack,
+          openstack_auth_url: @options[:entry_point].to_s + 'v2.0/tokens',
+          openstack_api_key: @options[:secret],
+          openstack_username: @options[:key],
+          openstack_tenant: @options[:tenant_name]
+        )
       end
     end
   end

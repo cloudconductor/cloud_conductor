@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150408075624) do
+ActiveRecord::Schema.define(version: 20150423113621) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -40,7 +40,6 @@ ActiveRecord::Schema.define(version: 20150408075624) do
 
   create_table "application_histories", force: true do |t|
     t.integer  "application_id"
-    t.string   "domain"
     t.string   "type"
     t.string   "version"
     t.string   "protocol"
@@ -48,7 +47,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
     t.string   "revision"
     t.text     "pre_deploy"
     t.text     "post_deploy"
-    t.string   "parameters"
+    t.text     "parameters"
     t.datetime "created_at",     null: false
     t.datetime "updated_at",     null: false
   end
@@ -56,9 +55,10 @@ ActiveRecord::Schema.define(version: 20150408075624) do
   create_table "applications", force: true do |t|
     t.integer  "system_id"
     t.string   "name"
-    t.string   "description"
+    t.text     "description"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+    t.string   "domain"
   end
 
   create_table "assignments", force: true do |t|
@@ -83,7 +83,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
   create_table "blueprints", force: true do |t|
     t.integer  "project_id"
     t.string   "name"
-    t.string   "description"
+    t.text     "description"
     t.string   "consul_secret_key"
     t.datetime "created_at",        null: false
     t.datetime "updated_at",        null: false
@@ -100,7 +100,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
   create_table "clouds", force: true do |t|
     t.integer  "project_id"
     t.string   "name"
-    t.string   "description"
+    t.text     "description"
     t.string   "type"
     t.string   "entry_point"
     t.string   "key"
@@ -122,7 +122,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
     t.integer  "system_id"
     t.integer  "blueprint_id"
     t.string   "name"
-    t.string   "description"
+    t.text     "description"
     t.string   "status"
     t.string   "ip_address"
     t.text     "platform_outputs"
@@ -137,7 +137,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
     t.string   "name"
     t.string   "role"
     t.string   "image"
-    t.string   "message"
+    t.text     "message"
     t.string   "status"
     t.datetime "created_at",    null: false
     t.datetime "updated_at",    null: false
@@ -158,7 +158,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
 
   create_table "projects", force: true do |t|
     t.string   "name",        null: false
-    t.string   "description"
+    t.text     "description"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
   end
@@ -189,7 +189,7 @@ ActiveRecord::Schema.define(version: 20150408075624) do
     t.integer  "project_id"
     t.integer  "primary_environment_id"
     t.string   "name"
-    t.string   "description"
+    t.text     "description"
     t.string   "domain"
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false

@@ -24,9 +24,9 @@ module CloudConductor
       @type = cloud.type
       case cloud.type
       when 'aws'
-        @adapter = CloudConductor::Adapters::AWSAdapter.new
+        @adapter = CloudConductor::Adapters::AWSAdapter.new @cloud.attributes
       when 'openstack'
-        @adapter = CloudConductor::Adapters::OpenStackAdapter.new
+        @adapter = CloudConductor::Adapters::OpenStackAdapter.new @cloud.attributes
       else
         fail "Cannot find #{cloud.type} adapter"
       end
@@ -38,7 +38,7 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      az_list = @adapter.get_availability_zones @cloud.attributes
+      az_list = @adapter.availability_zones
       template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
       template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
 
@@ -49,7 +49,7 @@ module CloudConductor
         parameters["#{camelized_roles}ImageId"] = image.image
       end
 
-      @adapter.create_stack name, template, parameters, @cloud.attributes
+      @adapter.create_stack name, template, parameters
     end
 
     def update_stack(name, pattern, parameters)
@@ -58,7 +58,7 @@ module CloudConductor
         template = open(File.expand_path('template.json', path)).read
       end
 
-      az_list = @adapter.get_availability_zones @cloud.attributes
+      az_list = @adapter.availability_zones
       template = CloudConductor::Converter::Duplicators.increase_instance(template, parameters, az_list)
       template = CloudConductor::Converter.new.update_cluster_addresses(template) if pattern.type == 'platform'
 
@@ -69,23 +69,27 @@ module CloudConductor
         parameters["#{camelized_roles}ImageId"] = image.image
       end
 
-      @adapter.update_stack name, template, parameters, @cloud.attributes
+      @adapter.update_stack name, template, parameters
     end
 
     def get_stack_status(name)
-      @adapter.get_stack_status name, @cloud.attributes
+      @adapter.get_stack_status name
+    end
+
+    def get_stack_events(name)
+      @adapter.get_stack_events name
     end
 
     def get_outputs(name)
-      @adapter.get_outputs name, @cloud.attributes
+      @adapter.get_outputs name
     end
 
     def destroy_stack(name)
-      @adapter.destroy_stack name, @cloud.attributes
+      @adapter.destroy_stack name
     end
 
-    def destroy_image(name)
-      @adapter.destroy_image name, @cloud.attributes
+    def destroy_image(image_id)
+      @adapter.destroy_image image_id
     end
 
     def post_process

@@ -8,6 +8,11 @@ describe Project do
     it 'create with valid parameters' do
       expect { @project.save! }.to change { Project.count }.by(1)
     end
+
+    it 'create with long text' do
+      @project.description = '*' * 256
+      @project.save!
+    end
   end
 
   describe '#destroy' do

@@ -4,13 +4,10 @@ environment = (ENV['RACK_ENV'] || ENV['RAILS_ENV'] || :development).to_sym
 case environment
 when :production
   log_file 'log/conductor_production.log'
-  log_level :warn
 when :development
   log_file 'log/conductor_development.log'
-  log_level :debug
 when :test
   log_file 'log/conductor_test.log'
-  log_level :debug
 end
 
 # cloudconductor server settings
@@ -19,6 +16,11 @@ cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
 # cloudconductor_init settings
 cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
 cloudconductor_init.revision 'master'
+
+# packer settings
+packer.path '/opt/packer/packer'
+packer.aws_instance_type 'c3.large'
+packer.openstack_flavor_name 'm1.large'
 
 # dns settings
 dns.service 'route53'

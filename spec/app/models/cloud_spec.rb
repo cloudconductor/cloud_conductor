@@ -30,6 +30,11 @@ describe Cloud do
     it 'create with valid parameters' do
       expect { @cloud.save! }.to change { Cloud.count }.by(1)
     end
+
+    it 'create with long text' do
+      @cloud.description = '*' * 256
+      @cloud.save!
+    end
   end
 
   describe '#valid?' do

@@ -113,9 +113,23 @@ module CloudConductor
         expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
       end
 
-      it 'raise error when timeout' do
+      it 'raise error when some error occurred while update stack' do
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
         expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+      end
+
+      it 'include event message of stack in exception' do
+        event = double(
+          'event',
+          timestamp: Time.now,
+          resource_status: 'UPDATE_FAILED',
+          resource_type: 'dummy_type',
+          logical_resource_id: 'dummy_resource_id',
+          resource_status_reason: 'dummy error message'
+        )
+        allow(@platform_stack).to receive(:status).and_return(:ERROR)
+        allow(@platform_stack).to receive(:events).and_return([event])
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(/dummy error message/)
       end
 
       it 'infinity loop and timeout while status still :UPDATE_IN_PROGRESS' do
