@@ -67,10 +67,13 @@ module CloudConductor
 
       def destroy_image(image_id)
         image = ec2.images[image_id]
+        return unless image.exists?
+
         snapshot_ids = image.block_device_mappings.values.map do |block_device_mapping|
           block_device_mapping[:snapshot_id]
         end
-        image.deregister if image.exists?
+
+        image.deregister
 
         snapshot_ids.each do |snapshot_id|
           ec2.snapshots[snapshot_id].delete

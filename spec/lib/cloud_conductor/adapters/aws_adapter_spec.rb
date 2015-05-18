@@ -212,6 +212,13 @@ module CloudConductor
 
           @adapter.destroy_image 'ami-xxxxxx'
         end
+
+        it 'suppress API request with already deleted image' do
+          allow(@image).to receive(:exists?).and_return(false)
+          allow(@image).to receive(:block_device_mappings).and_raise
+
+          @adapter.destroy_image 'ami-xxxxxx'
+        end
       end
 
       describe '#aws_options' do
