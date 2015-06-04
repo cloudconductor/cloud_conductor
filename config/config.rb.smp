@@ -20,7 +20,7 @@ cloudconductor_init.revision 'master'
 # packer settings
 packer.path '/opt/packer/packer'
 packer.aws_instance_type 'c3.large'
-packer.openstack_flavor_name 'm1.large'
+packer.openstack_flavor_name 'm1.small'
 
 # dns settings
 dns.service 'route53'
