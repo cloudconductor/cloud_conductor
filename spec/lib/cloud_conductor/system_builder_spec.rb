@@ -139,14 +139,13 @@ module CloudConductor
       end
 
       it 'include event message of stack in exception' do
-        event = double(
-          'event',
+        event = {
           timestamp: Time.now,
           resource_status: 'CREATE_FAILED',
           resource_type: 'dummy_type',
           logical_resource_id: 'dummy_resource_id',
           resource_status_reason: 'dummy error message'
-        )
+        }
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
         allow(@platform_stack).to receive(:events).and_return([event])
         expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(/dummy error message/)

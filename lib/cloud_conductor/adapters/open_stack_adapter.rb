@@ -65,7 +65,15 @@ module CloudConductor
 
       def get_stack_events(name)
         stack = heat.stacks.find { |stack| stack.stack_name == name }
-        stack.events
+        stack.events.map do |event|
+          {
+            timestamp: Time.parse(event.event_time).localtime.iso8601,
+            resource_status: event.resource_status,
+            resource_type: nil,
+            logical_resource_id: event.logical_resource_id,
+            resource_status_reason: event.resource_status_reason
+          }
+        end
       end
 
       def get_outputs(name)
