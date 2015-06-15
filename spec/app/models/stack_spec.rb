@@ -372,15 +372,15 @@ describe Stack do
     end
   end
 
-  describe '#exist?' do
+  describe '#exists_on_cloud?' do
     it 'return true when target stack has been exist' do
       expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
-      expect(@stack.exist?).to be_truthy
+      expect(@stack.exists_on_cloud?).to be_truthy
     end
 
     it 'return false when target stack has not been exist' do
       expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE).and_raise
-      expect(@stack.exist?).to be_falsey
+      expect(@stack.exists_on_cloud?).to be_falsey
     end
   end
 end

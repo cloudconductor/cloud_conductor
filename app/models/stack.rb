@@ -102,7 +102,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     pattern && pattern.type == 'optional'
   end
 
-  def exist?
+  def exists_on_cloud?
     client.get_stack_status name
     true
   rescue
