@@ -112,11 +112,11 @@ module CloudConductor
           expect(@stack).to receive(:events).and_return([])
           expect(@stacks).to receive(:[]).with('stack-name').and_return(@stack)
 
-          status = @adapter.get_stack_events 'stack_name'
-          expect(status).to eq([])
+          events = @adapter.get_stack_events 'stack_name'
+          expect(events).to eq([])
         end
 
-        it 'raise error  when target stack does not exist' do
+        it 'raise error when target stack does not exist' do
           allow(@stacks).to receive(:[]).and_return nil
           expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error
         end
@@ -209,6 +209,13 @@ module CloudConductor
 
         it 'call EC2::snapshot#delete to delete created snapshot on aws' do
           expect(@snapshot).to receive(:delete)
+
+          @adapter.destroy_image 'ami-xxxxxx'
+        end
+
+        it 'suppress API request with already deleted image' do
+          allow(@image).to receive(:exists?).and_return(false)
+          allow(@image).to receive(:block_device_mappings).and_raise
 
           @adapter.destroy_image 'ami-xxxxxx'
         end

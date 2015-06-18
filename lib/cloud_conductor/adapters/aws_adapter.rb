@@ -44,7 +44,15 @@ module CloudConductor
       end
 
       def get_stack_events(name)
-        cloud_formation.stacks[convert_name(name)].events
+        cloud_formation.stacks[convert_name(name)].events.map do |event|
+          {
+            timestamp: event.timestamp.localtime.iso8601,
+            resource_status: event.resource_status,
+            resource_type: event.resource_type,
+            logical_resource_id: event.logical_resource_id,
+            resource_status_reason: event.resource_status_reason
+          }
+        end
       end
 
       def get_outputs(name)
@@ -67,10 +75,13 @@ module CloudConductor
 
       def destroy_image(image_id)
         image = ec2.images[image_id]
+        return unless image.exists?
+
         snapshot_ids = image.block_device_mappings.values.map do |block_device_mapping|
           block_device_mapping[:snapshot_id]
         end
-        image.deregister if image.exists?
+
+        image.deregister
 
         snapshot_ids.each do |snapshot_id|
           ec2.snapshots[snapshot_id].delete

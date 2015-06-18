@@ -147,7 +147,7 @@ describe Cloud do
       allow(@cloud).to receive(:used?).and_return(true)
 
       expect do
-        expect { @cloud.destroy }.to(raise_error('Can\'t destroy cloud that is used in some systems.'))
+        expect { @cloud.destroy }.to(raise_error('Can\'t destroy cloud that is used in some environments or blueprints.'))
       end.not_to change { Cloud.count }
     end
   end
@@ -169,6 +169,16 @@ describe Cloud do
 
     it 'return false when cloud is used by some systems' do
       expect(Candidate).to receive_message_chain(:where, :count).and_return(0)
+      expect(@cloud.used?).to eq(false)
+    end
+
+    it 'return true when cloud is used by some blueprints' do
+      expect(Image).to receive_message_chain(:where, :count).and_return(1)
+      expect(@cloud.used?).to eq(true)
+    end
+
+    it 'return false when cloud is used by some blueprints' do
+      expect(Image).to receive_message_chain(:where, :count).and_return(0)
       expect(@cloud.used?).to eq(false)
     end
   end
