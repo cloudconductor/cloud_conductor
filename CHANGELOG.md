@@ -1,6 +1,14 @@
 CHANGELOG
 =========
 
+## version 1.0.3 (2015/06/18)
+
+  - Check usage conditions when delete cloud record.
+  - Suppress API request if image has already been deleted manually on AWS.
+  - Fix an error that occurred when consul_secret_key parameter is nil.
+  - Change the default openstack flavor when run packer build.
+  - Absorb some differences between AWS and OpenStack event response.
+
 ## version 1.0.2 (2015/05/14)
 
   - Fix the vulnerability of OS command injection.

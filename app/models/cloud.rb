@@ -35,11 +35,11 @@ class Cloud < ActiveRecord::Base
   end
 
   def used?
-    Candidate.where(cloud_id: id).count > 0
+    Candidate.where(cloud_id: id).count > 0 || Image.where(cloud_id: id).count > 0
   end
 
   def raise_error_in_use
-    fail 'Can\'t destroy cloud that is used in some systems.' if used?
+    fail 'Can\'t destroy cloud that is used in some environments or blueprints.' if used?
   end
 
   def as_json(options = {})

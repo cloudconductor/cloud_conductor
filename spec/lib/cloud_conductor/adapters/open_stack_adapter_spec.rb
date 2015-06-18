@@ -166,9 +166,11 @@ module CloudConductor
 
       describe '#get_stack_events' do
         before do
+          event = double('event', event_time: '2015-01-01T00:00:00Z', resource_status: 'CREATE_FAILED', logical_resource_id: 'dummy', resource_status_reason: 'dummy error')
+
           @stacks = [
             double('stack', stack_name: 'abc', events: ['dummy']),
-            double('stack', stack_name: 'stack_name', events: %w(event1 events2))
+            double('stack', stack_name: 'stack_name', events: [event])
           ]
 
           allow(::Fog::Orchestration).to receive_message_chain(:new, :stacks).and_return(@stacks)
@@ -192,8 +194,17 @@ module CloudConductor
         end
 
         it 'return stack events' do
+          expected_events = [
+            {
+              timestamp: '2015-01-01T09:00:00+09:00',
+              resource_status: 'CREATE_FAILED',
+              resource_type: nil,
+              logical_resource_id: 'dummy',
+              resource_status_reason: 'dummy error'
+            }
+          ]
           events = @adapter.get_stack_events 'stack_name'
-          expect(events).to eq(%w(event1 events2))
+          expect(events).to eq(expected_events)
         end
 
         it 'return nil when target stack does not exist' do
