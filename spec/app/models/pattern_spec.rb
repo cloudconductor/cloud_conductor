@@ -121,24 +121,51 @@ describe Pattern do
     end
   end
 
+  describe '#set_metadata_from_repository' do
+    before do
+      allow(@pattern).to receive(:set_metadata_from_repository).and_call_original
+      allow(@pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+      allow(@pattern).to receive(:collect_roles)
+      allow(@pattern).to receive(:load_template).and_return(template_key: 'template_value')
+      allow(@pattern).to receive(:load_metadata).and_return(metadata_key: 'metadata_value')
+      allow(@pattern).to receive(:update_metadata)
+    end
+
+    it 'call clone_repository' do
+      expect(@pattern).to receive(:clone_repository)
+
+      @pattern.set_metadata_from_repository
+    end
+
+    it 'call load_template' do
+      expect(@pattern).to receive(:load_template).with('/tmp/patterns')
+
+      @pattern.set_metadata_from_repository
+    end
+
+    it 'call load_metadata' do
+      expect(@pattern).to receive(:load_metadata).with('/tmp/patterns')
+
+      @pattern.set_metadata_from_repository
+    end
+
+    it 'call update_metadata' do
+      expect(@pattern).to receive(:update_metadata).with('/tmp/patterns', metadata_key: 'metadata_value')
+
+      @pattern.set_metadata_from_repository
+    end
+  end
+
   describe '#execute_packer' do
     before do
       allow(@pattern).to receive(:execute_packer).and_call_original
-
-      allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
-      allow(@pattern).to receive(:load_metadata).and_return({})
-      allow(@pattern).to receive(:load_roles).and_return(['dummy'])
-      allow(@pattern).to receive(:update_metadata)
       allow(@pattern).to receive(:create_images)
+      allow(@pattern).to receive(:template).and_return({})
+
+      @pattern.instance_variable_set(:@roles, ['dummy'])
     end
 
     it 'will call sub-routine with secret key' do
-      path_pattern = %r{/tmp/patterns/[a-f0-9-]{36}}
-
-      expect(@pattern).to receive(:clone_repository).and_yield(cloned_path)
-      expect(@pattern).to receive(:load_metadata).with(path_pattern).and_return({})
-      expect(@pattern).to receive(:load_roles).with(path_pattern).and_return(['dummy'])
-      expect(@pattern).to receive(:update_metadata).with(path_pattern, {})
       expect(@pattern).to receive(:create_images).with('dummy')
 
       @pattern.send(:execute_packer)
@@ -196,6 +223,17 @@ describe Pattern do
     end
   end
 
+  describe '#load_template' do
+    it 'will load template.json that is in cloned repository' do
+      template = double('File', read: '{ "key": "value" }')
+      template_path = %r(tmp/patterns/[a-f0-9-]{36}/template.json)
+      allow(File).to receive(:open).with(template_path).and_return(template)
+
+      result = @pattern.send(:load_template, cloned_path)
+      expect(result).to eq('key' => 'value')
+    end
+  end
+
   describe '#load_metadata' do
     it 'will load metadata.yml that is in cloned repository' do
       metadata = { name: 'name' }
@@ -207,48 +245,40 @@ describe Pattern do
     end
   end
 
-  describe '#load_roles' do
+  describe '#collect_roles' do
     it 'raise error when Resources does not exist' do
-      template = '{}'
-      double = double('File', read: template)
-      allow(File).to receive(:open).with(/template.json/).and_return(double)
-
-      expect { @pattern.send(:load_roles, cloned_path) }.to raise_error('Resources was not found')
+      expect { @pattern.send(:collect_roles, {}) }.to raise_error('Resources was not found')
     end
 
     it 'will load template.json and get role list' do
-      template = <<-EOS
-        {
-          "Resources": {
-            "Dummy1": {
-              "Type": "AWS::EC2::Instance",
-              "Metadata": {
-                "Role": "nginx"
-              }
-            },
-            "Dummy2": {
-              "Type": "AWS::AutoScaling::LaunchConfiguration",
-              "Metadata": {
-                "Role": "rails"
-              }
-            },
-            "Dummy3": {
-              "Type": "AWS::EC2::Instance",
-              "Metadata": {
-                "Role": "rails"
-              }
-            },
-            "Dummy4": {
-              "Type": "AWS::EC2::Instance"
+      template = {
+        Resources: {
+          Dummy1: {
+            Type: 'AWS::EC2::Instance',
+            Metadata: {
+              Role: 'nginx'
             }
+          },
+          Dummy2: {
+            Type: 'AWS::AutoScaling::LaunchConfiguration',
+            Metadata: {
+              Role: 'rails'
+            }
+          },
+          Dummy3: {
+            Type: 'AWS::EC2::Instance',
+            Metadata: {
+              Role: 'rails'
+            }
+          },
+          Dummy4: {
+            Type: 'AWS::EC2::Instance'
           }
         }
-      EOS
-      double = double('File', read: template)
-      allow(File).to receive(:open).with(/template.json/).and_return(double)
+      }.with_indifferent_access
 
       roles = %w(nginx rails Dummy4)
-      expect(@pattern.send(:load_roles, cloned_path)).to match_array(roles)
+      expect(@pattern.send(:collect_roles, template)).to match_array(roles)
     end
   end
 
@@ -396,7 +426,7 @@ describe Pattern do
     end
   end
 
-  describe '#parameters' do
+  describe '#filtered_parameters' do
     before do
       @pattern.parameters = <<-EOS
         {
@@ -431,7 +461,7 @@ describe Pattern do
     end
   end
 
-  describe '#load_backup_parameters' do
+  describe '#load_backup_config' do
     it 'load config/backup_restore.yml and return it' do
       expect(YAML).to receive(:load_file).with(/backup_restore.yml/).and_return(dummy: 'value')
       expect(@pattern.send(:load_backup_config, cloned_path)).to eq(dummy: 'value')

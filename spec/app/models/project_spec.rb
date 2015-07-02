@@ -48,6 +48,7 @@ describe Project do
     end
 
     it 'delete all blueprint records' do
+      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
       FactoryGirl.create(:blueprint, project: @project)
       FactoryGirl.create(:blueprint, project: @project)
 

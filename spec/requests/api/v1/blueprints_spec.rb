@@ -3,7 +3,12 @@ describe API do
   include_context 'default_api_settings'
 
   describe 'BlueprintAPI' do
-    before { blueprint }
+    before do
+      blueprint
+      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository) do |pattern|
+        pattern.type = 'platform'
+      end
+    end
 
     describe 'GET /blueprints' do
       let(:method) { 'get' }
@@ -87,7 +92,6 @@ describe API do
       context 'normal_account', normal: true do
         it_behaves_like('403 Forbidden')
       end
-
       context 'administrator', admin: true do
         it_behaves_like('202 Accepted')
       end
