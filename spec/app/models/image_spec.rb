@@ -21,6 +21,7 @@ describe Image do
     @image.cloud = cloud
     @image.pattern = pattern
     @image.base_image = base_image
+    @image.image = 'dummy_image_id'
   end
 
   describe '#initialize' do
@@ -37,6 +38,13 @@ describe Image do
     it 'create with long text' do
       @image.message = '*' * 256
       @image.save!
+    end
+  end
+
+  describe '#status' do
+    it 'returns image status as symbol' do
+      @image.status = 'sample'
+      expect(@image.status).to be_a(Symbol)
     end
   end
 
@@ -84,10 +92,10 @@ describe Image do
     end
   end
 
-  describe '#status' do
-    it 'returns image status as symbol' do
-      @image.status = 'sample'
-      expect(@image.status).to be_a(Symbol)
+  describe '#destroy_image' do
+    it 'call client#destroy_image with image id' do
+      allow(@image).to receive_message_chain(:cloud, :client, :destroy_image).with('dummy_image_id')
+      @image.destroy_image
     end
   end
 end
