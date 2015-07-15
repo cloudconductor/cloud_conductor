@@ -35,8 +35,8 @@ module CloudConductor
 
     before do
       @environment = environment
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment)
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, cloud: cloud_openstack, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, cloud: cloud_openstack, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]
       @builder = SystemBuilder.new @environment
       allow_any_instance_of(Environment).to receive(:create_or_update_stack)
@@ -234,42 +234,6 @@ module CloudConductor
       end
     end
 
-    describe '#configure_payload' do
-      before do
-        @environment.stacks.each { |stack| stack.update_attributes(status: :CREATE_COMPLETE) }
-      end
-
-      it 'return payload that contains random salt' do
-        payload = @builder.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:salt]).to match(/^[0-9a-f]{64}$/)
-      end
-
-      it 'will request configure event to serf with payload' do
-        payload = @builder.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
-
-        payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
-        expect(payload1[:name]).to eq(@platform_stack.pattern.name)
-        expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
-        expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
-        expect(payload1[:url]).to eq(@platform_stack.pattern.url)
-        expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-
-        payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
-        expect(payload2[:name]).to eq(@optional_stack.pattern.name)
-        expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
-        expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
-        expect(payload2[:url]).to eq(@optional_stack.pattern.url)
-        expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-      end
-
-      it 'contains backup_restore settings for amanda' do
-        @platform_stack.pattern.update_attributes(backup_config: '{ "dummy": "value" }')
-        payload = @builder.send(:configure_payload, @environment)
-        expect(payload[:cloudconductor][:patterns][@platform_stack.pattern.name][:config][:backup_restore]).to eq(dummy: 'value')
-      end
-    end
-
     describe '#reset_stacks' do
       before do
         allow(@environment).to receive(:destroy_stacks) do
@@ -306,6 +270,42 @@ module CloudConductor
       end
     end
 
+    describe '#configure_payload' do
+      before do
+        @environment.stacks.each { |stack| stack.update_attributes(status: :CREATE_COMPLETE) }
+      end
+
+      it 'return payload that contains random salt' do
+        payload = @builder.send(:configure_payload, @environment)
+        expect(payload[:cloudconductor][:salt]).to match(/^[0-9a-f]{64}$/)
+      end
+
+      it 'will request configure event to serf with payload' do
+        payload = @builder.send(:configure_payload, @environment)
+        expect(payload[:cloudconductor][:patterns].keys).to eq([@platform_stack.pattern.name, @optional_stack.pattern.name])
+
+        payload1 = payload[:cloudconductor][:patterns][@platform_stack.pattern.name]
+        expect(payload1[:name]).to eq(@platform_stack.pattern.name)
+        expect(payload1[:type]).to eq(@platform_stack.pattern.type.to_s)
+        expect(payload1[:protocol]).to eq(@platform_stack.pattern.protocol.to_s)
+        expect(payload1[:url]).to eq(@platform_stack.pattern.url)
+        expect(payload1[:user_attributes]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
+
+        payload2 = payload[:cloudconductor][:patterns][@optional_stack.pattern.name]
+        expect(payload2[:name]).to eq(@optional_stack.pattern.name)
+        expect(payload2[:type]).to eq(@optional_stack.pattern.type.to_s)
+        expect(payload2[:protocol]).to eq(@optional_stack.pattern.protocol.to_s)
+        expect(payload2[:url]).to eq(@optional_stack.pattern.url)
+        expect(payload2[:user_attributes]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
+      end
+
+      it 'contains backup_restore settings for amanda' do
+        @platform_stack.pattern.update_attributes(backup_config: '{ "dummy": "value" }')
+        payload = @builder.send(:configure_payload, @environment)
+        expect(payload[:cloudconductor][:patterns][@platform_stack.pattern.name][:config][:backup_restore]).to eq(dummy: 'value')
+      end
+    end
+
     describe '#application_payload' do
       it 'return empty payload when deployments are empty' do
         expect(@builder.send(:application_payload, @environment)).to eq({})
@@ -326,6 +326,12 @@ module CloudConductor
         @environment.status = :PROGRESS
 
         expect(@builder.send(:application_payload, @environment)).to expected_payload
+      end
+    end
+
+    describe '#next_cloud' do
+      it 'Return cloud to make the next stack' do
+        expect(@builder.send(:next_cloud, @environment.stacks.first.cloud)).to eq(cloud_aws)
       end
     end
   end
