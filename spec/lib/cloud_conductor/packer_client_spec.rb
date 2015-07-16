@@ -15,6 +15,8 @@
 module CloudConductor
   describe PackerClient do
     before do
+      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
+
       options = {
         packer_path: '/opt/packer/packer',
         template_path: '/tmp/packer.json',

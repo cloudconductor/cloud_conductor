@@ -19,6 +19,7 @@ module CloudConductor
     let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
     let(:blueprint) do
+      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
       blueprint = FactoryGirl.create(:blueprint,
                                      project: project,
                                      patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),

@@ -58,18 +58,20 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     filtered_parameters
   end
 
+  def set_metadata_from_repository
+    clone_repository do |path|
+      @roles = collect_roles(load_template(path))
+      metadata = load_metadata path
+      update_metadata path, metadata
+    end
+  end
+
   private
 
   def execute_packer
-    clone_repository do |path|
-      metadata = load_metadata path
-      roles = load_roles path
-      update_metadata path, metadata
+    set_metadata_from_repository unless name
 
-      roles.each do |role|
-        create_images(role)
-      end
-    end
+    @roles.each { |role| create_images(role) }
 
     true
   rescue Errno::ENOENT => e
@@ -81,15 +83,17 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     ->(_, resource) { resource[:Type] == type }
   end
 
+  def load_template(path)
+    template_path = File.expand_path('template.json', path)
+    JSON.parse(File.open(template_path).read).with_indifferent_access
+  end
+
   def load_metadata(path)
     metadata_path = File.expand_path('metadata.yml', path)
     YAML.load_file(metadata_path).with_indifferent_access
   end
 
-  def load_roles(path)
-    template_path = File.expand_path('template.json', path)
-    template = JSON.parse(File.open(template_path).read).with_indifferent_access
-
+  def collect_roles(template)
     fail 'Resources was not found' if template[:Resources].nil?
 
     resources = {}
