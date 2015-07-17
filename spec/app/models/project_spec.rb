@@ -70,6 +70,17 @@ describe Project do
     end
   end
 
+  describe '#assign_project_administrator' do
+    it 'build assignment if current_account is not nil' do
+      @project.current_account = FactoryGirl.create(:account)
+      expect { @project.assign_project_administrator }.to change { @project.assignments.size }.by(1)
+    end
+
+    it 'not build assignment if current_account is nil' do
+      expect { @project.assign_project_administrator }.not_to change { @project.assignments.size }
+    end
+  end
+
   describe '#create_monitoring_account' do
     it 'create monitoring account' do
       expect { @project.create_monitoring_account }.to change { Account.count }.by(1)
@@ -81,6 +92,33 @@ describe Project do
       expect(@project.assignments).not_to be_empty
       expect(@project.assignments.first.account).to eq(Account.last)
       expect(@project.assignments.first.role).to eq('operator')
+    end
+  end
+
+  describe '#delete_monitoring_account' do
+    it 'delete monitoring account' do
+      @project.create_monitoring_account
+      expect { @project.delete_monitoring_account }.to change { Account.count }.by(-1)
+    end
+  end
+
+  describe '#assign_project_member' do
+    it 'change role on assignment that between project and account' do
+      account = FactoryGirl.create(:account)
+      @project.current_account = account
+      @project.save!
+      project = Project.find(@project)
+
+      expect(@project.assignments.find_by(account: account).role).to eq('administrator')
+      project.assign_project_member(account)
+      expect(@project.assignments.find_by(account: account).role).to eq('operator')
+    end
+
+    it 'create assignment that has specified role' do
+      account = FactoryGirl.create(:account)
+      @project.save!
+      project = Project.find(@project)
+      expect { project.assign_project_member(account) }.to change { Assignment.count }.by(1)
     end
   end
 end
