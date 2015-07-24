@@ -26,4 +26,10 @@ describe CloudConductor::Config do
       expect(CloudConductor::Config.log_file).to eq('/tmp/dummy')
     end
   end
+
+  it 'returns default values' do
+    configurables = CloudConductor::Config.configurables
+    expect(configurables[:application_log_path].default).to eq('log/conductor_production.log')
+    expect(configurables[:access_log_path].default).to eq('log/conductor_access.log')
+  end
 end
