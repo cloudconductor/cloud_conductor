@@ -18,8 +18,6 @@ module CloudConductor
   class Config
     extend Mixlib::Config
 
-    default :log_file, STDOUT
-    default :log_level, :info
 
     config_context :cloudconductor do
     end

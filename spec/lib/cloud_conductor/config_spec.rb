@@ -26,10 +26,4 @@ describe CloudConductor::Config do
       expect(CloudConductor::Config.log_file).to eq('/tmp/dummy')
     end
   end
-
-  it 'returns default values' do
-    configurables = CloudConductor::Config.configurables
-    expect(configurables[:log_file].default.inspect).to eq(STDOUT.inspect)
-    expect(configurables[:log_level].default).to eq(:info)
-  end
 end
