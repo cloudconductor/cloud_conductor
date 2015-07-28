@@ -20,10 +20,12 @@ describe CloudConductor::Config do
     end
 
     it 'update config with new values what are specified in ruby file' do
-      allow(IO).to receive(:read).and_return('log_file "/tmp/dummy"')
+      expect(CloudConductor::Config.application_log_path).to eq('log/conductor_test.log')
+
+      allow(IO).to receive(:read).and_return('application_log_path "log/conductor_development.log"')
       CloudConductor::Config.from_file 'dummy.rb'
 
-      expect(CloudConductor::Config.log_file).to eq('/tmp/dummy')
+      expect(CloudConductor::Config.application_log_path).to eq('log/conductor_development.log')
     end
   end
 
