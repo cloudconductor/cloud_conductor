@@ -126,7 +126,8 @@ describe Project do
         # Need to reload for avoid to ActiveRecord bug
         project = Project.find(@project)
 
-        expect { project.assign_project_member(@account) }.to change { Assignment.count }.by(1)
+        expect { project.assign_project_member(@account, :administrator) }.to change { Assignment.count }.by(1)
+        expect(project.assignments.find_by(account: @account).role).to eq('administrator')
       end
     end
   end
