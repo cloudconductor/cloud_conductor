@@ -103,22 +103,31 @@ describe Project do
   end
 
   describe '#assign_project_member' do
-    it 'change role on assignment that between project and account' do
-      account = FactoryGirl.create(:account)
-      @project.current_account = account
-      @project.save!
-      project = Project.find(@project)
-
-      expect(@project.assignments.find_by(account: account).role).to eq('administrator')
-      project.assign_project_member(account)
-      expect(@project.assignments.find_by(account: account).role).to eq('operator')
+    before do
+      @account = FactoryGirl.create(:account)
     end
 
-    it 'create assignment that has specified role' do
-      account = FactoryGirl.create(:account)
-      @project.save!
-      project = Project.find(@project)
-      expect { project.assign_project_member(account) }.to change { Assignment.count }.by(1)
+    context 'when assignments exists account' do
+      it 'change role on assignment that between project and account' do
+        @project.current_account = @account
+        @project.save!
+
+        # Need to reload for avoid to ActiveRecord bug
+        project = Project.find(@project)
+
+        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).role }.from('administrator').to('operator')
+      end
+    end
+
+    context 'when assignments not exists account' do
+      it 'create assignment that has specified role' do
+        @project.save!
+
+        # Need to reload for avoid to ActiveRecord bug
+        project = Project.find(@project)
+
+        expect { project.assign_project_member(@account) }.to change { Assignment.count }.by(1)
+      end
     end
   end
 end
