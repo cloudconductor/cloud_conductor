@@ -45,6 +45,11 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/blueprints/0' }
+        it_behaves_like('404 Not Found')
+      end
+
       context 'normal_account', normal: true do
         it_behaves_like('403 Forbidden')
       end
@@ -131,6 +136,11 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/blueprints/0' }
+        it_behaves_like('404 Not Found')
+      end
+
       context 'normal_account', normal: true do
         it_behaves_like('403 Forbidden')
       end
@@ -158,6 +168,11 @@ describe API do
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
+      end
+
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/blueprints/0' }
+        it_behaves_like('404 Not Found')
       end
 
       context 'normal_account', normal: true do

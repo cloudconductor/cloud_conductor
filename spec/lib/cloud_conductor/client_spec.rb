@@ -149,5 +149,19 @@ module CloudConductor
         @client.destroy_stack 'stack_name'
       end
     end
+
+    describe '#destroy_image' do
+      it 'call adapter#destroy_image with image_id' do
+        expect(@client.adapter).to receive(:destroy_image).with(1)
+        @client.destroy_image 1
+      end
+    end
+
+    describe '#post_process' do
+      it 'call adapter#post_process' do
+        expect(@client.adapter).to receive(:post_process)
+        @client.post_process
+      end
+    end
   end
 end

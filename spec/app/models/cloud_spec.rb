@@ -152,6 +152,65 @@ describe Cloud do
     end
   end
 
+  describe '#set_base_image' do
+    before do
+      @cloud2 = Cloud.new
+      @cloud2.project = project
+      @cloud2.name = 'Test'
+      @cloud2.type = 'aws'
+      @cloud2.entry_point = 'ap-northeast-1'
+      @cloud2.key = 'TestKey'
+      @cloud2.secret = 'TestSecret'
+      @cloud2.tenant_name = 'TestTenant'
+    end
+
+    it 'return nil if cloud type is OpenStack' do
+      cloud = Cloud.new
+      cloud.project = project
+      cloud.name = 'Test'
+      cloud.type = 'openstack'
+      cloud.entry_point = 'dummy'
+      cloud.key = 'TestKey'
+      cloud.secret = 'TestSecret'
+      cloud.tenant_name = 'TestTenant'
+
+      expect(cloud.set_base_image).to be_nil
+    end
+
+    it 'call BaseImage create if base_image is empty' do
+      Cloud.skip_callback(:save, :after, :set_base_image)
+      @cloud2.save!
+      expect(@cloud2.base_images).to receive(:create!).with(source_image: 'ami-0d9b720d')
+      @cloud2.set_base_image
+    end
+
+    it 'call BaseImage update_attributes! if base_image is not empty' do
+      Cloud.set_callback(:save, :after, :set_base_image)
+      @cloud2.save!
+      expect(@cloud2.base_images).to receive_message_chain(:first, :update_attributes!).with(source_image: 'ami-36556364')
+      @cloud2.entry_point = 'ap-southeast-1'
+      @cloud2.set_base_image
+    end
+  end
+
+  describe '#aws_images' do
+    it 'return ami id list that corresponding to all of the Region' do
+      expected_list = {
+        'ap-northeast-1' => 'ami-0d9b720d',
+        'ap-southeast-1' => 'ami-36556364',
+        'ap-southeast-2' => 'ami-11b0c12b',
+        'eu-west-1' => 'ami-ede0739a',
+        'eu-central-1' => 'ami-98a79585',
+        'sa-east-1' => 'ami-7f56ef62',
+        'us-east-1' => 'ami-0e80db66',
+        'us-west-1' => 'ami-777f9b33',
+        'us-west-2' => 'ami-3b1a390b'
+      }
+
+      expect(@cloud.aws_images).to eq(expected_list)
+    end
+  end
+
   describe '#client' do
     it 'return instance of CloudConductor::Client that is initialized by cloud type' do
       client = double('client')
@@ -183,15 +242,30 @@ describe Cloud do
     end
   end
 
-  describe '#to_json' do
+  describe '#raise_error_in_use' do
+    it 'raise exception if cloud is using' do
+      allow(Candidate).to receive_message_chain(:where, :count).and_return(1)
+
+      expect { @cloud.raise_error_in_use }.to raise_error 'Can\'t destroy cloud that is used in some environments or blueprints.'
+    end
+  end
+
+  describe '#as_json' do
     it 'mask secret column' do
-      result = JSON.parse(@cloud.to_json, symbolize_names: true)
+      result = @cloud.as_json.with_indifferent_access
       expect(result[:name]).to eq('Test')
       expect(result[:type]).to eq('aws')
       expect(result[:entry_point]).to eq('ap-northeast-1')
       expect(result[:key]).to eq('TestKey')
       expect(result[:secret]).to eq('********')
       expect(result[:tenant_name]).to eq('TestTenant')
+    end
+  end
+
+  describe '#to_json' do
+    it 'call as_json' do
+      expect(@cloud).to receive(:as_json)
+      @cloud.to_json
     end
   end
 end

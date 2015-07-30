@@ -7,7 +7,8 @@ module API
             desc 'List application histories'
             get '/' do
               authorize!(:read, ::ApplicationHistory)
-              ::ApplicationHistory.where(application_id: params[:application_id]).select do |history|
+
+              Application.find(params[:application_id]).histories.select do |history|
                 can?(:read, history)
               end
             end

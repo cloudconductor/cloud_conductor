@@ -71,6 +71,17 @@ describe Project do
     end
   end
 
+  describe '#assign_project_administrator' do
+    it 'build assignment if current_account is not nil' do
+      @project.current_account = FactoryGirl.create(:account)
+      expect { @project.assign_project_administrator }.to change { @project.assignments.size }.by(1)
+    end
+
+    it 'not build assignment if current_account is nil' do
+      expect { @project.assign_project_administrator }.not_to change { @project.assignments.size }
+    end
+  end
+
   describe '#create_monitoring_account' do
     it 'create monitoring account' do
       expect { @project.create_monitoring_account }.to change { Account.count }.by(1)
@@ -82,6 +93,43 @@ describe Project do
       expect(@project.assignments).not_to be_empty
       expect(@project.assignments.first.account).to eq(Account.last)
       expect(@project.assignments.first.role).to eq('operator')
+    end
+  end
+
+  describe '#delete_monitoring_account' do
+    it 'delete monitoring account' do
+      @project.create_monitoring_account
+      expect { @project.delete_monitoring_account }.to change { Account.count }.by(-1)
+    end
+  end
+
+  describe '#assign_project_member' do
+    before do
+      @account = FactoryGirl.create(:account)
+    end
+
+    context 'when assignments exists account' do
+      it 'change role on assignment that between project and account' do
+        @project.current_account = @account
+        @project.save!
+
+        # Need to reload for avoid to ActiveRecord bug
+        project = Project.find(@project)
+
+        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).role }.from('administrator').to('operator')
+      end
+    end
+
+    context 'when assignments not exists account' do
+      it 'create assignment that has specified role' do
+        @project.save!
+
+        # Need to reload for avoid to ActiveRecord bug
+        project = Project.find(@project)
+
+        expect { project.assign_project_member(@account, :administrator) }.to change { Assignment.count }.by(1)
+        expect(project.assignments.find_by(account: @account).role).to eq('administrator')
+      end
     end
   end
 end
