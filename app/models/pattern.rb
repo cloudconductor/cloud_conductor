@@ -141,12 +141,19 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
       images.build(cloud: base_image.cloud, base_image: base_image, role: role)
     end
     packer_variables = {
-      repository_url: url,
-      revision: revision,
       pattern_name: name,
+      patterns: {},
       role: role,
       consul_secret_key: blueprint.consul_secret_key
     }
+
+    blueprint.patterns.each do |pattern|
+      packer_variables[:patterns][pattern.name] = {
+        url: pattern.url,
+        revision: pattern.revision
+      }
+    end
+
     packer_client = CloudConductor::PackerClient.new
     packer_client.build(new_images, packer_variables) do |results|
       update_images(results)

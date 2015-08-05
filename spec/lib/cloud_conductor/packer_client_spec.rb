@@ -159,21 +159,23 @@ module CloudConductor
     describe '#build_command' do
       before do
         @parameters = {
-          repository_url: 'http://example.com/default',
-          revision: 'default_revision',
           role: 'nginx',
           pattern_name: 'default_pattern_name',
+          patterns: {
+            name: {
+              url: 'http://example.com/',
+              revision: 'develop'
+            }
+          },
           consul_secret_key: 'default_key',
           packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json'
         }
       end
 
-      it 'return command with repository_url and revision' do
+      it 'return command with patterns_json' do
         vars = []
-        vars << '-var repository_url=http://example.com'
-        vars << '-var revision=dummy_revision'
+        vars << '-var patterns_json=\{\"name\":\{\"url\":\"http://example.com/\",\"revision\":\"develop\"\}\}'
 
-        @parameters.merge!(repository_url: 'http://example.com', revision: 'dummy_revision')
         command = @client.send(:build_command, @parameters)
         expect(command).to include(*vars)
       end

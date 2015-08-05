@@ -19,7 +19,10 @@ describe Pattern do
 
   before do
     @pattern = Pattern.new
+    @pattern.name = 'pattern_name'
     @pattern.blueprint = blueprint
+    @pattern.blueprint.patterns.clear
+    @pattern.blueprint.patterns << @pattern
     @pattern.url = 'http://example.com/pattern.git'
 
     allow(@pattern).to receive(:execute_packer)
@@ -377,12 +380,16 @@ describe Pattern do
 
     it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
       parameters = {
-        repository_url: @pattern.url,
-        revision: @pattern.revision,
         pattern_name: @pattern.name,
+        patterns: {},
         role: 'nginx',
         consul_secret_key: @pattern.blueprint.consul_secret_key
       }
+      parameters[:patterns][@pattern.name] = {
+        url: @pattern.url,
+        revision: @pattern.revision
+      }
+
       packer_client = CloudConductor::PackerClient.new
       allow(CloudConductor::PackerClient).to receive(:new).and_return(packer_client)
       expect(packer_client).to receive(:build).with(anything, parameters)

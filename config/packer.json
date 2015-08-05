@@ -4,8 +4,7 @@
     "cloudconductor_init_url": null,
     "cloudconductor_init_revision": null,
     "pattern_name": null,
-    "repository_url": null,
-    "revision": null,
+    "patterns_json": null,
     "role": null,
     "image_name": null,
     "consul_secret_key": null
@@ -23,7 +22,7 @@
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
         "if [ -f ./bin/init.sh ]; then",
-        "  sudo ROLE={{user `role`}} PATTERN_NAME={{user `pattern_name`}} PATTERN_URL={{user `repository_url`}} PATTERN_REVISION={{user `revision`}} CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/event-handler.log && exit 1)",
+        "  sudo ROLE={{user `role`}} PATTERNS_JSON='{{user `patterns_json`}}' CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/event-handler.log && exit 1)",
         "fi",
 
         "sync"
