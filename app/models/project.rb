@@ -36,4 +36,10 @@ class Project < ActiveRecord::Base
       assignments.create!(account: account, role: role)
     end
   end
+
+  def base_images(os)
+    clouds.map do |cloud|
+      BaseImage.find_by(os: os, cloud: cloud)
+    end.compact
+  end
 end

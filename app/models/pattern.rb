@@ -133,11 +133,7 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_images(role)
-    os = 'CentOS-6.5'
-    base_images = blueprint.project.clouds.map do |cloud|
-      BaseImage.find_by(os: os, cloud: cloud)
-    end.compact
-    new_images = base_images.map do |base_image|
+    new_images = blueprint.project.base_images('CentOS-6.5').map do |base_image|
       images.build(cloud: base_image.cloud, base_image: base_image, role: role)
     end
     packer_variables = {

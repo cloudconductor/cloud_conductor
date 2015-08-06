@@ -368,8 +368,9 @@ describe Pattern do
 
   describe '#create_images' do
     before do
-      FactoryGirl.create(:base_image, cloud: cloud)
-      FactoryGirl.create(:base_image, cloud: cloud)
+      base_images = [FactoryGirl.create(:base_image, cloud: cloud)]
+      allow(@pattern.blueprint.project).to receive(:base_images).and_return(base_images)
+
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
       allow(@pattern).to receive(:update_images)
     end
