@@ -12,8 +12,6 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require_relative 'event_log'
-
 module CloudConductor
   class Event
     PAYLOAD_KEY = 'cloudconductor/parameters'
@@ -32,15 +30,11 @@ module CloudConductor
     def sync_fire(name, payload = {}, filter = {})
       event_id = fire(name, payload, filter)
       wait(event_id)
-      event_log = find(event_id)
+      result = find(event_id)
 
-      unless event_log.success?
-        messages = {}
-        event_log.nodes.each do |node|
-          messages[node[:hostname]] = node[:log]
-        end
-
-        fail "#{name} event has failed.\n#{messages.to_json}"
+      unless result.success?
+        details = JSON.pretty_generate(JSON.parse(result.refresh!.to_json))
+        fail "#{name} event has failed.\n#{details}"
       end
       event_id
     end
@@ -48,27 +42,19 @@ module CloudConductor
     def wait(event_id)
       Timeout.timeout(TIMEOUT) do
         loop do
-          event_log = find(event_id)
-          break if event_log && event_log.finished?
+          result = find(event_id)
+          break if result && result.finished?
           sleep 5
         end
       end
     end
 
     def list
-      events = @client.kv.get('event', true)
-      return [] unless events
-
-      events.group_by { |key, _| key.match(%r{event/([0-9a-f\-]+/)})[1] }.map do |_, event|
-        CloudConductor::EventLog.new(Hash[*event.flatten])
-      end
+      Metronome::EventResult.list(@client)
     end
 
     def find(id)
-      response = @client.kv.get("event/#{id}", true)
-      return nil unless response
-
-      EventLog.new(response)
+      Metronome::EventResult.find(@client, id).refresh!
     end
   end
 end

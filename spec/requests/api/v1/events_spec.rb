@@ -13,8 +13,8 @@ describe API do
       end
 
       before do
-        dummy_event_log = double(:event_log, as_json: { id: 1 })
-        allow_any_instance_of(Environment).to receive_message_chain(:event, :list).and_return([dummy_event_log])
+        event_result = double(:event_result, as_json: { id: 1 })
+        allow_any_instance_of(Environment).to receive_message_chain(:event, :list).and_return([event_result])
       end
 
       context 'not_logged_in' do
@@ -51,8 +51,8 @@ describe API do
       end
 
       before do
-        dummy_event_log = double(:event_log, as_json: { id: 1 })
-        allow_any_instance_of(Environment).to receive_message_chain(:event, :find).and_return(dummy_event_log)
+        event_result = double(:event_result, as_json: { id: 1 })
+        allow_any_instance_of(Environment).to receive_message_chain(:event, :find).and_return(event_result)
       end
 
       context 'not_logged_in' do
