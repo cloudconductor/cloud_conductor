@@ -28,7 +28,7 @@ module Consul
 
         result = {}
         JSON.parse(response.body).each do |entry|
-          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value'])
+          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value']) if entry['Value']
         end
 
         is_recurse ? result : result.values.first

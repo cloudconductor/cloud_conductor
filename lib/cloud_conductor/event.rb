@@ -54,7 +54,8 @@ module CloudConductor
     end
 
     def find(id)
-      Metronome::EventResult.find(@client, id).refresh!
+      result = Metronome::EventResult.find(@client, id)
+      result.refresh! if result
     end
   end
 end
