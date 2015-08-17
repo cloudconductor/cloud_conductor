@@ -21,6 +21,7 @@ module Consul
       end
 
       def get(key, is_recurse = false)
+        @faraday.params.clear
         @faraday.params[:token] = @token
         @faraday.params[:recurse] = true if is_recurse
         response = @faraday.get("kv/#{key}")
