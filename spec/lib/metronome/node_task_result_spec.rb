@@ -143,7 +143,7 @@ module Metronome
 
       describe '#as_json' do
         it 'return Hash that is excluded client field' do
-          expect(@node_result.as_json.keys).to eq(%w(id no node status started_at finished_at log))
+          expect(@node_result.as_json.keys).to match_array(%w(id no node status started_at finished_at log))
         end
       end
     end
