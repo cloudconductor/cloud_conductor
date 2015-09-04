@@ -14,7 +14,6 @@
 # limitations under the License.
 module CloudConductor
   class Event
-    PAYLOAD_KEY = 'cloudconductor/parameters'
     TIMEOUT = 1800
 
     def initialize(host, port = 8500, options = {})
@@ -23,7 +22,9 @@ module CloudConductor
     end
 
     def fire(name, payload = {}, filter = {})
-      @client.kv.merge PAYLOAD_KEY, payload
+      payload.each do |key, value|
+        @client.kv.merge key, value
+      end
       @client.event.fire name, @token, filter
     end
 

@@ -145,11 +145,12 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def payload
     payload = {}
-    pattern_json = pattern.to_json(methods: nil, except: %i(id blueprint_id parameters backup_config created_at updated_at))
-    payload[pattern.name] = JSON.parse(pattern_json, symbolize_names: true)
-    payload[pattern.name][:user_attributes] = JSON.parse(parameters, symbolize_names: true)
-    payload[pattern.name][:config] = {}
-    payload[pattern.name][:config][:backup_restore] = JSON.parse(pattern.backup_config, symbolize_names: true)
+    payload["cloudconductor/patterns/#{pattern.name}/attributes"] = JSON.parse(parameters, symbolize_names: true)
+    payload["cloudconductor/patterns/#{pattern.name}/config"] = {
+      cloudconductor: {
+        backup_restore: JSON.parse(pattern.backup_config, symbolize_names: true)
+      }
+    }
 
     payload
   end

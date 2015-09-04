@@ -283,19 +283,20 @@ describe Stack do
   end
 
   describe '#payload' do
-    it 'return hash that has pattern information and parameters of stack' do
-      payload = @stack.payload
-      expect(payload.keys).to eq([@stack.pattern.name])
+    it 'return hash that has parameters of stack' do
+      key = "cloudconductor/patterns/#{@stack.pattern.name}/attributes"
+      attributes = @stack.payload[key]
+      expect(attributes).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
+    end
 
-      pattern_payload = payload[@stack.pattern.name]
-      expect(pattern_payload.keys).to eq(%i(name type protocol url revision user_attributes config))
-
-      expect(pattern_payload[:name]).to eq(@stack.pattern.name)
-      expect(pattern_payload[:type]).to eq(@stack.pattern.type.to_s)
-      expect(pattern_payload[:protocol]).to eq(@stack.pattern.protocol.to_s)
-      expect(pattern_payload[:url]).to eq(@stack.pattern.url)
-      expect(pattern_payload[:revision]).to eq(@stack.pattern.revision)
-      expect(pattern_payload[:user_attributes]).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
+    it 'return hash that has backup configuration' do
+      key = "cloudconductor/patterns/#{@stack.pattern.name}/config"
+      config = @stack.payload[key]
+      expect(config).to eq(
+        cloudconductor: {
+          backup_restore: JSON.parse(@stack.parameters, symbolize_names: true)
+        }
+      )
     end
   end
 

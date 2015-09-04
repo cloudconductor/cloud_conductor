@@ -29,24 +29,27 @@ class ApplicationHistory < ActiveRecord::Base
   end
 
   def payload
-    payload = {
+    json = {
       cloudconductor: {
         applications: {
         }
       }
     }
 
-    application_payload = {}
-    application_payload[:type] = type
-    application_payload[:version] = version
-    application_payload[:protocol] = protocol
-    application_payload[:url] = url
-    application_payload[:revision] = revision if revision
-    application_payload[:pre_deploy] = pre_deploy if pre_deploy
-    application_payload[:post_deploy] = post_deploy if post_deploy
-    application_payload[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
+    application_json = {}
+    application_json[:type] = type
+    application_json[:version] = version
+    application_json[:protocol] = protocol
+    application_json[:url] = url
+    application_json[:revision] = revision if revision
+    application_json[:pre_deploy] = pre_deploy if pre_deploy
+    application_json[:post_deploy] = post_deploy if post_deploy
+    application_json[:parameters] = JSON.parse(parameters || '{}', symbolize_names: true)
 
-    payload[:cloudconductor][:applications][application.name] = application_payload
+    json[:cloudconductor][:applications][application.name] = application_json
+
+    payload = {}
+    payload["cloudconductor/applications/#{application.name}"] = json
     payload
   end
 end

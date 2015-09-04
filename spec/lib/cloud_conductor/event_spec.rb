@@ -37,8 +37,15 @@ module CloudConductor
 
     describe '#fire' do
       it 'call KV#merge' do
-        expect(@client).to receive_message_chain(:kv, :merge).with(CloudConductor::Event::PAYLOAD_KEY, {})
-        @event.fire(:configure, {})
+        expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key1', {})
+        expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key2', {})
+        payload = {
+          'dummy/key1' => {
+          },
+          'dummy/key2' => {
+          }
+        }
+        @event.fire(:configure, payload)
       end
 
       it 'call Event#fire with token' do
