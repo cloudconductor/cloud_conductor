@@ -23,7 +23,7 @@ module Metronome
     end
 
     def finished?
-      [:success, :error].include? status
+      [:success, :error, :timeout].include? status
     end
 
     def success?
