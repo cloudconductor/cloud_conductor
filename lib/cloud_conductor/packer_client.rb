@@ -88,10 +88,9 @@ module CloudConductor
 
     def build_command(parameters)
       vars = @vars.dup
-      vars[:repository_url] = parameters[:repository_url]
-      vars[:revision] = parameters[:revision]
       vars[:role] = parameters[:role]
       vars[:pattern_name] = parameters[:pattern_name]
+      vars[:patterns_json] = parameters[:patterns].to_json
       vars[:image_name] = parameters[:role].gsub(/,\s*/, '-')
       vars[:cloudconductor_root] = @cloudconductor_root
       vars[:cloudconductor_init_url] = @cloudconductor_init_url

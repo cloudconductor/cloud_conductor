@@ -143,27 +143,31 @@ describe ApplicationHistory do
         expect(application_payload[:parameters]).to eq(JSON.parse(@history.parameters, symbolize_names: true))
       end
 
-      expect(@history.payload).to expected_payload
+      key = "cloudconductor/applications/#{@history.application.name}"
+      expect(@history.payload[key]).to expected_payload
     end
 
     it 'return payload that does not contains revision when it is unset' do
       @history.revision = nil
 
-      application_payload = @history.payload[:cloudconductor][:applications][application.name]
+      key = "cloudconductor/applications/#{@history.application.name}"
+      application_payload = @history.payload[key][:cloudconductor][:applications][application.name]
       expect(application_payload.keys).not_to be_include(:revision)
     end
 
     it 'return payload that does not contains pre_deploy when it is unset' do
       @history.pre_deploy = nil
 
-      application_payload = @history.payload[:cloudconductor][:applications][application.name]
+      key = "cloudconductor/applications/#{@history.application.name}"
+      application_payload = @history.payload[key][:cloudconductor][:applications][application.name]
       expect(application_payload.keys).not_to be_include(:pre_deploy)
     end
 
     it 'return payload that does not contains post_deploy when it is unset' do
       @history.post_deploy = nil
 
-      application_payload = @history.payload[:cloudconductor][:applications][application.name]
+      key = "cloudconductor/applications/#{@history.application.name}"
+      application_payload = @history.payload[key][:cloudconductor][:applications][application.name]
       expect(application_payload.keys).not_to be_include(:post_deploy)
     end
   end

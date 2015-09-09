@@ -37,8 +37,15 @@ module CloudConductor
 
     describe '#fire' do
       it 'call KV#merge' do
-        expect(@client).to receive_message_chain(:kv, :merge).with(CloudConductor::Event::PAYLOAD_KEY, {})
-        @event.fire(:configure, {})
+        expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key1', {})
+        expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key2', {})
+        payload = {
+          'dummy/key1' => {
+          },
+          'dummy/key2' => {
+          }
+        }
+        @event.fire(:configure, payload)
       end
 
       it 'call Event#fire with token' do
@@ -63,13 +70,14 @@ module CloudConductor
     describe '#sync_fire' do
       before do
         nodes = [{ hostname: 'dummy_host', log: 'dummy_log' }]
-        @event_log = double(:event_log)
-        allow(@event_log).to receive(:success?).and_return(true)
-        allow(@event_log).to receive(:nodes).and_return(nodes)
+        @event_result = double(:event_result)
+        allow(@event_result).to receive(:success?).and_return(true)
+        allow(@event_result).to receive(:nodes).and_return(nodes)
+        allow(@event_result).to receive_message_chain(:refresh!, :to_json).and_return('{"dummy": "value"}')
 
         allow(@event).to receive(:fire).and_return(1)
         allow(@event).to receive(:wait).and_return('dummy_event')
-        allow(@event).to receive(:find).and_return(@event_log)
+        allow(@event).to receive(:find).and_return(@event_result)
       end
 
       it 'call fire' do
@@ -97,23 +105,23 @@ module CloudConductor
       end
 
       it 'fail if success? method returns false' do
-        allow(@event_log).to receive(:success?).and_return(false)
+        allow(@event_result).to receive(:success?).and_return(false)
 
-        expect { @event.sync_fire(:error) }.to raise_error("error event has failed.\n{\"dummy_host\":\"dummy_log\"}")
+        expect { @event.sync_fire(:error) }.to raise_error(/error event has failed.\n\s*{\s*.*\s*}/)
       end
     end
 
     describe '#wait' do
       it 'will return immediately if target event had finished' do
-        event_log = double(:event_log, finished?: true)
-        allow(@event).to receive(:find).and_return(event_log)
+        event_result = double(:event_result, finished?: true)
+        allow(@event).to receive(:find).and_return(event_result)
         expect(@event).not_to receive(:sleep)
         @event.wait('dummy_event')
       end
 
       it 'will wait until target event are finished' do
-        unfinished_log = double(:event_log, finished?: false)
-        finished_log = double(:event_log, finished?: true)
+        unfinished_log = double(:event_result, finished?: false)
+        finished_log = double(:event_result, finished?: true)
         allow(@event).to receive(:find).and_return(nil, unfinished_log, finished_log)
         expect(@event).to receive(:sleep).twice
         @event.wait('dummy_event')
@@ -121,78 +129,17 @@ module CloudConductor
     end
 
     describe '#list' do
-      it 'return empty array if request failed' do
-        allow(@client).to receive_message_chain(:kv, :get).and_return(nil)
-        expect(@event.list).to eq([])
-      end
-
-      it 'return event list' do
-        value = {
-          'event/11111111-1111-1111-1111-111111111111/host1' => {
-            'event_id' => '11111111-1111-1111-1111-111111111111',
-            'type' => 'configure',
-            'result' => '0',
-            'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900'
-          },
-          'event/11111111-1111-1111-1111-111111111111/host2' => {
-            'event_id' => '11111111-1111-1111-1111-111111111111',
-            'type' => 'configure',
-            'result' => '0',
-            'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900'
-          },
-          'event/22222222-2222-2222-2222-222222222222/host1' => {
-            'event_id' => '22222222-2222-2222-2222-222222222222',
-            'type' => 'configure',
-            'result' => '0',
-            'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900'
-          },
-          'event/11111111-1111-1111-1111-111111111111/host1/log' => 'Dummy consul event log1',
-          'event/11111111-1111-1111-1111-111111111111/host2/log' => 'Dummy consul event log2',
-          'event/22222222-2222-2222-2222-222222222222/host1/log' => 'Dummy consul event log3'
-        }
-
-        allow(@client).to receive_message_chain(:kv, :get).and_return(value)
-        results = @event.list
-        expect(results).to be_is_a Array
-        expect(results.size).to eq(2)
-        expect(results).to all(be_is_a(EventLog))
-        expect(results.map(&:id)).to eq(['11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222'])
+      it 'delegate to Metronome::EventResult' do
+        expect(Metronome::EventResult).to receive(:list).with(@client)
+        @event.list
       end
     end
 
     describe '#find' do
-      it 'return nil if target event does not exist or request failed' do
-        allow(@client).to receive_message_chain(:kv, :get).and_return(nil)
-        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_nil
-      end
-
-      it 'return EventLog that is created from responsed json' do
-        value = {
-          'event/12345678-1234-1234-1234-1234567890ab/host1' => {
-            'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
-            'type' => 'configure',
-            'result' => '0',
-            'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900'
-          },
-          'event/12345678-1234-1234-1234-1234567890ab/host2' => {
-            'event_id' => '4ee5d2a6-853a-21a9-7463-ef1866468b76',
-            'type' => 'configure',
-            'result' => '0',
-            'start_datetime' => '2014-12-16T14:44:07+0900',
-            'end_datetime' => '2014-12-16T14:44:09+0900'
-          },
-          'event/12345678-1234-1234-1234-1234567890ab/host1' => 'Dummy consul event log1',
-          'event/12345678-1234-1234-1234-1234567890ab/host2' => 'Dummy consul event log2'
-        }
-
-        allow(@client).to receive_message_chain(:kv, :get).and_return(value)
-
-        expect(EventLog).to receive(:new).with(value).and_return(EventLog.new(value))
-        expect(@event.find('12345678-1234-1234-1234-1234567890ab')).to be_is_a(EventLog)
+      it 'delegate to Metronome::EventResult' do
+        event_result = double(:event_result, refresh!: nil)
+        expect(Metronome::EventResult).to receive(:find).with(@client, 'dummy_id').and_return(event_result)
+        @event.find('dummy_id')
       end
     end
   end

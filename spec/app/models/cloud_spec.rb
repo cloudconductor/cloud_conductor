@@ -182,6 +182,7 @@ describe Cloud do
       @cloud2.save!
       expect(@cloud2.base_images).to receive(:create!).with(source_image: 'ami-0d9b720d')
       @cloud2.set_base_image
+      Cloud.set_callback(:save, :after, :set_base_image)
     end
 
     it 'call BaseImage update_attributes! if base_image is not empty' do

@@ -132,4 +132,15 @@ describe Project do
       end
     end
   end
+
+  describe '#base_images' do
+    it 'collect base images belongs to this project' do
+      cloud = FactoryGirl.create(:cloud, :aws, project: @project)
+      FactoryGirl.create(:base_image, cloud: cloud, os: 'CentOS-6.6')
+
+      results = @project.base_images('CentOS-6.5')
+      expect(results.size).to eq(1)
+      expect(results.first.os).to eq('CentOS-6.5')
+    end
+  end
 end
