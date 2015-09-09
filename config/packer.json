@@ -22,7 +22,7 @@
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
         "if [ -f ./bin/init.sh ]; then",
-        "  sudo ROLE={{user `role`}} PATTERNS_JSON='{{user `patterns_json`}}' CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/event-handler.log && exit 1)",
+        "  sudo ROLE={{user `role`}} PATTERNS_JSON='{{user `patterns_json`}}' CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/bootstrap.log && exit 1)",
         "fi",
 
         "sync"
