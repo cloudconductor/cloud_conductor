@@ -280,6 +280,13 @@ describe Stack do
       expect(@stack).to receive_message_chain(:client, :destroy_stack).with(@stack.name)
       @stack.destroy_stack
     end
+
+    it 'call Log#warn if Client#destroy_stack raise error' do
+      exception = Excon::Errors::Error.new
+      allow(@stack).to receive_message_chain(:client, :destroy_stack).and_raise(Excon::Errors::SocketError.new(exception))
+      expect(Log).to receive(:warn).with("Failed to connect to #{@stack.cloud.name}")
+      @stack.destroy_stack
+    end
   end
 
   describe '#payload' do

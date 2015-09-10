@@ -138,8 +138,12 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def destroy_stack
     client.destroy_stack name
+  rescue Excon::Errors::SocketError
+    Log.warn "Failed to connect to #{cloud.name}"
+  rescue Excon::Errors::Unauthorized, AWS::CloudFormation::Errors::InvalidClientTokenId
+    Log.warn "Failed to authorize on #{cloud.name}"
   rescue => e
-    Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.warn "Unexpected error occurred while destroy stack #{name} on #{cloud.name}."
     Log.warn "  #{e.message}"
   end
 
