@@ -27,7 +27,7 @@ class Project < ActiveRecord::Base
   end
 
   def update_monitoring_account
-    account = assignments.map(&:account).find {|account| account.email =~ /monitoring@.*\.example\.com/ }
+    account = assignments.map(&:account).find { |account| account.email =~ /monitoring@.*\.example\.com/ }
     account.update_attributes!(email: "monitoring@#{name}.example.com")
   end
 
