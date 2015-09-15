@@ -7,10 +7,13 @@ class Blueprint < ActiveRecord::Base
   validates :name, uniqueness: true
 
   validate do
-    patterns.each(&:set_metadata_from_repository)
-
-    unless patterns.any? { |pattern| pattern.type == 'platform' }
-      errors.add(:patterns, 'don\'t contain platform pattern')
+    begin
+      patterns.each(&:set_metadata_from_repository)
+      unless patterns.any? { |pattern| pattern.type == 'platform' }
+        errors.add(:patterns, 'don\'t contain platform pattern')
+      end
+    rescue => e
+      errors.add(:patterns, "is invalid(#{e.message})")
     end
   end
 
