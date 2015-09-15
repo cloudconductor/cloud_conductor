@@ -60,9 +60,10 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
 
   def set_metadata_from_repository
     clone_repository do |path|
-      @roles = collect_roles(load_template(path))
       metadata = load_metadata path
       update_metadata path, metadata
+
+      @roles = collect_roles(load_template(path))
     end
   end
 
