@@ -87,11 +87,15 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   def load_template(path)
     template_path = File.expand_path('template.json', path)
     JSON.parse(File.open(template_path).read).with_indifferent_access
+  rescue Errno::ENOENT
+    raise 'template.json is not contained in pattern'
   end
 
   def load_metadata(path)
     metadata_path = File.expand_path('metadata.yml', path)
     YAML.load_file(metadata_path).with_indifferent_access
+  rescue Errno::ENOENT
+    raise 'metadata.yml is not contained in pattern'
   end
 
   def collect_roles(template)
