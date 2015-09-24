@@ -8,7 +8,7 @@ access_log_path 'log/conductor_access.log'
 cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
 
 # cloudconductor_init settings
-cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
+cloudconductor_init.url 'https://github.com/cloudconductor/cloud_conductor_init.git'
 cloudconductor_init.revision 'master'
 
 # packer settings
