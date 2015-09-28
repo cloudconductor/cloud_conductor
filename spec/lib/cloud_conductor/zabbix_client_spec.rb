@@ -150,7 +150,7 @@ module CloudConductor
 
       it 'call #update_action when action already exists' do
         allow(@action).to receive(:get).and_return([{ 'actionid' => '9' }])
-        expect(@client).to receive(:update_action).with(9, 'dummy command')
+        expect(@client).to receive(:update_action).with(9, 8, 'dummy command')
 
         @client.send(:register_action, 'dummy_name', 8, 'dummy command')
       end
@@ -183,11 +183,12 @@ module CloudConductor
       it 'update action' do
         expected_parameters = satisfy do |params|
           expect(params[:actionid]).to eq(9)
+          expect(params[:conditions][0][:value]).to eq(10)
           expect(params[:operations][0][:opcommand][:command]).to eq('update command')
         end
         expect(@action).to receive(:update).with(expected_parameters)
 
-        @client.send(:update_action, 9, 'update command')
+        @client.send(:update_action, 9, 10, 'update command')
       end
     end
 

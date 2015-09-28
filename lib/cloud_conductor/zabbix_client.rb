@@ -75,11 +75,11 @@ module CloudConductor
       if result.empty?
         insert_action(name, host_id, operation)
       else
-        update_action(result.first['actionid'].to_i, operation)
+        update_action(result.first['actionid'].to_i, host_id, operation)
       end
     end
 
-    def insert_action(name, host_id, operation) # rubocop: disable MethodLength
+    def insert_action(name, host_id, operation)
       params = {
         name: name,
         eventsource: 0,
@@ -88,54 +88,51 @@ module CloudConductor
         esc_period: 120,
         def_shortdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}',
         def_longdata: '{TRIGGER.NAME}: {TRIGGER.STATUS}\r\nLast value: {ITEM.LASTVALUE}\r\n\r\n{TRIGGER.URL}',
-        conditions: [
-          {
-            conditiontype: 1, # host
-            operator: 0, # equal
-            value: host_id
-          },
-          {
-            conditiontype: 5, # trigger value
-            operator: 0, # equal
-            value: 1
-          }
-        ],
-        operations: [
-          {
-            operationtype: 1, # remote command
-            opcommand_hst: {
-              hostid: 0
-            },
-            opcommand: {
-              type: 0, # custom script
-              command: operation,
-              execute_on: 1 # Zabbix server
-            }
-          }
-        ]
+        conditions: generate_conditions(host_id),
+        operations: generate_operations(operation)
       }
 
       @zabbix.action.create(params)
     end
 
-    def update_action(action_id, operation)
+    def update_action(action_id, host_id, operation)
       params = {
         actionid: action_id,
-        operations: [
-          {
-            operationtype: 1, # remote command
-            opcommand_hst: {
-              hostid: 0
-            },
-            opcommand: {
-              type: 0, # custom script
-              command: operation,
-              execute_on: 1 # Zabbix server
-            }
-          }
-        ]
+        conditions: generate_conditions(host_id),
+        operations: generate_operations(operation)
       }
       @zabbix.action.update(params)
+    end
+
+    def generate_conditions(host_id)
+      [
+        {
+          conditiontype: 1, # host
+          operator: 0, # equal
+          value: host_id
+        },
+        {
+          conditiontype: 5, # trigger value
+          operator: 0, # equal
+          value: 1
+        }
+      ]
+    end
+
+    def generate_operations(operation)
+      [
+        {
+          operationtype: 1, # remote command
+          opcommand_hst: {
+            hostid: 0
+          },
+          opcommand: {
+            type: 0, # custom script
+            command: operation,
+            execute_on: 1 # Zabbix server
+          }
+        }
+      ]
     end
 
     def operation(environment_id, url)
