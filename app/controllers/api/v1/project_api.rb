@@ -4,7 +4,6 @@ module API
       resource :projects do
         desc 'List projects'
         get '/' do
-          authorize!(:read, ::Project)
           ::Project.all.select do |project|
             can?(:read, project)
           end

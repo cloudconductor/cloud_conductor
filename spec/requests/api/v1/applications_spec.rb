@@ -16,7 +16,8 @@ describe API do
       end
 
       context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
+        let(:result) { [] }
+        it_behaves_like('200 OK')
       end
 
       context 'administrator', admin: true do

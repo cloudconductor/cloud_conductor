@@ -4,7 +4,6 @@ module API
       resource :base_images do
         desc 'List base images'
         get '/' do
-          authorize!(:read, BaseImage)
           ::BaseImage.all.select do |base_image|
             can?(:read, base_image)
           end

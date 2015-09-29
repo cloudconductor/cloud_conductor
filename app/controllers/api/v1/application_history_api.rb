@@ -6,8 +6,6 @@ module API
           resource :histories do
             desc 'List application histories'
             get '/' do
-              authorize!(:read, ::ApplicationHistory)
-
               Application.find(params[:application_id]).histories.select do |history|
                 can?(:read, history)
               end
