@@ -24,10 +24,10 @@ module CloudConductor
           @base_duplicator = BaseDuplicator.new(@resources, @options)
         end
 
-        describe '#replace_properties' do
+        describe '#replace_copied_properties' do
           it 'return the argument as it is' do
             resource = { 'Type' => 'AWS::EC2::Instance' }
-            expect(@base_duplicator.send(:replace_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
+            expect(@base_duplicator.send(:replace_copied_properties, resource)).to eq('Type' => 'AWS::EC2::Instance')
           end
         end
 
@@ -194,7 +194,7 @@ module CloudConductor
         end
 
         describe '#post_copy' do
-          it 'call replace_associated_resources, replace_properties, add_copied_flag methods' do
+          it 'call replace_associated_resources, replace_copied_properties, add_copied_flag methods' do
             copied_resource_mapping_table = {
               'original_name' => 'copy_name'
             }
@@ -206,11 +206,11 @@ module CloudConductor
             }
 
             allow(@base_duplicator).to receive(:replace_associated_resources).and_return(resource)
-            allow(@base_duplicator).to receive(:replace_properties).and_return(resource)
+            allow(@base_duplicator).to receive(:replace_copied_properties).and_return(resource)
             allow(@base_duplicator).to receive(:add_copied_flag).and_return(resource)
 
             expect(@base_duplicator).to receive(:replace_associated_resources).with(resource, copied_resource_mapping_table)
-            expect(@base_duplicator).to receive(:replace_properties).with(resource)
+            expect(@base_duplicator).to receive(:replace_copied_properties).with(resource)
             expect(@base_duplicator).to receive(:add_copied_flag).with(resource)
             @base_duplicator.send(:post_copy, copied_resource_mapping_table, resource)
           end
