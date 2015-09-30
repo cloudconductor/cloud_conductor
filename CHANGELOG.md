@@ -1,6 +1,13 @@
 CHANGELOG
 =========
 
+## version 1.1.0 (2015/09/30)
+
+  - Support metronome for scheduling tasks over all nodes when consul cluster has received event
+  - Support packer version 0.8.6
+  - Improve validator
+  - Add configuration for access log
+
 ## version 1.0.3 (2015/06/18)
 
   - Check usage conditions when delete cloud record.
