@@ -6,8 +6,7 @@ module API
           resource :histories do
             desc 'List application histories'
             get '/' do
-              authorize!(:read, ::ApplicationHistory)
-              ::ApplicationHistory.where(application_id: params[:application_id]).select do |history|
+              Application.find(params[:application_id]).histories.select do |history|
                 can?(:read, history)
               end
             end
@@ -17,6 +16,8 @@ module API
               requires :id, type: Integer, desc: 'Application history id'
             end
             get '/:id' do
+              application = ::Application.find(params[:application_id])
+              authorize!(:read, application)
               history = ::ApplicationHistory.find(params[:id])
               authorize!(:read, history)
               history
@@ -34,6 +35,8 @@ module API
               optional :parameters, type: String, default: '{}', desc: 'JSON string to apply additional configuration'
             end
             post '/' do
+              application = ::Application.find(params[:application_id])
+              authorize!(:update, application)
               authorize!(:create, ::ApplicationHistory)
               ::ApplicationHistory.create!(declared_params)
             end
@@ -50,6 +53,8 @@ module API
               optional :parameters, type: String, desc: 'JSON string to apply additional configuration'
             end
             put '/:id' do
+              application = ::Application.find(params[:application_id])
+              authorize!(:update, application)
               history = ::ApplicationHistory.find(params[:id])
               authorize!(:update, history)
               history.update_attributes!(declared_params)
@@ -61,6 +66,8 @@ module API
               requires :id, type: Integer, desc: 'Application history id'
             end
             delete '/:id' do
+              application = ::Application.find(params[:application_id])
+              authorize!(:update, application)
               history = ::ApplicationHistory.find(params[:id])
               authorize!(:destroy, history)
               history.destroy

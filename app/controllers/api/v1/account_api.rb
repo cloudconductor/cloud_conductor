@@ -4,7 +4,6 @@ module API
       resource :accounts do
         desc 'List accounts'
         get '/' do
-          authorize!(:read, ::Account)
           ::Account.all.select do |account|
             can?(:read, account)
           end

@@ -102,7 +102,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     pattern && pattern.type == 'optional'
   end
 
-  def exist?
+  def exists_on_cloud?
     client.get_stack_status name
     true
   rescue
@@ -138,18 +138,23 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def destroy_stack
     client.destroy_stack name
+  rescue Excon::Errors::SocketError
+    Log.warn "Failed to connect to #{cloud.name}"
+  rescue Excon::Errors::Unauthorized, AWS::CloudFormation::Errors::InvalidClientTokenId
+    Log.warn "Failed to authorize on #{cloud.name}"
   rescue => e
-    Log.warn "Some error occurred while destroy stack that is #{name} on #{cloud.name}."
+    Log.warn "Unexpected error occurred while destroy stack #{name} on #{cloud.name}."
     Log.warn "  #{e.message}"
   end
 
   def payload
     payload = {}
-    pattern_json = pattern.to_json(methods: nil, except: %i(id blueprint_id parameters backup_config created_at updated_at))
-    payload[pattern.name] = JSON.parse(pattern_json, symbolize_names: true)
-    payload[pattern.name][:user_attributes] = JSON.parse(parameters, symbolize_names: true)
-    payload[pattern.name][:config] = {}
-    payload[pattern.name][:config][:backup_restore] = JSON.parse(pattern.backup_config, symbolize_names: true)
+    payload["cloudconductor/patterns/#{pattern.name}/attributes"] = JSON.parse(parameters, symbolize_names: true)
+    payload["cloudconductor/patterns/#{pattern.name}/config"] = {
+      cloudconductor: {
+        backup_restore: JSON.parse(pattern.backup_config, symbolize_names: true)
+      }
+    }
 
     payload
   end

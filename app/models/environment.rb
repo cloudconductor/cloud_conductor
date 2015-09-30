@@ -165,7 +165,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   def stack_destroyed?
     lambda do |stack|
-      return true unless stack.exist?
+      return true unless stack.exists_on_cloud?
       [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
     end
   end

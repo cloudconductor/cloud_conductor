@@ -15,7 +15,8 @@ describe API do
       end
 
       context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
+        let(:result) { [] }
+        it_behaves_like('200 OK')
       end
 
       context 'administrator', admin: true do
@@ -38,6 +39,11 @@ describe API do
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
+      end
+
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/base_images/0' }
+        it_behaves_like('404 Not Found')
       end
 
       context 'normal_account', normal: true do
@@ -90,43 +96,48 @@ describe API do
       end
     end
 
-    #     describe 'PUT /base_images/:id' do
-    #       let(:method) { 'put' }
-    #       let(:url) { "/api/v1/base_images/#{base_image.id}" }
-    #       let(:params) do
-    #         {
-    #           'os' => 'centos7',
-    #           'ssh_username' => 'root',
-    #           'source_image' => SecureRandom.uuid
-    #         }
-    #       end
-    #       let(:result) do
-    #         base_image.as_json.merge(params).merge(
-    #           'created_at' => base_image.created_at.iso8601(3),
-    #           'updated_at' => String
-    #         )
-    #       end
-    #
-    #       context 'not_logged_in' do
-    #         it_behaves_like('401 Unauthorized')
-    #       end
-    #
-    #       context 'normal_account', normal: true do
-    #         it_behaves_like('403 Forbidden')
-    #       end
-    #
-    #       context 'administrator', admin: true do
-    #         it_behaves_like('200 OK')
-    #       end
-    #
-    #       context 'project_owner', project_owner: true do
-    #         it_behaves_like('200 OK')
-    #       end
-    #
-    #       context 'project_operator', project_operator: true do
-    #         it_behaves_like('200 OK')
-    #       end
-    #     end
+    describe 'PUT /base_images/:id' do
+      let(:method) { 'put' }
+      let(:url) { "/api/v1/base_images/#{base_image.id}" }
+      let(:params) do
+        {
+          'os' => 'CentOS-7.0',
+          'ssh_username' => 'root',
+          'source_image' => SecureRandom.uuid
+        }
+      end
+      let(:result) do
+        base_image.as_json.merge(params).merge(
+          'created_at' => base_image.created_at.iso8601(3),
+          'updated_at' => String
+        )
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/base_images/0' }
+        it_behaves_like('404 Not Found')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
 
     describe 'DELETE /base_images/:id' do
       let(:method) { 'delete' }
@@ -135,6 +146,11 @@ describe API do
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
+      end
+
+      context 'not_exist_id', admin: true do
+        let(:url) { '/api/v1/base_images/0' }
+        it_behaves_like('404 Not Found')
       end
 
       context 'normal_account', normal: true do

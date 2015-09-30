@@ -21,6 +21,7 @@ module Consul
       end
 
       def get(key, is_recurse = false)
+        @faraday.params.clear
         @faraday.params[:token] = @token
         @faraday.params[:recurse] = true if is_recurse
         response = @faraday.get("kv/#{key}")
@@ -28,7 +29,7 @@ module Consul
 
         result = {}
         JSON.parse(response.body).each do |entry|
-          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value'])
+          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value']) if entry['Value']
         end
 
         is_recurse ? result : result.values.first

@@ -19,6 +19,7 @@ module CloudConductor
     let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
     let(:blueprint) do
+      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
       blueprint = FactoryGirl.create(:blueprint,
                                      project: project,
                                      patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),
@@ -207,6 +208,30 @@ module CloudConductor
         expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
         @updater.send(:finish_environment)
         expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
+      end
+    end
+
+    describe '#configure_payload' do
+      it 'return payload hash to use configure event' do
+        expected_payload = {
+          cloudconductor: {
+            patterns: {
+            }
+          }
+        }
+        expected_payload[:cloudconductor][:patterns].deep_merge! @environment.stacks.first.payload
+
+        @environment.stacks.first.status = :CREATE_COMPLETE
+        @environment.stacks.first.save!
+        result = @updater.send(:configure_payload, @environment)
+        expect(result).to eq(expected_payload)
+      end
+    end
+
+    describe '#get_nodes' do
+      it 'return node list for consul catalog' do
+        result = @updater.send(:get_nodes, @environment)
+        expect(result).to eq(['dummy_node'])
       end
     end
   end

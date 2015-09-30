@@ -4,7 +4,6 @@ module API
       resource :applications do
         desc 'List applications'
         get '/' do
-          authorize!(:read, ::Application)
           ::Application.all.select do |application|
             can?(:read, application)
           end

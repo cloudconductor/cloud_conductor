@@ -34,7 +34,11 @@ module CloudConductor
           @options = options
         end
 
-        def replace_properties(resource)
+        def replace_source_properties(resource)
+          resource
+        end
+
+        def replace_copied_properties(resource)
           resource
         end
 
@@ -44,6 +48,8 @@ module CloudConductor
 
           copy_name = "#{source_name}#{@options[:CopyNum]}"
           copied_resource_mapping_table[source_name] = copy_name
+
+          @resources[source_name] = replace_source_properties(@resources[source_name])
 
           copied_resource = @resources[source_name].deep_dup
           roles = @options[:Role].split(',') + ['all']
@@ -84,7 +90,7 @@ module CloudConductor
 
         def post_copy(copied_resource_mapping_table, resource)
           resource = replace_associated_resources(resource, copied_resource_mapping_table)
-          resource = replace_properties(resource)
+          resource = replace_copied_properties(resource)
           resource = add_copied_flag(resource)
           resource
         end

@@ -48,8 +48,8 @@ Install Packer (Please replace amd64 to 386 in case of working on 32bit operatin
 
 ```bash
 sudo mkdir /opt/packer
-wget https://dl.bintray.com/mitchellh/packer/packer_0.7.5_linux_amd64.zip
-sudo unzip packer_0.7.5_linux_amd64.zip -d /opt/packer
+wget https://dl.bintray.com/mitchellh/packer/packer_0.8.6_linux_amd64.zip
+sudo unzip packer_0.8.6_linux_amd64.zip -d /opt/packer
 ```
 
 Clone repository
@@ -109,7 +109,7 @@ kill -QUIT `cat ./unicorn.pid`
 Copyright and License
 =====================
 
-Copyright 2014 TIS inc.
+Copyright 2014, 2015 TIS inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

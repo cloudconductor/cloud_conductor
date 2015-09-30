@@ -79,6 +79,11 @@ describe Blueprint do
       @blueprint.patterns = []
       expect(@blueprint.valid?).to be_falsey
     end
+
+    it 'return false when pattern not contain platform pattern' do
+      @blueprint.patterns.map { |pattern| pattern.type = 'optional' }
+      expect(@blueprint.valid?).to be_falsey
+    end
   end
 
   describe '#set_consul_secret_key' do

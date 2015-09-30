@@ -4,7 +4,6 @@ module API
       resource :environments do
         desc 'List environments'
         get '/' do
-          authorize!(:read, ::Environment)
           ::Environment.all.select do |environment|
             can?(:read, environment)
           end

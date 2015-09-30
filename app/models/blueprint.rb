@@ -6,6 +6,17 @@ class Blueprint < ActiveRecord::Base
   validates_presence_of :name, :project, :patterns
   validates :name, uniqueness: true
 
+  validate do
+    begin
+      patterns.each(&:set_metadata_from_repository)
+      unless patterns.any? { |pattern| pattern.type == 'platform' }
+        errors.add(:patterns, 'don\'t contain platform pattern')
+      end
+    rescue => e
+      errors.add(:patterns, "is invalid(#{e.message})")
+    end
+  end
+
   before_create :set_consul_secret_key
 
   def set_consul_secret_key

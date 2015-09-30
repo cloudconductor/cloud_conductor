@@ -4,7 +4,6 @@ module API
       resource :blueprints do
         desc 'List blueprints'
         get '/' do
-          authorize!(:read, ::Blueprint)
           ::Blueprint.all.select do |blueprint|
             can?(:read, blueprint)
           end

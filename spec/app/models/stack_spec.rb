@@ -280,22 +280,30 @@ describe Stack do
       expect(@stack).to receive_message_chain(:client, :destroy_stack).with(@stack.name)
       @stack.destroy_stack
     end
+
+    it 'call Log#warn if Client#destroy_stack raise error' do
+      exception = Excon::Errors::Error.new
+      allow(@stack).to receive_message_chain(:client, :destroy_stack).and_raise(Excon::Errors::SocketError.new(exception))
+      expect(Log).to receive(:warn).with("Failed to connect to #{@stack.cloud.name}")
+      @stack.destroy_stack
+    end
   end
 
   describe '#payload' do
-    it 'return hash that has pattern information and parameters of stack' do
-      payload = @stack.payload
-      expect(payload.keys).to eq([@stack.pattern.name])
+    it 'return hash that has parameters of stack' do
+      key = "cloudconductor/patterns/#{@stack.pattern.name}/attributes"
+      attributes = @stack.payload[key]
+      expect(attributes).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
+    end
 
-      pattern_payload = payload[@stack.pattern.name]
-      expect(pattern_payload.keys).to eq(%i(name type protocol url revision user_attributes config))
-
-      expect(pattern_payload[:name]).to eq(@stack.pattern.name)
-      expect(pattern_payload[:type]).to eq(@stack.pattern.type.to_s)
-      expect(pattern_payload[:protocol]).to eq(@stack.pattern.protocol.to_s)
-      expect(pattern_payload[:url]).to eq(@stack.pattern.url)
-      expect(pattern_payload[:revision]).to eq(@stack.pattern.revision)
-      expect(pattern_payload[:user_attributes]).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
+    it 'return hash that has backup configuration' do
+      key = "cloudconductor/patterns/#{@stack.pattern.name}/config"
+      config = @stack.payload[key]
+      expect(config).to eq(
+        cloudconductor: {
+          backup_restore: JSON.parse(@stack.parameters, symbolize_names: true)
+        }
+      )
     end
   end
 
@@ -372,15 +380,15 @@ describe Stack do
     end
   end
 
-  describe '#exist?' do
+  describe '#exists_on_cloud?' do
     it 'return true when target stack has been exist' do
       expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE)
-      expect(@stack.exist?).to be_truthy
+      expect(@stack.exists_on_cloud?).to be_truthy
     end
 
     it 'return false when target stack has not been exist' do
       expect(@stack).to receive_message_chain(:client, :get_stack_status).with(@stack.name).and_return(:CREATE_COMPLETE).and_raise
-      expect(@stack.exist?).to be_falsey
+      expect(@stack.exists_on_cloud?).to be_falsey
     end
   end
 end

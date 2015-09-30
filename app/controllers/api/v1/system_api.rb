@@ -4,7 +4,6 @@ module API
       resource :systems do
         desc 'List systems'
         get '/' do
-          authorize!(:read, ::System)
           ::System.all.select do |system|
             can?(:read, system)
           end

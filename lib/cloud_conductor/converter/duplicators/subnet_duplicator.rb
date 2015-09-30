@@ -18,12 +18,18 @@ module CloudConductor
       class SubnetDuplicator < BaseDuplicator
         include DuplicatorUtils
 
-        def replace_properties(resource)
-          used_availability_zones = @resources.select(&type?('AWS::EC2::Subnet')).map do |_, value|
-            value['Properties']['AvailabilityZone']
-          end
-          new_availavility_zone = (@options[:AvailabilityZone] - used_availability_zones).first
-          resource['Properties']['AvailabilityZone'] = new_availavility_zone
+        def replace_source_properties(resource)
+          return resource if resource['Properties']['AvailabilityZone']
+
+          availavility_zone = (@options[:AvailabilityZone] - used_availability_zones).first
+          resource['Properties']['AvailabilityZone'] = availavility_zone
+
+          resource
+        end
+
+        def replace_copied_properties(resource)
+          availavility_zone = (@options[:AvailabilityZone] - used_availability_zones).first
+          resource['Properties']['AvailabilityZone'] = availavility_zone
 
           cidr = NetAddr::CIDR.create(resource['Properties']['CidrBlock'])
           new_cidr = (@options[:CopyNum] - 1).times.inject(cidr) do |s, _|
@@ -44,6 +50,14 @@ module CloudConductor
           new_index = (old_index + @options[:CopyNum] - 1) % subnet_names.size
           copied_resource_mapping_table[source_name] = subnet_names[new_index]
           { subnet_names[new_index] => @resources[subnet_names[new_index]] }
+        end
+
+        private
+
+        def used_availability_zones
+          @resources.select(&type?('AWS::EC2::Subnet')).map do |_, value|
+            value['Properties']['AvailabilityZone']
+          end.compact.uniq
         end
       end
     end

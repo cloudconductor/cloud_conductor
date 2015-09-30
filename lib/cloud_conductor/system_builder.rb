@@ -162,16 +162,16 @@ module CloudConductor
     private
 
     def configure_payload(environment)
-      payload = {
+      payload = {}
+
+      payload['cloudconductor/cloudconductor'] = {
         cloudconductor: {
-          salt: OpenSSL::Digest::SHA256.hexdigest(environment.system.created_at.iso8601(6)),
-          patterns: {
-          }
+          salt: OpenSSL::Digest::SHA256.hexdigest(environment.system.created_at.iso8601(6))
         }
       }
 
       environment.stacks.created.each do |stack|
-        payload[:cloudconductor][:patterns].deep_merge! stack.payload
+        payload.deep_merge! stack.payload
       end
 
       payload

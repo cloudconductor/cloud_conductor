@@ -4,7 +4,6 @@ module API
       resource :base_images do
         desc 'List base images'
         get '/' do
-          authorize!(:read, BaseImage)
           ::BaseImage.all.select do |base_image|
             can?(:read, base_image)
           end
@@ -37,6 +36,7 @@ module API
           requires :id, type: Integer, desc: 'BaseImage id'
           optional :ssh_username, type: String, desc: 'SSH login username to created instance'
           optional :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
+          optional :os, type: String, desc: 'Operating system name', default: 'CentOS-6.5'
         end
         put '/:id' do
           base_image = ::BaseImage.find(params[:id])

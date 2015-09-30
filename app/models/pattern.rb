@@ -58,18 +58,21 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     filtered_parameters
   end
 
+  def set_metadata_from_repository
+    clone_repository do |path|
+      metadata = load_metadata path
+      update_metadata path, metadata
+
+      @roles = collect_roles(load_template(path))
+    end
+  end
+
   private
 
   def execute_packer
-    clone_repository do |path|
-      metadata = load_metadata path
-      roles = load_roles path
-      update_metadata path, metadata
+    set_metadata_from_repository unless name
 
-      roles.each do |role|
-        create_images(role)
-      end
-    end
+    @roles.each { |role| create_images(role) }
 
     true
   rescue Errno::ENOENT => e
@@ -81,15 +84,21 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     ->(_, resource) { resource[:Type] == type }
   end
 
+  def load_template(path)
+    template_path = File.expand_path('template.json', path)
+    JSON.parse(File.open(template_path).read).with_indifferent_access
+  rescue Errno::ENOENT
+    raise 'template.json is not contained in pattern'
+  end
+
   def load_metadata(path)
     metadata_path = File.expand_path('metadata.yml', path)
     YAML.load_file(metadata_path).with_indifferent_access
+  rescue Errno::ENOENT
+    raise 'metadata.yml is not contained in pattern'
   end
 
-  def load_roles(path)
-    template_path = File.expand_path('template.json', path)
-    template = JSON.parse(File.open(template_path).read).with_indifferent_access
-
+  def collect_roles(template)
     fail 'Resources was not found' if template[:Resources].nil?
 
     resources = {}
@@ -129,20 +138,23 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_images(role)
-    os = 'CentOS-6.5'
-    base_images = blueprint.project.clouds.map do |cloud|
-      BaseImage.find_by(os: os, cloud: cloud)
-    end.compact
-    new_images = base_images.map do |base_image|
+    new_images = blueprint.project.base_images('CentOS-6.5').map do |base_image|
       images.build(cloud: base_image.cloud, base_image: base_image, role: role)
     end
     packer_variables = {
-      repository_url: url,
-      revision: revision,
       pattern_name: name,
+      patterns: {},
       role: role,
       consul_secret_key: blueprint.consul_secret_key
     }
+
+    blueprint.patterns.each do |pattern|
+      packer_variables[:patterns][pattern.name] = {
+        url: pattern.url,
+        revision: pattern.revision
+      }
+    end
+
     packer_client = CloudConductor::PackerClient.new
     packer_client.build(new_images, packer_variables) do |results|
       update_images(results)

@@ -1,20 +1,14 @@
 environment = (ENV['RACK_ENV'] || ENV['RAILS_ENV'] || :development).to_sym
 
 # log settings
-case environment
-when :production
-  log_file 'log/conductor_production.log'
-when :development
-  log_file 'log/conductor_development.log'
-when :test
-  log_file 'log/conductor_test.log'
-end
+application_log_path "log/conductor_#{environment}.log"
+access_log_path 'log/conductor_access.log'
 
 # cloudconductor server settings
 cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
 
 # cloudconductor_init settings
-cloudconductor_init.url 'https://github.com/cloudconductor/cloudconductor_init.git'
+cloudconductor_init.url 'https://github.com/cloudconductor/cloud_conductor_init.git'
 cloudconductor_init.revision 'master'
 
 # packer settings

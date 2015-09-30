@@ -4,7 +4,6 @@ module API
       resource :clouds do
         desc 'List clouds'
         get '/' do
-          authorize!(:read, Cloud)
           ::Cloud.all.select do |cloud|
             can?(:read, cloud)
           end
