@@ -291,13 +291,6 @@ module CloudConductor
         expect(payload[key1]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
         expect(payload[key2]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
       end
-
-      it 'contains backup_restore settings for amanda' do
-        key = "cloudconductor/patterns/#{@platform_stack.pattern.name}/config"
-        @platform_stack.pattern.update_attributes(backup_config: '{ "dummy": "value" }')
-        payload = @builder.send(:configure_payload, @environment)[key]
-        expect(payload[:cloudconductor][:backup_restore]).to eq(dummy: 'value')
-      end
     end
 
     describe '#application_payload' do

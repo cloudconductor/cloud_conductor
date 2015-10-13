@@ -119,17 +119,10 @@ class Pattern < ActiveRecord::Base # rubocop:disable ClassLength
     template['Parameters'] || {}
   end
 
-  def load_backup_config(path)
-    YAML.load_file(File.expand_path('config/backup_restore.yml', path))
-  rescue
-    {}
-  end
-
   def update_metadata(path, metadata)
     self.name = metadata[:name]
     self.type = metadata[:type]
     self.parameters = load_parameters(path).to_json
-    self.backup_config = load_backup_config(path).to_json
 
     Dir.chdir path do
       self.revision = `git log --pretty=format:%H --max-count=1`

@@ -295,16 +295,6 @@ describe Stack do
       attributes = @stack.payload[key]
       expect(attributes).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
     end
-
-    it 'return hash that has backup configuration' do
-      key = "cloudconductor/patterns/#{@stack.pattern.name}/config"
-      config = @stack.payload[key]
-      expect(config).to eq(
-        cloudconductor: {
-          backup_restore: JSON.parse(@stack.parameters, symbolize_names: true)
-        }
-      )
-    end
   end
 
   describe '#pending?' do
