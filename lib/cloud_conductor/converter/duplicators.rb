@@ -27,6 +27,7 @@ module CloudConductor
 
         resources = template['Resources']
         instances = resources.select(&type?('AWS::EC2::Instance'))
+        copied_resources = {}
         instances.each do |instance_name, _instance_property|
           scale_size = parameters[:"#{instance_name}Size"] || 1
           (2..scale_size.to_i).each do |n|
@@ -34,7 +35,7 @@ module CloudConductor
             options.merge! Role: resources[instance_name]['Metadata']['Role']
 
             duplicator = InstanceDuplicator.new(resources, options)
-            resources.merge! duplicator.copy(instance_name, {}, options)
+            resources.merge! duplicator.copy(instance_name, copied_resources, options)
           end
         end
         remove_copied_flag(template).to_json
