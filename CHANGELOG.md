@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 1.1.1 (2015/10/15)
+
+  - Suppress redundant copies when build/rebuild environment.
+
 ## version 1.1.0 (2015/09/30)
 
   - Support metronome for scheduling tasks over all nodes when consul cluster has received event
