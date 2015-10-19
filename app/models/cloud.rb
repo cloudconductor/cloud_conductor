@@ -16,6 +16,19 @@ class Cloud < ActiveRecord::Base
   before_destroy :raise_error_in_use
   after_save :set_base_image, if: -> { type == 'aws' }
 
+  CIPHER = 'aes-256-cbc'
+  SECURE = CloudConductor::Config.secure.key
+
+  def secret
+    crypt = ActiveSupport::MessageEncryptor.new(SECURE, CIPHER)
+    crypt.decrypt_and_verify(encrypted_secret)
+  end
+
+  def secret=(s)
+    crypt = ActiveSupport::MessageEncryptor.new(SECURE, CIPHER)
+    self.encrypted_secret = crypt.encrypt_and_sign(s)
+  end
+
   def set_base_image
     return unless type == 'aws'
     if base_images.empty?
@@ -45,7 +58,7 @@ class Cloud < ActiveRecord::Base
   def as_json(options = {})
     original_secret = secret
     self.secret = '********'
-    json = super options
+    json = super({ except: :encrypted_secret, methods: :secret }.merge(options))
     self.secret = original_secret
     json
   end

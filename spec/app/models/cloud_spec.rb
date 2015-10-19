@@ -24,6 +24,8 @@ describe Cloud do
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
     @cloud.tenant_name = 'TestTenant'
+
+    allow(CloudConductor::Config.secure).to receive(:key).and_return('ABCDEFGHIJKLMNOPQRSTUVWXYZ012345')
   end
 
   describe '#save' do
