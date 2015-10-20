@@ -16,16 +16,17 @@ class Cloud < ActiveRecord::Base
   before_destroy :raise_error_in_use
   after_save :set_base_image, if: -> { type == 'aws' }
 
-  CIPHER = 'aes-256-cbc'
-  SECURE = CloudConductor::Config.secure.key
+  def crypt
+    secure = Rails.application.key_generator.generate_key('encrypted secret')
+    sign_secure = Rails.application.key_generator.generate_key('signed encrypted secret')
+    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
+  end
 
   def secret
-    crypt = ActiveSupport::MessageEncryptor.new(SECURE, CIPHER)
     crypt.decrypt_and_verify(encrypted_secret)
   end
 
   def secret=(s)
-    crypt = ActiveSupport::MessageEncryptor.new(SECURE, CIPHER)
     self.encrypted_secret = crypt.encrypt_and_sign(s)
   end
 

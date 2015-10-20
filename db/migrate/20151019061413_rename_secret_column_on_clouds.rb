@@ -5,13 +5,13 @@ class RenameSecretColumnOnClouds < ActiveRecord::Migration
   end
 
   def up
-    cipher = 'aes-256-cbc'
-    secure = CloudConductor::Config.secure.key
+    secret = Rails.application.key_generator.generate_key('encrypted secret')
+    sign_secret = Rails.application.key_generator.generate_key('signed encrypted secret')
 
     rename_column :clouds, :secret, :encrypted_secret
     TransferCloud.all.each do |cloud|
       begin
-        crypt = ActiveSupport::MessageEncryptor.new(secure, cipher)
+        crypt = ActiveSupport::MessageEncryptor.new(secret, sign_secret)
         value = crypt.encrypt_and_sign(cloud.encrypted_secret)
         cloud.update_attributes!(encrypted_secret: value)
       rescue
@@ -21,13 +21,13 @@ class RenameSecretColumnOnClouds < ActiveRecord::Migration
   end
 
   def down
-    cipher = 'aes-256-cbc'
-    secure = CloudConductor::Config.secure.key
+    secret = Rails.application.key_generator.generate_key('encrypted secret')
+    sign_secret = Rails.application.key_generator.generate_key('signed encrypted secret')
 
     rename_column :clouds, :encrypted_secret, :secret
     TransferCloud.all.each do |cloud|
       begin
-        crypt = ActiveSupport::MessageEncryptor.new(secure, cipher)
+        crypt = ActiveSupport::MessageEncryptor.new(secret, sign_secret)
         value = crypt.decrypt_and_verify(cloud.secret)
         cloud.update_attributes!(secret: value)
       rescue

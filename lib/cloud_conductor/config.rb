@@ -39,7 +39,5 @@ module CloudConductor
         end
       end
     end
-    config_context :secure do
-    end
   end
 end
