@@ -5,9 +5,6 @@ describe API do
   describe 'BlueprintAPI' do
     before do
       blueprint
-      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository) do |pattern|
-        pattern.type = 'platform'
-      end
     end
 
     describe 'GET /blueprints' do
@@ -71,24 +68,13 @@ describe API do
     describe 'POST /blueprints' do
       let(:method) { 'post' }
       let(:url) { '/api/v1/blueprints' }
-      let(:consul_secret_key) { SecureRandom.base64(16) }
       let(:params) { FactoryGirl.attributes_for(:blueprint, project_id: project.id) }
       let(:result) do
-        params.except(:patterns_attributes).merge(
+        params.merge(
           'id' => Fixnum,
           'created_at' => String,
-          'updated_at' => String,
-          'status' => 'CREATE_COMPLETE'
+          'updated_at' => String
         )
-      end
-
-      before do
-        mock_process_status = double('process_status')
-        allow(mock_process_status).to receive(:success?).and_return(true)
-        allow_any_instance_of(Blueprint).to receive(:systemu).with('consul keygen').and_return([mock_process_status, consul_secret_key, ''])
-        allow_any_instance_of(Pattern).to receive(:execute_packer) do |pattern|
-          pattern.images << FactoryGirl.build(:image, pattern: pattern, base_image: base_image, cloud: cloud)
-        end
       end
 
       context 'not_logged_in' do
@@ -99,15 +85,15 @@ describe API do
         it_behaves_like('403 Forbidden')
       end
       context 'administrator', admin: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('201 Created')
       end
     end
 
@@ -117,20 +103,14 @@ describe API do
       let(:params) do
         {
           'name' => 'new_name',
-          'description' => 'new_description',
-          'patterns_attributes' => blueprint.patterns.map(&:attributes).push('url' => 'http://example.com/new_pattern.git',
-                                                                             'revision' => 'master')
+          'description' => 'new_description'
         }
       end
       let(:result) do
-        blueprint.as_json.merge(params.except('patterns_attributes')).merge(
+        blueprint.as_json.merge(params).merge(
           'created_at' => blueprint.created_at.iso8601(3),
           'updated_at' => String
         )
-      end
-
-      before do
-        allow_any_instance_of(Pattern).to receive(:execute_packer).and_return(true)
       end
 
       context 'not_logged_in' do
@@ -147,15 +127,15 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('200 OK')
       end
 
       context 'project_owner', project_owner: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('200 OK')
       end
 
       context 'project_operator', project_operator: true do
-        it_behaves_like('202 Accepted')
+        it_behaves_like('200 OK')
       end
     end
 
@@ -163,10 +143,6 @@ describe API do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
 
-      before do
-        allow_any_instance_of(Image).to receive(:destroy_image).and_return(true)
-      end
-
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
@@ -190,6 +166,41 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('204 No Content')
+      end
+    end
+
+    describe 'POST /blueprints/:id/build' do
+      let(:method) { 'post' }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/build" }
+      let(:result) do
+        params.merge(
+          'id' => Fixnum,
+          'version' => Fixnum,
+          'blueprint_id' => Fixnum,
+          'consul_secret_key' => String,
+          'status' => String,
+          'created_at' => String,
+          'updated_at' => String
+        )
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+      context 'administrator', admin: true do
+        it_behaves_like('202 Accepted')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('202 Accepted')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('202 Accepted')
       end
     end
   end

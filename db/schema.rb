@@ -84,9 +84,8 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.integer  "project_id"
     t.string   "name"
     t.text     "description"
-    t.string   "consul_secret_key"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "candidates", force: true do |t|
