@@ -43,9 +43,9 @@ class Project < ActiveRecord::Base
     end
   end
 
-  def base_images(os)
+  def base_images(os_version)
     clouds.map do |cloud|
-      BaseImage.find_by(os: os, cloud: cloud)
+      BaseImage.find_by(os_version: os_version, cloud: cloud)
     end.compact
   end
 end

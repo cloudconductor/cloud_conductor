@@ -24,7 +24,7 @@ module API
           requires :cloud_id, type: Integer, desc: 'Cloud id'
           requires :ssh_username, type: String, desc: 'SSH login username to created instance'
           requires :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os, type: String, desc: 'Operating system name', default: 'CentOS-6.5'
+          optional :os_version, type: String, desc: 'Operating system name', default: 'default'
         end
         post '/' do
           authorize!(:create, ::BaseImage)
@@ -36,7 +36,7 @@ module API
           requires :id, type: Integer, desc: 'BaseImage id'
           optional :ssh_username, type: String, desc: 'SSH login username to created instance'
           optional :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os, type: String, desc: 'Operating system name', default: 'CentOS-6.5'
+          optional :os_version, type: String, desc: 'Operating system name', default: 'default'
         end
         put '/:id' do
           base_image = ::BaseImage.find(params[:id])

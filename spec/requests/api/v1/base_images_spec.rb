@@ -101,7 +101,7 @@ describe API do
       let(:url) { "/api/v1/base_images/#{base_image.id}" }
       let(:params) do
         {
-          'os' => 'CentOS-7.0',
+          'os_version' => 'CentOS-7.0',
           'ssh_username' => 'root',
           'source_image' => SecureRandom.uuid
         }
@@ -141,8 +141,7 @@ describe API do
 
     describe 'DELETE /base_images/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/base_images/#{new_base_image.id}" }
-      let(:new_base_image) { FactoryGirl.create(:base_image, cloud_id: cloud.id) }
+      let(:url) { "/api/v1/base_images/#{base_image.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
