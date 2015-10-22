@@ -7,6 +7,10 @@ module ModelSpecHelper
     let(:pattern) { FactoryGirl.create(:pattern, :platform, project: project) }
     let(:blueprint_history) { FactoryGirl.create(:blueprint_history, blueprint: blueprint) }
     let(:image) { pattern.images.first }
+    let(:catalog) do
+      blueprint.catalogs << FactoryGirl.create(:catalog, blueprint: blueprint, pattern: pattern)
+      blueprint.catalogs.first
+    end
     let(:system) { FactoryGirl.create(:system, project: project) }
     let(:environment) do
       environment = FactoryGirl.create(:environment, system: system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)])

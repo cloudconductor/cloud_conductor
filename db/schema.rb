@@ -96,6 +96,15 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.datetime "updated_at",     null: false
   end
 
+  create_table "catalogs", force: true do |t|
+    t.integer  "blueprint_id", null: false
+    t.integer  "pattern_id",   null: false
+    t.string   "revision"
+    t.string   "os_version"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
   create_table "clouds", force: true do |t|
     t.integer  "project_id"
     t.string   "name"

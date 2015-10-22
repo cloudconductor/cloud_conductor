@@ -60,7 +60,7 @@ class Ability
     end
   end
 
-  def allow_manage_project_resources(project)
+  def allow_manage_project_resources(project) # rubocop:disable MethodLength
     # Cloud and dependent resources
     can :manage, Cloud, project_id: project.id
     project.clouds.each do |cloud|
@@ -69,6 +69,7 @@ class Ability
     # Blueprint and denepdent resources
     can :manage, Blueprint, project_id: project.id
     project.blueprints.each do |blueprint|
+      can :manage, Catalog, blueprint_id: blueprint.id
     end
     # Pattern
     can :manage, Pattern, project_id: project.id
