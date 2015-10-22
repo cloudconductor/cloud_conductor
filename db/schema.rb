@@ -80,6 +80,14 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.datetime "updated_at",   null: false
   end
 
+  create_table "blueprint_histories", force: true do |t|
+    t.integer  "blueprint_id",      null: false
+    t.integer  "version",           null: false
+    t.string   "consul_secret_key"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+  end
+
   create_table "blueprints", force: true do |t|
     t.integer  "project_id"
     t.string   "name"
@@ -128,14 +136,14 @@ ActiveRecord::Schema.define(version: 20151014083554) do
 
   create_table "environments", force: true do |t|
     t.integer  "system_id"
-    t.integer  "blueprint_id"
     t.string   "name"
     t.text     "description"
     t.string   "status"
     t.string   "ip_address"
     t.text     "platform_outputs"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.integer  "blueprint_history_id"
   end
 
   create_table "images", force: true do |t|

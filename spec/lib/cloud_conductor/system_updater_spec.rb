@@ -18,22 +18,22 @@ module CloudConductor
 
     let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
-    let(:blueprint) do
+    let(:blueprint_history) do
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
-      blueprint = FactoryGirl.create(:blueprint,
-                                     project: project,
-                                     patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
-                                                FactoryGirl.create(:pattern_history, type: 'optional')]
+      blueprint_history = FactoryGirl.create(:blueprint_history,
+                                             blueprint: blueprint,
+                                             patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
+                                                        FactoryGirl.create(:pattern_history, type: 'optional')]
                   )
-      blueprint.patterns.each do |pattern|
+      blueprint_history.patterns.each do |pattern|
         FactoryGirl.create(:image, pattern_history: pattern, base_image: base_image, cloud: cloud)
       end
-      blueprint
+      blueprint_history
     end
     let(:environment) do
       FactoryGirl.create(:environment,
                          system: system,
-                         blueprint: blueprint,
+                         blueprint_history: blueprint_history,
                          candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
                                                  { cloud_id: cloud_openstack.id, priority: 20 }]
       )
@@ -42,8 +42,8 @@ module CloudConductor
     before do
       @environment = environment
       allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, environment: @environment, status: :PENDING)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, environment: @environment, status: :PENDING)
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.first, name: blueprint_history.patterns.first.name, environment: @environment, status: :PENDING)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.last, name: blueprint_history.patterns.last.name, environment: @environment, status: :PENDING)
       @environment.stacks += [@platform_stack, @optional_stack]
       @updater = SystemUpdater.new @environment
       allow_any_instance_of(Pattern).to receive(:clone_repository)

@@ -18,27 +18,29 @@ module CloudConductor
 
     let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
-    let(:blueprint) do
+    let(:blueprint_history) do
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
-      blueprint = FactoryGirl.create(:blueprint,
-                                     project: project,
-                                     patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
-                                                FactoryGirl.create(:pattern_history, type: 'optional')])
-      blueprint.patterns.each do |pattern|
+      blueprint_history = FactoryGirl.create(:blueprint_history,
+                                             blueprint: blueprint,
+                                             patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
+                                                        FactoryGirl.create(:pattern_history, type: 'optional')])
+      blueprint_history.patterns.each do |pattern|
         FactoryGirl.create(:image, pattern_history: pattern, base_image: base_image, cloud: cloud)
       end
-      blueprint
+      blueprint_history
     end
     let(:environment) do
-      FactoryGirl.create(:environment, system: system, blueprint: blueprint,
-                                       candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
-                                                               { cloud_id: cloud_openstack.id, priority: 20 }])
+      FactoryGirl.create(:environment,
+                         system: system,
+                         blueprint_history: blueprint_history,
+                         candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
+                                                 { cloud_id: cloud_openstack.id, priority: 20 }])
     end
 
     before do
       @environment = environment
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, cloud: cloud_openstack, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, cloud: cloud_openstack, environment: @environment)
+      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.first, name: blueprint_history.patterns.first.name, cloud: cloud_openstack, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.last, name: blueprint_history.patterns.last.name, cloud: cloud_openstack, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]
       @builder = SystemBuilder.new @environment
       allow_any_instance_of(Environment).to receive(:create_or_update_stack)

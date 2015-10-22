@@ -19,7 +19,7 @@ describe Environment do
     @cloud_aws = FactoryGirl.create(:cloud, :aws)
     @cloud_openstack = FactoryGirl.create(:cloud, :openstack)
 
-    @environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint,
+    @environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
     allow(@environment).to receive(:create_or_update_stacks)
@@ -140,7 +140,7 @@ describe Environment do
     it 'duplicate all attributes in environment without name and ip_address' do
       duplicated_environment = @environment.dup
       expect(duplicated_environment.system).to eq(@environment.system)
-      expect(duplicated_environment.blueprint).to eq(@environment.blueprint)
+      expect(duplicated_environment.blueprint_history).to eq(@environment.blueprint_history)
       expect(duplicated_environment.description).to eq(@environment.description)
     end
 

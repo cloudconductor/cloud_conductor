@@ -9,6 +9,14 @@ class ChangeRelationBetweenBlueprintAndPattern < ActiveRecord::Migration
       t.timestamps null: false
     end
 
+    create_table :blueprint_histories do |t|
+      t.references :blueprint, null: false
+      t.integer :version, null: false
+      t.string :consul_secret_key
+
+      t.timestamps null: false
+    end
+
     create_table :pattern_histories do |t|
       t.references :blueprint_history, null: false
       t.references :pattern, null: false
@@ -35,6 +43,9 @@ class ChangeRelationBetweenBlueprintAndPattern < ActiveRecord::Migration
 
     remove_column :stacks, :pattern_id, :integer
     add_column :stacks, :pattern_history_id, :integer
+
+    remove_column :environments, :blueprint_id, :integer
+    add_column :environments, :blueprint_history_id, :integer
 
     rename_column :base_images, :os, :os_version
   end

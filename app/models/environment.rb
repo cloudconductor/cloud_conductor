@@ -2,7 +2,7 @@ require 'open-uri'
 
 class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :system
-  belongs_to :blueprint
+  belongs_to :blueprint_history
   has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
   has_many :stacks, validate: false
@@ -12,14 +12,16 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   attr_accessor :template_parameters, :user_attributes
 
-  validates_presence_of :system, :blueprint, :candidates
+  validates_presence_of :system, :blueprint_history, :candidates
   validates :name, presence: true, uniqueness: true
   validate do
     clouds = candidates.map(&:cloud)
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
   validate do
-    errors.add(:blueprint, 'status does not create_complete') unless blueprint.status == :CREATE_COMPLETE
+    if blueprint_history
+      errors.add(:blueprint_history, 'status does not create_complete') unless blueprint_history.status == :CREATE_COMPLETE
+    end
   end
 
   before_save :create_or_update_stacks, if: -> { status == :PENDING }
@@ -39,7 +41,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_or_update_stacks
-    if (new_record? || blueprint_id_changed?) && stacks.empty?
+    if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
     elsif template_parameters != '{}' || user_attributes != '{}'
       update_stacks
@@ -50,7 +52,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     primary_cloud = candidates.sort.first.cloud
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
-    blueprint.patterns.each do |pattern|
+    blueprint_history.patterns.each do |pattern|
       pattern_name = pattern.name
       stacks.build(
         cloud: primary_cloud,
@@ -126,14 +128,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   def consul
     fail 'ip_address does not specified' unless ip_address
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
     Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   def event
     fail 'ip_address does not specified' unless ip_address
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
     CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 

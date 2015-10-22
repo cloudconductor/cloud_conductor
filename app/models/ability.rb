@@ -70,6 +70,7 @@ class Ability
     can :manage, Blueprint, project_id: project.id
     project.blueprints.each do |blueprint|
       can :manage, Catalog, blueprint_id: blueprint.id
+      can :manage, BlueprintHistory, blueprint_id: blueprint.id
     end
     # Pattern
     can :manage, Pattern, project_id: project.id

@@ -22,7 +22,7 @@ module API
         desc 'Create environment'
         params do
           requires :system_id, type: Integer, desc: 'System id'
-          requires :blueprint_id, type: Integer, desc: 'Blueprint id'
+          requires :blueprint_history_id, type: Integer, desc: 'Blueprint id'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
           optional :template_parameters, type: String, desc: 'Parameter JSON'
@@ -34,6 +34,8 @@ module API
         end
         post '/' do
           authorize!(:create, ::Environment)
+          authorize!(:read, BlueprintHistory.find(params[:blueprint_history_id]))
+
           environment = Environment.create!(declared_params)
 
           Thread.new do
@@ -75,7 +77,7 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Blueprint name'
-          optional :blueprint_id, type: Integer, desc: 'Blueprint id'
+          optional :blueprint_history_id, type: Integer, desc: 'Blueprint history id'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
           optional :template_parameters, type: String, desc: 'Parameters JSON'

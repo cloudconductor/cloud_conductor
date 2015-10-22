@@ -17,7 +17,7 @@ FactoryGirl.define do
     sequence(:name) { |n| "environment-#{n}" }
     description 'environment description'
     system
-    blueprint
+    blueprint_history
     platform_outputs '{}'
     ip_address '127.0.0.1'
 

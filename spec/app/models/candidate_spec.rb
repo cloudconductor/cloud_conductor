@@ -21,7 +21,7 @@ describe Candidate do
 
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
-      environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud1, priority: 10)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud2, priority: 30)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud3, priority: 20)
@@ -31,11 +31,11 @@ describe Candidate do
     end
 
     it 'ignore candidates on other environment' do
-      environment1 = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment1 = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
       environment1.candidates << FactoryGirl.build(:candidate, environment: environment1, cloud: cloud1, priority: 30)
       environment1.save!
 
-      environment2 = FactoryGirl.build(:environment, system: system, blueprint: blueprint)
+      environment2 = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
       environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud2, priority: 10)
       environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud3, priority: 20)
       environment2.save!
