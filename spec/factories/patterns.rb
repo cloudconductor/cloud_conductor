@@ -14,7 +14,7 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :pattern do
-    blueprint
+    project
     protocol 'git'
     revision 'master'
 
@@ -31,11 +31,11 @@ FactoryGirl.define do
     end
 
     before(:create) do
-      Pattern.skip_callback :save, :before, :execute_packer
+      Pattern.skip_callback :save, :before, :freeze_pattern
     end
 
     after(:create) do
-      Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
+      Pattern.set_callback :save, :before, :freeze_pattern
     end
   end
 end

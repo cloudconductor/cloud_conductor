@@ -34,7 +34,7 @@ module CloudConductor
 
     def create_stack(name, pattern, parameters)
       template = ''
-      pattern.clone_repository do |path|
+      pattern.clone_repository(pattern.url, pattern.revision) do |path|
         template = open(File.expand_path('template.json', path)).read
       end
 
@@ -54,7 +54,7 @@ module CloudConductor
 
     def update_stack(name, pattern, parameters)
       template = ''
-      pattern.clone_repository do |path|
+      pattern.clone_repository(pattern.url, pattern.revision) do |path|
         template = open(File.expand_path('template.json', path)).read
       end
 

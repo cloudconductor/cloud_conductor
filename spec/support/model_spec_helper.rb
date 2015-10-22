@@ -4,7 +4,7 @@ module ModelSpecHelper
     let(:cloud) { FactoryGirl.create(:cloud, project: project) }
     let(:base_image) { cloud.base_images.first || FactoryGirl.create(:base_image, cloud: cloud) }
     let(:blueprint) { FactoryGirl.create(:blueprint, project: project) }
-    let(:pattern) { blueprint.patterns.first }
+    let(:pattern) { FactoryGirl.create(:pattern, :platform, project: project) }
     let(:blueprint_history) { FactoryGirl.create(:blueprint_history, blueprint: blueprint) }
     let(:image) { pattern.images.first }
     let(:system) { FactoryGirl.create(:system, project: project) }

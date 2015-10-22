@@ -143,15 +143,16 @@ ActiveRecord::Schema.define(version: 20151014083554) do
   end
 
   create_table "patterns", force: true do |t|
-    t.integer  "blueprint_id"
     t.string   "name"
     t.string   "type"
     t.string   "protocol"
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "project_id"
+    t.string   "roles"
   end
 
   create_table "projects", force: true do |t|
