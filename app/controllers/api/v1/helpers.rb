@@ -17,16 +17,38 @@ module API
         end
       end
 
-      def authorize!(*args)
-        current_ability.authorize!(*args)
+      def find_project(subject)
+        project = nil
+        unless subject.class == Class
+          if subject.is_a?(Project)
+            project = subject
+          elsif !subject.is_a?(Account)
+            project = subject.project
+          end
+        end
+        project
       end
 
-      def can?(*args)
-        current_ability.can?(*args)
+      def create_ability(subject, *args)
+        project = nil
+        if args.last.is_a?(Hash) && args.last.key?(:project)
+          project = args.pop[:project]
+        else
+          project = find_project(subject)
+        end
+        Ability.new(current_account, project)
       end
 
-      def cannot?(*args)
-        current_ability.cannot?(*args)
+      def authorize!(action, subject, *args)
+        create_ability(subject, *args).authorize!(action, subject, *args)
+      end
+
+      def can?(action, subject, *args)
+        create_ability(subject, *args).can?(action, subject, *args)
+      end
+
+      def cannot?(action, subject, *args)
+        create_ability(subject, *args).cannot?(action, subject, *args)
       end
 
       def current_ability

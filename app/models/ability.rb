@@ -1,20 +1,12 @@
 class Ability
   include CanCan::Ability
 
-  def initialize(account)
+  def initialize(account, project = nil)
     account ||= Account.new
     if account.admin?
       administrator_permissions
     else
-      # administrator_permissions
-      default_permissions(account)
-      account.assignments.each do |assign|
-        if assign.administrator?
-          project_admin_permissions(assign.project)
-        elsif assign.operator?
-          project_operator_permissions(assign.project)
-        end
-      end
+      user_role_permissions(account, project)
     end
   end
 
@@ -25,67 +17,56 @@ class Ability
     can :update_admin, Account
   end
 
-  def default_permissions(account)
-    # can :manage, ActiveAdmin::Page
-    can [:create], Project
-    can :read, Project do |_|
-      false
-    end
-    can [:read, :update], Account, id: account.id
+  def user_role_permissions(account, project)
     cannot :update_admin, Account
-  end
+    cannot :manage, :all
 
-  def project_admin_permissions(project)
-    project_operator_permissions(project)
-    can :manage, Project, id: project.id
-    can :create, Assignment, project_id: project.id
-    can :create, Account
-    project.assignments.each do |assign|
-      can :manage, Assignment, id: assign.id
-    end
-  end
+    can [:read, :update], Account, id: account.id
+    can [:create], Project
 
-  def project_operator_permissions(project)
-    allow_read_project(project)
-    allow_manage_project_resources(project)
-  end
+    assign = account.assignments.find_by(project: project)
+    return unless assign
 
-  def allow_read_project(project)
-    can :read, Project, id: project.id
-    project.assignments.each do |assign|
-      can :read, Assignment, id: assign.id
-    end
-    project.accounts.each do |account|
-      can :read, Account, id: account.id
+    if assign.administrator?
+      project_admin_permissions
+    else
+      project_operator_permissions
     end
   end
 
-  def allow_manage_project_resources(project) # rubocop:disable MethodLength
-    # Cloud and dependent resources
-    can :manage, Cloud, project_id: project.id
-    project.clouds.each do |cloud|
-      can :manage, BaseImage, cloud_id: cloud.id
-    end
-    # Blueprint and denepdent resources
-    can :manage, Blueprint, project_id: project.id
-    project.blueprints.each do |blueprint|
-      can :manage, BlueprintPattern, blueprint_id: blueprint.id
-      can :manage, BlueprintHistory, blueprint_id: blueprint.id
-    end
-    # Pattern
-    can :manage, Pattern, project_id: project.id
-    # System and dependent resources
-    can :manage, System, project_id: project.id
-    project.systems.each do |system|
-      can :manage, Environment, system_id: system.id
-      system.environments.each do |environment|
-        can :manage, Deployment, environment_id: environment.id
-      end
-      can :manage, Application, system_id: system.id
-      system.applications.each do |application|
-        can :manage, ApplicationHistory, application_id: application.id
-      end
-      can :manage, Stack, system_id: system.id
-    end
+  def project_admin_permissions
+    can :manage, Project
+    can :manage, Assignment
+    can [:read, :create], Account
+    can :manage, Cloud
+    can :manage, BaseImage
+    can :manage, Blueprint
+    can :manage, BlueprintPattern
+    can :manage, BlueprintHistory
+    can :manage, Pattern
+    can :manage, System
+    can :manage, Environment
+    can :manage, Deployment
+    can :manage, Application
+    can :manage, ApplicationHistory
+    can :manage, Stack
+  end
+
+  def project_operator_permissions
+    can :read, Project
+    can :read, Assignment
+    can :read, Account
+    can :manage, Cloud
+    can :manage, BaseImage
+    can :manage, Blueprint
+    can :manage, BlueprintPattern
+    can :manage, BlueprintHistory
+    can :manage, Pattern
+    can :manage, System
+    can :manage, Environment
+    can :manage, Deployment
+    can :manage, Application
+    can :manage, ApplicationHistory
+    can :manage, Stack
   end
 end

@@ -27,7 +27,9 @@ module API
           optional :domain, type: String, desc: 'System domain name'
         end
         post '/' do
-          authorize!(:create, ::System)
+          project = ::Project.find(params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::System, project: project)
           ::System.create!(declared_params)
         end
 

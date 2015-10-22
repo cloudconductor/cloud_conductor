@@ -34,7 +34,9 @@ module API
           end
         end
         post '/' do
-          authorize!(:create, ::Environment)
+          system = ::System.find(params[:system_id])
+          authorize!(:read, system)
+          authorize!(:create, ::Environment, project: system.project)
           version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version
           blueprint_history = BlueprintHistory.where(blueprint_id: params[:blueprint_id], version: version).first!
           authorize!(:read, blueprint_history)
@@ -89,9 +91,9 @@ module API
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         post '/:id/rebuild' do
-          authorize!(:create, ::Environment)
           environment = ::Environment.find(params[:id])
           authorize!(:read, environment)
+          authorize!(:create, ::Environment, project: environment.project)
 
           attributes = declared_params.except(:blueprint_id, :version, :id, :switch)
           if params[:blueprint_id]

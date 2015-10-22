@@ -27,7 +27,9 @@ module API
           optional :domain, type: String, desc: 'Application domain name'
         end
         post '/' do
-          authorize!(:create, ::Application)
+          system = ::System.find(params[:system_id])
+          authorize!(:read, system)
+          authorize!(:create, ::Application, project: system.project)
           ::Application.create!(declared_params)
         end
 
@@ -63,9 +65,9 @@ module API
           optional :application_history_id, type: Integer, desc: 'Application history id'
         end
         post '/:id/deploy' do
-          authorize!(:create, ::Deployment)
           application = ::Application.find(params[:id])
           authorize!(:read, application)
+          authorize!(:create, ::Deployment, project: application.project)
           if params[:application_history_id]
             application_history = application.histories.find(params[:application_history_id])
           else

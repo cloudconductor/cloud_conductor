@@ -10,6 +10,10 @@ class BaseImage < ActiveRecord::Base
     self.os_version ||= 'default'
   end
 
+  def project
+    cloud.project
+  end
+
   def name
     "#{cloud.name}-#{os_version}"
   end

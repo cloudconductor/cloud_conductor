@@ -27,7 +27,9 @@ module API
           optional :os_version, type: String, desc: 'Operating system name', default: 'default'
         end
         post '/' do
-          authorize!(:create, ::BaseImage)
+          cloud = ::Cloud.find(params[:cloud_id])
+          authorize!(:read, cloud)
+          authorize!(:create, ::BaseImage, project: cloud.project)
           ::BaseImage.create!(declared_params)
         end
 

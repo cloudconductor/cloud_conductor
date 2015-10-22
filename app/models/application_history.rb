@@ -17,6 +17,10 @@ class ApplicationHistory < ActiveRecord::Base
 
   before_save :allocate_version, unless: -> { version }
 
+  def project
+    application.project
+  end
+
   def allocate_version
     today = Date.today.strftime('%Y%m%d')
 

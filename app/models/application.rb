@@ -6,6 +6,10 @@ class Application < ActiveRecord::Base
   validates_presence_of :name, :system
   validates :name, uniqueness: { scope: :system_id }
 
+  def project
+    system.project
+  end
+
   def latest
     histories.last
   end

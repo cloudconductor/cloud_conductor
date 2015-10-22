@@ -26,7 +26,9 @@ module API
           optional :description, type: String, desc: 'Blueprint description'
         end
         post '/' do
-          authorize!(:create, ::Blueprint)
+          project = ::Project.find(params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Blueprint, project: project)
           ::Blueprint.create!(declared_params)
         end
 
@@ -61,7 +63,7 @@ module API
         post '/:blueprint_id/build' do
           blueprint = Blueprint.find(params[:blueprint_id])
           authorize!(:read, blueprint)
-          authorize!(:create, BlueprintHistory)
+          authorize!(:create, BlueprintHistory, project: blueprint.project)
           history = BlueprintHistory.create!(declared_params)
           status 202
           history

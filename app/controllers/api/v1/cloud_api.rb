@@ -31,7 +31,9 @@ module API
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'
         end
         post '/' do
-          authorize!(:create, ::Cloud)
+          project = ::Project.find(params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Cloud, project: project)
           ::Cloud.create!(declared_params)
         end
 

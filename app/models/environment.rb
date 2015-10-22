@@ -34,6 +34,10 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     self.status ||= :PENDING
   end
 
+  def project
+    system.project
+  end
+
   def create_or_update_stacks
     if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
