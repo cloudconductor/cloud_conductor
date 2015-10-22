@@ -18,14 +18,14 @@ describe Stack do
   before do
     @stack = Stack.new
     @stack.name = 'Test'
-    @stack.pattern = pattern
+    @stack.pattern = pattern_history
     @stack.cloud = cloud
     @stack.environment = environment
   end
 
   describe '.in_progress' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :PROGRESS)
+      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern_history, status: :PROGRESS)
       expect(Stack.in_progress).to include(stack)
       [:PENDING, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR, :CREATE_COMPLETE].each do |state|
         stack.update_columns(status: state)
@@ -36,7 +36,7 @@ describe Stack do
 
   describe '.created' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :CREATE_COMPLETE)
+      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern_history, status: :CREATE_COMPLETE)
       expect(Stack.created).to include(stack)
       [:PENDING, :PROGRESS, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR].each do |state|
         stack.update_columns(status: state)
@@ -59,7 +59,7 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
+      FactoryGirl.create(:stack, environment: environment, pattern: pattern_history, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
@@ -74,7 +74,7 @@ describe Stack do
     end
 
     it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
-      @stack.pattern.images << FactoryGirl.create(:image, status: :PROGRESS, pattern: @stack.pattern)
+      @stack.pattern.images << FactoryGirl.create(:image, status: :PROGRESS, pattern_history: @stack.pattern)
       expect(@stack.valid?).to be_falsey
     end
 

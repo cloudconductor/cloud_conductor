@@ -20,11 +20,12 @@ module CloudConductor
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
     let(:blueprint) do
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
-      blueprint = FactoryGirl.create(:blueprint, project: project,
-                                                 patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),
-                                                                       FactoryGirl.attributes_for(:pattern, :optional)])
+      blueprint = FactoryGirl.create(:blueprint,
+                                     project: project,
+                                     patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
+                                                FactoryGirl.create(:pattern_history, type: 'optional')])
       blueprint.patterns.each do |pattern|
-        FactoryGirl.create(:image, pattern: pattern, base_image: base_image, cloud: cloud)
+        FactoryGirl.create(:image, pattern_history: pattern, base_image: base_image, cloud: cloud)
       end
       blueprint
     end

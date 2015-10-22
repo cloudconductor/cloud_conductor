@@ -139,7 +139,6 @@ ActiveRecord::Schema.define(version: 20151014083554) do
   end
 
   create_table "images", force: true do |t|
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.integer  "base_image_id"
     t.string   "name"
@@ -147,8 +146,24 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.string   "image"
     t.text     "message"
     t.string   "status"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",         null: false
+    t.datetime "updated_at",         null: false
+    t.integer  "pattern_history_id"
+  end
+
+  create_table "pattern_histories", force: true do |t|
+    t.integer  "blueprint_history_id", null: false
+    t.integer  "pattern_id",           null: false
+    t.string   "name"
+    t.string   "type"
+    t.string   "protocol"
+    t.string   "url"
+    t.string   "revision"
+    t.string   "os_version"
+    t.text     "parameters"
+    t.string   "roles"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
   end
 
   create_table "patterns", force: true do |t|
@@ -183,7 +198,6 @@ ActiveRecord::Schema.define(version: 20151014083554) do
 
   create_table "stacks", force: true do |t|
     t.integer  "environment_id"
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.string   "name"
     t.string   "status"
@@ -191,6 +205,7 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.text     "parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.integer  "pattern_history_id"
   end
 
   create_table "systems", force: true do |t|

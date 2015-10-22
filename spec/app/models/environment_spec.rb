@@ -119,8 +119,8 @@ describe Environment do
 
       @environment.save!
       @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern, :platform, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      optional_pattern = FactoryGirl.create(:pattern, :optional, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      platform_pattern = FactoryGirl.create(:pattern_history, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      optional_pattern = FactoryGirl.create(:pattern_history, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: platform_pattern)
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: optional_pattern)
 
@@ -248,9 +248,9 @@ describe Environment do
 
   describe '#destroy_stacks' do
     before do
-      pattern1 = FactoryGirl.create(:pattern, :optional)
-      pattern2 = FactoryGirl.create(:pattern, :platform)
-      pattern3 = FactoryGirl.create(:pattern, :optional)
+      pattern1 = FactoryGirl.create(:pattern_history, type: 'optional')
+      pattern2 = FactoryGirl.create(:pattern_history, type: 'platform')
+      pattern3 = FactoryGirl.create(:pattern_history, type: 'optional')
 
       @environment.stacks.delete_all
       @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern1, cloud: @cloud_aws)

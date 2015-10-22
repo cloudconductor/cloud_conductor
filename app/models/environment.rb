@@ -51,12 +51,13 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     blueprint.patterns.each do |pattern|
+      pattern_name = pattern.name
       stacks.build(
         cloud: primary_cloud,
-        pattern: pattern,
-        name: "#{system.name}-#{id}-#{pattern.name}",
-        template_parameters: cfn_parameters_hash.key?(pattern.name) ? JSON.dump(cfn_parameters_hash[pattern.name]) : '{}',
-        parameters: user_attributes_hash.key?(pattern.name) ? JSON.dump(user_attributes_hash[pattern.name]) : '{}'
+        pattern_history: pattern,
+        name: "#{system.name}-#{id}-#{pattern_name}",
+        template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
+        parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'
       )
     end
   end
@@ -65,13 +66,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
-      if cfn_parameters_hash.key?(stack.pattern.name)
-        new_template_parameters = JSON.dump(cfn_parameters_hash[stack.pattern.name])
+      pattern_name = stack.pattern_history.name
+      if cfn_parameters_hash.key?(pattern_name)
+        new_template_parameters = JSON.dump(cfn_parameters_hash[pattern_name])
       else
         new_template_parameters = '{}'
       end
-      if user_attributes_hash.key?(stack.pattern.name)
-        new_user_attributes = JSON.dump(user_attributes_hash[stack.pattern.name])
+      if user_attributes_hash.key?(pattern_name)
+        new_user_attributes = JSON.dump(user_attributes_hash[pattern_name])
       else
         new_user_attributes = '{}'
       end

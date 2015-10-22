@@ -13,23 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :stack, class: Stack do
-    environment { create(:environment) }
-    pattern { create(:pattern_history, type: :platform) }
-    cloud { create(:cloud, :aws) }
-
-    sequence(:name) { |n| "stack-#{n}" }
-    template_parameters '{}'
-    parameters '{ "dummy": "value" }'
+  factory :pattern_history do
+    blueprint_history
+    association :pattern, :platform
+    sequence(:name) { |n| "pattern_history-#{n}" }
+    url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
 
     before(:create) do
-      Stack.skip_callback :save, :before, :create_stack
-      Stack.skip_callback :save, :before, :update_stack
+      PatternHistory.skip_callback :create, :before, :freeze_pattern
+      PatternHistory.skip_callback :create, :before, :create_images
     end
 
     after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
-      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
+      PatternHistory.set_callback :create, :before, :create_images
+      PatternHistory.set_callback :create, :before, :freeze_pattern
     end
   end
 end

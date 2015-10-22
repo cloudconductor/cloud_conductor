@@ -14,8 +14,8 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :image, class: Image do
+    pattern_history
     sequence(:role) { |n| "role#{n}" }
-    pattern { create(:pattern, :platform) }
     status :CREATE_COMPLETE
     image { SecureRandom.uuid }
     cloud { create(:cloud, :aws) }
