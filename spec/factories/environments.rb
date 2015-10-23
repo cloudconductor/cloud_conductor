@@ -21,6 +21,12 @@ FactoryGirl.define do
     platform_outputs '{}'
     ip_address '127.0.0.1'
 
+    after(:build) do |environment, evaluator|
+      if evaluator.candidates.blank?
+        environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
+      end
+    end
+
     before(:create) do
       Environment.skip_callback :save, :before, :create_or_update_stacks
     end
