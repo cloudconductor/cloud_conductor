@@ -19,12 +19,14 @@ class Project < ActiveRecord::Base
   before_destroy :delete_monitoring_account
 
   def assign_project_administrator
-    assignments.build(account: current_account, role: :administrator) if current_account
+    role = roles.build(name: 'administrator') unless roles.find_by(name: 'administrator')
+    assignments.build(account: current_account, roles: [role]) if current_account
   end
 
   def create_monitoring_account
+    role = roles.build(name: 'operator') unless roles.find_by(name: 'operator')
     account = Account.create!(email: "monitoring@#{name}.example.com", name: 'monitoring', password: "#{SecureRandom.hex}")
-    assignments.build(account: account, role: :operator)
+    assignments.build(account: account, roles: [role])
   end
 
   def update_monitoring_account
@@ -37,10 +39,11 @@ class Project < ActiveRecord::Base
   end
 
   def assign_project_member(account, role = :operator)
+    r = roles.find_by(name: role)
     if assignments.exists?(account: account)
-      assignments.find_by(account: account).update!(role: role)
+      assignments.find_by(account: account).update!(roles: [r])
     else
-      assignments.create!(account: account, role: role)
+      assignments.create!(account: account, roles: [r])
     end
   end
 

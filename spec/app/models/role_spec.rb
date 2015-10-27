@@ -34,9 +34,17 @@ describe Role do
   end
 
   describe '#destroy' do
-    it 'delete blueprint record' do
+    it 'delete role record' do
       @role.save!
       expect { @role.destroy }.to change { Role.count }.by(-1)
+    end
+
+    it 'delete all assignment_role records' do
+      @role.assignments << FactoryGirl.create(:assignment, project: project, account: FactoryGirl.create(:account))
+      @role.assignments << FactoryGirl.create(:assignment, project: project, account: FactoryGirl.create(:account))
+      @role.save!
+      expect(@role.assignment_roles.size).to eq(2)
+      expect { @role.destroy }.to change { AssignmentRole.count }.by(-2)
     end
 
     it 'delete all permission records' do
