@@ -66,6 +66,14 @@ describe Project do
       @project.save!
       @project.destroy
     end
+
+    it 'delete all role records' do
+      FactoryGirl.create(:role, project: @project)
+      FactoryGirl.create(:role, project: @project)
+
+      expect(@project.roles.size).to eq(2)
+      expect { @project.destroy }.to change { Role.count }.by(-2)
+    end
   end
 
   describe '#valid?' do

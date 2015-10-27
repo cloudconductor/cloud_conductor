@@ -5,6 +5,7 @@ class Project < ActiveRecord::Base
   has_many :systems, dependent: :destroy
   has_many :applications, through: :systems
   has_many :blueprints, dependent: :destroy
+  has_many :roles, dependent: :destroy
   accepts_nested_attributes_for :assignments, allow_destroy: true
 
   attr_accessor :current_account
