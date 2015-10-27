@@ -48,7 +48,6 @@ describe Role do
     end
 
     it 'delete all permission records' do
-      pending('pendign')
       @role.permissions.delete_all
       @role.permissions << FactoryGirl.create(:permission, :read_only, role: @role, model: 'project')
       @role.permissions << FactoryGirl.create(:permission, :manage, role: @role, model: 'system')
@@ -58,7 +57,6 @@ describe Role do
     end
 
     it 'raise error and cancel destroy when specified role is used in some accounts' do
-      pending('pendign')
       allow(@role).to receive(:used?).and_return(true)
 
       expect do
@@ -95,14 +93,12 @@ describe Role do
 
   describe '#used?' do
     it 'return true when role is used by some accounts' do
-      pending('pendign')
-      expect(@role).to receive_message_chain(:project, :assignments, :find_by, :count).and_return(1)
+      expect(@role).to receive_message_chain(:assignments, :count).and_return(1)
       expect(@role.used?).to eq(true)
     end
 
     it 'return false when role is unused by all accounts' do
-      pending('pendign')
-      expect(@role).to receive_message_chain(:project, :assignments, :find_by, :count).and_return(0)
+      expect(@role).to receive_message_chain(:assignments, :count).and_return(0)
       expect(@role.used?).to eq(false)
     end
   end
