@@ -14,7 +14,7 @@ class Pattern < ActiveRecord::Base
     self.protocol ||= 'git'
   end
 
-  before_save :freeze_pattern
+  before_save :update_metadata
 
   def as_json(options = {})
     super({ except: :parameters }.merge(options))
@@ -22,7 +22,7 @@ class Pattern < ActiveRecord::Base
 
   private
 
-  def freeze_pattern
+  def update_metadata
     clone_repository(url, revision) do |path|
       metadata = load_metadata(path)
 

@@ -31,11 +31,11 @@ FactoryGirl.define do
     end
 
     before(:create) do
-      Pattern.skip_callback :save, :before, :freeze_pattern
+      Pattern.skip_callback :save, :before, :update_metadata
     end
 
     after(:create) do
-      Pattern.set_callback :save, :before, :freeze_pattern
+      Pattern.set_callback :save, :before, :update_metadata
     end
   end
 end

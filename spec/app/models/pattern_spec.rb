@@ -26,7 +26,7 @@ describe Pattern do
     @pattern.project = project
     @pattern.url = 'http://example.com/pattern.git'
 
-    allow(@pattern).to receive(:freeze_pattern)
+    allow(@pattern).to receive(:update_metadata)
   end
 
   describe '#initialize' do
@@ -40,8 +40,8 @@ describe Pattern do
       expect { @pattern.save! }.to change { Pattern.count }.by(1)
     end
 
-    it 'will call freeze_pattern callback' do
-      expect(@pattern).to receive(:freeze_pattern)
+    it 'will call update_metadata callback' do
+      expect(@pattern).to receive(:update_metadata)
       @pattern.save!
     end
   end
@@ -86,9 +86,9 @@ describe Pattern do
     end
   end
 
-  describe '#freeze_pattern' do
+  describe '#update_metadata' do
     before do
-      allow(@pattern).to receive(:freeze_pattern).and_call_original
+      allow(@pattern).to receive(:update_metadata).and_call_original
       allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       allow(@pattern).to receive(:load_metadata).and_return({})
       allow(@pattern).to receive(:read_parameters).and_return({})
@@ -97,22 +97,22 @@ describe Pattern do
 
     it 'will call #clone_repository' do
       expect(@pattern).to receive(:clone_repository)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:update_metadata)
     end
 
     it 'will call #load_metadata' do
       expect(@pattern).to receive(:load_metadata)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:update_metadata)
     end
 
     it 'will call #read_parameters' do
       expect(@pattern).to receive(:read_parameters)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:update_metadata)
     end
 
     it 'will call #read_roles' do
       expect(@pattern).to receive(:read_roles)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:update_metadata)
     end
   end
 end
