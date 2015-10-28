@@ -18,5 +18,23 @@ FactoryGirl.define do
     project
     sequence(:name) { |n| "role_#{n}" }
     description 'Role Description'
+
+    after(:create) do |role|
+      models = [:cloud, :base_image, :pattern, :blueprint, :system, :environment, :application, :application_history, :deployment]
+      models.each do |model|
+        role.add_permission(model, :manage)
+      end
+      if role.name == 'administrator'
+        role.add_permission(:project, :manage)
+        role.add_permission(:assignment, :manage)
+        role.add_permission(:account, :read, :create)
+        role.add_permission(:role, :manage)
+      else
+        role.add_permission(:project, :read)
+        role.add_permission(:assignment, :read)
+        role.add_permission(:account, :read)
+        role.add_permission(:role, :read)
+      end
+    end
   end
 end

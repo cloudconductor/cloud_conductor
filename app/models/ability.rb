@@ -27,46 +27,11 @@ class Ability
     assign = account.assignments.find_by(project: project)
     return unless assign
 
-    if assign.administrator?
-      project_admin_permissions
-    else
-      project_operator_permissions
+    assign.roles.each do |role|
+      role.permissions.each do |permission|
+        clazz = permission.model.classify.constantize
+        can permission.action.to_sym, clazz
+      end
     end
-  end
-
-  def project_admin_permissions
-    can :manage, Project
-    can :manage, Assignment
-    can [:read, :create], Account
-    can :manage, Cloud
-    can :manage, BaseImage
-    can :manage, Blueprint
-    can :manage, BlueprintPattern
-    can :manage, BlueprintHistory
-    can :manage, Pattern
-    can :manage, System
-    can :manage, Environment
-    can :manage, Deployment
-    can :manage, Application
-    can :manage, ApplicationHistory
-    can :manage, Stack
-  end
-
-  def project_operator_permissions
-    can :read, Project
-    can :read, Assignment
-    can :read, Account
-    can :manage, Cloud
-    can :manage, BaseImage
-    can :manage, Blueprint
-    can :manage, BlueprintPattern
-    can :manage, BlueprintHistory
-    can :manage, Pattern
-    can :manage, System
-    can :manage, Environment
-    can :manage, Deployment
-    can :manage, Application
-    can :manage, ApplicationHistory
-    can :manage, Stack
   end
 end

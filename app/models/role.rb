@@ -17,4 +17,10 @@ class Role < ActiveRecord::Base
   def raise_error_in_use
     fail 'Can\'t destroy role that is used in some account assignments.' if used?
   end
+
+  def add_permission(model, *actions)
+    actions.each do |action|
+      permissions.build(model: model, action: action)
+    end
+  end
 end

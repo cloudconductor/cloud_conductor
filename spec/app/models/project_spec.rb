@@ -71,8 +71,10 @@ describe Project do
       FactoryGirl.create(:role, project: @project)
       FactoryGirl.create(:role, project: @project)
 
-      expect(@project.roles.size).to eq(4)
-      expect { @project.destroy }.to change { Role.count }.by(-4)
+      project = Project.find(@project)
+
+      expect(project.roles.size).to eq(4)
+      expect { project.destroy }.to change { Role.count }.by(-4)
     end
   end
 

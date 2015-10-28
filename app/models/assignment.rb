@@ -9,4 +9,10 @@ class Assignment < ActiveRecord::Base
   validates_presence_of :project, :account
 
   attr_accessor :email
+
+  def administrator?
+    roles.all.select do |role|
+      role.name == 'administrator'
+    end.count > 0
+  end
 end
