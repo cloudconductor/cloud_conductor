@@ -1,6 +1,6 @@
 class ChangeRelationBetweenBlueprintAndPattern < ActiveRecord::Migration
   def change # rubocop:disable MethodLength
-    create_table :catalogs do |t|
+    create_table :blueprint_patterns do |t|
       t.references :blueprint, null: false
       t.references :pattern, null: false
       t.string :revision

@@ -7,9 +7,9 @@ module ModelSpecHelper
     let(:pattern) { FactoryGirl.create(:pattern, :platform, project: project) }
     let(:blueprint_history) { FactoryGirl.create(:blueprint_history, blueprint: blueprint) }
     let(:pattern_history) { FactoryGirl.create(:pattern_history, pattern: pattern, images: FactoryGirl.create_list(:image, 1, cloud: cloud)) }
-    let(:catalog) do
-      blueprint.catalogs << FactoryGirl.create(:catalog, blueprint: blueprint, pattern: pattern)
-      blueprint.catalogs.first
+    let(:blueprint_pattern) do
+      blueprint.blueprint_patterns << FactoryGirl.create(:blueprint_pattern, blueprint: blueprint, pattern: pattern)
+      blueprint.blueprint_patterns.first
     end
     let(:image) { pattern_history.images.first }
     let(:system) { FactoryGirl.create(:system, project: project) }

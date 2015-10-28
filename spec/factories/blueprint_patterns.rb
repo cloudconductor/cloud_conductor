@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :catalog do
+  factory :blueprint_pattern do
     blueprint
     pattern { FactoryGirl.build(:pattern, :platform) }
     revision 'develop'

@@ -2,20 +2,20 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'CatalogAPI' do
-    before { catalog }
+  describe 'BlueprintPatternAPI' do
+    before { blueprint_pattern }
 
-    describe 'GET /blueprints/:blueprint_id/catalogs' do
+    describe 'GET /blueprints/:blueprint_id/patterns' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs" }
-      let(:result) { format_iso8601([catalog]) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns" }
+      let(:result) { format_iso8601([blueprint_pattern]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_blueprint_id', admin: true do
-        let(:url) { '/api/v1/blueprints/0/catalogs' }
+        let(:url) { '/api/v1/blueprints/0/patterns' }
         it_behaves_like('404 Not Found')
       end
 
@@ -37,17 +37,17 @@ describe API do
       end
     end
 
-    describe 'GET /blueprints/:blueprint_id/catalogs/:id' do
+    describe 'GET /blueprints/:blueprint_id/patterns/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/#{catalog.id}" }
-      let(:result) { format_iso8601(catalog.as_json) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
+      let(:result) { format_iso8601(blueprint_pattern.as_json) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'not_exist_catalog_id', admin: true do
-        let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/0" }
+      context 'not_exist_blueprint_pattern_id', admin: true do
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/0" }
         it_behaves_like('404 Not Found')
       end
 
@@ -68,10 +68,10 @@ describe API do
       end
     end
 
-    describe 'POST /blueprints/:blueprint_id/catalogs' do
+    describe 'POST /blueprints/:blueprint_id/patterns' do
       let(:method) { 'post' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs" }
-      let(:params) { FactoryGirl.attributes_for(:catalog, blueprint_id: blueprint.id, pattern_id: pattern.id) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns" }
+      let(:params) { FactoryGirl.attributes_for(:blueprint_pattern, blueprint_id: blueprint.id, pattern_id: pattern.id) }
       let(:result) do
         params.merge(
           id: Fixnum,
@@ -103,9 +103,9 @@ describe API do
       end
     end
 
-    describe 'PUT /blueprints/:blueprint_id/catalogs/:id' do
+    describe 'PUT /blueprints/:blueprint_id/patterns/:id' do
       let(:method) { 'put' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/#{catalog.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
       let(:params) do
         {
           'revision' => 'dummy',
@@ -113,8 +113,8 @@ describe API do
         }
       end
       let(:result) do
-        catalog.as_json.merge(params).merge(
-          'created_at' => catalog.created_at.iso8601(3),
+        blueprint_pattern.as_json.merge(params).merge(
+          'created_at' => blueprint_pattern.created_at.iso8601(3),
           'updated_at' => String
         )
       end
@@ -123,8 +123,8 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'not_exist_catalog_id', admin: true do
-        let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/0" }
+      context 'not_exist_blueprint_pattern_id', admin: true do
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/0" }
         it_behaves_like('404 Not Found')
       end
 
@@ -145,16 +145,16 @@ describe API do
       end
     end
 
-    describe 'DELETE /blueprints/:blueprint_id/catalogs/:id' do
+    describe 'DELETE /blueprints/:blueprint_id/patterns/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/#{catalog.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'not_exist_catalog_id', admin: true do
-        let(:url) { "/api/v1/blueprints/#{blueprint.id}/catalogs/0" }
+      context 'not_exist_blueprint_pattern_id', admin: true do
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/0" }
         it_behaves_like('404 Not Found')
       end
 

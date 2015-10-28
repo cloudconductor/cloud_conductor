@@ -159,7 +159,7 @@ describe BlueprintHistory do
   end
 
   describe '#freeze_patterns' do
-    it 'create pattern_history from catalog and freeze its metadata' do
+    it 'create pattern_history from relation' do
       allow(@history).to receive(:freeze_patterns).and_call_original
       blueprint.patterns << FactoryGirl.create(:pattern, :platform)
       blueprint.patterns << FactoryGirl.create(:pattern, :optional)

@@ -36,12 +36,12 @@ class BlueprintHistory < ActiveRecord::Base
   end
 
   def freeze_patterns
-    blueprint.catalogs.each do |catalog|
+    blueprint.blueprint_patterns.each do |relation|
       patterns.build(
-        pattern: catalog.pattern,
-        url: catalog.pattern.url,
-        revision: catalog.revision || catalog.pattern.revision,
-        os_version: catalog.os_version
+        pattern: relation.pattern,
+        url: relation.pattern.url,
+        revision: relation.revision || relation.pattern.revision,
+        os_version: relation.os_version
       )
     end
   end

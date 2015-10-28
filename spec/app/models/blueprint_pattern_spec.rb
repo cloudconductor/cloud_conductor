@@ -12,29 +12,29 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-describe Catalog do
+describe BlueprintPattern do
   include_context 'default_resources'
 
   describe '#valid?' do
     it 'returns true with blueprint and pattern' do
-      catalog = Catalog.new(blueprint: blueprint, pattern: pattern)
-      expect(catalog).to be_valid
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern)
+      expect(relation).to be_valid
     end
 
     it 'returns false without blueprint' do
-      catalog = Catalog.new(blueprint: nil, pattern: pattern)
-      expect(catalog).not_to be_valid
+      relation = BlueprintPattern.new(blueprint: nil, pattern: pattern)
+      expect(relation).not_to be_valid
     end
 
     it 'returns false without pattern' do
-      catalog = Catalog.new(blueprint: blueprint, pattern: nil)
-      expect(catalog).not_to be_valid
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: nil)
+      expect(relation).not_to be_valid
     end
   end
 
   describe '#initialize' do
     it 'set os_version to default' do
-      expect(Catalog.new.os_version).to eq('default')
+      expect(BlueprintPattern.new.os_version).to eq('default')
     end
   end
 end
