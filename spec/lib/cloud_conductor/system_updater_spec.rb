@@ -42,8 +42,8 @@ module CloudConductor
     before do
       @environment = environment
       allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.first, name: blueprint_history.patterns.first.name, environment: @environment, status: :PENDING)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint_history.patterns.last, name: blueprint_history.patterns.last.name, environment: @environment, status: :PENDING)
+      @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.patterns.first, name: blueprint_history.patterns.first.name, environment: @environment, status: :PENDING)
+      @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.patterns.last, name: blueprint_history.patterns.last.name, environment: @environment, status: :PENDING)
       @environment.stacks += [@platform_stack, @optional_stack]
       @updater = SystemUpdater.new @environment
       allow_any_instance_of(Pattern).to receive(:clone_repository)

@@ -121,8 +121,8 @@ describe Environment do
       @environment.stacks.delete_all
       platform_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
       optional_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: platform_pattern)
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: optional_pattern)
+      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: platform_pattern)
+      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: optional_pattern)
 
       @environment.destroy
 
@@ -253,9 +253,9 @@ describe Environment do
       pattern3 = FactoryGirl.create(:pattern_snapshot, type: 'optional')
 
       @environment.stacks.delete_all
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern1, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern2, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern3, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern1, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern2, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern3, cloud: @cloud_aws)
 
       @environment.save!
 
