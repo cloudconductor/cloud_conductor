@@ -3,11 +3,10 @@ class PatternSnapshot < ActiveRecord::Base
   self.inheritance_column = nil
 
   belongs_to :blueprint_history
-  belongs_to :pattern
   has_many :images, dependent: :destroy
   has_many :stacks
 
-  validates_presence_of :blueprint_history, :pattern
+  validates_presence_of :blueprint_history
 
   before_create :freeze_pattern
   before_create :create_images

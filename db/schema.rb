@@ -161,7 +161,6 @@ ActiveRecord::Schema.define(version: 20151014083554) do
 
   create_table "pattern_snapshots", force: true do |t|
     t.integer  "blueprint_history_id", null: false
-    t.integer  "pattern_id",           null: false
     t.string   "name"
     t.string   "type"
     t.string   "protocol"

@@ -24,7 +24,6 @@ describe PatternSnapshot do
   before do
     @snapshot = PatternSnapshot.new
     @snapshot.blueprint_history = FactoryGirl.build(:blueprint_history, patterns: [@snapshot])
-    @snapshot.pattern = pattern
 
     allow(@snapshot).to receive(:freeze_pattern)
     allow(@snapshot).to receive(:create_images)
@@ -68,11 +67,6 @@ describe PatternSnapshot do
 
     it 'returns false when blueprint_history is unset' do
       @snapshot.blueprint_history = nil
-      expect(@snapshot.valid?).to be_falsey
-    end
-
-    it 'returns false when pattern is unset' do
-      @snapshot.pattern = nil
       expect(@snapshot.valid?).to be_falsey
     end
   end

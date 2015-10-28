@@ -57,12 +57,6 @@ describe Pattern do
       expect(@pattern.blueprints.size).to eq(1)
       expect { @pattern.destroy }.to change { BlueprintPattern.count }.by(-1)
     end
-
-    it 'delete all pattern histories records' do
-      @pattern.histories << FactoryGirl.create(:pattern_history, pattern: @pattern)
-      expect(@pattern.histories.size).to eq(1)
-      expect { @pattern.destroy }.to change { PatternHistory.count }.by(-1)
-    end
   end
 
   describe '#valid?' do

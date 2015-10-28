@@ -19,7 +19,6 @@ class ChangeRelationBetweenBlueprintAndPattern < ActiveRecord::Migration
 
     create_table :pattern_snapshots do |t|
       t.references :blueprint_history, null: false
-      t.references :pattern, null: false
       t.string :name
       t.string :type
       t.string :protocol

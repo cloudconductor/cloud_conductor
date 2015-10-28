@@ -5,7 +5,6 @@ class Pattern < ActiveRecord::Base
   belongs_to :project
   has_many :blueprint_patterns, dependent: :destroy
   has_many :blueprints, through: :blueprint_patterns
-  has_many :histories, class_name: :PatternHistory, dependent: :destroy
 
   validates_presence_of :project
   validates :url, format: { with: URI.regexp }
