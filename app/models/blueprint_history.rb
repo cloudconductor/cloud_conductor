@@ -6,7 +6,7 @@ class BlueprintHistory < ActiveRecord::Base
 
   before_create :set_consul_secret_key
   before_create :set_version
-  before_create :freeze_patterns
+  before_create :build_pattern_snapshots
 
   def status
     if patterns.any? { |pattern| pattern.status == :ERROR }
@@ -35,7 +35,7 @@ class BlueprintHistory < ActiveRecord::Base
     self.version = latest.version + 1 if latest
   end
 
-  def freeze_patterns
+  def build_pattern_snapshots
     blueprint.blueprint_patterns.each do |relation|
       patterns.build(
         url: relation.pattern.url,

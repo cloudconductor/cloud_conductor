@@ -4,11 +4,11 @@ FactoryGirl.define do
     sequence(:version) { |n| n }
 
     before(:create) do
-      BlueprintHistory.skip_callback :create, :before, :freeze_patterns
+      BlueprintHistory.skip_callback :create, :before, :build_pattern_snapshots
     end
 
     after(:create) do
-      BlueprintHistory.set_callback :create, :before, :freeze_patterns
+      BlueprintHistory.set_callback :create, :before, :build_pattern_snapshots
     end
   end
 end

@@ -22,7 +22,7 @@ describe BlueprintHistory do
 
     allow(@history).to receive(:set_consul_secret_key)
     allow(@history).to receive(:set_version)
-    allow(@history).to receive(:freeze_patterns)
+    allow(@history).to receive(:build_pattern_snapshots)
   end
 
   describe '#save' do
@@ -40,8 +40,8 @@ describe BlueprintHistory do
       @history.save!
     end
 
-    it 'call #freeze_patterns callback' do
-      expect(@history).to receive(:freeze_patterns)
+    it 'call #build_pattern_snapshots callback' do
+      expect(@history).to receive(:build_pattern_snapshots)
       @history.save!
     end
   end
@@ -158,12 +158,12 @@ describe BlueprintHistory do
     end
   end
 
-  describe '#freeze_patterns' do
+  describe '#build_pattern_snapshots' do
     it 'create pattern_snapshot from relation' do
-      allow(@history).to receive(:freeze_patterns).and_call_original
+      allow(@history).to receive(:build_pattern_snapshots).and_call_original
       blueprint.patterns << FactoryGirl.create(:pattern, :platform)
       blueprint.patterns << FactoryGirl.create(:pattern, :optional)
-      @history.send(:freeze_patterns)
+      @history.send(:build_pattern_snapshots)
       expect(@history.patterns.size).to eq(2)
     end
   end
