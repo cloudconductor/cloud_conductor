@@ -4,7 +4,7 @@ module API
       resource :blueprints do
         route_param :blueprint_id do
           resource :catalogs do
-            desc 'List patterns'
+            desc 'List catalogs'
             get '/' do
               Blueprint.find(params[:blueprint_id]).catalogs.select do |catalog|
                 can?(:read, catalog)
