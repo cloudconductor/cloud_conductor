@@ -1,4 +1,4 @@
-class PatternHistory < ActiveRecord::Base
+class PatternSnapshot < ActiveRecord::Base
   include PatternAccessor
   self.inheritance_column = nil
 

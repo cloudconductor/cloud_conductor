@@ -40,7 +40,7 @@ module CloudConductor
       parameters[:packer_json_path] = create_json(images)
 
       command = build_command parameters
-      log_path = log_path(images.first.pattern_history, parameters[:role])
+      log_path = log_path(images.first.pattern_snapshot, parameters[:role])
       Thread.new do
         start = Time.now
         begin

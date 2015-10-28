@@ -22,10 +22,10 @@ module CloudConductor
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
       blueprint_history = FactoryGirl.create(:blueprint_history,
                                              blueprint: blueprint,
-                                             patterns: [FactoryGirl.create(:pattern_history, type: 'platform'),
-                                                        FactoryGirl.create(:pattern_history, type: 'optional')])
+                                             patterns: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
+                                                        FactoryGirl.create(:pattern_snapshot, type: 'optional')])
       blueprint_history.patterns.each do |pattern|
-        FactoryGirl.create(:image, pattern_history: pattern, base_image: base_image, cloud: cloud)
+        FactoryGirl.create(:image, pattern_snapshot: pattern, base_image: base_image, cloud: cloud)
       end
       blueprint_history
     end

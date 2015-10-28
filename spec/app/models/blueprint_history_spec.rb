@@ -54,11 +54,11 @@ describe BlueprintHistory do
 
     it 'delete all pattern history records' do
       @history.patterns.delete_all
-      @history.patterns << FactoryGirl.create(:pattern_history, blueprint_history: @history)
-      @history.patterns << FactoryGirl.create(:pattern_history, blueprint_history: @history)
+      @history.patterns << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
+      @history.patterns << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
 
       expect(@history.patterns.size).to eq(2)
-      expect { @history.destroy }.to change { PatternHistory.count }.by(-2)
+      expect { @history.destroy }.to change { PatternSnapshot.count }.by(-2)
     end
   end
 
@@ -123,9 +123,9 @@ describe BlueprintHistory do
 
   describe '#status' do
     before do
-      @history.patterns << FactoryGirl.create(:pattern_history)
-      @history.patterns << FactoryGirl.create(:pattern_history)
-      @history.patterns << FactoryGirl.create(:pattern_history)
+      @history.patterns << FactoryGirl.create(:pattern_snapshot)
+      @history.patterns << FactoryGirl.create(:pattern_snapshot)
+      @history.patterns << FactoryGirl.create(:pattern_snapshot)
       allow(@history.patterns[0]).to receive(:status).and_return(:PROGRESS)
       allow(@history.patterns[1]).to receive(:status).and_return(:PROGRESS)
       allow(@history.patterns[2]).to receive(:status).and_return(:PROGRESS)
@@ -159,7 +159,7 @@ describe BlueprintHistory do
   end
 
   describe '#freeze_patterns' do
-    it 'create pattern_history from relation' do
+    it 'create pattern_snapshot from relation' do
       allow(@history).to receive(:freeze_patterns).and_call_original
       blueprint.patterns << FactoryGirl.create(:pattern, :platform)
       blueprint.patterns << FactoryGirl.create(:pattern, :optional)

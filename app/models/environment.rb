@@ -56,7 +56,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       pattern_name = pattern.name
       stacks.build(
         cloud: primary_cloud,
-        pattern_history: pattern,
+        pattern_snapshot: pattern,
         name: "#{system.name}-#{id}-#{pattern_name}",
         template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
         parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'
@@ -68,7 +68,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
-      pattern_name = stack.pattern_history.name
+      pattern_name = stack.pattern_snapshot.name
       if cfn_parameters_hash.key?(pattern_name)
         new_template_parameters = JSON.dump(cfn_parameters_hash[pattern_name])
       else

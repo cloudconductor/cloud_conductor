@@ -1,6 +1,6 @@
 class BlueprintHistory < ActiveRecord::Base
   belongs_to :blueprint
-  has_many :patterns, class_name: :PatternHistory, dependent: :destroy
+  has_many :patterns, class_name: :PatternSnapshot, dependent: :destroy
 
   validates_presence_of :blueprint
 

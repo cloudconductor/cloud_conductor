@@ -154,12 +154,12 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.string   "image"
     t.text     "message"
     t.string   "status"
-    t.datetime "created_at",         null: false
-    t.datetime "updated_at",         null: false
-    t.integer  "pattern_history_id"
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.integer  "pattern_snapshot_id"
   end
 
-  create_table "pattern_histories", force: true do |t|
+  create_table "pattern_snapshots", force: true do |t|
     t.integer  "blueprint_history_id", null: false
     t.integer  "pattern_id",           null: false
     t.string   "name"
@@ -213,7 +213,7 @@ ActiveRecord::Schema.define(version: 20151014083554) do
     t.text     "parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
-    t.integer  "pattern_history_id"
+    t.integer  "pattern_snapshot_id"
   end
 
   create_table "systems", force: true do |t|

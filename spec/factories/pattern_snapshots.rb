@@ -13,20 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :pattern_history do
+  factory :pattern_snapshot do
     blueprint_history
-    association :pattern, :platform
-    sequence(:name) { |n| "pattern_history-#{n}" }
+    sequence(:name) { |n| "pattern_snapshot-#{n}" }
     url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
 
     before(:create) do
-      PatternHistory.skip_callback :create, :before, :freeze_pattern
-      PatternHistory.skip_callback :create, :before, :create_images
+      PatternSnapshot.skip_callback :create, :before, :freeze_pattern
+      PatternSnapshot.skip_callback :create, :before, :create_images
     end
 
     after(:create) do
-      PatternHistory.set_callback :create, :before, :create_images
-      PatternHistory.set_callback :create, :before, :freeze_pattern
+      PatternSnapshot.set_callback :create, :before, :create_images
+      PatternSnapshot.set_callback :create, :before, :freeze_pattern
     end
   end
 end

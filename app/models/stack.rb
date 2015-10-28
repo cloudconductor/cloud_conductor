@@ -1,6 +1,6 @@
 class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :environment
-  belongs_to :pattern, class_name: :PatternHistory, foreign_key: :pattern_history_id
+  belongs_to :pattern, class_name: :PatternSnapshot, foreign_key: :pattern_snapshot_id
   belongs_to :cloud
 
   validates :name, presence: true, uniqueness: { scope: :cloud_id }
