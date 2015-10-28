@@ -1,5 +1,3 @@
-require 'catalog'
-
 class Blueprint < ActiveRecord::Base
   belongs_to :project
   has_many :patterns, through: :catalogs
