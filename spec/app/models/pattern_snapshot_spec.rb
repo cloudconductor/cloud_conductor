@@ -22,180 +22,180 @@ describe PatternSnapshot do
   end
 
   before do
-    @snapshot = PatternSnapshot.new
-    @snapshot.blueprint_history = FactoryGirl.build(:blueprint_history, patterns: [@snapshot])
+    @pattern = PatternSnapshot.new
+    @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern])
 
-    allow(@snapshot).to receive(:freeze_pattern)
-    allow(@snapshot).to receive(:create_images)
+    allow(@pattern).to receive(:freeze_pattern)
+    allow(@pattern).to receive(:create_images)
   end
 
   describe '#initialize' do
     it 'set os_version to default' do
-      expect(@snapshot.os_version).to eq('default')
+      expect(@pattern.os_version).to eq('default')
     end
   end
 
   describe '#save' do
     it 'create with valid parameters' do
-      expect { @snapshot.save! }.to change { PatternSnapshot.count }.by(1)
+      expect { @pattern.save! }.to change { PatternSnapshot.count }.by(1)
     end
   end
 
   describe '#destroy' do
     before do
-      allow(@snapshot).to receive(:check_pattern_usage).and_return(true)
+      allow(@pattern).to receive(:check_pattern_usage).and_return(true)
       allow_any_instance_of(Image).to receive(:destroy_image).and_return(true)
     end
 
     it 'will call #check_pattern_usage' do
-      expect(@snapshot).to receive(:check_pattern_usage)
-      @snapshot.destroy
+      expect(@pattern).to receive(:check_pattern_usage)
+      @pattern.destroy
     end
 
     it 'delete all image records' do
-      @snapshot.images << FactoryGirl.create(:image, pattern_snapshot: @snapshot)
+      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern)
 
-      expect(@snapshot.images.size).to eq(1)
-      expect { @snapshot.destroy }.to change { Image.count }.by(-1)
+      expect(@pattern.images.size).to eq(1)
+      expect { @pattern.destroy }.to change { Image.count }.by(-1)
     end
   end
 
   describe '#valid?' do
     it 'returns true when valid model' do
-      expect(@snapshot.valid?).to be_truthy
+      expect(@pattern.valid?).to be_truthy
     end
 
     it 'returns false when blueprint_history is unset' do
-      @snapshot.blueprint_history = nil
-      expect(@snapshot.valid?).to be_falsey
+      @pattern.blueprint_history = nil
+      expect(@pattern.valid?).to be_falsey
     end
   end
 
   describe '#as_json' do
     it 'contains status' do
-      allow(@snapshot).to receive(:status).and_return(:CREATE_COMPLETE)
-      hash = @snapshot.as_json
+      allow(@pattern).to receive(:status).and_return(:CREATE_COMPLETE)
+      hash = @pattern.as_json
       expect(hash['status']).to eq(:CREATE_COMPLETE)
     end
 
     it 'doesn\'t contain parameters' do
-      hash = @snapshot.as_json
+      hash = @pattern.as_json
       expect(hash['parameters']).to be_nil
     end
   end
 
   describe '#status' do
     before do
-      @snapshot.images << FactoryGirl.create(:image, pattern_snapshot: @snapshot, status: :PROGRESS)
-      @snapshot.images << FactoryGirl.create(:image, pattern_snapshot: @snapshot, status: :PROGRESS)
-      @snapshot.images << FactoryGirl.create(:image, pattern_snapshot: @snapshot, status: :PROGRESS)
+      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
     end
 
     it 'return status that integrated status over all images' do
-      expect(@snapshot.status).to eq(:PROGRESS)
+      expect(@pattern.status).to eq(:PROGRESS)
     end
 
     it 'return :PROGRESS when least one image has progress status' do
-      @snapshot.images[0].status = :CREATE_COMPLETE
+      @pattern.images[0].status = :CREATE_COMPLETE
 
-      expect(@snapshot.status).to eq(:PROGRESS)
+      expect(@pattern.status).to eq(:PROGRESS)
     end
 
     it 'return :ERROR when pattern hasn\'t images' do
-      @snapshot.images.delete_all
-      expect(@snapshot.status).to eq(:ERROR)
+      @pattern.images.delete_all
+      expect(@pattern.status).to eq(:ERROR)
     end
 
     it 'return :CREATE_COMPLETE when all images have CREATE_COMPLETE status' do
-      @snapshot.images[0].status = :CREATE_COMPLETE
-      @snapshot.images[1].status = :CREATE_COMPLETE
-      @snapshot.images[2].status = :CREATE_COMPLETE
+      @pattern.images[0].status = :CREATE_COMPLETE
+      @pattern.images[1].status = :CREATE_COMPLETE
+      @pattern.images[2].status = :CREATE_COMPLETE
 
-      expect(@snapshot.status).to eq(:CREATE_COMPLETE)
+      expect(@pattern.status).to eq(:CREATE_COMPLETE)
     end
 
     it 'return error when least one image has error status' do
-      @snapshot.images[0].status = :CREATE_COMPLETE
-      @snapshot.images[1].status = :PROGRESS
-      @snapshot.images[2].status = :ERROR
+      @pattern.images[0].status = :CREATE_COMPLETE
+      @pattern.images[1].status = :PROGRESS
+      @pattern.images[2].status = :ERROR
 
-      expect(@snapshot.status).to eq(:ERROR)
+      expect(@pattern.status).to eq(:ERROR)
     end
   end
 
   describe '#freeze_pattern' do
     before do
-      allow(@snapshot).to receive(:freeze_pattern).and_call_original
-      allow(@snapshot).to receive(:clone_repository).and_yield(cloned_path)
-      allow(@snapshot).to receive(:load_metadata).and_return({})
-      allow(@snapshot).to receive(:read_parameters).and_return({})
-      allow(@snapshot).to receive(:read_roles).and_return([])
-      allow(@snapshot).to receive(:freeze_revision)
+      allow(@pattern).to receive(:freeze_pattern).and_call_original
+      allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
+      allow(@pattern).to receive(:load_metadata).and_return({})
+      allow(@pattern).to receive(:read_parameters).and_return({})
+      allow(@pattern).to receive(:read_roles).and_return([])
+      allow(@pattern).to receive(:freeze_revision)
     end
 
     it 'will call #clone_repository' do
-      expect(@snapshot).to receive(:clone_repository)
-      @snapshot.send(:freeze_pattern)
+      expect(@pattern).to receive(:clone_repository)
+      @pattern.send(:freeze_pattern)
     end
 
     it 'will call #load_metadata' do
-      expect(@snapshot).to receive(:load_metadata)
-      @snapshot.send(:freeze_pattern)
+      expect(@pattern).to receive(:load_metadata)
+      @pattern.send(:freeze_pattern)
     end
 
     it 'will call #read_parameters' do
-      expect(@snapshot).to receive(:read_parameters)
-      @snapshot.send(:freeze_pattern)
+      expect(@pattern).to receive(:read_parameters)
+      @pattern.send(:freeze_pattern)
     end
 
     it 'will call #read_roles' do
-      expect(@snapshot).to receive(:read_roles)
-      @snapshot.send(:freeze_pattern)
+      expect(@pattern).to receive(:read_roles)
+      @pattern.send(:freeze_pattern)
     end
 
     it 'will call #freeze_revision' do
-      expect(@snapshot).to receive(:freeze_revision)
-      @snapshot.send(:freeze_pattern)
+      expect(@pattern).to receive(:freeze_revision)
+      @pattern.send(:freeze_pattern)
     end
   end
 
   describe '#create_images' do
     before do
       base_image
-      @snapshot.name = 'name'
-      @snapshot.roles = 'nginx'
-      @snapshot.os_version = 'default'
-      allow(@snapshot).to receive(:create_images).and_call_original
-      allow(@snapshot).to receive(:update_images)
+      @pattern.name = 'name'
+      @pattern.roles = 'nginx'
+      @pattern.os_version = 'default'
+      allow(@pattern).to receive(:create_images).and_call_original
+      allow(@pattern).to receive(:update_images)
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
     end
 
     it 'create image each cloud and role' do
-      @snapshot.roles = 'nginx'
-      expect { @snapshot.send(:create_images) }.to change { @snapshot.images.size }.by(1)
+      @pattern.roles = 'nginx'
+      expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
     end
 
     it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
       parameters = {
-        pattern_name: @snapshot.name,
+        pattern_name: @pattern.name,
         patterns: {},
         role: 'nginx',
-        consul_secret_key: @snapshot.blueprint_history.consul_secret_key
+        consul_secret_key: @pattern.blueprint_history.consul_secret_key
       }
-      parameters[:patterns][@snapshot.name] = {
-        url: @snapshot.url,
-        revision: @snapshot.revision
+      parameters[:patterns][@pattern.name] = {
+        url: @pattern.url,
+        revision: @pattern.revision
       }
 
       packer_client = CloudConductor::PackerClient.new
       allow(CloudConductor::PackerClient).to receive(:new).and_return(packer_client)
       expect(packer_client).to receive(:build).with(anything, parameters)
-      @snapshot.send(:create_images)
+      @pattern.send(:create_images)
     end
 
     it 'call #update_images with packer results' do
-      expect(@snapshot).to receive(:update_images).with('dummy' => {})
-      @snapshot.send(:create_images)
+      expect(@pattern).to receive(:update_images).with('dummy' => {})
+      @pattern.send(:create_images)
     end
   end
 
@@ -214,9 +214,9 @@ describe PatternSnapshot do
 
       base_image_aws = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :aws, name: 'aws'))
       base_image_openstack = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :openstack, name: 'openstack'))
-      FactoryGirl.create(:image, pattern_snapshot: @snapshot, base_image: base_image_aws, role: 'nginx')
-      FactoryGirl.create(:image, pattern_snapshot: @snapshot, base_image: base_image_openstack, role: 'nginx')
-      @snapshot.send(:update_images, results)
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_aws, role: 'nginx')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_openstack, role: 'nginx')
+      @pattern.send(:update_images, results)
 
       aws = Image.where(name: 'aws-default----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
@@ -234,22 +234,22 @@ describe PatternSnapshot do
     it 'execute git log command' do
       allow(Dir).to receive(:chdir).and_yield
       command = 'git log --pretty=format:%H --max-count=1'
-      expect(@snapshot).to receive(:`).with(command).and_return('9b274710215f5879549a910beb7199a1bfd40bc9')
-      @snapshot.send(:freeze_revision, cloned_path)
-      expect(@snapshot.revision).to eq('9b274710215f5879549a910beb7199a1bfd40bc9')
+      expect(@pattern).to receive(:`).with(command).and_return('9b274710215f5879549a910beb7199a1bfd40bc9')
+      @pattern.send(:freeze_revision, cloned_path)
+      expect(@pattern.revision).to eq('9b274710215f5879549a910beb7199a1bfd40bc9')
     end
   end
 
   describe '#check_pattern_usage' do
     it 'raise exception when some stacks use this pattern history' do
-      @snapshot.stacks << FactoryGirl.build(:stack)
-      expect { @snapshot.send(:check_pattern_usage) }.to raise_error('Some stacks use this pattern')
+      @pattern.stacks << FactoryGirl.build(:stack)
+      expect { @pattern.send(:check_pattern_usage) }.to raise_error('Some stacks use this pattern')
     end
   end
 
   describe '#filtered_parameters' do
     before do
-      @snapshot.parameters = <<-EOS
+      @pattern.parameters = <<-EOS
         {
           "KeyName" : {
             "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
@@ -272,12 +272,12 @@ describe PatternSnapshot do
     end
 
     it 'return parameters without [computed] annotation' do
-      parameters = @snapshot.filtered_parameters
+      parameters = @pattern.filtered_parameters
       expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType)
     end
 
     it 'return all parameters when specified option' do
-      parameters = @snapshot.filtered_parameters(true)
+      parameters = @pattern.filtered_parameters(true)
       expect(parameters.keys).to eq %w(KeyName SSHLocation WebImageId WebInstanceType)
     end
   end

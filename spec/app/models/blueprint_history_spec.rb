@@ -53,11 +53,11 @@ describe BlueprintHistory do
     end
 
     it 'delete all pattern history records' do
-      @history.patterns.delete_all
-      @history.patterns << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
-      @history.patterns << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
+      @history.pattern_snapshots.delete_all
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
 
-      expect(@history.patterns.size).to eq(2)
+      expect(@history.pattern_snapshots.size).to eq(2)
       expect { @history.destroy }.to change { PatternSnapshot.count }.by(-2)
     end
   end
@@ -123,36 +123,36 @@ describe BlueprintHistory do
 
   describe '#status' do
     before do
-      @history.patterns << FactoryGirl.create(:pattern_snapshot)
-      @history.patterns << FactoryGirl.create(:pattern_snapshot)
-      @history.patterns << FactoryGirl.create(:pattern_snapshot)
-      allow(@history.patterns[0]).to receive(:status).and_return(:PROGRESS)
-      allow(@history.patterns[1]).to receive(:status).and_return(:PROGRESS)
-      allow(@history.patterns[2]).to receive(:status).and_return(:PROGRESS)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      allow(@history.pattern_snapshots[0]).to receive(:status).and_return(:PROGRESS)
+      allow(@history.pattern_snapshots[1]).to receive(:status).and_return(:PROGRESS)
+      allow(@history.pattern_snapshots[2]).to receive(:status).and_return(:PROGRESS)
     end
 
-    it 'return status that integrated status over all patterns' do
+    it 'return status that integrated status over all pattern_snapshots' do
       expect(@history.status).to eq(:PROGRESS)
     end
 
-    it 'return :PROGRESS when least one patterns has progress status' do
-      allow(@history.patterns[0]).to receive(:status).and_return(:CREATE_COMPLETE)
+    it 'return :PROGRESS when least one pattern_snapshots has progress status' do
+      allow(@history.pattern_snapshots[0]).to receive(:status).and_return(:CREATE_COMPLETE)
 
       expect(@history.status).to eq(:PROGRESS)
     end
 
-    it 'return :CREATE_COMPLETE when all patterns have CREATE_COMPLETE status' do
-      allow(@history.patterns[0]).to receive(:status).and_return(:CREATE_COMPLETE)
-      allow(@history.patterns[1]).to receive(:status).and_return(:CREATE_COMPLETE)
-      allow(@history.patterns[2]).to receive(:status).and_return(:CREATE_COMPLETE)
+    it 'return :CREATE_COMPLETE when all pattern_snapshots have CREATE_COMPLETE status' do
+      allow(@history.pattern_snapshots[0]).to receive(:status).and_return(:CREATE_COMPLETE)
+      allow(@history.pattern_snapshots[1]).to receive(:status).and_return(:CREATE_COMPLETE)
+      allow(@history.pattern_snapshots[2]).to receive(:status).and_return(:CREATE_COMPLETE)
 
       expect(@history.status).to eq(:CREATE_COMPLETE)
     end
 
     it 'return error when least one image has error status' do
-      allow(@history.patterns[0]).to receive(:status).and_return(:CREATE_COMPLETE)
-      allow(@history.patterns[1]).to receive(:status).and_return(:PROGRESS)
-      allow(@history.patterns[2]).to receive(:status).and_return(:ERROR)
+      allow(@history.pattern_snapshots[0]).to receive(:status).and_return(:CREATE_COMPLETE)
+      allow(@history.pattern_snapshots[1]).to receive(:status).and_return(:PROGRESS)
+      allow(@history.pattern_snapshots[2]).to receive(:status).and_return(:ERROR)
 
       expect(@history.status).to eq(:ERROR)
     end
@@ -164,7 +164,7 @@ describe BlueprintHistory do
       blueprint.patterns << FactoryGirl.create(:pattern, :platform)
       blueprint.patterns << FactoryGirl.create(:pattern, :optional)
       @history.send(:build_pattern_snapshots)
-      expect(@history.patterns.size).to eq(2)
+      expect(@history.pattern_snapshots.size).to eq(2)
     end
   end
 end

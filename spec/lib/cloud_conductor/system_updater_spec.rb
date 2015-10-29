@@ -22,11 +22,11 @@ module CloudConductor
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
       blueprint_history = FactoryGirl.create(:blueprint_history,
                                              blueprint: blueprint,
-                                             patterns: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
-                                                        FactoryGirl.create(:pattern_snapshot, type: 'optional')]
+                                             pattern_snapshots: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
+                                                                 FactoryGirl.create(:pattern_snapshot, type: 'optional')]
                   )
-      blueprint_history.patterns.each do |pattern|
-        FactoryGirl.create(:image, pattern_snapshot: pattern, base_image: base_image, cloud: cloud)
+      blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud)
       end
       blueprint_history
     end
@@ -42,8 +42,8 @@ module CloudConductor
     before do
       @environment = environment
       allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
-      @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.patterns.first, name: blueprint_history.patterns.first.name, environment: @environment, status: :PENDING)
-      @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.patterns.last, name: blueprint_history.patterns.last.name, environment: @environment, status: :PENDING)
+      @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, environment: @environment, status: :PENDING)
+      @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, environment: @environment, status: :PENDING)
       @environment.stacks += [@platform_stack, @optional_stack]
       @updater = SystemUpdater.new @environment
       allow_any_instance_of(Pattern).to receive(:clone_repository)

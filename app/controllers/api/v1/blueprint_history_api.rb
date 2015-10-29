@@ -19,7 +19,7 @@ module API
               blueprint = ::Blueprint.find(params[:blueprint_id])
               authorize!(:read, blueprint)
               history = blueprint.histories.find(params[:id])
-              history.patterns.each_with_object({}) do |pattern, hash|
+              history.pattern_snapshots.each_with_object({}) do |pattern, hash|
                 hash[pattern.name] = pattern.filtered_parameters
               end
             end

@@ -65,10 +65,10 @@ class PatternSnapshot < ActiveRecord::Base
         consul_secret_key: blueprint_history.consul_secret_key
       }
 
-      blueprint_history.patterns.each do |pattern|
-        packer_variables[:patterns][pattern.name] = {
-          url: pattern.url,
-          revision: pattern.revision
+      blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+        packer_variables[:patterns][pattern_snapshot.name] = {
+          url: pattern_snapshot.url,
+          revision: pattern_snapshot.revision
         }
       end
 

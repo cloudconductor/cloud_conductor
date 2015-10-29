@@ -1,6 +1,6 @@
 class BlueprintHistory < ActiveRecord::Base
   belongs_to :blueprint
-  has_many :patterns, class_name: :PatternSnapshot, dependent: :destroy
+  has_many :pattern_snapshots, dependent: :destroy
 
   validates_presence_of :blueprint
 
@@ -9,9 +9,9 @@ class BlueprintHistory < ActiveRecord::Base
   before_create :build_pattern_snapshots
 
   def status
-    if patterns.any? { |pattern| pattern.status == :ERROR }
+    if pattern_snapshots.any? { |pattern_snapshot| pattern_snapshot.status == :ERROR }
       :ERROR
-    elsif patterns.all? { |pattern| pattern.status == :CREATE_COMPLETE }
+    elsif pattern_snapshots.all? { |pattern_snapshot| pattern_snapshot.status == :CREATE_COMPLETE }
       :CREATE_COMPLETE
     else
       :PROGRESS
@@ -37,7 +37,7 @@ class BlueprintHistory < ActiveRecord::Base
 
   def build_pattern_snapshots
     blueprint.blueprint_patterns.each do |relation|
-      patterns.build(
+      pattern_snapshots.build(
         url: relation.pattern.url,
         revision: relation.revision || relation.pattern.revision,
         os_version: relation.os_version

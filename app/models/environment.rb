@@ -52,11 +52,11 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     primary_cloud = candidates.sort.first.cloud
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
-    blueprint_history.patterns.each do |pattern|
-      pattern_name = pattern.name
+    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+      pattern_name = pattern_snapshot.name
       stacks.build(
         cloud: primary_cloud,
-        pattern_snapshot: pattern,
+        pattern_snapshot: pattern_snapshot,
         name: "#{system.name}-#{id}-#{pattern_name}",
         template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
         parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'

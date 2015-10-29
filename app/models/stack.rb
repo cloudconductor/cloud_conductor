@@ -15,7 +15,9 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   validate do
-    errors.add(:pattern_snapshot, 'can\'t use pattern_snapshot that contains uncompleted image') if pattern_snapshot && pattern_snapshot.status != :CREATE_COMPLETE
+    if pattern_snapshot && pattern_snapshot.status != :CREATE_COMPLETE
+      errors.add(:pattern_snapshot, 'can\'t use pattern_snapshot that contains uncompleted image')
+    end
   end
 
   scope :in_progress, -> { where(status: :PROGRESS) }
