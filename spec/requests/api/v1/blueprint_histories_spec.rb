@@ -34,7 +34,7 @@ describe API do
       end
     end
 
-    describe 'GET /blueprints/:blueprint_id/histories/:id' do
+    describe 'GET /blueprints/:blueprint_id/histories/:id/parameters' do
       let(:method) { 'get' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}/parameters" }
       let(:result) { {} }
