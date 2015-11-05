@@ -5,6 +5,7 @@ describe API do
   describe 'BlueprintHistoryAPI' do
     before do
       blueprint_history
+      blueprint_history.pattern_snapshots << pattern_snapshot
     end
 
     describe 'GET /blueprints/:blueprint_id/histories' do
@@ -37,7 +38,11 @@ describe API do
     describe 'GET /blueprints/:blueprint_id/histories/:id/parameters' do
       let(:method) { 'get' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}/parameters" }
-      let(:result) { {} }
+      let(:result) do
+        result = {}
+        result[blueprint_history.pattern_snapshots.first.name] = {}
+        result
+      end
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -65,7 +70,45 @@ describe API do
       end
     end
 
+    describe 'GET /blueprints/:blueprint_id/histories/:id' do
+      let(:method) { 'get' }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}" }
+      let(:result) { format_iso8601(blueprint_history.as_json(methods: [:status, :pattern_snapshots])) }
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'not_exist_id', admin: true do
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/0" }
+        it_behaves_like('404 Not Found')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
     describe 'DELETE /blueprints/:blueprint_id/histories/:id' do
+      before do
+        Image.skip_callback :destroy, :before, :destroy_image
+      end
+      after do
+        Image.set_callback :destroy, :before, :destroy_image, if: -> { status == :CREATE_COMPLETE }
+      end
+
       let(:method) { 'delete' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}" }
 

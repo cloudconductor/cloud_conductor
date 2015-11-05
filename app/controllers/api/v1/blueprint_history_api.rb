@@ -24,6 +24,17 @@ module API
               end
             end
 
+            desc 'Get blueprint history'
+            params do
+              requires :id, type: Integer, desc: 'Blueprint history id'
+            end
+            get '/:id' do
+              blueprint = ::Blueprint.find(params[:blueprint_id])
+              authorize!(:read, blueprint)
+              history = blueprint.histories.find(params[:id])
+              history.as_json(methods: [:status, :pattern_snapshots])
+            end
+
             desc 'Delete blueprint history'
             params do
               requires :id, type: Integer, desc: 'Blueprint history id'
