@@ -23,7 +23,7 @@ module API
         params do
           requires :project_id, type: Integer, desc: 'Project id'
           requires :url, type: String, desc: 'URL of repository that contains pattern'
-          requires :revision, type: String, desc: 'revision of repository'
+          optional :revision, type: String, desc: 'revision of repository'
         end
         post '/' do
           authorize!(:create, ::Pattern)
