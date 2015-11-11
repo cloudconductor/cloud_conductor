@@ -13,12 +13,12 @@ module API
 
             desc 'Show pattern that is contained blueprint'
             params do
-              requires :id, type: Integer, desc: 'BlueprintPattern id'
+              requires :pattern_id, type: Integer, desc: 'Pattern id'
             end
-            get '/:id' do
+            get '/:pattern_id' do
               blueprint = ::Blueprint.find(params[:blueprint_id])
               authorize!(:read, blueprint)
-              relation = blueprint.blueprint_patterns.find(params[:id])
+              relation = blueprint.blueprint_patterns.where(pattern_id: params[:pattern_id]).first!
               authorize!(:read, relation)
               relation
             end
@@ -39,14 +39,14 @@ module API
 
             desc 'Update relation in blueprint'
             params do
-              requires :id, type: Integer, desc: 'BlueprintPattern id'
+              requires :pattern_id, type: Integer, desc: 'Pattern id'
               optional :revision, type: String, desc: 'Revision on pattern'
               optional :os_version, type: String, desc: 'Operationg system version'
             end
-            put '/:id' do
+            put '/:pattern_id' do
               blueprint = Blueprint.find(params[:blueprint_id])
               authorize!(:update, blueprint)
-              relation = blueprint.blueprint_patterns.find(params[:id])
+              relation = blueprint.blueprint_patterns.where(pattern_id: params[:pattern_id]).first!
               authorize!(:update, relation)
               relation.update_attributes!(declared_params)
               relation
@@ -54,12 +54,12 @@ module API
 
             desc 'Remove pattern from blueprint'
             params do
-              requires :id, type: Integer, desc: 'BlueprintPattern id'
+              requires :pattern_id, type: Integer, desc: 'Pattern id'
             end
-            delete '/:id' do
+            delete '/:pattern_id' do
               blueprint = Blueprint.find(params[:blueprint_id])
               authorize!(:update, blueprint)
-              relation = blueprint.blueprint_patterns.find(params[:id])
+              relation = blueprint.blueprint_patterns.where(pattern_id: params[:pattern_id]).first!
               authorize!(:destroy, relation)
               relation.destroy
               status 204

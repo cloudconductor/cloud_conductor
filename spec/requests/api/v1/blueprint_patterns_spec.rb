@@ -37,9 +37,9 @@ describe API do
       end
     end
 
-    describe 'GET /blueprints/:blueprint_id/patterns/:id' do
+    describe 'GET /blueprints/:blueprint_id/patterns/:pattern_id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.pattern.id}" }
       let(:result) { format_iso8601(blueprint_pattern.as_json) }
 
       context 'not_logged_in' do
@@ -103,9 +103,9 @@ describe API do
       end
     end
 
-    describe 'PUT /blueprints/:blueprint_id/patterns/:id' do
+    describe 'PUT /blueprints/:blueprint_id/patterns/:pattern_id' do
       let(:method) { 'put' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.pattern.id}" }
       let(:params) do
         {
           'revision' => 'dummy',
@@ -145,9 +145,9 @@ describe API do
       end
     end
 
-    describe 'DELETE /blueprints/:blueprint_id/patterns/:id' do
+    describe 'DELETE /blueprints/:blueprint_id/patterns/:pattern_id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns/#{blueprint_pattern.pattern.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
