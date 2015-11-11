@@ -79,7 +79,6 @@ module ApiSpecHelper
 
   shared_examples_for '404 Not Found' do
     it 'returns 404 and not found message' do
-      expect(subject.body).to match_json_expression(error: /Couldn't find \w+ with 'id'=\d+/)
       expect(subject.status).to be(404)
     end
   end
