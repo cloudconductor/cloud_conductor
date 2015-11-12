@@ -19,7 +19,7 @@ describe Environment do
     @cloud_aws = FactoryGirl.create(:cloud, :aws)
     @cloud_openstack = FactoryGirl.create(:cloud, :openstack)
 
-    @environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint,
+    @environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
     allow(@environment).to receive(:create_or_update_stacks)
@@ -119,10 +119,10 @@ describe Environment do
 
       @environment.save!
       @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern, :platform, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      optional_pattern = FactoryGirl.create(:pattern, :optional, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: platform_pattern)
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: optional_pattern)
+      platform_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      optional_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: platform_pattern)
+      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: optional_pattern)
 
       @environment.destroy
 
@@ -140,7 +140,7 @@ describe Environment do
     it 'duplicate all attributes in environment without name and ip_address' do
       duplicated_environment = @environment.dup
       expect(duplicated_environment.system).to eq(@environment.system)
-      expect(duplicated_environment.blueprint).to eq(@environment.blueprint)
+      expect(duplicated_environment.blueprint_history).to eq(@environment.blueprint_history)
       expect(duplicated_environment.description).to eq(@environment.description)
     end
 
@@ -248,14 +248,14 @@ describe Environment do
 
   describe '#destroy_stacks' do
     before do
-      pattern1 = FactoryGirl.create(:pattern, :optional)
-      pattern2 = FactoryGirl.create(:pattern, :platform)
-      pattern3 = FactoryGirl.create(:pattern, :optional)
+      pattern1 = FactoryGirl.create(:pattern_snapshot, type: 'optional')
+      pattern2 = FactoryGirl.create(:pattern_snapshot, type: 'platform')
+      pattern3 = FactoryGirl.create(:pattern_snapshot, type: 'optional')
 
       @environment.stacks.delete_all
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern1, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern2, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern3, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern1, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern2, cloud: @cloud_aws)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern3, cloud: @cloud_aws)
 
       @environment.save!
 

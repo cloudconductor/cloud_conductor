@@ -18,26 +18,29 @@ module CloudConductor
 
     let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
     let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
-    let(:blueprint) do
+    let(:blueprint_history) do
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
-      blueprint = FactoryGirl.create(:blueprint, project: project,
-                                                 patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform),
-                                                                       FactoryGirl.attributes_for(:pattern, :optional)])
-      blueprint.patterns.each do |pattern|
-        FactoryGirl.create(:image, pattern: pattern, base_image: base_image, cloud: cloud)
+      blueprint_history = FactoryGirl.create(:blueprint_history,
+                                             blueprint: blueprint,
+                                             pattern_snapshots: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
+                                                                 FactoryGirl.create(:pattern_snapshot, type: 'optional')])
+      blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud)
       end
-      blueprint
+      blueprint_history
     end
     let(:environment) do
-      FactoryGirl.create(:environment, system: system, blueprint: blueprint,
-                                       candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
-                                                               { cloud_id: cloud_openstack.id, priority: 20 }])
+      FactoryGirl.create(:environment,
+                         system: system,
+                         blueprint_history: blueprint_history,
+                         candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
+                                                 { cloud_id: cloud_openstack.id, priority: 20 }])
     end
 
     before do
       @environment = environment
-      @platform_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.first, name: blueprint.patterns.first.name, cloud: cloud_openstack, environment: @environment)
-      @optional_stack = FactoryGirl.build(:stack, pattern: blueprint.patterns.last, name: blueprint.patterns.last.name, cloud: cloud_openstack, environment: @environment)
+      @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, cloud: cloud_openstack, environment: @environment)
+      @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, cloud: cloud_openstack, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]
       @builder = SystemBuilder.new @environment
       allow_any_instance_of(Environment).to receive(:create_or_update_stack)
@@ -283,8 +286,8 @@ module CloudConductor
       end
 
       it 'will request configure event to serf with payload' do
-        key1 = "cloudconductor/patterns/#{@platform_stack.pattern.name}/attributes"
-        key2 = "cloudconductor/patterns/#{@optional_stack.pattern.name}/attributes"
+        key1 = "cloudconductor/patterns/#{@platform_stack.pattern_snapshot.name}/attributes"
+        key2 = "cloudconductor/patterns/#{@optional_stack.pattern_snapshot.name}/attributes"
         payload = @builder.send(:configure_payload, @environment)
         expect(payload.keys).to include(key1, key2)
 

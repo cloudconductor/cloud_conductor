@@ -2,13 +2,16 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'BaseImageAPI' do
-    before { base_image }
+  describe 'BlueprintHistoryAPI' do
+    before do
+      blueprint_history
+      blueprint_history.pattern_snapshots << pattern_snapshot
+    end
 
-    describe 'GET /base_images' do
+    describe 'GET /blueprints/:blueprint_id/histories' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/base_images' }
-      let(:result) { format_iso8601([base_image]) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories" }
+      let(:result) { format_iso8601([blueprint_history]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -32,17 +35,21 @@ describe API do
       end
     end
 
-    describe 'GET /base_images/:id' do
+    describe 'GET /blueprints/:blueprint_id/histories/:ver/parameters' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/base_images/#{base_image.id}" }
-      let(:result) { format_iso8601(base_image) }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}/parameters" }
+      let(:result) do
+        result = {}
+        result[blueprint_history.pattern_snapshots.first.name] = {}
+        result
+      end
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/base_images/0' }
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/0/parameters" }
         it_behaves_like('404 Not Found')
       end
 
@@ -63,62 +70,17 @@ describe API do
       end
     end
 
-    describe 'POST /base_images' do
-      let(:method) { 'post' }
-      let(:url) { '/api/v1/base_images' }
-      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id) }
-      let(:result) do
-        params.merge(
-          'id' => Fixnum,
-          'created_at' => String,
-          'updated_at' => String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('201 Created')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('201 Created')
-      end
-    end
-
-    describe 'PUT /base_images/:id' do
-      let(:method) { 'put' }
-      let(:url) { "/api/v1/base_images/#{base_image.id}" }
-      let(:params) do
-        {
-          'os_version' => 'CentOS-7.0',
-          'ssh_username' => 'root',
-          'source_image' => SecureRandom.uuid
-        }
-      end
-      let(:result) do
-        base_image.as_json.merge(params).merge(
-          'created_at' => base_image.created_at.iso8601(3),
-          'updated_at' => String
-        )
-      end
+    describe 'GET /blueprints/:blueprint_id/histories/:ver' do
+      let(:method) { 'get' }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}" }
+      let(:result) { format_iso8601(blueprint_history.as_json(methods: [:status, :pattern_snapshots])) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/base_images/0' }
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/0" }
         it_behaves_like('404 Not Found')
       end
 
@@ -139,16 +101,23 @@ describe API do
       end
     end
 
-    describe 'DELETE /base_images/:id' do
+    describe 'DELETE /blueprints/:blueprint_id/histories/:ver' do
+      before do
+        Image.skip_callback :destroy, :before, :destroy_image
+      end
+      after do
+        Image.set_callback :destroy, :before, :destroy_image, if: -> { status == :CREATE_COMPLETE }
+      end
+
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/base_images/#{base_image.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/base_images/0' }
+        let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/0" }
         it_behaves_like('404 Not Found')
       end
 

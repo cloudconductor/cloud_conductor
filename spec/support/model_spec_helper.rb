@@ -3,19 +3,18 @@ module ModelSpecHelper
     let(:project) { FactoryGirl.create(:project) }
     let(:cloud) { FactoryGirl.create(:cloud, project: project) }
     let(:base_image) { cloud.base_images.first || FactoryGirl.create(:base_image, cloud: cloud) }
-    let(:blueprint) do
-      allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
-      blueprint = FactoryGirl.create(:blueprint, project: project, patterns_attributes: [FactoryGirl.attributes_for(:pattern, :platform)])
-      blueprint.patterns.each do |pattern|
-        FactoryGirl.create(:image, pattern: pattern, base_image: base_image, cloud: cloud)
-      end
-      blueprint
+    let(:blueprint) { FactoryGirl.create(:blueprint, project: project) }
+    let(:pattern) { FactoryGirl.create(:pattern, :platform, project: project) }
+    let(:blueprint_history) { FactoryGirl.create(:blueprint_history, blueprint: blueprint) }
+    let(:pattern_snapshot) { FactoryGirl.create(:pattern_snapshot, images: FactoryGirl.create_list(:image, 1, cloud: cloud)) }
+    let(:blueprint_pattern) do
+      blueprint.blueprint_patterns << FactoryGirl.create(:blueprint_pattern, blueprint: blueprint, pattern: pattern)
+      blueprint.blueprint_patterns.first
     end
-    let(:pattern) { blueprint.patterns.first }
-    let(:image) { pattern.images.first }
+    let(:image) { pattern_snapshot.images.first }
     let(:system) { FactoryGirl.create(:system, project: project) }
     let(:environment) do
-      environment = FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)])
+      environment = FactoryGirl.create(:environment, system: system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)])
       system.update_columns(primary_environment_id: environment.id)
       environment
     end

@@ -24,6 +24,8 @@ describe Cloud do
     @cloud.key = 'TestKey'
     @cloud.secret = 'TestSecret'
     @cloud.tenant_name = 'TestTenant'
+
+    allow(@cloud).to receive(:update_base_image)
   end
 
   describe '#save' do
@@ -33,6 +35,11 @@ describe Cloud do
 
     it 'create with long text' do
       @cloud.description = '*' * 256
+      @cloud.save!
+    end
+
+    it 'call #update_base_image callback' do
+      expect(@cloud).to receive(:update_base_image)
       @cloud.save!
     end
   end
@@ -135,12 +142,12 @@ describe Cloud do
     end
 
     it 'delete all base image records' do
-      cloud = FactoryGirl.create(:cloud, :openstack, project: project)
-      FactoryGirl.create(:base_image, cloud: cloud)
-      FactoryGirl.create(:base_image, cloud: cloud)
+      @cloud.base_images << FactoryGirl.build(:base_image, cloud: @cloud)
+      @cloud.base_images << FactoryGirl.build(:base_image, cloud: @cloud)
+      @cloud.save!
 
-      expect(cloud.base_images.size).to eq(2)
-      expect { cloud.destroy }.to change { BaseImage.count }.by(-2)
+      expect(@cloud.base_images.size).to eq(2)
+      expect { @cloud.destroy }.to change { BaseImage.count }.by(-2)
     end
 
     it 'raise error and cancel destroy when specified cloud is used in some environments' do
@@ -152,45 +159,40 @@ describe Cloud do
     end
   end
 
-  describe '#set_base_image' do
+  describe '#update_base_image' do
     before do
-      @cloud2 = Cloud.new
-      @cloud2.project = project
-      @cloud2.name = 'Test'
-      @cloud2.type = 'aws'
-      @cloud2.entry_point = 'ap-northeast-1'
-      @cloud2.key = 'TestKey'
-      @cloud2.secret = 'TestSecret'
-      @cloud2.tenant_name = 'TestTenant'
+      allow(@cloud).to receive(:update_base_image).and_call_original
     end
 
-    it 'return nil if cloud type is OpenStack' do
-      cloud = Cloud.new
-      cloud.project = project
-      cloud.name = 'Test'
-      cloud.type = 'openstack'
-      cloud.entry_point = 'dummy'
-      cloud.key = 'TestKey'
-      cloud.secret = 'TestSecret'
-      cloud.tenant_name = 'TestTenant'
-
-      expect(cloud.set_base_image).to be_nil
+    it 'set base_images when cloud type is AWS' do
+      @cloud.update_base_image
+      expect(@cloud.base_images.size).to eq(1)
     end
 
-    it 'call BaseImage create if base_image is empty' do
-      Cloud.skip_callback(:save, :after, :set_base_image)
-      @cloud2.save!
-      expect(@cloud2.base_images).to receive(:create!).with(source_image: 'ami-0d9b720d')
-      @cloud2.set_base_image
-      Cloud.set_callback(:save, :after, :set_base_image)
+    it 'does not set base_images when cloud type is OpenStack' do
+      @cloud.type = 'openstack'
+      @cloud.update_base_image
+      expect(@cloud.base_images).to be_empty
     end
 
-    it 'call BaseImage update_attributes! if base_image is not empty' do
-      Cloud.set_callback(:save, :after, :set_base_image)
-      @cloud2.save!
-      expect(@cloud2.base_images).to receive_message_chain(:first, :update_attributes!).with(source_image: 'ami-36556364')
-      @cloud2.entry_point = 'ap-southeast-1'
-      @cloud2.set_base_image
+    it 'update source_image on BaseImage' do
+      @cloud.save!
+      expect(@cloud.base_images.first.source_image).to eq('ami-0d9b720d')
+      expect(BaseImage.first.source_image).to eq('ami-0d9b720d')
+
+      @cloud.entry_point = 'ap-southeast-1'
+      @cloud.update_base_image
+      expect(@cloud.base_images.first.source_image).to eq('ami-36556364')
+      expect(BaseImage.first.source_image).to eq('ami-36556364')
+    end
+
+    it 'delete previous baseimage when tyep has been changed' do
+      @cloud.save!
+      expect(BaseImage.count).to eq(1)
+
+      @cloud.type = 'openstack'
+      @cloud.update_base_image
+      expect(BaseImage.count).to eq(0)
     end
   end
 

@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :stack, class: Stack do
     environment { create(:environment) }
-    pattern { create(:pattern, :platform) }
+    pattern_snapshot { create(:pattern_snapshot, type: :platform) }
     cloud { create(:cloud, :aws) }
 
     sequence(:name) { |n| "stack-#{n}" }

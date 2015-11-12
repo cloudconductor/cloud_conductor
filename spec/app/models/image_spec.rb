@@ -19,7 +19,7 @@ describe Image do
     @image = Image.new
     @image.role = 'dummy'
     @image.cloud = cloud
-    @image.pattern = pattern
+    @image.pattern_snapshot = pattern_snapshot
     @image.base_image = base_image
     @image.image = 'dummy_image_id'
   end
@@ -69,7 +69,7 @@ describe Image do
     end
 
     it 'returns false when pattern is unset' do
-      @image.pattern = nil
+      @image.pattern_snapshot = nil
       expect(@image.valid?).to be_falsey
     end
 

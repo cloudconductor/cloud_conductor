@@ -18,14 +18,14 @@ describe Stack do
   before do
     @stack = Stack.new
     @stack.name = 'Test'
-    @stack.pattern = pattern
+    @stack.pattern_snapshot = pattern_snapshot
     @stack.cloud = cloud
     @stack.environment = environment
   end
 
   describe '.in_progress' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :PROGRESS)
+      stack = FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, status: :PROGRESS)
       expect(Stack.in_progress).to include(stack)
       [:PENDING, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR, :CREATE_COMPLETE].each do |state|
         stack.update_columns(status: state)
@@ -36,7 +36,7 @@ describe Stack do
 
   describe '.created' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :CREATE_COMPLETE)
+      stack = FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, status: :CREATE_COMPLETE)
       expect(Stack.created).to include(stack)
       [:PENDING, :PROGRESS, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR].each do |state|
         stack.update_columns(status: state)
@@ -59,7 +59,7 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
+      FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
@@ -68,13 +68,13 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when pattern is unset' do
-      @stack.pattern = nil
+    it 'returns false when pattern_snapshot is unset' do
+      @stack.pattern_snapshot = nil
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
-      @stack.pattern.images << FactoryGirl.create(:image, status: :PROGRESS, pattern: @stack.pattern)
+    it 'returns false when pattern_snapshot status isn\'t CREATE_COMPLETE' do
+      @stack.pattern_snapshot.images << FactoryGirl.create(:image, status: :PROGRESS, pattern_snapshot: @stack.pattern_snapshot)
       expect(@stack.valid?).to be_falsey
     end
 
@@ -138,7 +138,7 @@ describe Stack do
     it 'call Client#create_stack' do
       expect(@stack.name).to eq('Test')
       @stack.update_name
-      expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern.name}")
+      expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern_snapshot.name}")
     end
   end
 
@@ -291,7 +291,7 @@ describe Stack do
 
   describe '#payload' do
     it 'return hash that has parameters of stack' do
-      key = "cloudconductor/patterns/#{@stack.pattern.name}/attributes"
+      key = "cloudconductor/patterns/#{@stack.pattern_snapshot.name}/attributes"
       attributes = @stack.payload[key]
       expect(attributes).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
     end
@@ -348,24 +348,24 @@ describe Stack do
 
   describe '#platform?' do
     it 'return true if stack has platform pattern' do
-      @stack.pattern.type = 'platform'
+      @stack.pattern_snapshot.type = 'platform'
       expect(@stack.platform?).to be_truthy
     end
 
     it 'return false if stack has optional pattern' do
-      @stack.pattern.type = 'optional'
+      @stack.pattern_snapshot.type = 'optional'
       expect(@stack.platform?).to be_falsey
     end
   end
 
   describe '#optional?' do
     it 'return true if stack has optional pattern' do
-      @stack.pattern.type = 'optional'
+      @stack.pattern_snapshot.type = 'optional'
       expect(@stack.optional?).to be_truthy
     end
 
     it 'return false if stack has platform pattern' do
-      @stack.pattern.type = 'platform'
+      @stack.pattern_snapshot.type = 'platform'
       expect(@stack.optional?).to be_falsey
     end
   end

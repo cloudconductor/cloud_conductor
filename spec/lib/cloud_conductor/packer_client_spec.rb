@@ -251,8 +251,8 @@ module CloudConductor
       before do
         @cloud_aws = FactoryGirl.create(:cloud, :aws, name: 'aws')
         @cloud_openstack = FactoryGirl.create(:cloud, :openstack, name: 'openstack')
-        @base_image_aws = FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
-        @base_image_openstack = FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
+        @base_image_aws = FactoryGirl.create(:base_image, cloud: @cloud_aws, os_version: 'centos')
+        @base_image_openstack = FactoryGirl.create(:base_image, cloud: @cloud_openstack, os_version: 'centos')
       end
 
       def load_csv(path)

@@ -1,6 +1,6 @@
 module API
   module V1
-    class EnvironmentAPI < API::V1::Base
+    class EnvironmentAPI < API::V1::Base # rubocop:disable ClassLength
       resource :environments do
         desc 'List environments'
         get '/' do
@@ -23,6 +23,7 @@ module API
         params do
           requires :system_id, type: Integer, desc: 'System id'
           requires :blueprint_id, type: Integer, desc: 'Blueprint id'
+          requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
           optional :template_parameters, type: String, desc: 'Parameter JSON'
@@ -34,7 +35,12 @@ module API
         end
         post '/' do
           authorize!(:create, ::Environment)
-          environment = Environment.create!(declared_params)
+          version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version
+          blueprint_history = BlueprintHistory.where(blueprint_id: params[:blueprint_id], version: version).first!
+          authorize!(:read, blueprint_history)
+
+          attributes = declared_params.except(:blueprint_id, :version).merge(blueprint_history_id: blueprint_history.id)
+          environment = Environment.create!(attributes)
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
@@ -75,7 +81,7 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Blueprint name'
-          optional :blueprint_id, type: Integer, desc: 'Blueprint id'
+          optional :blueprint_history_id, type: Integer, desc: 'Blueprint history id'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
           optional :template_parameters, type: String, desc: 'Parameters JSON'

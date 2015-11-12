@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151008150315) do
+ActiveRecord::Schema.define(version: 20151014083554) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -73,9 +73,26 @@ ActiveRecord::Schema.define(version: 20151008150315) do
 
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
-    t.string   "os"
+    t.string   "os_version"
     t.string   "source_image"
     t.string   "ssh_username"
+    t.datetime "created_at",   null: false
+    t.datetime "updated_at",   null: false
+  end
+
+  create_table "blueprint_histories", force: true do |t|
+    t.integer  "blueprint_id",      null: false
+    t.integer  "version",           null: false
+    t.string   "consul_secret_key"
+    t.datetime "created_at",        null: false
+    t.datetime "updated_at",        null: false
+  end
+
+  create_table "blueprint_patterns", force: true do |t|
+    t.integer  "blueprint_id", null: false
+    t.integer  "pattern_id",   null: false
+    t.string   "revision"
+    t.string   "os_version"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
   end
@@ -84,9 +101,8 @@ ActiveRecord::Schema.define(version: 20151008150315) do
     t.integer  "project_id"
     t.string   "name"
     t.text     "description"
-    t.string   "consul_secret_key"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "candidates", force: true do |t|
@@ -120,18 +136,17 @@ ActiveRecord::Schema.define(version: 20151008150315) do
 
   create_table "environments", force: true do |t|
     t.integer  "system_id"
-    t.integer  "blueprint_id"
     t.string   "name"
     t.text     "description"
     t.string   "status"
     t.string   "ip_address"
     t.text     "platform_outputs"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.integer  "blueprint_history_id"
   end
 
   create_table "images", force: true do |t|
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.integer  "base_image_id"
     t.string   "name"
@@ -139,20 +154,36 @@ ActiveRecord::Schema.define(version: 20151008150315) do
     t.string   "image"
     t.text     "message"
     t.string   "status"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.integer  "pattern_snapshot_id"
+  end
+
+  create_table "pattern_snapshots", force: true do |t|
+    t.integer  "blueprint_history_id", null: false
+    t.string   "name"
+    t.string   "type"
+    t.string   "protocol"
+    t.string   "url"
+    t.string   "revision"
+    t.string   "os_version"
+    t.text     "parameters"
+    t.string   "roles"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
   end
 
   create_table "patterns", force: true do |t|
-    t.integer  "blueprint_id"
     t.string   "name"
     t.string   "type"
     t.string   "protocol"
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "project_id"
+    t.string   "roles"
   end
 
   create_table "projects", force: true do |t|
@@ -174,7 +205,6 @@ ActiveRecord::Schema.define(version: 20151008150315) do
 
   create_table "stacks", force: true do |t|
     t.integer  "environment_id"
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.string   "name"
     t.string   "status"
@@ -182,6 +212,7 @@ ActiveRecord::Schema.define(version: 20151008150315) do
     t.text     "parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.integer  "pattern_snapshot_id"
   end
 
   create_table "systems", force: true do |t|

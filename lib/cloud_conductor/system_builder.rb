@@ -102,7 +102,7 @@ module CloudConductor
 
         next if status == :CREATE_IN_PROGRESS
 
-        if stack.pattern.type == 'platform'
+        if stack.pattern_snapshot.type == 'platform'
           outputs = stack.outputs
           next if outputs['FrontendAddress'].nil?
 

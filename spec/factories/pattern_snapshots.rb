@@ -13,26 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :environment, class: Environment do
-    sequence(:name) { |n| "environment-#{n}" }
-    description 'environment description'
-    system
+  factory :pattern_snapshot do
     blueprint_history
-    platform_outputs '{}'
-    ip_address '127.0.0.1'
-
-    after(:build) do |environment, evaluator|
-      if evaluator.candidates.blank?
-        environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
-      end
-    end
+    sequence(:name) { |n| "pattern_snapshot-#{n}" }
+    url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
 
     before(:create) do
-      Environment.skip_callback :save, :before, :create_or_update_stacks
+      PatternSnapshot.skip_callback :create, :before, :freeze_pattern
+      PatternSnapshot.skip_callback :create, :before, :create_images
     end
 
     after(:create) do
-      Environment.set_callback :save, :before, :create_or_update_stacks, if: -> { status == :PENDING }
+      PatternSnapshot.set_callback :create, :before, :create_images
+      PatternSnapshot.set_callback :create, :before, :freeze_pattern
     end
   end
 end

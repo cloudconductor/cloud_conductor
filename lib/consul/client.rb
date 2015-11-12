@@ -14,6 +14,7 @@
 # limitations under the License.
 require 'consul/client/kv'
 require 'consul/client/event'
+require 'consul/client/catalog'
 
 module Consul
   class Client

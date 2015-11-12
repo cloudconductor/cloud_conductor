@@ -3,15 +3,15 @@ class BaseImage < ActiveRecord::Base
   has_many :images
 
   validates_associated :cloud
-  validates_presence_of :cloud, :os, :source_image, :ssh_username
+  validates_presence_of :cloud, :os_version, :source_image, :ssh_username
 
   after_initialize do
     self.ssh_username ||= 'ec2-user'
-    self.os ||= 'CentOS-6.5'
+    self.os_version ||= 'default'
   end
 
   def name
-    "#{cloud.name}-#{os}"
+    "#{cloud.name}-#{os_version}"
   end
 
   def builder

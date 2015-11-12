@@ -24,16 +24,10 @@ module API
           requires :project_id, type: Integer, desc: 'Project id'
           requires :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
-          requires :patterns_attributes, type: Array, desc: 'Pattern repository url and revision' do
-            requires :url, type: String, desc: 'URL of repository that contains pattern'
-            requires :revision, type: String, desc: 'revision of repository'
-          end
         end
         post '/' do
           authorize!(:create, ::Blueprint)
-          blueprint = ::Blueprint.create!(declared_params)
-          status 202
-          blueprint
+          ::Blueprint.create!(declared_params)
         end
 
         desc 'Update blueprint'
@@ -41,16 +35,11 @@ module API
           requires :id, type: Integer, desc: 'Blueprint id'
           optional :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
-          optional :patterns_attributes, type: Array, desc: 'Pattern repository url and revision' do
-            optional :url, type: String, desc: 'URL of repository that contains pattern'
-            optional :revision, type: String, desc: 'revision of repository'
-          end
         end
         put '/:id' do
           blueprint = ::Blueprint.find(params[:id])
           authorize!(:update, blueprint)
           blueprint.update_attributes!(declared_params)
-          status 202
           blueprint
         end
 
@@ -65,16 +54,17 @@ module API
           status 204
         end
 
-        desc 'Get blueprint parameters'
+        desc 'Build blueprint history with images from blueprint'
         params do
-          requires :id, type: Integer, desc: 'Blueprint id'
+          requires :blueprint_id, type: Integer, desc: 'Blueprint id'
         end
-        get '/:id/parameters' do
-          blueprint = ::Blueprint.find(params[:id])
+        post '/:blueprint_id/build' do
+          blueprint = Blueprint.find(params[:blueprint_id])
           authorize!(:read, blueprint)
-          blueprint.patterns.each_with_object({}) do |pattern, hash|
-            hash[pattern.name] = pattern.filtered_parameters
-          end
+          authorize!(:create, BlueprintHistory)
+          history = BlueprintHistory.create!(declared_params)
+          status 202
+          history
         end
       end
     end

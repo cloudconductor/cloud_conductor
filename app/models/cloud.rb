@@ -14,14 +14,16 @@ class Cloud < ActiveRecord::Base
   validates :entry_point, inclusion: { in: AWS_REGIONS }, if: -> { type == 'aws' }
 
   before_destroy :raise_error_in_use
-  after_save :set_base_image, if: -> { type == 'aws' }
+  before_save :update_base_image
 
-  def set_base_image
-    return unless type == 'aws'
+  def update_base_image
+    base_images.destroy_all if type_changed? && persisted?
+    return if type == 'openstack'
+
     if base_images.empty?
-      base_images.create!(source_image: aws_images[entry_point])
+      base_images.build(source_image: aws_images[entry_point])
     else
-      base_images.first.update_attributes!(source_image: aws_images[entry_point])
+      base_images.first.update_attributes(source_image: aws_images[entry_point])
     end
   end
 

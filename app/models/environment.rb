@@ -2,7 +2,7 @@ require 'open-uri'
 
 class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :system
-  belongs_to :blueprint
+  belongs_to :blueprint_history
   has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
   has_many :stacks, validate: false
@@ -12,14 +12,16 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   attr_accessor :template_parameters, :user_attributes
 
-  validates_presence_of :system, :blueprint, :candidates
+  validates_presence_of :system, :blueprint_history, :candidates
   validates :name, presence: true, uniqueness: true
   validate do
     clouds = candidates.map(&:cloud)
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
   validate do
-    errors.add(:blueprint, 'status does not create_complete') unless blueprint.status == :CREATE_COMPLETE
+    if blueprint_history
+      errors.add(:blueprint_history, 'status does not create_complete') unless blueprint_history.status == :CREATE_COMPLETE
+    end
   end
 
   before_save :create_or_update_stacks, if: -> { status == :PENDING }
@@ -39,7 +41,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_or_update_stacks
-    if (new_record? || blueprint_id_changed?) && stacks.empty?
+    if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
     elsif template_parameters != '{}' || user_attributes != '{}'
       update_stacks
@@ -50,13 +52,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     primary_cloud = candidates.sort.first.cloud
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
-    blueprint.patterns.each do |pattern|
+    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+      pattern_name = pattern_snapshot.name
       stacks.build(
         cloud: primary_cloud,
-        pattern: pattern,
-        name: "#{system.name}-#{id}-#{pattern.name}",
-        template_parameters: cfn_parameters_hash.key?(pattern.name) ? JSON.dump(cfn_parameters_hash[pattern.name]) : '{}',
-        parameters: user_attributes_hash.key?(pattern.name) ? JSON.dump(user_attributes_hash[pattern.name]) : '{}'
+        pattern_snapshot: pattern_snapshot,
+        name: "#{system.name}-#{id}-#{pattern_name}",
+        template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
+        parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'
       )
     end
   end
@@ -65,13 +68,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
-      if cfn_parameters_hash.key?(stack.pattern.name)
-        new_template_parameters = JSON.dump(cfn_parameters_hash[stack.pattern.name])
+      pattern_name = stack.pattern_snapshot.name
+      if cfn_parameters_hash.key?(pattern_name)
+        new_template_parameters = JSON.dump(cfn_parameters_hash[pattern_name])
       else
         new_template_parameters = '{}'
       end
-      if user_attributes_hash.key?(stack.pattern.name)
-        new_user_attributes = JSON.dump(user_attributes_hash[stack.pattern.name])
+      if user_attributes_hash.key?(pattern_name)
+        new_user_attributes = JSON.dump(user_attributes_hash[pattern_name])
       else
         new_user_attributes = '{}'
       end
@@ -124,14 +128,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   def consul
     fail 'ip_address does not specified' unless ip_address
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
     Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 
   def event
     fail 'ip_address does not specified' unless ip_address
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
     CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
   end
 

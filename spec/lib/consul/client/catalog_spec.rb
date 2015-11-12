@@ -1,3 +1,4 @@
+require 'consul/client/catalog'
 module Consul
   class Client
     describe Catalog do

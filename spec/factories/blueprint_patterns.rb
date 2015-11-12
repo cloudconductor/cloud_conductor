@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :image, class: Image do
-    pattern_snapshot
-    sequence(:role) { |n| "role#{n}" }
-    status :CREATE_COMPLETE
-    image { SecureRandom.uuid }
-    cloud { create(:cloud, :aws) }
-    base_image { create(:base_image, cloud: cloud) }
+  factory :blueprint_pattern do
+    blueprint
+    pattern { FactoryGirl.build(:pattern, :platform) }
+    revision 'develop'
+    os_version 'CentOS-6.5'
   end
 end

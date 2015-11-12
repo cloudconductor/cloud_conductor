@@ -7,6 +7,9 @@ module API
       mount API::V1::CloudAPI
       mount API::V1::BaseImageAPI
       mount API::V1::BlueprintAPI
+      mount API::V1::BlueprintHistoryAPI
+      mount API::V1::BlueprintPatternAPI
+      mount API::V1::PatternAPI
       mount API::V1::SystemAPI
       mount API::V1::EnvironmentAPI
       mount API::V1::EventAPI

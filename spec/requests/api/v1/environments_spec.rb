@@ -69,7 +69,8 @@ describe API do
       let(:params) do
         FactoryGirl.attributes_for(:environment,
                                    system_id: system.id,
-                                   blueprint_id: blueprint.id,
+                                   blueprint_id: blueprint_history.blueprint_id,
+                                   version: blueprint_history.version,
                                    candidates_attributes: [{
                                      cloud_id: cloud.id,
                                      priority: 10
@@ -82,8 +83,9 @@ describe API do
         )
       end
       let(:result) do
-        params.except(:candidates_attributes, :stacks_attributes, :platform_outputs).merge(
+        params.except(:candidates_attributes, :stacks_attributes, :platform_outputs, :blueprint_id, :version).merge(
           id: Fixnum,
+          blueprint_history_id: Fixnum,
           created_at: String,
           updated_at: String,
           status: 'PENDING',
@@ -166,7 +168,7 @@ describe API do
     describe 'DELETE /environments/:id' do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/environments/#{new_environment.id}" }
-      let(:new_environment) { FactoryGirl.create(:environment, system: system, blueprint: blueprint, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
+      let(:new_environment) { FactoryGirl.create(:environment, system: system, blueprint_history: blueprint_history, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
 
       before do
         allow_any_instance_of(Environment).to receive(:destroy_stacks).and_return(true)
@@ -203,7 +205,7 @@ describe API do
       let(:url) { "/api/v1/environments/#{environment.id}/rebuild" }
       let(:params) do
         {
-          'blueprint_id' => blueprint.id,
+          'blueprint_history_id' => blueprint_history.id,
           'description' => 'new_description',
           'switch' => true
         }

@@ -16,36 +16,32 @@ describe BaseImage do
   include_context 'default_resources'
 
   before do
-    aws_images_yml = File.join(Rails.root, 'config/images.yml')
-    ami_images = { 'ap-northeast-1' => 'ami-12345678' }
-    allow(YAML).to receive(:load_file).and_call_original
-    allow(YAML).to receive(:load_file).with(aws_images_yml).and_return(ami_images)
     @base_image = FactoryGirl.build(:base_image, cloud: cloud)
   end
 
   describe '#initialize' do
-    it 'set default to OS and ssh_username' do
+    it 'set default to os_version and ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.os).to eq('CentOS-6.5')
+      expect(base_image.os_version).to eq('default')
       expect(base_image.ssh_username).to eq('ec2-user')
     end
 
-    it 'set specified value to OS and ssh_username' do
-      base_image = BaseImage.new(os: 'dummy_os', ssh_username: 'dummy_user')
+    it 'set specified value to os_version and ssh_username' do
+      base_image = BaseImage.new(os_version: 'dummy_os', ssh_username: 'dummy_user')
 
-      expect(base_image.os).to eq('dummy_os')
+      expect(base_image.os_version).to eq('dummy_os')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
     it 'doesn\'t set source_image if cloud type equal aws and source_image is not nil' do
-      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud, :aws), source_image: 'ami-xxxxxxxx')
+      base_image = BaseImage.new(cloud: FactoryGirl.build(:cloud, :aws), source_image: 'ami-xxxxxxxx')
 
       expect(base_image.source_image).to eq('ami-xxxxxxxx')
     end
 
     it 'doesn\'t set source_image if cloud type equal openstack' do
-      base_image = BaseImage.new(cloud: FactoryGirl.create(:cloud, :openstack))
+      base_image = BaseImage.new(cloud: FactoryGirl.build(:cloud, :openstack))
 
       expect(base_image.source_image).to be_nil
     end
@@ -61,11 +57,11 @@ describe BaseImage do
       expect(@base_image.valid?).to be_falsey
     end
 
-    it 'returns false when OS is unset' do
-      @base_image.os = nil
+    it 'returns false when os_version is unset' do
+      @base_image.os_version = nil
       expect(@base_image.valid?).to be_falsey
 
-      @base_image.os = ''
+      @base_image.os_version = ''
       expect(@base_image.valid?).to be_falsey
     end
 
@@ -87,8 +83,8 @@ describe BaseImage do
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and OS name with hyphen' do
-      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.os}")
+    it 'return string that joined cloud name and os_version with hyphen' do
+      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.os_version}")
     end
   end
 
