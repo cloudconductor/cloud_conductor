@@ -1,6 +1,6 @@
 module API
   module V1
-    class EnvironmentAPI < API::V1::Base
+    class EnvironmentAPI < API::V1::Base # rubocop:disable ClassLength
       resource :environments do
         desc 'List environments'
         get '/' do

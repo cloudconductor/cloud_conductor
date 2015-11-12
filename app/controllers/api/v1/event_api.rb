@@ -1,6 +1,6 @@
 module API
   module V1
-    class EventAPI < API::V1::Base # rubocop:disable ClassLength
+    class EventAPI < API::V1::Base
       resource :environments do
         desc 'List events'
         params do
