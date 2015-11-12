@@ -8,7 +8,6 @@ class PatternSnapshot < ActiveRecord::Base
 
   validates_presence_of :blueprint_history
 
-  before_create :freeze_pattern
   before_create :create_images
 
   before_destroy :check_pattern_usage
@@ -39,8 +38,6 @@ class PatternSnapshot < ActiveRecord::Base
     filtered_parameters
   end
 
-  private
-
   def freeze_pattern
     clone_repository(url, revision) do |path|
       metadata = load_metadata(path)
@@ -52,6 +49,8 @@ class PatternSnapshot < ActiveRecord::Base
       freeze_revision(path)
     end
   end
+
+  private
 
   def create_images
     roles.split(/,\s*/).each do |role|

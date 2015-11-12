@@ -161,6 +161,7 @@ describe BlueprintHistory do
   describe '#build_pattern_snapshots' do
     it 'create pattern_snapshot from relation' do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original
+      allow_any_instance_of(PatternSnapshot).to receive(:freeze_pattern)
       blueprint.patterns << FactoryGirl.create(:pattern, :platform)
       blueprint.patterns << FactoryGirl.create(:pattern, :optional)
       @history.send(:build_pattern_snapshots)

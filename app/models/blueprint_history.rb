@@ -43,5 +43,6 @@ class BlueprintHistory < ActiveRecord::Base
         os_version: relation.os_version
       )
     end
+    pattern_snapshots.each(&:freeze_pattern)
   end
 end
