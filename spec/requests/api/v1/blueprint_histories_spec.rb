@@ -35,9 +35,9 @@ describe API do
       end
     end
 
-    describe 'GET /blueprints/:blueprint_id/histories/:id/parameters' do
+    describe 'GET /blueprints/:blueprint_id/histories/:ver/parameters' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}/parameters" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}/parameters" }
       let(:result) do
         result = {}
         result[blueprint_history.pattern_snapshots.first.name] = {}
@@ -70,9 +70,9 @@ describe API do
       end
     end
 
-    describe 'GET /blueprints/:blueprint_id/histories/:id' do
+    describe 'GET /blueprints/:blueprint_id/histories/:ver' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}" }
       let(:result) { format_iso8601(blueprint_history.as_json(methods: [:status, :pattern_snapshots])) }
 
       context 'not_logged_in' do
@@ -101,7 +101,7 @@ describe API do
       end
     end
 
-    describe 'DELETE /blueprints/:blueprint_id/histories/:id' do
+    describe 'DELETE /blueprints/:blueprint_id/histories/:ver' do
       before do
         Image.skip_callback :destroy, :before, :destroy_image
       end
@@ -110,7 +110,7 @@ describe API do
       end
 
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.id}" }
+      let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')

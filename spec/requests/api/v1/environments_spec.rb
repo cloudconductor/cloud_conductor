@@ -69,7 +69,8 @@ describe API do
       let(:params) do
         FactoryGirl.attributes_for(:environment,
                                    system_id: system.id,
-                                   blueprint_history_id: blueprint_history.id,
+                                   blueprint_id: blueprint_history.blueprint_id,
+                                   version: blueprint_history.version,
                                    candidates_attributes: [{
                                      cloud_id: cloud.id,
                                      priority: 10
@@ -82,8 +83,9 @@ describe API do
         )
       end
       let(:result) do
-        params.except(:candidates_attributes, :stacks_attributes, :platform_outputs).merge(
+        params.except(:candidates_attributes, :stacks_attributes, :platform_outputs, :blueprint_id, :version).merge(
           id: Fixnum,
+          blueprint_history_id: Fixnum,
           created_at: String,
           updated_at: String,
           status: 'PENDING',

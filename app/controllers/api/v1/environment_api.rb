@@ -22,7 +22,8 @@ module API
         desc 'Create environment'
         params do
           requires :system_id, type: Integer, desc: 'System id'
-          requires :blueprint_history_id, type: Integer, desc: 'Blueprint id'
+          requires :blueprint_id, type: Integer, desc: 'Blueprint id'
+          requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
           optional :template_parameters, type: String, desc: 'Parameter JSON'
@@ -34,9 +35,12 @@ module API
         end
         post '/' do
           authorize!(:create, ::Environment)
-          authorize!(:read, BlueprintHistory.find(params[:blueprint_history_id]))
+          version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version
+          blueprint_history = BlueprintHistory.where(blueprint_id: params[:blueprint_id], version: version).first!
+          authorize!(:read, blueprint_history)
 
-          environment = Environment.create!(declared_params)
+          attributes = declared_params.except(:blueprint_id, :version).merge(blueprint_history_id: blueprint_history.id)
+          environment = Environment.create!(attributes)
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
