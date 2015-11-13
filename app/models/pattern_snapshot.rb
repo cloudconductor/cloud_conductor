@@ -45,7 +45,7 @@ class PatternSnapshot < ActiveRecord::Base
       self.name = metadata[:name]
       self.type = metadata[:type]
       self.parameters = read_parameters(path).to_json
-      self.roles = read_roles(path).join(', ')
+      self.roles = read_roles(path).to_json
       freeze_revision(path)
     end
   end
@@ -53,7 +53,7 @@ class PatternSnapshot < ActiveRecord::Base
   private
 
   def create_images
-    roles.split(/,\s*/).each do |role|
+    JSON.parse(roles).each do |role|
       new_images = BaseImage.where(os_version: os_version).map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
