@@ -14,7 +14,6 @@
 # limitations under the License.
 module CloudConductor
   class Event
-
     def initialize(host, port = 8500, options = {})
       @token = options[:token]
       @client = Consul::Client.new(host, port, options)
