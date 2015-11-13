@@ -39,5 +39,7 @@ module CloudConductor
         end
       end
     end
+    config_context :event do
+    end
   end
 end

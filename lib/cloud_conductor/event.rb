@@ -40,7 +40,7 @@ module CloudConductor
     end
 
     def wait(event_id)
-      Timeout.timeout(CloudConductor::Config.event_timeout) do
+      Timeout.timeout(CloudConductor::Config.event.timeout) do
         loop do
           result = find(event_id)
           break if result && result.finished?

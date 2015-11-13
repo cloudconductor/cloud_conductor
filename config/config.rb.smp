@@ -38,5 +38,5 @@ consul.options.ssl true
 consul.options.acl true
 consul.options.ssl_options.verify false
 
-# timeout
-event_timeout 1800
+# event settings
+event.timeout 1800

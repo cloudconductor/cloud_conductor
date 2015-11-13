@@ -20,7 +20,7 @@ module CloudConductor
       allow(@client).to receive_message_chain(:kv, :get)
       allow(@client).to receive_message_chain(:event, :fire)
       allow(Consul::Client).to receive(:new).and_return(@client)
-      allow(CloudConductor::Config).to receive_message_chain(:event_timeout).and_return(1800)
+      allow(CloudConductor::Config).to receive_message_chain(:event, :timeout).and_return(1800)
 
       @event = CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
     end
