@@ -22,11 +22,12 @@ module CloudConductor
     def initialize(cloud)
       @cloud = cloud
       @type = cloud.type
+      attributes = @cloud.attributes.merge('secret' => @cloud.secret)
       case cloud.type
       when 'aws'
-        @adapter = CloudConductor::Adapters::AWSAdapter.new @cloud.attributes
+        @adapter = CloudConductor::Adapters::AWSAdapter.new attributes
       when 'openstack'
-        @adapter = CloudConductor::Adapters::OpenStackAdapter.new @cloud.attributes
+        @adapter = CloudConductor::Adapters::OpenStackAdapter.new attributes
       else
         fail "Cannot find #{cloud.type} adapter"
       end

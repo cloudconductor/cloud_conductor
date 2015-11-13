@@ -27,6 +27,8 @@ module CloudConductor
 
     describe '#new' do
       it 'returns initialized client with aws adapter' do
+        attributes = %w(key secret entry_point)
+        expect(CloudConductor::Adapters::AWSAdapter).to receive(:new).with(hash_including(*attributes)).and_call_original
         cloud_aws = FactoryGirl.create(:cloud, :aws)
         client = Client.new cloud_aws
         expect(client.type).to eq('aws')
@@ -34,6 +36,8 @@ module CloudConductor
       end
 
       it 'returns initialized client with openstack adapter' do
+        attributes = %w(key secret entry_point tenant_name)
+        expect(CloudConductor::Adapters::OpenStackAdapter).to receive(:new).with(hash_including(*attributes)).and_call_original
         cloud_openstack = FactoryGirl.create(:cloud, :openstack)
         client = Client.new cloud_openstack
         expect(client.type).to eq('openstack')
