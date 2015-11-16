@@ -14,7 +14,6 @@
 # limitations under the License.
 module CloudConductor
   class SystemUpdater # rubocop:disable ClassLength
-    TIMEOUT = 1800
     CHECK_PERIOD = 3
 
     def initialize(environment)
@@ -37,7 +36,7 @@ module CloudConductor
             stack.status = :READY_FOR_UPDATE
             stack.save!
 
-            wait_for_finished(stack, TIMEOUT)
+            wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
 
             update_environment stack.outputs if stack.platform?
 

@@ -48,6 +48,7 @@ module CloudConductor
       @updater = SystemUpdater.new @environment
       allow_any_instance_of(Pattern).to receive(:clone_repository)
       allow_any_instance_of(Stack).to receive(:update_stack)
+      allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
     end
 
     describe '#initialize' do

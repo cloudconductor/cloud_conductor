@@ -41,5 +41,7 @@ module CloudConductor
     end
     config_context :event do
     end
+    config_context :system_build do
+    end
   end
 end
