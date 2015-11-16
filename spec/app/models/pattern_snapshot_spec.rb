@@ -163,7 +163,7 @@ describe PatternSnapshot do
     before do
       base_image
       @pattern.name = 'name'
-      @pattern.roles = 'nginx'
+      @pattern.roles = '["nginx"]'
       @pattern.os_version = 'default'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
@@ -171,7 +171,6 @@ describe PatternSnapshot do
     end
 
     it 'create image each cloud and role' do
-      @pattern.roles = 'nginx'
       expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
     end
 
