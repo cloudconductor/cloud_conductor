@@ -14,8 +14,6 @@
 # limitations under the License.
 module CloudConductor
   class Event
-    TIMEOUT = 1800
-
     def initialize(host, port = 8500, options = {})
       @token = options[:token]
       @client = Consul::Client.new(host, port, options)
@@ -41,7 +39,7 @@ module CloudConductor
     end
 
     def wait(event_id)
-      Timeout.timeout(TIMEOUT) do
+      Timeout.timeout(CloudConductor::Config.event.timeout) do
         loop do
           result = find(event_id)
           break if result && result.finished?
