@@ -175,8 +175,30 @@ describe Project do
       @project.save!
 
       expect(Role.where(project: @project).count).to eq(2)
-      expect(Role.find_by(project: @project, name: 'administrator')).to_not be_nil
-      expect(Role.find_by(project: @project, name: 'operator')).to_not be_nil
+
+      role_admin = Role.find_by(project: @project, name: 'administrator')
+      expect(role_admin).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'project').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'assignment').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'read')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'create')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'role').action).to eq('manage')
+
+      models = [:cloud, :base_image, :pattern, :blueprint, :system, :environment, :application, :application_history, :deployment]
+
+      models.each do |model|
+        expect(Permission.find_by(role: role_admin, model: model).action).to eq('manage')
+      end
+
+      role_operator = Role.find_by(project: @project, name: 'operator')
+      expect(role_operator).to_not be_nil
+      expect(Permission.find_by(role: role_operator, model: 'project').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'assignment').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'account').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'role').action).to eq('read')
+      models.each do |model|
+        expect(Permission.find_by(role: role_operator, model: model).action).to eq('manage')
+      end
     end
   end
 end

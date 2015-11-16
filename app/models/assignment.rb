@@ -8,7 +8,9 @@ class Assignment < ActiveRecord::Base
   validates_associated :project, :account
   validates_presence_of :project, :account
 
-  attr_accessor :email
+  def email
+    account.email
+  end
 
   def administrator?
     roles.all.select do |role|

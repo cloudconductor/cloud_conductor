@@ -15,18 +15,21 @@ class Project < ActiveRecord::Base
 
   before_create :assign_project_administrator
   before_create :create_monitoring_account
-  before_create :create_preset_roles
+
+  after_create :create_preset_roles
 
   before_update :update_monitoring_account
   before_destroy :delete_monitoring_account
 
   def assign_project_administrator
-    role = roles.find_by(name: 'administrator') || roles.build(name: 'administrator')
+    role = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator')
+
     assignments.build(account: current_account, roles: [role]) if current_account
   end
 
   def create_monitoring_account
-    role = roles.find_by(name: 'operator') || roles.build(name: 'operator')
+    role = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator')
+
     account = Account.create!(email: "monitoring@#{name}.example.com", name: 'monitoring', password: "#{SecureRandom.hex}")
     assignments.build(account: account, roles: [role])
   end
@@ -40,10 +43,7 @@ class Project < ActiveRecord::Base
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_admin = roles.select do |role|
-      role.name == 'administrator'
-    end.first
-    role_admin ||= roles.build(name: 'administrator')
+    role_admin = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator')
 
     role_admin.add_permission(:project, :manage)
     role_admin.add_permission(:assignment, :manage)
@@ -53,16 +53,15 @@ class Project < ActiveRecord::Base
     models.each do |model|
       role_admin.add_permission(model, :manage)
     end
+
+    role_admin.save!
   end
 
   def create_operator_role
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_operator = roles.select do |role|
-      role.name == 'operator'
-    end.first
-    role_operator ||= roles.build(name: 'operator')
+    role_operator = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator')
 
     role_operator.add_permission(:project, :read)
     role_operator.add_permission(:assignment, :read)
@@ -72,6 +71,8 @@ class Project < ActiveRecord::Base
     models.each do |model|
       role_operator.add_permission(model, :manage)
     end
+
+    role_operator.save!
   end
 
   def update_monitoring_account

@@ -5,7 +5,8 @@ class CreatePermissions < ActiveRecord::Migration
       t.string :model
       t.string :action
 
-      t.timestamps
+      t.timestamps null: false
     end
+    add_index :permissions, [:role_id, :model, :action], unique: true
   end
 end

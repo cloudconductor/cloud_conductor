@@ -64,9 +64,11 @@ ActiveRecord::Schema.define(version: 20151026075034) do
   create_table "assignment_roles", force: true do |t|
     t.integer  "assignment_id"
     t.integer  "role_id"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
   end
+
+  add_index "assignment_roles", ["assignment_id", "role_id"], name: "index_assignment_roles_on_assignment_id_and_role_id", unique: true, using: :btree
 
   create_table "assignments", force: true do |t|
     t.integer  "project_id", null: false
@@ -196,9 +198,11 @@ ActiveRecord::Schema.define(version: 20151026075034) do
     t.integer  "role_id"
     t.string   "model"
     t.string   "action"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
+
+  add_index "permissions", ["role_id", "model", "action"], name: "index_permissions_on_role_id_and_model_and_action", unique: true, using: :btree
 
   create_table "projects", force: true do |t|
     t.string   "name",        null: false
@@ -211,8 +215,8 @@ ActiveRecord::Schema.define(version: 20151026075034) do
     t.integer  "project_id"
     t.string   "name"
     t.string   "description"
-    t.datetime "created_at"
-    t.datetime "updated_at"
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "sessions", force: true do |t|

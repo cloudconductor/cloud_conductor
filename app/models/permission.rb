@@ -3,4 +3,6 @@ class Permission < ActiveRecord::Base
 
   validates_associated :role
   validates_presence_of :role, :model, :action
+
+  validates :action, uniqueness: { scope: [:role_id, :model] }
 end

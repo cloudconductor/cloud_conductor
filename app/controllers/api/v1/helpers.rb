@@ -32,7 +32,15 @@ module API
       def create_ability(subject, *args)
         project = nil
         if args.last.is_a?(Hash) && args.last.key?(:project)
-          project = args.pop[:project]
+          if subject.class == Class
+            project = args.pop[:project]
+          elsif subject.is_a?(Account)
+            project = subject.projects.find do |project|
+              project.id == args.pop[:project].id
+            end
+          else
+            project = find_project(subject)
+          end
         else
           project = find_project(subject)
         end

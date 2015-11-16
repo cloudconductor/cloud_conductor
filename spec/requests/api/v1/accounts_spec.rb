@@ -27,6 +27,38 @@ describe API do
       end
 
       context 'project_owner', project_owner: true do
+        let(:result) { format_iso8601([project_owner_account]) }
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        let(:result) { format_iso8601([project_operator_account]) }
+        it_behaves_like('200 OK')
+      end
+    end
+
+    describe 'GET /accounts with project_id' do
+      let(:method) { 'get' }
+      let(:url) { '/api/v1/accounts' }
+      let!(:accounts) { [normal_account, admin_account, project_owner_account, project_operator_account, monitoring_account] }
+      let(:params) do
+        { project_id: project.id }
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
         let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
         it_behaves_like('200 OK')
       end
@@ -111,7 +143,71 @@ describe API do
         end
 
         context 'project_owner', project_owner: true do
-          it_behaves_like('201 Created')
+          let(:params) do
+            FactoryGirl.attributes_for(:account, admin: 0)
+              .merge(
+                project_id: project.id,
+                role_id: project.roles.find_by(name: 'operator').id
+            )
+          end
+          let(:result) do
+            params.except(:password, :password_confirmation, :project_id, :role_id).merge(
+              id: Fixnum,
+              created_at: String,
+              updated_at: String,
+              admin: false
+            )
+          end
+
+          context 'new account' do
+            it_behaves_like('201 Created')
+          end
+
+          context 'already exists account' do
+            let(:params) do
+              FactoryGirl.attributes_for(:account, admin: 0)
+                .merge(
+                  email: account.email,
+                  project_id: project.id,
+                  role_id: project.roles.find_by(name: 'operator').id
+                )
+            end
+            let(:result) do
+              params.except(:password, :password_confirmation, :project_id, :role_id).merge(
+                id: Fixnum,
+                created_at: String,
+                updated_at: String,
+                admin: false
+              )
+            end
+
+            it_behaves_like('201 Created')
+          end
+
+          context 'already assignment account' do
+            let(:params) do
+              FactoryGirl.attributes_for(:account, admin: 0)
+                .merge(
+                  email: account.email,
+                  project_id: project.id,
+                  role_id: project.roles.find_by(name: 'operator').id
+                )
+            end
+            let(:result) do
+              params.except(:password, :password_confirmation, :project_id, :role_id).merge(
+                id: Fixnum,
+                created_at: String,
+                updated_at: String,
+                admin: false
+              )
+            end
+
+            before do
+              FactoryGirl.create(:assignment, project_id: project.id, account_id: account.id, roles: [role])
+            end
+
+            it_behaves_like('201 Created')
+          end
         end
 
         context 'project_operator', project_operator: true do
