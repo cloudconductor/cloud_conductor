@@ -75,7 +75,7 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:update_dns).and_raise
-      expect { @system.save! }.to raise_error
+      expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
     end
@@ -87,7 +87,7 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:enable_monitoring).and_raise
-      expect { @system.save! }.to raise_error
+      expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
     end

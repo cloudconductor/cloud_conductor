@@ -136,7 +136,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_id 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_id 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 
@@ -160,7 +160,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 
@@ -208,7 +208,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 

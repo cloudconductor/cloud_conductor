@@ -106,17 +106,17 @@ module CloudConductor
       end
 
       it 'raise error when timeout' do
-        expect { @updater.send(:wait_for_finished, @platform_stack, 0) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, 0) }.to raise_error(RuntimeError)
       end
 
       it 'raise error when target stack is already deleted' do
         @platform_stack.destroy
-        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'raise error when some error occurred while update stack' do
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
-        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'include event message of stack in exception' do
@@ -135,12 +135,12 @@ module CloudConductor
 
       it 'infinity loop and timeout while status still :UPDATE_IN_PROGRESS' do
         allow(@platform_stack).to receive(:status).and_return(:UPDATE_IN_PROGRESS)
-        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
         allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
-        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'return successfully when outputs doesn\'t have FrontendAddress on optional stack' do
@@ -150,7 +150,7 @@ module CloudConductor
 
       it 'infinity loop and timeout while consul doesn\'t running' do
         allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
-        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error
+        expect { @updater.send(:wait_for_finished, @platform_stack, SystemUpdater::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
     end
 
