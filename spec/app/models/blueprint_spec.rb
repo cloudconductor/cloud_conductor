@@ -16,9 +16,7 @@ describe Blueprint do
   include_context 'default_resources'
 
   before do
-    @blueprint = Blueprint.new
-    @blueprint.name = 'test'
-    @blueprint.project = project
+    @blueprint = FactoryGirl.build(:blueprint, project: project)
   end
 
   describe '#save' do

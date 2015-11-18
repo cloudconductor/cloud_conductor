@@ -18,20 +18,7 @@ describe ApplicationHistory do
   let(:today) { Date.today.strftime('%Y%m%d') }
 
   before do
-    @history = ApplicationHistory.new
-    @history.application = application
-    @history.type = 'static'
-    @history.protocol = 'http'
-    @history.url = 'http://example.com/'
-    @history.revision = 'master'
-    @history.pre_deploy = 'echo pre'
-    @history.post_deploy = 'echo post'
-    @history.parameters = '{ "dummy": "value" }'
-
-    # @event = double(:event, fire: 1)
-    # allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
-    # allow(@event).to receive_message_chain(:find, :success?).and_return(true)
-    # allow_any_instance_of(System).to receive(:event).and_return(@event)
+    @history = FactoryGirl.build(:application_history, application: application)
   end
 
   describe '#save' do

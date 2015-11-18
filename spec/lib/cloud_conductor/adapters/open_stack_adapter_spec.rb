@@ -254,18 +254,10 @@ module CloudConductor
       end
 
       describe '#availability_zones' do
-        before do
+        it 'return AvailabilityZone names' do
           @availability_zones = [double('availability_zone', zone: 'nova'), double('availability_zone', zone: '')]
           allow(@adapter).to receive_message_chain(:nova, :hosts).and_return(@availability_zones)
-        end
-
-        it 'execute without exception' do
-          @adapter.availability_zones
-        end
-
-        it 'return AvailabilityZone names' do
-          availability_zones = @adapter.availability_zones
-          expect(availability_zones).to eq(['nova', ''])
+          expect(@adapter.availability_zones).to eq(['nova', ''])
         end
 
         it 'return empty array when AvailabilityZones does not exist' do

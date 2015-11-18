@@ -16,14 +16,7 @@ describe Cloud do
   include_context 'default_resources'
 
   before do
-    @cloud = Cloud.new
-    @cloud.project = project
-    @cloud.name = 'Test'
-    @cloud.type = 'aws'
-    @cloud.entry_point = 'ap-northeast-1'
-    @cloud.key = 'TestKey'
-    @cloud.secret = 'TestSecret'
-    @cloud.tenant_name = 'TestTenant'
+    @cloud = FactoryGirl.build(:cloud, :aws)
 
     allow(@cloud).to receive(:update_base_image)
   end
@@ -49,6 +42,7 @@ describe Cloud do
       expect(@cloud.valid?).to be_truthy
 
       @cloud.type = 'openstack'
+      @cloud.tenant_name = 'openstack tenant'
       expect(@cloud.valid?).to be_truthy
 
       @cloud.type = 'aws'
@@ -256,12 +250,12 @@ describe Cloud do
   describe '#as_json' do
     it 'mask secret column' do
       result = @cloud.as_json.with_indifferent_access
-      expect(result[:name]).to eq('Test')
-      expect(result[:type]).to eq('aws')
-      expect(result[:entry_point]).to eq('ap-northeast-1')
-      expect(result[:key]).to eq('TestKey')
+      expect(result[:name]).to eq(@cloud.name)
+      expect(result[:type]).to eq(@cloud.type)
+      expect(result[:entry_point]).to eq(@cloud.entry_point)
+      expect(result[:key]).to eq(@cloud.key)
       expect(result[:secret]).to eq('********')
-      expect(result[:tenant_name]).to eq('TestTenant')
+      expect(result[:tenant_name]).to eq(@cloud.tenant_name)
     end
   end
 

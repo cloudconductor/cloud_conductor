@@ -19,17 +19,10 @@ FactoryGirl.define do
     cloud { create(:cloud, :aws) }
 
     sequence(:name) { |n| "stack-#{n}" }
-    template_parameters '{}'
-    parameters '{ "dummy": "value" }'
 
-    before(:create) do
-      Stack.skip_callback :save, :before, :create_stack
-      Stack.skip_callback :save, :before, :update_stack
-    end
-
-    after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
-      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
+    after(:build) do |stack, _evaluator|
+      allow(stack).to receive(:create_stack)
+      allow(stack).to receive(:update_stack)
     end
   end
 end

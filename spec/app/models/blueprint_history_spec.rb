@@ -16,13 +16,11 @@ describe BlueprintHistory do
   include_context 'default_resources'
 
   before do
-    @history = BlueprintHistory.new
-    @history.blueprint = blueprint
+    @history = FactoryGirl.build(:blueprint_history, blueprint: blueprint)
     @history.version = 1
 
     allow(@history).to receive(:set_consul_secret_key)
     allow(@history).to receive(:set_version)
-    allow(@history).to receive(:build_pattern_snapshots)
   end
 
   describe '#save' do

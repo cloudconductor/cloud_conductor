@@ -26,7 +26,7 @@ module CloudConductor
                                                                  FactoryGirl.create(:pattern_snapshot, type: 'optional')]
                   )
       blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud)
+        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)
       end
       blueprint_history
     end

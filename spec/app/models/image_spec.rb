@@ -16,12 +16,7 @@ describe Image do
   include_context 'default_resources'
 
   before do
-    @image = Image.new
-    @image.role = 'dummy'
-    @image.cloud = cloud
-    @image.pattern_snapshot = pattern_snapshot
-    @image.base_image = base_image
-    @image.image = 'dummy_image_id'
+    @image = FactoryGirl.build(:image, cloud: cloud, pattern_snapshot: pattern_snapshot, base_image: base_image)
   end
 
   describe '#initialize' do
@@ -94,7 +89,7 @@ describe Image do
 
   describe '#destroy_image' do
     it 'call client#destroy_image with image id' do
-      allow(@image).to receive_message_chain(:cloud, :client, :destroy_image).with('dummy_image_id')
+      allow(@image).to receive_message_chain(:cloud, :client, :destroy_image).with(@image.image)
       @image.destroy_image
     end
   end

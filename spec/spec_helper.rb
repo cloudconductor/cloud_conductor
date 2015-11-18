@@ -18,6 +18,9 @@ RSpec.configure do |config|
     FactoryGirl.factories.clear
     FactoryGirl.find_definitions
     FactoryGirl.reload
+    FactoryGirl::SyntaxRunner.class_eval do
+      include RSpec::Mocks::ExampleMethods
+    end
   end
 
   config.before :suite do

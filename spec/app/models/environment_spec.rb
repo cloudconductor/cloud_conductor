@@ -22,7 +22,6 @@ describe Environment do
     @environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
-    allow(@environment).to receive(:create_or_update_stacks)
   end
 
   describe '#save' do
@@ -119,8 +118,8 @@ describe Environment do
 
       @environment.save!
       @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      optional_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
+      platform_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)])
+      optional_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)])
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: platform_pattern)
       FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: optional_pattern)
 

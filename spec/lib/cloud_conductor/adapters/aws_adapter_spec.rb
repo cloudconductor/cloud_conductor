@@ -143,18 +143,10 @@ module CloudConductor
       end
 
       describe '#availability_zones' do
-        before do
+        it 'return AvailabilityZone names' do
           @availability_zones = [double('availability_zone', name: 'ap-southeast-2a'), double('availability_zone', name: 'ap-southeast-2b')]
           allow(@adapter).to receive_message_chain(:ec2, :availability_zones).and_return(@availability_zones)
-        end
-
-        it 'execute without exception' do
-          @adapter.availability_zones
-        end
-
-        it 'return AvailabilityZone names' do
-          availability_zones = @adapter.availability_zones
-          expect(availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
+          expect(@adapter.availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
         end
 
         it 'return empty array when AvailabilityZones does not exist' do

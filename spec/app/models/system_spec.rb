@@ -16,13 +16,8 @@ describe System do
   include_context 'default_resources'
 
   before do
-    @system = System.new
-    @system.project = project
-    @system.name = 'test'
-    @system.domain = 'example.com'
+    @system = FactoryGirl.build(:system, project: project)
 
-    allow(@system).to receive(:update_dns)
-    allow(@system).to receive(:enable_monitoring)
     allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)
   end
 
