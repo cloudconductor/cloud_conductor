@@ -268,9 +268,10 @@ module CloudConductor
           expect(availability_zones).to eq(['nova', ''])
         end
 
-        it 'return nil when target AvailabilityZone does not exist' do
-          allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.availability_zones }.to raise_error
+        it 'return empty array when AvailabilityZones does not exist' do
+          @availability_zones = []
+          allow(@adapter).to receive_message_chain(:nova, :hosts).and_return(@availability_zones)
+          expect(@adapter.availability_zones).to be_empty
         end
       end
 

@@ -157,9 +157,10 @@ module CloudConductor
           expect(availability_zones).to eq(['ap-southeast-2a', 'ap-southeast-2b'])
         end
 
-        it 'raise error  when target AvailabilityZones does not exist' do
-          allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.adapter.availability_zones }.to raise_error
+        it 'return empty array when AvailabilityZones does not exist' do
+          @availability_zones = []
+          allow(@adapter).to receive_message_chain(:ec2, :availability_zones).and_return(@availability_zones)
+          expect(@adapter.availability_zones).to be_empty
         end
       end
 
