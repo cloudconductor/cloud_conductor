@@ -55,16 +55,19 @@ module CloudConductor
 
       def get_stack_id(name)
         stack = heat.stacks.find { |stack| stack.stack_name == name }
+        fail "Stack #{name} does not exist" if stack.nil?
         stack.id
       end
 
       def get_stack_status(name)
         stack = heat.stacks.find { |stack| stack.stack_name == name }
+        fail "Stack #{name} does not exist" if stack.nil?
         stack.stack_status.to_sym
       end
 
       def get_stack_events(name)
         stack = heat.stacks.find { |stack| stack.stack_name == name }
+        fail "Stack #{name} does not exist" if stack.nil?
         stack.events.map do |event|
           {
             timestamp: Time.parse(event.event_time).localtime.iso8601,
