@@ -8,6 +8,7 @@ AllCops:
     - config/**/*
     - vendor/bundle/**/*
     - tmp/**/*
+  DisplayCopNames: true
 
 LineLength:
   Max: 130
