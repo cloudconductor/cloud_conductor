@@ -25,7 +25,7 @@ Documentation:
   Enabled: false
 
 Style/RegexpLiteral:
-  MaxSlashes: 0
+  AllowInnerSlashes: false
 
 NumericLiterals:
   MinDigits: 7

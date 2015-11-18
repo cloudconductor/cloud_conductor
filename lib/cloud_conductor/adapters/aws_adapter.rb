@@ -118,7 +118,7 @@ module CloudConductor
       end
 
       def convert_name(name)
-        name.gsub('_', '-')
+        name.tr('_', '-')
       end
 
       def convert_parameters(parameters)

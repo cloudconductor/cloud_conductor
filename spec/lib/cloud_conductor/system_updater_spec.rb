@@ -24,7 +24,7 @@ module CloudConductor
                                              blueprint: blueprint,
                                              pattern_snapshots: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
                                                                  FactoryGirl.create(:pattern_snapshot, type: 'optional')]
-                  )
+                                            )
       blueprint_history.pattern_snapshots.each do |pattern_snapshot|
         FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)
       end
@@ -36,7 +36,7 @@ module CloudConductor
                          blueprint_history: blueprint_history,
                          candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
                                                  { cloud_id: cloud_openstack.id, priority: 20 }]
-      )
+                        )
     end
 
     before do

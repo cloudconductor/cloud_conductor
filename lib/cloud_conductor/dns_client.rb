@@ -132,7 +132,7 @@ module CloudConductor
     end
 
     def create_or_update_resource_record_set(hosted_zone, name, value, action, type = 'A')
-      options  = {
+      options = {
         hosted_zone_id: hosted_zone[:id],
         change_batch: {
           changes: [{

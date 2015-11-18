@@ -80,7 +80,7 @@ describe API do
                                      template_parameters: '{}',
                                      parameters: '{}'
                                    }]
-        )
+                                  )
       end
       let(:result) do
         params.except(:candidates_attributes, :stacks_attributes, :platform_outputs, :blueprint_id, :version).merge(

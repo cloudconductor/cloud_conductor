@@ -17,7 +17,7 @@ module Consul
   class Client
     describe Event do
       before do
-        @stubs  = Faraday::Adapter::Test::Stubs.new
+        @stubs = Faraday::Adapter::Test::Stubs.new
 
         original_method = Faraday.method(:new)
         allow(Faraday).to receive(:new) do |*args, &block|
