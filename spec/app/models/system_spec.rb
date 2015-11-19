@@ -103,14 +103,10 @@ describe System do
     end
 
     it 'delete all environment records' do
-      Environment.skip_callback :destroy, :before, :destroy_stacks
-
       @system.environments << environment
 
       expect(@system.environments.size).to eq(1)
       expect { @system.destroy }.to change { Environment.count }.by(-1)
-
-      Environment.set_callback :destroy, :before, :destroy_stacks, unless: -> { stacks.empty? }
     end
   end
 

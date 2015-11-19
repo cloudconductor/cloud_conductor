@@ -23,6 +23,7 @@ FactoryGirl.define do
 
     after(:build) do |environment, _evaluator|
       allow(environment).to receive(:create_or_update_stacks)
+      allow(environment).to receive(:destroy_stacks_in_background)
     end
 
     factory :environment, class: Environment do

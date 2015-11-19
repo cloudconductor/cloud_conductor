@@ -77,11 +77,6 @@ describe Environment do
   end
 
   describe '#destroy' do
-    before do
-      allow(Thread).to receive(:new).and_yield
-      allow(@environment).to receive(:destroy_stacks)
-    end
-
     it 'delete environment record' do
       @environment.save!
       expect { @environment.destroy }.to change { Environment.count }.by(-1)
@@ -107,25 +102,18 @@ describe Environment do
       expect(@environment.candidates.size).to eq(0)
     end
 
-    it 'call #destroy_stacks callback' do
-      @environment.stacks << FactoryGirl.build(:stack, environment: @environment)
-      expect(@environment).to receive(:destroy_stacks)
+    it 'call #destroy_stacks_in_background callback' do
+      expect(@environment).to receive(:destroy_stacks_in_background)
       @environment.destroy
     end
+  end
 
-    it 'delete environment that has multiple stacks' do
-      threads = Thread.list
-
-      @environment.save!
-      @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)])
-      optional_pattern = FactoryGirl.create(:pattern_snapshot, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)])
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: platform_pattern)
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern_snapshot: optional_pattern)
-
-      @environment.destroy
-
-      (Thread.list - threads).each(&:join)
+  describe '#destroy_stacks_in_background' do
+    it 'call #destroy_stacks in background thread' do
+      allow(@environment).to receive(:destroy_stacks_in_background).and_call_original
+      allow(Thread).to receive(:new).and_yield
+      expect(@environment).to receive(:destroy_stacks)
+      @environment.destroy_stacks_in_background
     end
   end
 
