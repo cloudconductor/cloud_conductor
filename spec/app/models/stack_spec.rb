@@ -16,11 +16,7 @@ describe Stack do
   include_context 'default_resources'
 
   before do
-    @stack = Stack.new
-    @stack.name = 'Test'
-    @stack.pattern_snapshot = pattern_snapshot
-    @stack.cloud = cloud
-    @stack.environment = environment
+    @stack = FactoryGirl.build(:stack, pattern_snapshot: pattern_snapshot, cloud: cloud, environment: environment)
   end
 
   describe '.in_progress' do
@@ -100,11 +96,6 @@ describe Stack do
   end
 
   describe '#save' do
-    before do
-      allow(@stack).to receive(:create_stack)
-      allow(@stack).to receive(:update_stack)
-    end
-
     it 'create with valid parameters' do
       expect { @stack.save! }.to change { Stack.count }.by(1)
     end
@@ -136,7 +127,6 @@ describe Stack do
 
   describe '#update_name' do
     it 'call Client#create_stack' do
-      expect(@stack.name).to eq('Test')
       @stack.update_name
       expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern_snapshot.name}")
     end
@@ -144,6 +134,7 @@ describe Stack do
 
   describe '#create_stack' do
     before do
+      allow(@stack).to receive(:create_stack).and_call_original
       allow(@stack).to receive_message_chain(:client, :create_stack)
     end
 
@@ -170,6 +161,7 @@ describe Stack do
 
   describe '#update_stack' do
     before do
+      allow(@stack).to receive(:update_stack).and_call_original
       allow(@stack).to receive_message_chain(:client, :update_stack)
     end
 

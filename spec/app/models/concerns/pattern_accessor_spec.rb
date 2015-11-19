@@ -67,7 +67,7 @@ describe PatternAccessor do
 
     it 'will remove cloned repository when some errors occurred while yielding block' do
       expect(FileUtils).to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
-      expect { @accessor.clone_repository(url, revision) { fail } }.to raise_error
+      expect { @accessor.clone_repository(url, revision) { fail } }.to raise_error(RuntimeError)
     end
   end
 

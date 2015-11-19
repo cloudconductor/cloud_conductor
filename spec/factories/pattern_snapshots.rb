@@ -18,14 +18,9 @@ FactoryGirl.define do
     sequence(:name) { |n| "pattern_snapshot-#{n}" }
     url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
 
-    before(:create) do
-      PatternSnapshot.skip_callback :create, :before, :freeze_pattern
-      PatternSnapshot.skip_callback :create, :before, :create_images
-    end
-
-    after(:create) do
-      PatternSnapshot.set_callback :create, :before, :create_images
-      PatternSnapshot.set_callback :create, :before, :freeze_pattern
+    after(:build) do |pattern_snapshot, _evaluator|
+      allow(pattern_snapshot).to receive(:freeze_pattern)
+      allow(pattern_snapshot).to receive(:create_images)
     end
   end
 end

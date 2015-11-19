@@ -102,7 +102,7 @@ module CloudConductor
       it 'fail if wait method has timed out' do
         allow(@event).to receive(:wait).and_raise(Timeout::Error)
 
-        expect { @event.sync_fire(:error) }.to raise_error
+        expect { @event.sync_fire(:error) }.to raise_error(RuntimeError)
       end
 
       it 'fail if success? method returns false' do

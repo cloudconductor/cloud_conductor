@@ -136,7 +136,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_id 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_id 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 
@@ -160,7 +160,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_status 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 
@@ -208,7 +208,7 @@ module CloudConductor
         end
 
         it 'return nil when target stack does not exist' do
-          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error
+          expect { @adapter.get_stack_events 'undefined_stack' }.to raise_error(RuntimeError)
         end
       end
 
@@ -254,23 +254,16 @@ module CloudConductor
       end
 
       describe '#availability_zones' do
-        before do
+        it 'return AvailabilityZone names' do
           @availability_zones = [double('availability_zone', zone: 'nova'), double('availability_zone', zone: '')]
           allow(@adapter).to receive_message_chain(:nova, :hosts).and_return(@availability_zones)
+          expect(@adapter.availability_zones).to eq(['nova', ''])
         end
 
-        it 'execute without exception' do
-          @adapter.availability_zones
-        end
-
-        it 'return AvailabilityZone names' do
-          availability_zones = @adapter.availability_zones
-          expect(availability_zones).to eq(['nova', ''])
-        end
-
-        it 'return nil when target AvailabilityZone does not exist' do
-          allow(@availability_zones).to receive(:map).and_return nil
-          expect { @adapter.availability_zones }.to raise_error
+        it 'return empty array when AvailabilityZones does not exist' do
+          @availability_zones = []
+          allow(@adapter).to receive_message_chain(:nova, :hosts).and_return(@availability_zones)
+          expect(@adapter.availability_zones).to be_empty
         end
       end
 

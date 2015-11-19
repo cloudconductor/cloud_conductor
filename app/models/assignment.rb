@@ -5,7 +5,7 @@ class Assignment < ActiveRecord::Base
   enum role: { operator: 0, administrator: 1 }
 
   validates_associated :project, :account
-  validates_presence_of :role
+  validates_presence_of :project, :account, :role
 
   attr_accessor :email
 end

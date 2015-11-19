@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :environment, class: Environment do
+  factory :environment_without_candidates, class: Environment do
     sequence(:name) { |n| "environment-#{n}" }
     description 'environment description'
     system
@@ -21,18 +21,17 @@ FactoryGirl.define do
     platform_outputs '{}'
     ip_address '127.0.0.1'
 
-    after(:build) do |environment, evaluator|
-      if evaluator.candidates.blank?
-        environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
+    after(:build) do |environment, _evaluator|
+      allow(environment).to receive(:create_or_update_stacks)
+      allow(environment).to receive(:destroy_stacks_in_background)
+    end
+
+    factory :environment, class: Environment do
+      after(:build) do |environment, evaluator|
+        if evaluator.candidates.blank?
+          environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
+        end
       end
-    end
-
-    before(:create) do
-      Environment.skip_callback :save, :before, :create_or_update_stacks
-    end
-
-    after(:create) do
-      Environment.set_callback :save, :before, :create_or_update_stacks, if: -> { status == :PENDING }
     end
   end
 end

@@ -16,9 +16,7 @@ describe Application do
   include_context 'default_resources'
 
   before do
-    @application = Application.new
-    @application.name = 'dummy'
-    @application.system = system
+    @application = FactoryGirl.build(:application, system: system)
   end
 
   describe '#save' do

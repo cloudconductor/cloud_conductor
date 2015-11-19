@@ -30,12 +30,8 @@ FactoryGirl.define do
       type 'optional'
     end
 
-    before(:create) do
-      Pattern.skip_callback :save, :before, :update_metadata
-    end
-
-    after(:create) do
-      Pattern.set_callback :save, :before, :update_metadata
+    after(:build) do |pattern, _evaluator|
+      allow(pattern).to receive(:update_metadata)
     end
   end
 end

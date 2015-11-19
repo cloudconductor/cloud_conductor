@@ -22,11 +22,7 @@ describe Pattern do
   end
 
   before do
-    @pattern = Pattern.new
-    @pattern.project = project
-    @pattern.url = 'http://example.com/pattern.git'
-
-    allow(@pattern).to receive(:update_metadata)
+    @pattern = FactoryGirl.build(:pattern, :platform, project: project)
   end
 
   describe '#initialize' do

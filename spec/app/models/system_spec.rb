@@ -16,13 +16,8 @@ describe System do
   include_context 'default_resources'
 
   before do
-    @system = System.new
-    @system.project = project
-    @system.name = 'test'
-    @system.domain = 'example.com'
+    @system = FactoryGirl.build(:system, project: project)
 
-    allow(@system).to receive(:update_dns)
-    allow(@system).to receive(:enable_monitoring)
     allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)
   end
 
@@ -75,7 +70,7 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:update_dns).and_raise
-      expect { @system.save! }.to raise_error
+      expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
     end
@@ -87,7 +82,7 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:enable_monitoring).and_raise
-      expect { @system.save! }.to raise_error
+      expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
     end
@@ -108,14 +103,10 @@ describe System do
     end
 
     it 'delete all environment records' do
-      Environment.skip_callback :destroy, :before, :destroy_stacks
-
       @system.environments << environment
 
       expect(@system.environments.size).to eq(1)
       expect { @system.destroy }.to change { Environment.count }.by(-1)
-
-      Environment.set_callback :destroy, :before, :destroy_stacks, unless: -> { stacks.empty? }
     end
   end
 

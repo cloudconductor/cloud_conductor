@@ -16,10 +16,7 @@ describe Deployment do
   include_context 'default_resources'
 
   before do
-    @deployment = Deployment.new
-    @deployment.environment = environment
-    @deployment.environment.status = :CREATE_COMPLETE
-    @deployment.application_history = application_history
+    @deployment = FactoryGirl.build(:deployment, environment: environment, application_history: application_history)
 
     @event = double(:event, fire: 1, sync_fire: 1)
     allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
@@ -64,6 +61,10 @@ describe Deployment do
   end
 
   describe '#consul_request' do
+    before do
+      allow(@deployment).to receive(:consul_request).and_call_original
+    end
+
     it 'call #deploy_application to deploy application in background' do
       expect(@deployment).to receive(:deploy_application)
       @deployment.send(:consul_request)

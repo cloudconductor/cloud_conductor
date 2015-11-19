@@ -40,11 +40,15 @@ module CloudConductor
       end
 
       def get_stack_status(name)
-        cloud_formation.stacks[convert_name(name)].status.to_sym
+        stack = cloud_formation.stacks[convert_name(name)]
+        fail "Stack #{name} does not exist" if stack.nil?
+        stack.status.to_sym
       end
 
       def get_stack_events(name)
-        cloud_formation.stacks[convert_name(name)].events.map do |event|
+        stack = cloud_formation.stacks[convert_name(name)]
+        fail "Stack #{name} does not exist" if stack.nil?
+        stack.events.map do |event|
           {
             timestamp: event.timestamp.localtime.iso8601,
             resource_status: event.resource_status,
@@ -114,7 +118,7 @@ module CloudConductor
       end
 
       def convert_name(name)
-        name.gsub('_', '-')
+        name.tr('_', '-')
       end
 
       def convert_parameters(parameters)

@@ -173,7 +173,7 @@ describe API do
         FactoryGirl.attributes_for(:deployment,
                                    environment_id: environment.id,
                                    application_history_id: application_history.id
-        )
+                                  )
       end
       let(:result) do
         params.merge(

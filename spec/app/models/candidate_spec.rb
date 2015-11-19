@@ -15,14 +15,13 @@
 describe Candidate do
   include_context 'default_resources'
 
-  let(:cloud1) { FactoryGirl.create(:cloud, :aws) }
-  let(:cloud2) { FactoryGirl.create(:cloud, :openstack) }
-  let(:cloud3) { FactoryGirl.create(:cloud, :aws, name: 'new_cloud') }
+  let(:cloud1) { FactoryGirl.create(:cloud, :aws, project: project) }
+  let(:cloud2) { FactoryGirl.create(:cloud, :openstack, project: project) }
+  let(:cloud3) { FactoryGirl.create(:cloud, :aws, name: 'new_cloud', project: project) }
 
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
-      environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
-      environment.candidates.delete_all
+      environment = FactoryGirl.build(:environment_without_candidates, system: system, blueprint_history: blueprint_history)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud1, priority: 10)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud2, priority: 30)
       environment.candidates << FactoryGirl.build(:candidate, environment: environment, cloud: cloud3, priority: 20)
@@ -32,13 +31,11 @@ describe Candidate do
     end
 
     it 'ignore candidates on other environment' do
-      environment1 = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
-      environment1.candidates.delete_all
+      environment1 = FactoryGirl.build(:environment_without_candidates, system: system, blueprint_history: blueprint_history)
       environment1.candidates << FactoryGirl.build(:candidate, environment: environment1, cloud: cloud1, priority: 30)
       environment1.save!
 
-      environment2 = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history)
-      environment2.candidates.delete_all
+      environment2 = FactoryGirl.build(:environment_without_candidates, system: system, blueprint_history: blueprint_history)
       environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud2, priority: 10)
       environment2.candidates << FactoryGirl.build(:candidate, environment: environment2, cloud: cloud3, priority: 20)
       environment2.save!

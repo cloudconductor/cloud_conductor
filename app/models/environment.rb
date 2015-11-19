@@ -25,13 +25,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   before_save :create_or_update_stacks, if: -> { status == :PENDING }
-  before_destroy do
-    Thread.new do
-      ActiveRecord::Base.connection_pool.with_connection do
-        destroy_stacks
-      end
-    end
-  end
+  before_destroy :destroy_stacks_in_background
 
   after_initialize do
     self.template_parameters ||= '{}'
@@ -137,6 +131,14 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
     options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
     CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
+  end
+
+  def destroy_stacks_in_background
+    Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        destroy_stacks
+      end
+    end
   end
 
   TIMEOUT = 1800

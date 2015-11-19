@@ -22,11 +22,8 @@ describe PatternSnapshot do
   end
 
   before do
-    @pattern = PatternSnapshot.new
+    @pattern = FactoryGirl.build(:pattern_snapshot)
     @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern])
-
-    allow(@pattern).to receive(:freeze_pattern)
-    allow(@pattern).to receive(:create_images)
   end
 
   describe '#initialize' do

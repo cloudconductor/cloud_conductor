@@ -25,7 +25,7 @@ module CloudConductor
                                              pattern_snapshots: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
                                                                  FactoryGirl.create(:pattern_snapshot, type: 'optional')])
       blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud)
+        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)
       end
       blueprint_history
     end
@@ -129,17 +129,17 @@ module CloudConductor
       end
 
       it 'raise error when timeout' do
-        expect { @builder.send(:wait_for_finished, @platform_stack, 0) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, 0) }.to raise_error(RuntimeError)
       end
 
       it 'raise error when target stack is already deleted' do
         @platform_stack.destroy
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'raise error when some error occurred while create stack' do
         allow(@platform_stack).to receive(:status).and_return(:ERROR)
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'include event message of stack in exception' do
@@ -157,12 +157,12 @@ module CloudConductor
 
       it 'infinity loop and timeout while status still :CREATE_IN_PROGRESS' do
         allow(@platform_stack).to receive(:status).and_return(:CREATE_IN_PROGRESS)
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
         allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
 
       it 'return successfully when outputs doesn\'t have FrontendAddress on optional stack' do
@@ -172,7 +172,7 @@ module CloudConductor
 
       it 'infinity loop and timeout while consul doesn\'t running' do
         allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
-        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error
+        expect { @builder.send(:wait_for_finished, @platform_stack, SystemBuilder::CHECK_PERIOD) }.to raise_error(RuntimeError)
       end
     end
 
