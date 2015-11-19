@@ -205,13 +205,14 @@ describe API do
       let(:url) { "/api/v1/environments/#{environment.id}/rebuild" }
       let(:params) do
         {
-          'blueprint_history_id' => blueprint_history.id,
+          'blueprint_id' => blueprint_history.blueprint.id,
+          'version' => blueprint_history.version,
           'description' => 'new_description',
           'switch' => true
         }
       end
       let(:result) do
-        environment.as_json.merge(params.except('switch')).merge(
+        environment.as_json.merge(params.except('switch', 'blueprint_id', 'version')).merge(
           'id' => Fixnum,
           'created_at' => String,
           'updated_at' => String,

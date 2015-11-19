@@ -81,7 +81,8 @@ module API
         params do
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Blueprint name'
-          optional :blueprint_history_id, type: Integer, desc: 'Blueprint history id'
+          optional :blueprint_id, type: Integer, desc: 'Blueprint id'
+          optional :version, type: Integer, desc: 'Blueprint version'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
           optional :template_parameters, type: String, desc: 'Parameters JSON'
@@ -92,8 +93,17 @@ module API
           environment = ::Environment.find(params[:id])
           authorize!(:read, environment)
 
+          attributes = declared_params.except(:blueprint_id, :version, :id, :switch)
+          if params[:blueprint_id]
+            version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version
+            blueprint_history = BlueprintHistory.where(blueprint_id: params[:blueprint_id], version: version).first!
+            authorize!(:read, blueprint_history)
+
+            attributes = attributes.merge(blueprint_history_id: blueprint_history.id)
+          end
+
           new_environment = environment.dup
-          new_environment.update_attributes!(declared_params.except(:id, :switch))
+          new_environment.update_attributes!(attributes)
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
