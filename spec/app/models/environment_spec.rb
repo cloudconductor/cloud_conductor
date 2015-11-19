@@ -23,6 +23,7 @@ describe Environment do
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
     allow(@environment).to receive(:create_or_update_stacks)
+    allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
   end
 
   describe '#save' do
