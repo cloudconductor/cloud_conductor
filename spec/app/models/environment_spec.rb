@@ -22,6 +22,7 @@ describe Environment do
     @environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
+    allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
   end
 
   describe '#save' do

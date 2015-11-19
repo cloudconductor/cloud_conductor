@@ -141,7 +141,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  TIMEOUT = 1800
   def destroy_stacks
     return if stacks.empty?
     platforms = stacks.select(&:platform?)
@@ -150,7 +149,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
     begin
       optionals.each(&:destroy)
-      Timeout.timeout(TIMEOUT) do
+      Timeout.timeout(CloudConductor::Config.system_build.timeout) do
         sleep 10 until optionals.all?(&stack_destroyed?)
       end
     rescue Timeout::Error
