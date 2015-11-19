@@ -28,7 +28,6 @@ FactoryGirl.define do
 
     factory :environment, class: Environment do
       after(:build) do |environment, evaluator|
-        allow(environment).to receive(:create_or_update_stacks)
         if evaluator.candidates.blank?
           environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
         end
