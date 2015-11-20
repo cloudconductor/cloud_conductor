@@ -8,7 +8,6 @@ describe API do
     describe 'GET /applications' do
       let(:method) { 'get' }
       let(:url) { '/api/v1/applications' }
-      let(:params) { { system_id: application.system.id } }
       let(:result) { format_iso8601([application]) }
 
       context 'not_logged_in' do
@@ -18,6 +17,62 @@ describe API do
       context 'normal_account', normal: true do
         let(:result) { [] }
         it_behaves_like('200 OK')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
+    describe 'GET /applications with system_id' do
+      let(:method) { 'get' }
+      let(:url) { '/api/v1/applications' }
+      let(:params) { { system_id: application.system.id } }
+      let(:result) { format_iso8601([application]) }
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        let(:result) { [] }
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
+    describe 'GET /applications with project_id' do
+      let(:method) { 'get' }
+      let(:url) { '/api/v1/applications' }
+      let(:params) { { project_id: application.project.id } }
+      let(:result) { format_iso8601([application]) }
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        let(:result) { [] }
+        it_behaves_like('403 Forbidden')
       end
 
       context 'administrator', admin: true do

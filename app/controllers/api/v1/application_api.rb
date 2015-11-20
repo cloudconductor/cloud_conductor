@@ -3,9 +3,27 @@ module API
     class ApplicationAPI < API::V1::Base
       resource :applications do
         desc 'List applications'
+        params do
+          optional :system_id, type: Integer, desc: 'Target system id'
+          optional :project_id, type: Integer, desc: 'Target project id'
+        end
         get '/' do
-          ::Application.all.select do |application|
-            can?(:read, application)
+          if params[:system_id]
+            system = ::System.find(params[:system_id])
+            authorize!(:read, system)
+            system.applications.all.select do |application|
+              can?(:read, application)
+            end
+          elsif params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            ::Application.joins(:system).where(systems: { project_id: project.id }).select do |application|
+              can?(:read, application)
+            end
+          else
+            ::Application.all.select do |application|
+              can?(:read, application)
+            end
           end
         end
 

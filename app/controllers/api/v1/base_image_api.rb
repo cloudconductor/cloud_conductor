@@ -3,9 +3,27 @@ module API
     class BaseImageAPI < API::V1::Base
       resource :base_images do
         desc 'List base images'
+        params do
+          optional :cloud_id, type: Integer, desc: 'Cloud id'
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::BaseImage.all.select do |base_image|
-            can?(:read, base_image)
+          if params[:cloud_id]
+            cloud = ::Cloud.find(params[:cloud_id])
+            authorize!(:read, cloud)
+            cloud.base_images.all.select do |base_image|
+              can?(:read, base_image)
+            end
+          elsif params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            ::BaseImage.joins(:cloud).where(clouds: { project_id: project.id }).select do |base_image|
+              can?(:read, base_image)
+            end
+          else
+            ::BaseImage.all.select do |base_image|
+              can?(:read, base_image)
+            end
           end
         end
 

@@ -3,9 +3,27 @@ module API
     class EnvironmentAPI < API::V1::Base # rubocop:disable ClassLength
       resource :environments do
         desc 'List environments'
+        params do
+          optional :system_id, type: Integer, desc: 'System id'
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Environment.all.select do |environment|
-            can?(:read, environment)
+          if params[:system_id]
+            system = ::System.find(params[:system_id])
+            authorize!(:read, system)
+            system.environments.all.select do |environment|
+              can?(:read, environment)
+            end
+          elsif params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            ::Environment.joins(:system).where(systems: { project_id: project.id }).select do |environment|
+              can?(:read, environment)
+            end
+          else
+            ::Environment.all.select do |environment|
+              can?(:read, environment)
+            end
           end
         end
 

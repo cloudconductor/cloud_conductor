@@ -3,9 +3,20 @@ module API
     class SystemAPI < API::V1::Base
       resource :systems do
         desc 'List systems'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::System.all.select do |system|
-            can?(:read, system)
+          if params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            project.systems.all.select do |system|
+              can?(:read, system)
+            end
+          else
+            ::System.all.select do |system|
+              can?(:read, system)
+            end
           end
         end
 

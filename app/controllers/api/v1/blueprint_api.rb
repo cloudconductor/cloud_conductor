@@ -3,9 +3,20 @@ module API
     class BlueprintAPI < API::V1::Base
       resource :blueprints do
         desc 'List blueprints'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Blueprint.all.select do |blueprint|
-            can?(:read, blueprint)
+          if params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            project.blueprints.all.select do |blueprint|
+              authorize!(:read, blueprint)
+            end
+          else
+            ::Blueprint.all.select do |blueprint|
+              can?(:read, blueprint)
+            end
           end
         end
 

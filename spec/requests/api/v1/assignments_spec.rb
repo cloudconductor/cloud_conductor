@@ -140,6 +140,40 @@ describe API do
       end
     end
 
+    describe 'GET /assignments with account_id' do
+      let(:method) { 'get' }
+      let(:url) { '/api/v1/assignments' }
+      let(:params) do
+        {
+          account_id: project_operator_account.id
+        }
+      end
+      let(:result) do
+        format_iso8601(project_operator_account.assignments)
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        let(:result) { [] }
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+    end
+
     describe 'GET /assignments/:id' do
       let(:method) { 'get' }
       let(:url) { "/api/v1/assignments/#{assignment.id}" }

@@ -3,9 +3,20 @@ module API
     class CloudAPI < API::V1::Base
       resource :clouds do
         desc 'List clouds'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Cloud.all.select do |cloud|
-            can?(:read, cloud)
+          if params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            project.clouds.all.select do |cloud|
+              can?(:read, cloud)
+            end
+          else
+            ::Cloud.all.select do |cloud|
+              can?(:read, cloud)
+            end
           end
         end
 

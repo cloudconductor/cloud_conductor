@@ -4,8 +4,16 @@ module API
       resource :patterns do
         desc 'List patterns'
         get '/' do
-          ::Pattern.all.select do |pattern|
-            can?(:read, pattern)
+          if params[:project_id]
+            project = ::Project.find(params[:project_id])
+            authorize!(:read, project)
+            project.patterns.all.select do |pattern|
+              can?(:read, pattern)
+            end
+          else
+            ::Pattern.all.select do |pattern|
+              can?(:read, pattern)
+            end
           end
         end
 
