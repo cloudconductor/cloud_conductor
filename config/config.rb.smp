@@ -40,3 +40,6 @@ consul.options.ssl_options.verify false
 
 # event settings
 event.timeout 1800
+
+# system build setting
+system_build.timeout 1800

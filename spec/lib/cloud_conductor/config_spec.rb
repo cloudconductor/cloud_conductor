@@ -31,7 +31,11 @@ describe CloudConductor::Config do
 
   it 'returns default values' do
     configurables = CloudConductor::Config.configurables
+    event_configurables = CloudConductor::Config.event.configurables
+    system_build_configurables = CloudConductor::Config.system_build.configurables
     expect(configurables[:application_log_path].default).to eq('log/conductor_production.log')
     expect(configurables[:access_log_path].default).to eq('log/conductor_access.log')
+    expect(event_configurables[:timeout].default).to eq(1800)
+    expect(system_build_configurables[:timeout].default).to eq(1800)
   end
 end
