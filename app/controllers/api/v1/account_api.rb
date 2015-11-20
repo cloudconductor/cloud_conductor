@@ -1,6 +1,6 @@
 module API
   module V1
-    class AccountAPI < API::V1::Base
+    class AccountAPI < API::V1::Base # rubocop:disable ClassLength
       resource :accounts do
         desc 'List accounts'
         params do
@@ -34,9 +34,9 @@ module API
             assignment = Assignment.arel_table[:account_id]
             project = ::Project.joins(:assignments)
                       .where(assignment.eq(account.id).or(assignment.eq(current_account.id)))
-                      .select do |project|
+                      .find do |project|
               can?(:read, project) && can?(:read, account, project: project)
-            end.first
+            end
             authorize!(:read, account, project: project)
           end
           account

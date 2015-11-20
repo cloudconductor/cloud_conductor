@@ -6,7 +6,7 @@ describe API do
     let(:project_admin_role) { project.roles.find_by(name: 'administrator') }
     let(:project_operator_role) { project.roles.find_by(name: 'operator') }
     let(:project_role) { role }
-    let(:permission) { FactoryGirl.create(:permission, role: role)  }
+    let(:permission) { FactoryGirl.create(:permission, role: role) }
 
     before do
       permission

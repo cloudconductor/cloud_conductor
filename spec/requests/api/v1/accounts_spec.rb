@@ -148,7 +148,7 @@ describe API do
               .merge(
                 project_id: project.id,
                 role_id: project.roles.find_by(name: 'operator').id
-            )
+              )
           end
           let(:result) do
             params.except(:password, :password_confirmation, :project_id, :role_id).merge(

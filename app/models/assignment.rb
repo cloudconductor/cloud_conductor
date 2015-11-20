@@ -13,8 +13,8 @@ class Assignment < ActiveRecord::Base
   end
 
   def administrator?
-    roles.all.select do |role|
+    roles.all.count do |role|
       role.name == 'administrator'
-    end.count > 0
+    end > 0
   end
 end
