@@ -48,45 +48,115 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
-    end
 
-    describe 'GET /roles with project_id' do
-      let(:method) { 'get' }
-      let(:url) { '/api/v1/roles' }
-      let(:other_project_owner) { FactoryGirl.create(:account) }
-      let(:other_project) { FactoryGirl.create(:project, owner: other_project_owner) }
-      let(:params) do
-        {
-          'project_id' => project.id
-        }
-      end
-      let(:result) do
-        format_iso8601([project_admin_role, project_operator_role, project_role])
+      context 'with project' do
+        let(:params) { { 'project_id' => project.id } }
+
+        context 'in the existing project_id' do
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            let(:result) { [] }
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+
+        context 'in the not existing project_id' do
+          let(:params) { { 'project_id' => 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
 
-      before do
-        other_project
-      end
+      context 'with project and account' do
+        let(:params) do
+          { 'project_id' => project.id,
+            'account_id' => project_operator_role.assignments.first.account.id }
+        end
+        let(:result) do
+          format_iso8601([project_operator_role])
+        end
 
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
+        context 'in the existing project_id' do
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
 
-      context 'normal_account', normal: true do
-        let(:result) { [] }
-        it_behaves_like('403 Forbidden')
-      end
+          context 'normal_account', normal: true do
+            let(:result) { [] }
+            it_behaves_like('200 OK')
+          end
 
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
 
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
 
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+
+        context 'in the not existing project_id' do
+          let(:params) { { 'project_id' => 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 
@@ -151,6 +221,18 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
+      end
+
+      context 'in not existing project_id' do
+        let(:params) { FactoryGirl.attributes_for(:role, project_id: 9999) }
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
       end
     end
 

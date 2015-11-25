@@ -74,6 +74,91 @@ describe API do
       end
     end
 
+    describe 'POST /assignments/:assignment_id/roles/' do
+      let(:method) { 'post' }
+      let(:new_role) { FactoryGirl.create(:role, project_id: project.id) }
+      let(:url) { "/api/v1/assignments/#{assignment.id}/roles/" }
+      let(:params) { { role_id: new_role.id } }
+      let(:result) do
+        params.merge(
+          'id' => Fixnum,
+          'role_name' => String,
+          'assignment_id' => assignment.id,
+          'created_at' => String,
+          'updated_at' => String
+        )
+      end
+
+      context 'not_logged_in' do
+        it_behaves_like('401 Unauthorized')
+      end
+
+      context 'normal_account', normal: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'administrator', admin: true do
+        it_behaves_like('201 Created')
+      end
+
+      context 'project_owner', project_owner: true do
+        it_behaves_like('201 Created')
+      end
+
+      context 'project_operator', project_operator: true do
+        it_behaves_like('403 Forbidden')
+      end
+
+      context 'in not existing role_id' do
+        let(:params) { { role_id: 9999 } }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('400 BadRequest')
+        end
+      end
+
+      context 'with other project role' do
+        let(:other_project) { FactoryGirl.create(:project) }
+        let(:params) { { role_id: other_project.roles.first.id } }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('403 Forbidden')
+        end
+      end
+    end
+
     describe 'DELETE /assignments/:assignment_id/roles/:id' do
       let(:method) { 'delete' }
       let(:assignment_role) { assignment.assignment_roles.all.first }

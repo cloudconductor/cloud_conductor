@@ -1,3 +1,4 @@
+require 'validators/exists_id'
 module API
   module V1
     class RoleAPI < API::V1::Base
@@ -9,14 +10,12 @@ module API
         end
         get '/' do
           if params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
             if params[:account_id]
-              project.assignments.find_by(account_id: params[:account_id]).roles.all.select do |role|
+              ::Role.assigned_to(params[:project_id], params[:account_id]).select do |role|
                 can?(:read, role)
               end
             else
-              project.roles.all.select do |role|
+              ::Role.find_by_project_id(params[:project_id]).select do |role|
                 can?(:read, role)
               end
             end
@@ -39,12 +38,13 @@ module API
 
         desc 'Create role'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'Role name'
           optional :description, type: String, desc: 'Role description'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
+
           authorize!(:read, project)
           authorize!(:create, ::Role, project: project)
           ::Role.create!(declared_params)

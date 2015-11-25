@@ -23,14 +23,17 @@ class Ability
 
     can [:read, :update], Account, id: account.id
     can [:create], Project
+    can [:read], Account
 
     assign = account.assignments.find_by(project: project)
     return unless assign
 
     assign.roles.each do |role|
       role.permissions.each do |permission|
-        clazz = permission.model.classify.constantize
-        can permission.action.to_sym, clazz
+        klass = permission.model.classify.constantize
+        next if klass == Account
+
+        can permission.action.to_sym, klass
       end
     end
   end

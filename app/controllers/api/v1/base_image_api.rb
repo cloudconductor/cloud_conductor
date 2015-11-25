@@ -21,7 +21,7 @@ module API
 
         desc 'Create base_image'
         params do
-          requires :cloud_id, type: Integer, desc: 'Cloud id'
+          requires :cloud_id, type: Integer, exists_id: :cloud, desc: 'Cloud id'
           requires :ssh_username, type: String, desc: 'SSH login username to created instance'
           requires :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
           optional :os_version, type: String, desc: 'Operating system name', default: 'default'

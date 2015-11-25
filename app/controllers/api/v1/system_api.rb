@@ -21,7 +21,7 @@ module API
 
         desc 'Create system'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'System name'
           optional :description, type: String, desc: 'System description'
           optional :domain, type: String, desc: 'System domain name'

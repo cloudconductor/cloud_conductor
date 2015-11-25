@@ -21,7 +21,7 @@ module API
 
         desc 'Create blueprint'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
         end

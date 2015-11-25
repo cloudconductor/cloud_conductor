@@ -26,11 +26,15 @@ module API
             desc 'Create assignment role'
             params do
               requires :assignment_id, type: Integer, desc: 'Target assignment_id'
-              requires :role_id, type: Integer, desc: 'Target role id'
+              requires :role_id, type: Integer, exists_id: :role, desc: 'Target role id'
             end
             post '/' do
               assignment = ::Assignment.find(params[:assignment_id])
               authorize!(:update, assignment)
+
+              role = ::Role.find(params[:role_id])
+
+              error!('Project mismatch!', 400) unless assignment.project == role.project
 
               ::AssignmentRole.create!(declared_params)
             end

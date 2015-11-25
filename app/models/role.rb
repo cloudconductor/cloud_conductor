@@ -10,6 +10,14 @@ class Role < ActiveRecord::Base
 
   before_destroy :raise_error_in_use
 
+  scope :find_by_project_id, -> (project_id) { where(project_id: project_id) }
+  scope :assigned_to, lambda { |project_id, account_id|
+    joins(:assignments)
+      .where(
+        arel_table[:project_id].eq(project_id)
+      .and(Assignment.arel_table[:account_id].eq(account_id)))
+  }
+
   def used?
     assignments.count > 0
   end

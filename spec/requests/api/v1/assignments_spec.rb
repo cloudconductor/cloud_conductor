@@ -13,14 +13,7 @@ describe API do
     describe 'GET /assignments' do
       let(:method) { 'get' }
       let(:url) { '/api/v1/assignments' }
-      let(:params) do
-        {
-          project_id: project.id
-        }
-      end
-      let(:result) do
-        format_iso8601(project.assignments)
-      end
+      let(:result) { format_iso8601(::Assignment.all) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -28,7 +21,7 @@ describe API do
 
       context 'normal_account', normal: true do
         let(:result) { [] }
-        it_behaves_like('403 Forbidden')
+        it_behaves_like('200 OK')
       end
 
       context 'administrator', admin: true do
@@ -36,11 +29,114 @@ describe API do
       end
 
       context 'project_owner', project_owner: true do
+        let(:result) { format_iso8601(project.assignments) }
         it_behaves_like('200 OK')
       end
 
       context 'project_operator', project_operator: true do
+        let(:result) { format_iso8601(project.assignments) }
         it_behaves_like('200 OK')
+      end
+
+      context 'with project' do
+        let(:params) { { project_id: project.id } }
+        let(:result) { format_iso8601(project.assignments) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not existing project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
+
+      context 'with account' do
+        let(:params) { { account_id: project_operator_account.id } }
+        let(:result) { format_iso8601(project_operator_account.assignments) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not existing account_id' do
+          let(:params) { { account_id: 9999 } }
+          let(:result) { [] }
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 
@@ -108,6 +204,54 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
+      end
+
+      context 'in not existing project_id' do
+        let(:params) { { project_id: 9999, account_id: new_account.id } }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('400 BadRequest')
+        end
+      end
+
+      context 'in not existing account_id' do
+        let(:params) { { project_id: project.id, account_id: 9999 } }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('400 BadRequest')
+        end
       end
     end
 

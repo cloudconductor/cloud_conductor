@@ -21,8 +21,8 @@ module API
 
         desc 'Create environment'
         params do
-          requires :system_id, type: Integer, desc: 'System id'
-          requires :blueprint_id, type: Integer, desc: 'Blueprint id'
+          requires :system_id, type: Integer, exists_id: :system, desc: 'System id'
+          requires :blueprint_id, type: Integer, exists_id: :blueprint, desc: 'Blueprint id'
           requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'

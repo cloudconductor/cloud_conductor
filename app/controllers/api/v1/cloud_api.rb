@@ -21,7 +21,7 @@ module API
 
         desc 'Create cloud'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'Cloud name'
           requires :type, type: String, desc: 'Cloud type (aws or openstack)'
           requires :key, type: String, desc: 'AccessKey or username to authenticate cloud'

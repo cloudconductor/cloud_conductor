@@ -21,7 +21,7 @@ module API
 
         desc 'Create application'
         params do
-          requires :system_id, type: Integer, desc: 'Target system id'
+          requires :system_id, type: Integer, exists_id: :system, desc: 'Target system id'
           requires :name, type: String, desc: 'Application name'
           optional :description, type: String, desc: 'Application description'
           optional :domain, type: String, desc: 'Application domain name'

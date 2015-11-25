@@ -21,12 +21,14 @@ module API
 
         desc 'Create pattern'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :url, type: String, desc: 'URL of repository that contains pattern'
           optional :revision, type: String, desc: 'revision of repository'
         end
         post '/' do
-          authorize!(:create, ::Pattern)
+          project = ::Project.find(params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Pattern, project: project)
           ::Pattern.create!(declared_params)
         end
 

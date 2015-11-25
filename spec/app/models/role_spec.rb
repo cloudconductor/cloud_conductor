@@ -102,4 +102,17 @@ describe Role do
       expect(@role.used?).to eq(false)
     end
   end
+
+  describe 'scope' do
+    it ':find_by_project_id' do
+      expect(::Role.find_by_project_id(@role.project.id)).to eq(::Project.find(@role.project.id).roles.all)
+    end
+
+    it ':assigned_to' do
+      account = project.assignments.first.account
+      roles = ::Role.joins(:assignments).where(::Role.arel_table[:project_id].eq(project.id).and(::Assignment.arel_table[:account_id].eq(account.id)))
+
+      expect(::Role.assigned_to(project.id, account.id)).to eq(roles)
+    end
+  end
 end

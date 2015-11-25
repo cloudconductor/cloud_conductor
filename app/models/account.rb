@@ -16,6 +16,8 @@ class Account < ActiveRecord::Base
 
   BLACKLIST_FOR_SERIALIZATION << :authentication_token
 
+  scope :assigned_to, -> (project_id) { joins(:assignments).where(assignments: { project_id: project_id }) }
+
   def display_name
     email
   end

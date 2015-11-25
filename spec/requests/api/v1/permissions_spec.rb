@@ -92,101 +92,11 @@ describe API do
       end
 
       context 'administrator', admin: true do
-        context 'one action' do
-          it_behaves_like('201 Created')
-        end
-
-        context 'two actions' do
-          let(:params) do
-            FactoryGirl.attributes_for(:permission, role_id: role.id)
-              .merge('action' => 'read,create')
-          end
-          let(:result) do
-            [format_iso8601(params).merge(
-              'action' => 'read',
-              'id' => Fixnum,
-              'created_at' => String,
-              'updated_at' => String
-            ), format_iso8601(params).merge(
-              'action' => 'create',
-              'id' => Fixnum,
-              'created_at' => String,
-              'updated_at' => String
-            )]
-          end
-
-          it_behaves_like('201 Created')
-        end
+        it_behaves_like('201 Created')
       end
 
       context 'project_owner', project_owner: true do
-        context 'one action' do
-          it_behaves_like('201 Created')
-        end
-
-        context 'two actions' do
-          let(:params) do
-            FactoryGirl.attributes_for(:permission, role_id: role.id)
-              .merge('action' => 'read,create')
-          end
-          let(:result) do
-            [format_iso8601(params).merge(
-              'action' => 'read',
-              'id' => Fixnum,
-              'created_at' => String,
-              'updated_at' => String
-            ), format_iso8601(params).merge(
-              'action' => 'create',
-              'id' => Fixnum,
-              'created_at' => String,
-              'updated_at' => String
-            )]
-          end
-
-          it_behaves_like('201 Created')
-        end
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('403 Forbidden')
-      end
-    end
-
-    describe 'PUT /roles/:role_id/permissions/:id' do
-      let(:method) { 'put' }
-      let(:url) { "/api/v1/roles/#{role.id}/permissions/#{permission.id}" }
-      let(:params) do
-        {
-          'model' => 'new_model',
-          'action' => 'manage'
-        }
-      end
-      let(:result) do
-        permission.as_json.merge(params).merge(
-          'created_at' => permission.created_at.iso8601(3),
-          'updated_at' => String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/roles/0' }
-        it_behaves_like('404 Not Found')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
+        it_behaves_like('201 Created')
       end
 
       context 'project_operator', project_operator: true do
