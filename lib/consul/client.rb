@@ -32,7 +32,7 @@ module Consul
       end
 
       @kv = Consul::Client::KV.new @faraday, options
-      @event = Consul::Client::Event.new @faraday
+      @event = Consul::Client::Event.new @faraday, options
       @catalog = Consul::Client::Catalog.new @faraday
     end
 

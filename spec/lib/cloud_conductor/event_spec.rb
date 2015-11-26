@@ -30,10 +30,6 @@ module CloudConductor
         expect(Consul::Client).to receive(:new)
         CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
       end
-
-      it 'keep token in instance variable' do
-        expect(@event.instance_variable_get(:@token)).to eq('dummy_token')
-      end
     end
 
     describe '#fire' do
@@ -50,7 +46,7 @@ module CloudConductor
       end
 
       it 'call Event#fire with token' do
-        expect(@client).to receive_message_chain(:event, :fire).with(:configure, 'dummy_token', {})
+        expect(@client).to receive_message_chain(:event, :fire).with(:configure, {})
         @event.fire(:configure, {})
       end
 
