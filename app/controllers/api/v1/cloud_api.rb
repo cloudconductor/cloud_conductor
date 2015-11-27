@@ -8,15 +8,12 @@ module API
         end
         get '/' do
           if params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            project.clouds.all.select do |cloud|
-              can?(:read, cloud)
-            end
+            clouds = ::Cloud.where(project_id: params[:project_id])
           else
-            ::Cloud.all.select do |cloud|
-              can?(:read, cloud)
-            end
+            clouds = ::Cloud.all
+          end
+          clouds.select do |cloud|
+            can?(:read, cloud)
           end
         end
 

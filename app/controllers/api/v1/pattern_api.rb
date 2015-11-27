@@ -5,15 +5,12 @@ module API
         desc 'List patterns'
         get '/' do
           if params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            project.patterns.all.select do |pattern|
-              can?(:read, pattern)
-            end
+            patterns = ::Pattern.where(project_id: params[:project_id])
           else
-            ::Pattern.all.select do |pattern|
-              can?(:read, pattern)
-            end
+            patterns = ::Pattern.all
+          end
+          patterns.select do |pattern|
+            can?(:read, pattern)
           end
         end
 

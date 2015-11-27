@@ -30,61 +30,107 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
-    end
 
-    describe 'GET /environments with system_id' do
-      let(:method) { 'get' }
-      let(:url) { '/api/v1/environments' }
-      let(:params) { { system_id: application.system.id } }
-      let(:result) { format_iso8601([environment]) }
+      context 'with system' do
+        let(:params) { { system_id: application.system.id } }
+        let(:result) { format_iso8601([environment]) }
 
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists system_id' do
+          let(:params) { { system_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
 
-      context 'normal_account', normal: true do
-        let(:result) { [] }
-        it_behaves_like('403 Forbidden')
-      end
+      context 'with project' do
+        let(:params) { { project_id: application.project.id } }
+        let(:result) { format_iso8601([environment]) }
 
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
 
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
 
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
-      end
-    end
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
 
-    describe 'GET /environments with project_id' do
-      let(:method) { 'get' }
-      let(:url) { '/api/v1/environments' }
-      let(:params) { { project_id: application.project.id } }
-      let(:result) { format_iso8601([environment]) }
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
 
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
 
-      context 'normal_account', normal: true do
-        let(:result) { [] }
-        it_behaves_like('403 Forbidden')
-      end
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
 
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
 
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
 
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 

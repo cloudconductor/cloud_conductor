@@ -8,15 +8,12 @@ module API
         end
         get '/' do
           if params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            project.blueprints.all.select do |blueprint|
-              authorize!(:read, blueprint)
-            end
+            blueprints = ::Blueprint.where(project_id: params[:project_id])
           else
-            ::Blueprint.all.select do |blueprint|
-              can?(:read, blueprint)
-            end
+            blueprints = ::Blueprint.all
+          end
+          blueprints.select do |blueprint|
+            can?(:read, blueprint)
           end
         end
 

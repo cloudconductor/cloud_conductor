@@ -9,21 +9,14 @@ module API
         end
         get '/' do
           if params[:cloud_id]
-            cloud = ::Cloud.find(params[:cloud_id])
-            authorize!(:read, cloud)
-            cloud.base_images.all.select do |base_image|
-              can?(:read, base_image)
-            end
+            base_images = ::BaseImage.find_by_cloud_id(params[:cloud_id])
           elsif params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            ::BaseImage.joins(:cloud).where(clouds: { project_id: project.id }).select do |base_image|
-              can?(:read, base_image)
-            end
+            base_images = ::BaseImage.find_by_project_id(params[:project_id])
           else
-            ::BaseImage.all.select do |base_image|
-              can?(:read, base_image)
-            end
+            base_images = ::BaseImage.all
+          end
+          base_images.select do |base_image|
+            can?(:read, base_image)
           end
         end
 

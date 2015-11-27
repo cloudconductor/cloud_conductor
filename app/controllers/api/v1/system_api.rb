@@ -8,15 +8,12 @@ module API
         end
         get '/' do
           if params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            project.systems.all.select do |system|
-              can?(:read, system)
-            end
+            systems = ::System.where(project_id: params[:project_id])
           else
-            ::System.all.select do |system|
-              can?(:read, system)
-            end
+            systems = ::System.all
+          end
+          systems.select do |system|
+            can?(:read, system)
           end
         end
 

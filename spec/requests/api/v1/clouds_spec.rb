@@ -30,33 +30,56 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
-    end
 
-    describe 'GET /clouds with project_id' do
-      let(:method) { 'get' }
-      let(:url) { '/api/v1/clouds' }
-      let(:params) { { project_id: cloud.project.id } }
-      let(:result) { format_iso8601([cloud]) }
+      context 'with project' do
+        let(:params) { { project_id: cloud.project.id } }
+        let(:result) { format_iso8601([cloud]) }
 
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
 
-      context 'normal_account', normal: true do
-        let(:result) { [] }
-        it_behaves_like('403 Forbidden')
-      end
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
 
-      context 'administrator', admin: true do
-        it_behaves_like('200 OK')
-      end
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
 
-      context 'project_owner', project_owner: true do
-        it_behaves_like('200 OK')
-      end
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
 
-      context 'project_operator', project_operator: true do
-        it_behaves_like('200 OK')
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 

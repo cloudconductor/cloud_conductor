@@ -9,21 +9,15 @@ module API
         end
         get '/' do
           if params[:system_id]
-            system = ::System.find(params[:system_id])
-            authorize!(:read, system)
-            system.environments.all.select do |environment|
-              can?(:read, environment)
-            end
+            environments = ::Environment.find_by_system_id(params[:system_id])
           elsif params[:project_id]
-            project = ::Project.find(params[:project_id])
-            authorize!(:read, project)
-            ::Environment.joins(:system).where(systems: { project_id: project.id }).select do |environment|
-              can?(:read, environment)
-            end
+            environments = ::Environment.find_by_project_id(params[:project_id])
           else
-            ::Environment.all.select do |environment|
-              can?(:read, environment)
-            end
+            environments = ::Environment.all
+          end
+
+          environments.select do |environment|
+            can?(:read, environment)
           end
         end
 
