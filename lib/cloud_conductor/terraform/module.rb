@@ -1,31 +1,37 @@
 module CloudConductor
   class Terraform
     class Module
-      attr_accessor :name, :source, :dependencies, :variables, :outputs
-      def initialize(pattern, cloud)
-        @name = pattern.name
-        @cloned_path = clone_repository(pattern.url, pattern.revision)
-        @source = "#{@cloned_path}/templates/#{cloud.type}"
+      attr_reader :name, :cloud, :source, :dependencies, :variables, :outputs
+      def initialize(cloud, snapshot, mappings)
+        @cloud = cloud
+        @name = snapshot.name
+        @cloned_path = clone_repository(snapshot.url, snapshot.revision)
+        @source = "#{@cloned_path}/templates/#{@cloud.type}"
+        @mappings = mappings
 
         # Load dependencies, variables and outputs from metadata.yml
         metadata = YAML.load_file("#{@cloned_path}/metadata.yml").symbolize_keys
-        @variables = {}
-        @outputs = {}
 
         @dependencies = metadata[:dependencies] | []
-        metadata[:variables].map { |variable| @variables[variable] = nil }
-        metadata[:outputs].map { |output| @outputs[output] = nil }
-      end
+        @outputs = metadata[:outputs] | []
 
-      def resolve(modules)
-        @variables.keys.each do |key|
-          m = @dependencies.find { |m| modules[m].outputs.keys.include?(key) }
-          if m.nil?
-            @variables[key] = "var.#{key}"
+        @variables = {}
+        (metadata[:variables] | []).each do |key|
+          case
+          when mappings[key][:type] == :value
+            @variables[key] = mappings[key][:value]
+          when mappings[key][:type] == :module
+            @variables[key] = "${module.#{mappings[key][:value]}}"
+          when mappings[key][:type] == :variable
+            @variables[key] = "${var.#{mappings[key][:value]}}"
           else
-            @variables[key] = "module.#{m}.#{key}"
+            fail "Unknown type(#{mappings[key][:type]})"
           end
         end
+      end
+
+      def dynamic_variables
+        @variables.keys.select { |key| @mappings[key][:type] == :variable }
       end
 
       def cleanup
