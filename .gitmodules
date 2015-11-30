@@ -1,0 +1,3 @@
+[submodule "vendor/ruby-hcl"]
+	path = vendor/ruby-hcl
+	url = https://github.com/sikula/ruby-hcl
