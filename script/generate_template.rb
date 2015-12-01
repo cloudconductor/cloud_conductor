@@ -7,13 +7,13 @@ cloud = Cloud.new(name: 'aws', type: :aws)
 patterns = []
 patterns << Pattern.new(name: 'cloud_conductor_init',
                         url: 'https://github.com/cloudconductor/cloud_conductor_init',
-                        revision: 'test/terraform')
+                        revision: 'feature/terraform')
 patterns << Pattern.new(name: 'tomcat_pattern',
                         url: 'https://github.com/cloudconductor-patterns/tomcat_pattern',
-                        revision: 'test/terraform')
+                        revision: 'feature/terraform')
 patterns << Pattern.new(name: 'zabbix_pattern',
                         url: 'https://github.com/cloudconductor-patterns/zabbix_pattern',
-                        revision: 'test/terraform')
+                        revision: 'feature/terraform')
 
 mappings = {
   cloud_conductor_init: {
@@ -23,7 +23,7 @@ mappings = {
   tomcat_pattern: {
     bootstrap_expect: { type: :variable, value: 'bootstrap_expect', default: '0' },
     vpc_id: { type: :module, value: 'cloud_conductor_init.vpc_id' },
-    subnet_id: { type: :module, value: 'cloud_conductor_init.subnet_id' },
+    subnet_ids: { type: :module, value: 'cloud_conductor_init.subnet_ids' },
     shared_security_group: { type: :module, value: 'cloud_conductor_init.shared_security_group' },
     key_name: { type: :value, value: 'develop-key' },
     web_image: { type: :value, value: 'ami-c66326ac' },
@@ -39,7 +39,7 @@ mappings = {
   zabbix_pattern: {
     bootstrap_expect: { type: :variable, value: 'bootstrap_expect' },
     vpc_id: { type: :module, value: 'cloud_conductor_init.vpc_id' },
-    subnet_id: { type: :module, value: 'cloud_conductor_init.subnet_id' },
+    subnet_ids: { type: :module, value: 'cloud_conductor_init.subnet_ids' },
     shared_security_group: { type: :module, value: 'cloud_conductor_init.shared_security_group' },
     key_name: { type: :value, value: 'develop-key' },
     monitoring_image: { type: :value, value: 'ami-8c6c29e6' },
