@@ -11,29 +11,36 @@ module CloudConductor
         @source = "#{@cloned_path}/templates/#{@cloud.type}"
         @mappings = mappings
 
-        # Load dependencies from metadata.yml
-        metadata = YAML.load_file("#{@cloned_path}/metadata.yml").symbolize_keys
-        @dependencies = metadata[:dependencies] || []
+        load_metadata("#{@cloned_path}/metadata.yml")
+        load_templates("#{@source}/*.tf")
+      end
 
-        # Load variables and outputs from template
-        templates = Dir.glob("#{@source}/*.tf").map do |path|
-          HCLParser.new.parse(File.read(path)).deep_symbolize_keys
+      # Load dependencies from metadata.yml
+      def load_metadata(path)
+        metadata = YAML.load_file(path).symbolize_keys
+        @dependencies = metadata[:dependencies] || []
+      end
+
+      # Load variables and outputs from templates
+      def load_templates(directory)
+        templates = Dir.glob(directory).map do |path|
+          HCLParser.new.parse(File.read(path))
         end
-        template = templates.inject(&:deep_merge)
+        template = templates.inject(&:deep_merge).deep_symbolize_keys
 
         @outputs = (template[:output] || {}).keys
 
         @variables = {}
         (template[:variable] || {}).keys.each do |key|
           case
-          when mappings[key][:type] == :value
-            @variables[key] = mappings[key][:value]
-          when mappings[key][:type] == :module
-            @variables[key] = "${module.#{mappings[key][:value]}}"
-          when mappings[key][:type] == :variable
-            @variables[key] = "${var.#{mappings[key][:value]}}"
+          when @mappings[key][:type] == :value
+            @variables[key] = @mappings[key][:value]
+          when @mappings[key][:type] == :module
+            @variables[key] = "${module.#{@mappings[key][:value]}}"
+          when @mappings[key][:type] == :variable
+            @variables[key] = "${var.#{@mappings[key][:value]}}"
           else
-            fail "Unknown type(#{mappings[key][:type]})"
+            fail "Unknown type(#{@mappings[key][:type]})"
           end
         end
       end
