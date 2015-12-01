@@ -6,7 +6,7 @@ AllCops:
     - public/js/ext/**/*
     - bin/**/*
     - config/**/*
-    - vendor/bundle/**/*
+    - vendor/**/*
     - tmp/**/*
   DisplayCopNames: true
 
