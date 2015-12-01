@@ -58,7 +58,7 @@ module API
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
-              CloudConductor::SystemBuilder.new(environment).build
+              CloudConductor::Builders::CloudFormation.new(environment).build
               system = environment.system
               if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
                 system.update_attributes!(primary_environment: environment)
@@ -85,7 +85,7 @@ module API
           environment.update_attributes!(declared_params.except(:id, :switch).merge(status: :PENDING))
 
           Thread.new do
-            CloudConductor::SystemUpdater.new(environment).update
+            CloudConductor::Updaters::CloudFormation.new(environment).update
           end
 
           environment
