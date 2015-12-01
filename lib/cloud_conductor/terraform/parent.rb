@@ -15,7 +15,7 @@ module CloudConductor
       end
 
       def collect_outputs(key)
-        values = @modules.select { |m| m.outputs.include? key }.map do |m|
+        values = @modules.select { |m| m.outputs.include? key.to_sym }.map do |m|
           "split(\", \", module.#{m.name}.#{key})"
         end
 

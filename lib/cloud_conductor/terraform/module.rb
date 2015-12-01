@@ -1,3 +1,5 @@
+require 'ruby-hcl/lib/hcl'
+
 module CloudConductor
   class Terraform
     class Module
@@ -9,14 +11,20 @@ module CloudConductor
         @source = "#{@cloned_path}/templates/#{@cloud.type}"
         @mappings = mappings
 
-        # Load dependencies, variables and outputs from metadata.yml
+        # Load dependencies from metadata.yml
         metadata = YAML.load_file("#{@cloned_path}/metadata.yml").symbolize_keys
+        @dependencies = metadata[:dependencies] || []
 
-        @dependencies = metadata[:dependencies] | []
-        @outputs = metadata[:outputs] | []
+        # Load variables and outputs from template
+        templates = Dir.glob("#{@source}/*.tf").map do |path|
+          HCLParser.new.parse(File.read(path)).deep_symbolize_keys
+        end
+        template = templates.inject(&:deep_merge)
+
+        @outputs = (template[:output] || {}).keys
 
         @variables = {}
-        (metadata[:variables] | []).each do |key|
+        (template[:variable] || {}).keys.each do |key|
           case
           when mappings[key][:type] == :value
             @variables[key] = mappings[key][:value]
