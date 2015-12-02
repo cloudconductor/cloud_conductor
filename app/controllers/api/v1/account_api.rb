@@ -9,7 +9,7 @@ module API
         get '/' do
           if params[:project_id]
             project = ::Project.find_by(id: params[:project_id])
-            return [] unless project && can?(:read, project)
+            return ::Account.none unless project && can?(:read, project)
             ::Account.assigned_to(params[:project_id]).select do |account|
               can?(:read, account)
             end

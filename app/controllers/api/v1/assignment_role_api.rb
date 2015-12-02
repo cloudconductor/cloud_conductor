@@ -29,12 +29,8 @@ module API
               requires :role_id, type: Integer, exists_id: :role, desc: 'Target role id'
             end
             post '/' do
-              assignment = ::Assignment.find(params[:assignment_id])
+              assignment = ::Assignment.find_by(id: params[:assignment_id])
               authorize!(:update, assignment)
-
-              role = ::Role.find(params[:role_id])
-
-              error!('Project mismatch!', 400) unless assignment.project == role.project
 
               ::AssignmentRole.create!(declared_params)
             end

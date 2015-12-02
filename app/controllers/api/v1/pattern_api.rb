@@ -26,7 +26,7 @@ module API
           optional :revision, type: String, desc: 'revision of repository'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::Pattern, project: project)
           ::Pattern.create!(declared_params)

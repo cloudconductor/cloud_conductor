@@ -61,16 +61,4 @@ describe Assignment do
       expect(@assignment.valid?).to be_falsey
     end
   end
-
-  describe '#administrator?' do
-    it 'returns true' do
-      @assignment.roles << project.roles.find_by(name: 'administrator')
-      @assignment.save!
-      expect(@assignment.administrator?).to be_truthy
-    end
-
-    it 'returns false' do
-      expect(@assignment.administrator?).to be_falsey
-    end
-  end
 end

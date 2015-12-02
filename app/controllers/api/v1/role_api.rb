@@ -1,4 +1,3 @@
-require 'validators/exists_id'
 module API
   module V1
     class RoleAPI < API::V1::Base
@@ -9,18 +8,12 @@ module API
           optional :account_id, type: Integer, desc: 'Account id'
         end
         get '/' do
-          if params[:project_id]
-            if params[:account_id]
-              ::Role.assigned_to(params[:project_id], params[:account_id]).select do |role|
-                can?(:read, role)
-              end
-            else
-              ::Role.find_by_project_id(params[:project_id]).select do |role|
-                can?(:read, role)
-              end
+          if params[:project_id] && params[:account_id]
+            ::Role.granted_to(params[:project_id], params[:account_id]).select do |role|
+              can?(:read, role)
             end
           else
-            ::Role.all.select do |role|
+            ::Role.where(params.slice(:project_id).to_hash).select do |role|
               can?(:read, role)
             end
           end

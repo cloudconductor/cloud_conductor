@@ -8,21 +8,8 @@ module API
           optional :account_id, type: Integer, desc: 'Account id'
         end
         get '/' do
-          if params[:project_id]
-            if params[:account_id]
-              assignments = ::Assignment.search(params[:project_id], params[:account_id])
-            else
-              assignments = ::Assignment.where(project_id: params[:project_id])
-            end
-          else
-            if params[:account_id]
-              assignments = ::Assignment.where(account_id: params[:account_id])
-            else
-              assignments = ::Assignment.all
-            end
-          end
-
-          assignments.select do |assignment|
+          ::Assignment.where(params.slice(:project_id, :account_id).to_hash)
+            .select do |assignment|
             can?(:read, assignment)
           end
         end
