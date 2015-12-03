@@ -246,6 +246,10 @@ describe API do
     end
 
     describe 'POST /blueprints/:id/build' do
+      before do
+        allow_any_instance_of(BlueprintHistory).to receive(:build_pattern_snapshots)
+      end
+
       let(:method) { 'post' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/build" }
       let(:result) do

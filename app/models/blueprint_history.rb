@@ -68,5 +68,7 @@ class BlueprintHistory < ActiveRecord::Base
       )
     end
     pattern_snapshots.each(&:freeze_pattern)
+
+    fail 'Patterns don\'t have usable providers on any cloud' if providers.empty?
   end
 end

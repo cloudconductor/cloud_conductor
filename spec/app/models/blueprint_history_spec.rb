@@ -200,9 +200,13 @@ describe BlueprintHistory do
   end
 
   describe '#build_pattern_snapshots' do
-    it 'create pattern_snapshot from relation' do
+    before do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original
       allow_any_instance_of(PatternSnapshot).to receive(:freeze_pattern)
+    end
+
+    it 'create pattern_snapshot from relation' do
+      allow(@history).to receive(:providers).and_return('aws' => %w(terraform))
 
       pattern1 = FactoryGirl.build(:pattern, :platform, project: project)
       pattern2 = FactoryGirl.build(:pattern, :optional, project: project)
@@ -211,6 +215,11 @@ describe BlueprintHistory do
 
       @history.send(:build_pattern_snapshots)
       expect(@history.pattern_snapshots.size).to eq(2)
+    end
+
+    it 'raise error when patterns don\'t have usable providers on any cloud' do
+      allow(@history).to receive(:providers).and_return({})
+      expect { @history.send(:build_pattern_snapshots) }.to raise_error('Patterns don\'t have usable providers on any cloud')
     end
   end
 end
