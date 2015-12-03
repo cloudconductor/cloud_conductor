@@ -49,4 +49,26 @@ describe Candidate do
       expect(environment2.candidates.primary).to eq(environment2.candidates[1])
     end
   end
+
+  describe '.sorted' do
+    it 'return sorted candidates order by priority' do
+      environment = FactoryGirl.build(:environment)
+      environment.candidates[0].priority = 10
+      environment.candidates[1].priority = 20
+      environment.save!
+
+      candidates = Environment.find(environment).candidates.sorted
+      expect(candidates).to eq([environment.candidates[1], environment.candidates[0]])
+    end
+  end
+
+  describe '#<=>' do
+    it 'can be sorted with priority order' do
+      candidate1 = FactoryGirl.build(:candidate, priority: 10)
+      candidate2 = FactoryGirl.build(:candidate, priority: 20)
+
+      candidates = [candidate1, candidate2]
+      expect(candidates.sort).to eq([candidate2, candidate1])
+    end
+  end
 end
