@@ -3,8 +3,19 @@ module API
     class ApplicationAPI < API::V1::Base
       resource :applications do
         desc 'List applications'
+        params do
+          optional :system_id, type: Integer, desc: 'Target system id'
+          optional :project_id, type: Integer, desc: 'Target project id'
+        end
         get '/' do
-          ::Application.all.select do |application|
+          if params[:system_id]
+            applications = ::Application.where(system_id: params[:system_id])
+          elsif params[:project_id]
+            applications = ::Application.select_by_project_id(params[:project_id])
+          else
+            applications = ::Application.all
+          end
+          applications.select do |application|
             can?(:read, application)
           end
         end
@@ -27,7 +38,7 @@ module API
           optional :domain, type: String, desc: 'Application domain name'
         end
         post '/' do
-          system = ::System.find(params[:system_id])
+          system = ::System.find_by(id: params[:system_id])
           authorize!(:read, system)
           authorize!(:create, ::Application, project: system.project)
           ::Application.create!(declared_params)

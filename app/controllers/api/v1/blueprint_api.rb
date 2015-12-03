@@ -3,8 +3,11 @@ module API
     class BlueprintAPI < API::V1::Base
       resource :blueprints do
         desc 'List blueprints'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Blueprint.all.select do |blueprint|
+          ::Blueprint.where(params.slice(:project_id).to_hash).select do |blueprint|
             can?(:read, blueprint)
           end
         end
@@ -26,7 +29,7 @@ module API
           optional :description, type: String, desc: 'Blueprint description'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::Blueprint, project: project)
           ::Blueprint.create!(declared_params)

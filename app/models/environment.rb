@@ -34,6 +34,8 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     self.status ||= :PENDING
   end
 
+  scope :select_by_project_id, -> (project_id) { joins(:system).where(systems: { project_id: project_id }) }
+
   def project
     system.project
   end

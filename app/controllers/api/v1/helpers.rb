@@ -29,15 +29,19 @@ module API
         project
       end
 
+      def find_project_by_account(account, *args)
+        account.projects.find do |project|
+          project.id == args.pop[:project].id
+        end if args.last[:project]
+      end
+
       def create_ability(subject, *args)
         project = nil
         if args.last.is_a?(Hash) && args.last.key?(:project)
           if subject.class == Class
             project = args.pop[:project]
           elsif subject.is_a?(Account)
-            project = subject.projects.find do |project|
-              project.id == args.pop[:project].id
-            end
+            project = find_project_by_account(subject, *args)
           else
             project = find_project(subject)
           end

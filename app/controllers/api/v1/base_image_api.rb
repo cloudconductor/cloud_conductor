@@ -3,8 +3,19 @@ module API
     class BaseImageAPI < API::V1::Base
       resource :base_images do
         desc 'List base images'
+        params do
+          optional :cloud_id, type: Integer, desc: 'Cloud id'
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::BaseImage.all.select do |base_image|
+          if params[:cloud_id]
+            base_images = ::BaseImage.where(cloud_id: params[:cloud_id])
+          elsif params[:project_id]
+            base_images = ::BaseImage.select_by_project_id(params[:project_id])
+          else
+            base_images = ::BaseImage.all
+          end
+          base_images.select do |base_image|
             can?(:read, base_image)
           end
         end
@@ -27,7 +38,7 @@ module API
           optional :os_version, type: String, desc: 'Operating system name', default: 'default'
         end
         post '/' do
-          cloud = ::Cloud.find(params[:cloud_id])
+          cloud = ::Cloud.find_by(id: params[:cloud_id])
           authorize!(:read, cloud)
           authorize!(:create, ::BaseImage, project: cloud.project)
           ::BaseImage.create!(declared_params)

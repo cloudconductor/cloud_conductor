@@ -4,7 +4,7 @@ module API
       resource :patterns do
         desc 'List patterns'
         get '/' do
-          ::Pattern.all.select do |pattern|
+          ::Pattern.where(params.slice(:project_id).to_hash).select do |pattern|
             can?(:read, pattern)
           end
         end

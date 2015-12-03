@@ -30,6 +30,108 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
+
+      context 'with cloud' do
+        let(:params) { { cloud_id: base_image.cloud.id } }
+        let(:result) { format_iso8601([base_image]) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists cloud_id' do
+          let(:params) { { cloud_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
+
+      context 'with project' do
+        let(:params) { { project_id: base_image.project.id } }
+        let(:result) { format_iso8601([base_image]) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
     end
 
     describe 'GET /base_images/:id' do

@@ -30,7 +30,7 @@ module API
           requires :account_id, type: Integer, exists_id: :account, desc: 'Account id'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::Assignment, project: project)
 

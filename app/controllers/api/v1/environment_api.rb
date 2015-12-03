@@ -3,8 +3,20 @@ module API
     class EnvironmentAPI < API::V1::Base # rubocop:disable ClassLength
       resource :environments do
         desc 'List environments'
+        params do
+          optional :system_id, type: Integer, desc: 'System id'
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Environment.all.select do |environment|
+          if params[:system_id]
+            environments = ::Environment.where(system_id: params[:system_id])
+          elsif params[:project_id]
+            environments = ::Environment.select_by_project_id(params[:project_id])
+          else
+            environments = ::Environment.all
+          end
+
+          environments.select do |environment|
             can?(:read, environment)
           end
         end
@@ -34,7 +46,7 @@ module API
           end
         end
         post '/' do
-          system = ::System.find(params[:system_id])
+          system = ::System.find_by(id: params[:system_id])
           authorize!(:read, system)
           authorize!(:create, ::Environment, project: system.project)
           version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version

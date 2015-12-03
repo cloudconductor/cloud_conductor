@@ -32,6 +32,57 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
+
+      context 'with project' do
+        let(:params) { { project_id: blueprint.project.id } }
+        let(:result) { format_iso8601([blueprint]) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
     end
 
     describe 'GET /blueprints/:id' do
