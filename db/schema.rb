@@ -180,6 +180,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.string   "roles"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
+    t.string   "providers"
     t.string   "platform"
     t.string   "platform_version"
   end
@@ -195,6 +196,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.datetime "updated_at", null: false
     t.integer  "project_id"
     t.string   "roles"
+    t.string   "providers"
   end
 
   create_table "permissions", force: true do |t|
