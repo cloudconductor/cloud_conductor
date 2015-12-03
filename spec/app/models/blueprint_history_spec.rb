@@ -158,6 +158,47 @@ describe BlueprintHistory do
     end
   end
 
+  describe '#providers' do
+    before do
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+    end
+
+    it 'return empty hash when pattern_snapshots are empty' do
+      @history.pattern_snapshots.delete_all
+      expect(@history.providers).to eq({})
+    end
+
+    it 'return usable providers on aws if all pattern_snapshots can use terraform' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"] }'
+      expect(@history.providers).to eq('aws' => %w(terraform))
+    end
+
+    it 'return usable providers on each cloud' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"], "openstack": ["terraform", "heat"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["terraform"], "openstack": ["terraform", "heat"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"], "openstack": ["terraform", "heat"] }'
+      expect(@history.providers).to eq('aws' => %w(terraform), 'openstack' => %w(terraform heat))
+    end
+
+    it 'return empty provider on aws if pattern_snapshots have unique provider' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["dummy"] }'
+      expect(@history.providers).to eq({})
+    end
+
+    it 'return empty provider if some pattern_snapshots haven\'t provider' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["terraform"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["terraform"], "openstack": ["heat"]}'
+      expect(@history.providers).to eq('aws' => %w(terraform))
+    end
+  end
+
   describe '#build_pattern_snapshots' do
     it 'create pattern_snapshot from relation' do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original

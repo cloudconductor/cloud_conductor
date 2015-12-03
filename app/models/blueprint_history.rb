@@ -22,6 +22,25 @@ class BlueprintHistory < ActiveRecord::Base
     end
   end
 
+  def providers
+    return {} if pattern_snapshots.empty?
+
+    result = {}
+    providers = pattern_snapshots.map do |pattern_snapshot|
+      JSON.parse(pattern_snapshot.providers)
+    end
+
+    providers.map(&:keys).inject(&:|).each do |cloud|
+      providers.each do |provider|
+        list = provider[cloud] || []
+        result[cloud] ||= list
+        result[cloud] = result[cloud] & list
+      end
+    end
+
+    result.reject { |_key, value| value.empty? }
+  end
+
   def as_json(options = {})
     super({ methods: :status }.merge(options))
   end
