@@ -9,9 +9,9 @@ module API
         end
         get '/' do
           if params[:cloud_id]
-            base_images = ::BaseImage.find_by_cloud_id(params[:cloud_id])
+            base_images = ::BaseImage.where(cloud_id: params[:cloud_id])
           elsif params[:project_id]
-            base_images = ::BaseImage.find_by_project_id(params[:project_id])
+            base_images = ::BaseImage.select_by_project_id(params[:project_id])
           else
             base_images = ::BaseImage.all
           end
@@ -38,7 +38,7 @@ module API
           optional :os_version, type: String, desc: 'Operating system name', default: 'default'
         end
         post '/' do
-          cloud = ::Cloud.find(params[:cloud_id])
+          cloud = ::Cloud.find_by(id: params[:cloud_id])
           authorize!(:read, cloud)
           authorize!(:create, ::BaseImage, project: cloud.project)
           ::BaseImage.create!(declared_params)

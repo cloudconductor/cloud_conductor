@@ -7,12 +7,7 @@ module API
           optional :project_id, type: Integer, desc: 'Project id'
         end
         get '/' do
-          if params[:project_id]
-            blueprints = ::Blueprint.where(project_id: params[:project_id])
-          else
-            blueprints = ::Blueprint.all
-          end
-          blueprints.select do |blueprint|
+          ::Blueprint.where(params.slice(:project_id).to_hash).select do |blueprint|
             can?(:read, blueprint)
           end
         end
@@ -34,7 +29,7 @@ module API
           optional :description, type: String, desc: 'Blueprint description'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::Blueprint, project: project)
           ::Blueprint.create!(declared_params)

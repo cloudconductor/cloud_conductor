@@ -7,12 +7,7 @@ module API
           optional :project_id, type: Integer, desc: 'Project id'
         end
         get '/' do
-          if params[:project_id]
-            systems = ::System.where(project_id: params[:project_id])
-          else
-            systems = ::System.all
-          end
-          systems.select do |system|
+          ::System.where(params.slice(:project_id).to_hash).select do |system|
             can?(:read, system)
           end
         end
@@ -35,7 +30,7 @@ module API
           optional :domain, type: String, desc: 'System domain name'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::System, project: project)
           ::System.create!(declared_params)

@@ -10,8 +10,7 @@ class BaseImage < ActiveRecord::Base
     self.os_version ||= 'default'
   end
 
-  scope :find_by_cloud_id, -> (cloud_id) { where(cloud_id: cloud_id) }
-  scope :find_by_project_id, -> (project_id) { joins(:cloud).where(clouds: { project_id: project_id }) }
+  scope :select_by_project_id, -> (project_id) { joins(:cloud).where(clouds: { project_id: project_id }) }
 
   def project
     cloud.project

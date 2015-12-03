@@ -9,9 +9,9 @@ module API
         end
         get '/' do
           if params[:system_id]
-            applications = ::Application.find_by_system_id(params[:system_id])
+            applications = ::Application.where(system_id: params[:system_id])
           elsif params[:project_id]
-            applications = ::Application.find_by_project_id(params[:project_id])
+            applications = ::Application.select_by_project_id(params[:project_id])
           else
             applications = ::Application.all
           end
@@ -38,7 +38,7 @@ module API
           optional :domain, type: String, desc: 'Application domain name'
         end
         post '/' do
-          system = ::System.find(params[:system_id])
+          system = ::System.find_by(id: params[:system_id])
           authorize!(:read, system)
           authorize!(:create, ::Application, project: system.project)
           ::Application.create!(declared_params)

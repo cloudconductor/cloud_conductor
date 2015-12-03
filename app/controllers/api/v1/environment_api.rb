@@ -9,9 +9,9 @@ module API
         end
         get '/' do
           if params[:system_id]
-            environments = ::Environment.find_by_system_id(params[:system_id])
+            environments = ::Environment.where(system_id: params[:system_id])
           elsif params[:project_id]
-            environments = ::Environment.find_by_project_id(params[:project_id])
+            environments = ::Environment.select_by_project_id(params[:project_id])
           else
             environments = ::Environment.all
           end
@@ -46,7 +46,7 @@ module API
           end
         end
         post '/' do
-          system = ::System.find(params[:system_id])
+          system = ::System.find_by(id: params[:system_id])
           authorize!(:read, system)
           authorize!(:create, ::Environment, project: system.project)
           version = params[:version] || Blueprint.find(params[:blueprint_id]).histories.last.version

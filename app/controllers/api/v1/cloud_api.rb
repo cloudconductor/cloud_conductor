@@ -7,12 +7,7 @@ module API
           optional :project_id, type: Integer, desc: 'Project id'
         end
         get '/' do
-          if params[:project_id]
-            clouds = ::Cloud.where(project_id: params[:project_id])
-          else
-            clouds = ::Cloud.all
-          end
-          clouds.select do |cloud|
+          ::Cloud.where(params.slice(:project_id).to_hash).select do |cloud|
             can?(:read, cloud)
           end
         end
@@ -39,7 +34,7 @@ module API
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'
         end
         post '/' do
-          project = ::Project.find(params[:project_id])
+          project = ::Project.find_by(id: params[:project_id])
           authorize!(:read, project)
           authorize!(:create, ::Cloud, project: project)
           ::Cloud.create!(declared_params)
