@@ -43,6 +43,7 @@ module CloudConductor
       default :timeout, 1800
     end
     config_context :system_build do
+      default :providers, [:terraform, :cloud_formation]
       default :timeout, 1800
     end
   end
