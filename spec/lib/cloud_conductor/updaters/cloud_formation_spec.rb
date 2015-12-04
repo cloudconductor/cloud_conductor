@@ -62,8 +62,8 @@ module CloudConductor
         end
 
         it 'set @environment' do
-          environment = @updater.instance_variable_get :@environment
-          expect(environment).to eq(@environment)
+          result = @updater.instance_variable_get :@environment
+          expect(result).to eq(@environment)
         end
       end
 
