@@ -103,7 +103,7 @@ module CloudConductor
         it 'call #reset_stacks when some method raise error' do
           allow(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).and_raise
           expect(@builder).to receive(:reset_stacks)
-          @builder.build
+          expect { @builder.build }.to raise_error RuntimeError
         end
 
         it 'create all stacks' do

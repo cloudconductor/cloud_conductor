@@ -83,6 +83,21 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
+  def build
+    result = candidates.sorted.map(&:cloud).any? do |cloud|
+      begin
+        builder = CloudConductor::Builders.builder(cloud, self)
+        builder.build
+      rescue => e
+        Log.warn "Following errors have been occurred while creating stacks on environment(#{name}) on #{cloud.name}"
+        Log.warn e.message
+        Log.debug e.backtrace
+        false
+      end
+    end
+    fail 'Failed to create environment over all candidates' unless result
+  end
+
   def status
     super && super.to_sym
   end

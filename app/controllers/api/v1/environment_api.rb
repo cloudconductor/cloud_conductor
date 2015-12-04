@@ -58,10 +58,10 @@ module API
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
-              CloudConductor::Builders::CloudFormation.new(environment).build
-              system = environment.system
-              if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
-                system.update_attributes!(primary_environment: environment)
+              environment.build
+
+              if system.primary_environment.nil? && status == :CREATE_COMPLETE
+                system.update_attributes!(primary_environment: self)
               end
             end
           end

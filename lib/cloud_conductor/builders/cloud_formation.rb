@@ -26,51 +26,42 @@ module CloudConductor
       end
 
       def build # rubocop:disable MethodLength
-        ActiveRecord::Base.connection_pool.with_connection do
-          @clouds.each do |cloud|
-            begin
-              Log.info "Start creating stacks of environment(#{@environment.name}) on #{cloud.name}"
-              @environment.status = :PROGRESS
-              @environment.save!
+        Log.info "Start creating stacks of environment(#{@environment.name}) on #{@cloud.name}"
+        @environment.status = :PROGRESS
+        @environment.save!
 
-              until @environment.stacks.select(&:pending?).empty?
-                platforms = @environment.stacks.select(&:pending?).select(&:platform?)
-                optionals = @environment.stacks.select(&:pending?).select(&:optional?)
-                stack = (platforms + optionals).first
-                stack.client = cloud.client
-                stack.cloud = cloud
-                stack.status = :READY_FOR_CREATE
-                stack.save!
+        until @environment.stacks.select(&:pending?).empty?
+          platforms = @environment.stacks.select(&:pending?).select(&:platform?)
+          optionals = @environment.stacks.select(&:pending?).select(&:optional?)
+          stack = (platforms + optionals).first
+          stack.client = @cloud.client
+          stack.cloud = @cloud
+          stack.status = :READY_FOR_CREATE
+          stack.save!
 
-                wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
+          wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
 
-                update_environment stack.outputs if stack.platform?
+          update_environment stack.outputs if stack.platform?
 
-                stack.status = :CREATE_COMPLETE
-                stack.save!
+          stack.status = :CREATE_COMPLETE
+          stack.save!
 
-                stack.client.post_process
-              end
+          stack.client.post_process
+        end
 
-              finish_environment if @environment.reload
+        finish_environment if @environment.reload
 
-              Log.info "Created all stacks on environment(#{@environment.name}) on #{cloud.name}"
-              break
-            rescue => e
-              Log.warn "Some error has occurred while creating stacks on environment(#{@environment.name}) on #{cloud.name}"
-              Log.warn e.message
-              Log.debug e.backtrace
-              reset_stacks
-            end
-          end
+        Log.info "Created all stacks on environment(#{@environment.name}) on #{@cloud.name}"
 
-          unless @environment.status == :CREATE_COMPLETE
-            @environment.stacks.each do |stack|
-              stack.status = :ERROR
-              stack.save!
-            end
+        unless @environment.status == :CREATE_COMPLETE
+          @environment.stacks.each do |stack|
+            stack.status = :ERROR
+            stack.save!
           end
         end
+      rescue => e
+        reset_stacks
+        raise e
       end
 
       private

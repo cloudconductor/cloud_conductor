@@ -128,6 +128,35 @@ describe Environment do
   describe '#update_stacks' do
   end
 
+  describe '#build' do
+    before do
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: cloud)
+      @environment.save!
+
+      @builder = double(:builder, build: true)
+      allow(CloudConductor::Builders).to receive(:builder).and_return(@builder)
+    end
+
+    it 'call Builder#build just once when successfully created' do
+      expect(@builder).to receive(:build).once.and_return(true)
+      @environment.build
+    end
+
+    it 'call Builder#build twice when failed to create first cloud' do
+      expect(@builder).to receive(:build).twice.and_return(false, true)
+      @environment.build
+    end
+
+    it 'call Builder#build twice when raise exception while creating on first cloud' do
+      count = 0
+      expect(@builder).to receive(:build).twice do
+        count += 1
+        count <= 1 ? fail : true
+      end
+      @environment.build
+    end
+  end
+
   describe '#dup' do
     it 'duplicate all attributes in environment without name and ip_address' do
       @environment.save!
