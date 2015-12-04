@@ -1,4 +1,4 @@
-require 'cloud_conductor/builders/updater'
+require 'cloud_conductor/updaters/updater'
 
 module CloudConductor
   module Updaters
