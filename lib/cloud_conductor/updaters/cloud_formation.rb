@@ -22,10 +22,10 @@ module CloudConductor
       def initialize(cloud, environment)
         @cloud = cloud
         @environment = environment
-        @nodes = get_nodes(@environment)
       end
 
       def update # rubocop:disable MethodLength
+        @nodes = get_nodes(@environment)
         ActiveRecord::Base.connection_pool.with_connection do
           begin
             cloud = @environment.stacks.first.cloud

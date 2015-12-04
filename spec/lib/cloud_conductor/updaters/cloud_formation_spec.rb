@@ -56,11 +56,6 @@ module CloudConductor
       end
 
       describe '#initialize' do
-        it 'set @nodes' do
-          nodes = @updater.instance_variable_get :@nodes
-          expect(nodes).to eq(['dummy_node'])
-        end
-
         it 'set @environment' do
           result = @updater.instance_variable_get :@environment
           expect(result).to eq(@environment)
@@ -78,6 +73,12 @@ module CloudConductor
           allow(@updater).to receive(:wait_for_finished)
           allow(@updater).to receive(:update_environment)
           allow(@updater).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
+        end
+
+        it 'keep previous nodes' do
+          @updater.update
+          nodes = @updater.instance_variable_get :@nodes
+          expect(nodes).to eq(['dummy_node'])
         end
 
         it 'create all stacks' do
@@ -175,6 +176,7 @@ module CloudConductor
 
       describe '#finish_environment' do
         before do
+          @updater.instance_variable_set :@nodes, ['dummy_node']
           @event = double(:event, sync_fire: 1)
           allow(@environment).to receive(:event).and_return(@event)
           allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }, { node: 'sample_node' }]
