@@ -12,12 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+require 'cloud_conductor/updaters/updater'
+
 module CloudConductor
   module Updaters
-    class CloudFormation # rubocop:disable ClassLength
+    class CloudFormation < Updater # rubocop:disable ClassLength
       CHECK_PERIOD = 3
 
-      def initialize(environment)
+      def initialize(cloud, environment)
+        @cloud = cloud
         @environment = environment
         @nodes = get_nodes(@environment)
       end

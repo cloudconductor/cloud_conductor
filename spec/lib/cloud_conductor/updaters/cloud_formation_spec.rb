@@ -49,7 +49,7 @@ module CloudConductor
         @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, environment: @environment, status: :PENDING)
         @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, environment: @environment, status: :PENDING)
         @environment.stacks += [@platform_stack, @optional_stack]
-        @updater = CloudFormation.new @environment
+        @updater = CloudFormation.new cloud, @environment
         allow_any_instance_of(Pattern).to receive(:clone_repository)
         allow_any_instance_of(Stack).to receive(:update_stack)
         allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
