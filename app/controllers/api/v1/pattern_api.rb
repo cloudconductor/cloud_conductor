@@ -3,6 +3,9 @@ module API
     class PatternAPI < API::V1::Base
       resource :patterns do
         desc 'List patterns'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
           ::Pattern.where(params.slice(:project_id).to_hash).select do |pattern|
             can?(:read, pattern)
