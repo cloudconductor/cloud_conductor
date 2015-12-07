@@ -12,7 +12,6 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema.define(version: 20160107015409) do
-
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -78,6 +77,15 @@ ActiveRecord::Schema.define(version: 20160107015409) do
   end
 
   add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true, using: :btree
+
+  create_table "audits", force: true do |t|
+    t.string   "ip"
+    t.string   "account"
+    t.string   "status"
+    t.string   "request"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
 
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"

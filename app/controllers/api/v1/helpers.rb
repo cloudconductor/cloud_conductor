@@ -51,6 +51,11 @@ module API
         Ability.new(current_account, project)
       end
 
+      def track_api
+        account_id = current_account.id if current_account
+        ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url)
+      end
+
       def authorize!(action, subject, *args)
         create_ability(subject, *args).authorize!(action, subject, *args)
       end
