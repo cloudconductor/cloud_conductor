@@ -12,6 +12,20 @@ module API
         allow(@helpers).to receive(:env).and_return(@dummy_env)
       end
 
+      describe 'trace_api' do
+        it 'create log with valid parameters' do
+          allow(@helpers).to receive_message_chain(:request, :url).and_return('http://test/api/v1/test')
+          allow(@helpers).to receive_message_chain(:request, :ip).and_return('127.0.0.1')
+          allow(@helpers).to receive(:status).and_return(200)
+          expect { @helpers.track_api }.to change { Audit.count }.by(1)
+          audit = @helpers.track_api
+          expect(audit.account).not_to be_nil
+          expect(audit.ip).not_to be_nil
+          expect(audit.request).not_to be_nil
+          expect(audit.status).not_to be_nil
+        end
+      end
+
       describe '#require_no_authentication' do
         it 'return true when endpoint is /tokens' do
           @dummy_env['api.endpoint'] = double('endpoint', namespace: '/tokens')

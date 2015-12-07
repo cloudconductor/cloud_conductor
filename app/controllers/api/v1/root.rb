@@ -1,6 +1,6 @@
 module API
   module V1
-    class Root < Grape::API   #API::V1::Base
+    class Root < Grape::API
       version 'v1'
       format :json
       default_format :json
