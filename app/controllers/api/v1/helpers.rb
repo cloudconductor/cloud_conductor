@@ -53,7 +53,8 @@ module API
 
       def track_api
         account_id = current_account.id if current_account
-        ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url)
+        project_id = request.params[:project_id] if request.params.key?(:project_id)
+        ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
       end
 
       def authorize!(action, subject, *args)
