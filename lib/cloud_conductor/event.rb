@@ -15,7 +15,6 @@
 module CloudConductor
   class Event
     def initialize(host, port = 8500, options = {})
-      @token = options[:token]
       @client = Consul::Client.new(host, port, options)
     end
 
@@ -23,7 +22,7 @@ module CloudConductor
       payload.each do |key, value|
         @client.kv.merge key, value
       end
-      @client.event.fire name, @token, filter
+      @client.event.fire name, filter
     end
 
     def sync_fire(name, payload = {}, filter = {})
