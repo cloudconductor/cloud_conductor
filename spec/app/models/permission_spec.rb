@@ -18,7 +18,7 @@ describe Permission do
 
   before do
     @permission = Permission.new
-    @permission.model = 'test'
+    @permission.model = 'permission'
     @permission.action = 'create'
     @permission.role = role
   end

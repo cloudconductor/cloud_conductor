@@ -6,7 +6,7 @@ describe API do
     let(:project_admin_role) { project.roles.find_by(name: 'administrator') }
     let(:project_operator_role) { project.roles.find_by(name: 'operator') }
     let(:project_role) { role }
-    let(:permission) { FactoryGirl.create(:permission, role: role) }
+    let(:permission) { FactoryGirl.create(:permission, role: role, model: 'permission') }
 
     before do
       permission
@@ -74,7 +74,7 @@ describe API do
     describe 'POST /roles/:role_id/permissions/' do
       let(:method) { 'post' }
       let(:url) { "/api/v1/roles/#{role.id}/permissions" }
-      let(:params) { FactoryGirl.attributes_for(:permission, role_id: role.id) }
+      let(:params) { FactoryGirl.attributes_for(:permission, model: 'account', role_id: role.id) }
       let(:result) do
         params.merge(
           'id' => Fixnum,
@@ -105,7 +105,7 @@ describe API do
 
       context 'on preset role' do
         let(:url) { "/api/v1/roles/#{project_operator_role.id}/permissions" }
-        let(:params) { FactoryGirl.attributes_for(:permission, role_id: project_operator_role.id) }
+        let(:params) { FactoryGirl.attributes_for(:permission, model: 'account', role_id: project_operator_role.id) }
         let(:result) do
           params.merge(
             'id' => Fixnum,
@@ -136,7 +136,7 @@ describe API do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/roles/#{new_role.id}/permissions/#{new_permission.id}" }
       let(:new_role) { FactoryGirl.create(:role, project: project) }
-      let(:new_permission) { FactoryGirl.create(:permission, model: :permission, role: new_role) }
+      let(:new_permission) { FactoryGirl.create(:permission, model: 'permission', role: new_role) }
 
       before do
       end
