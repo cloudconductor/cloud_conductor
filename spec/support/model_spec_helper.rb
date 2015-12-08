@@ -22,5 +22,7 @@ module ModelSpecHelper
     let(:candidate) { environment.candidates.first }
     let(:application) { FactoryGirl.create(:application, system: system) }
     let(:application_history) { FactoryGirl.create(:application_history, application: application) }
+
+    let(:role) { FactoryGirl.create(:role, project: project) }
   end
 end

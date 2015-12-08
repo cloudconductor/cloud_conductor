@@ -2,15 +2,15 @@ describe API do
   include ApiSpecHelper
   include_context 'default_api_settings'
 
-  describe 'BlueprintAPI' do
+  describe 'PatternAPI' do
     before do
-      blueprint
+      pattern
     end
 
-    describe 'GET /blueprints' do
+    describe 'GET /patterns' do
       let(:method) { 'get' }
-      let(:url) { '/api/v1/blueprints' }
-      let(:result) { format_iso8601([blueprint]) }
+      let(:url) { '/api/v1/patterns' }
+      let(:result) { format_iso8601([pattern]) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -34,8 +34,7 @@ describe API do
       end
 
       context 'with project' do
-        let(:params) { { project_id: blueprint.project.id } }
-        let(:result) { format_iso8601([blueprint]) }
+        let(:params) { { project_id: project.id } }
 
         context 'not_logged_in' do
           it_behaves_like('401 Unauthorized')
@@ -57,45 +56,20 @@ describe API do
         context 'project_operator', project_operator: true do
           it_behaves_like('200 OK')
         end
-
-        context 'in not exists project_id' do
-          let(:params) { { project_id: 9999 } }
-          let(:result) { [] }
-
-          context 'not_logged_in' do
-            it_behaves_like('401 Unauthorized')
-          end
-
-          context 'normal_account', normal: true do
-            it_behaves_like('200 OK')
-          end
-
-          context 'administrator', admin: true do
-            it_behaves_like('200 OK')
-          end
-
-          context 'project_owner', project_owner: true do
-            it_behaves_like('200 OK')
-          end
-
-          context 'project_operator', project_operator: true do
-            it_behaves_like('200 OK')
-          end
-        end
       end
     end
 
-    describe 'GET /blueprints/:id' do
+    describe 'GET /patterns/:id' do
       let(:method) { 'get' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
-      let(:result) { format_iso8601(blueprint) }
+      let(:url) { "/api/v1/patterns/#{pattern.id}" }
+      let(:result) { format_iso8601(pattern) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/blueprints/0' }
+        let(:url) { '/api/v1/patterns/0' }
         it_behaves_like('404 Not Found')
       end
 
@@ -116,16 +90,25 @@ describe API do
       end
     end
 
-    describe 'POST /blueprints' do
+    describe 'POST /patterns' do
       let(:method) { 'post' }
-      let(:url) { '/api/v1/blueprints' }
-      let(:params) { FactoryGirl.attributes_for(:blueprint, project_id: project.id) }
+      let(:url) { '/api/v1/patterns' }
+      let(:params) { FactoryGirl.attributes_for(:pattern, :platform, project_id: project.id) }
       let(:result) do
-        params.merge(
+        params.except(:parameters).merge(
           'id' => Fixnum,
+          'roles' => String,
           'created_at' => String,
           'updated_at' => String
         )
+      end
+
+      before do
+        allow_any_instance_of(Pattern).to receive(:update_metadata) do |pattern|
+          pattern.name = params[:name]
+          pattern.type = params[:type]
+          pattern.roles = %w(web ap db).to_json
+        end
       end
 
       context 'not_logged_in' do
@@ -149,7 +132,7 @@ describe API do
       end
 
       context 'in not existing project_id' do
-        let(:params) { FactoryGirl.attributes_for(:blueprint, project_id: 9999) }
+        let(:params) { FactoryGirl.attributes_for(:pattern, :platform, project_id: 9999) }
 
         context 'not_logged_in' do
           it_behaves_like('401 Unauthorized')
@@ -173,20 +156,24 @@ describe API do
       end
     end
 
-    describe 'PUT /blueprints/:id' do
+    describe 'PUT /patterns/:id' do
       let(:method) { 'put' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
+      let(:url) { "/api/v1/patterns/#{pattern.id}" }
       let(:params) do
         {
-          'name' => 'new_name',
-          'description' => 'new_description'
+          'url' => 'https://example.com/cloudconductor-dev/sample_optional_pattern.git',
+          'revision' => 'develop'
         }
       end
       let(:result) do
-        blueprint.as_json.merge(params).merge(
-          'created_at' => blueprint.created_at.iso8601(3),
+        pattern.as_json.merge(params).merge(
+          'created_at' => pattern.created_at.iso8601(3),
           'updated_at' => String
         )
+      end
+
+      before do
+        allow_any_instance_of(Pattern).to receive(:update_metadata)
       end
 
       context 'not_logged_in' do
@@ -194,7 +181,7 @@ describe API do
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/blueprints/0' }
+        let(:url) { '/api/v1/patterns/0' }
         it_behaves_like('404 Not Found')
       end
 
@@ -215,16 +202,16 @@ describe API do
       end
     end
 
-    describe 'DELETE /blueprints/:id' do
+    describe 'DELETE /patterns/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}" }
+      let(:url) { "/api/v1/patterns/#{pattern.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
       end
 
       context 'not_exist_id', admin: true do
-        let(:url) { '/api/v1/blueprints/0' }
+        let(:url) { '/api/v1/patterns/0' }
         it_behaves_like('404 Not Found')
       end
 
@@ -242,41 +229,6 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('204 No Content')
-      end
-    end
-
-    describe 'POST /blueprints/:id/build' do
-      let(:method) { 'post' }
-      let(:url) { "/api/v1/blueprints/#{blueprint.id}/build" }
-      let(:result) do
-        params.merge(
-          'id' => Fixnum,
-          'version' => Fixnum,
-          'blueprint_id' => Fixnum,
-          'consul_secret_key' => String,
-          'status' => String,
-          'created_at' => String,
-          'updated_at' => String
-        )
-      end
-
-      context 'not_logged_in' do
-        it_behaves_like('401 Unauthorized')
-      end
-
-      context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
-      end
-      context 'administrator', admin: true do
-        it_behaves_like('202 Accepted')
-      end
-
-      context 'project_owner', project_owner: true do
-        it_behaves_like('202 Accepted')
-      end
-
-      context 'project_operator', project_operator: true do
-        it_behaves_like('202 Accepted')
       end
     end
   end

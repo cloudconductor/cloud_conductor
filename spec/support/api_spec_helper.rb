@@ -63,6 +63,12 @@ module ApiSpecHelper
     end
   end
 
+  shared_examples_for '400 BadRequest' do
+    it 'return 400 and bad request message' do
+      expect(subject.status).to be(400)
+    end
+  end
+
   shared_examples_for '401 Unauthorized' do
     it 'returns 401 and unauthorized message' do
       expect(subject.body).to match_json_expression(error: 'Requires valid auth_token.')

@@ -66,6 +66,16 @@ describe Project do
       @project.save!
       @project.destroy
     end
+
+    it 'delete all role records' do
+      FactoryGirl.create(:role, project: @project)
+      FactoryGirl.create(:role, project: @project)
+
+      project = Project.find(@project)
+
+      expect(project.roles.size).to eq(4)
+      expect { project.destroy }.to change { Role.count }.by(-4)
+    end
   end
 
   describe '#valid?' do
@@ -103,7 +113,7 @@ describe Project do
       @project.create_monitoring_account
       expect(@project.assignments).not_to be_empty
       expect(@project.assignments.first.account).to eq(Account.last)
-      expect(@project.assignments.first.role).to eq('operator')
+      expect(@project.assignments.first.roles.first.name).to eq('operator')
     end
   end
 
@@ -132,7 +142,7 @@ describe Project do
         # Need to reload for avoid to ActiveRecord bug
         project = Project.find(@project)
 
-        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).role }.from('administrator').to('operator')
+        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).roles.first.name }.from('administrator').to('operator')
       end
     end
 
@@ -144,7 +154,7 @@ describe Project do
         project = Project.find(@project)
 
         expect { project.assign_project_member(@account, :administrator) }.to change { Assignment.count }.by(1)
-        expect(project.assignments.find_by(account: @account).role).to eq('administrator')
+        expect(project.assignments.find_by(account: @account).roles.first.name).to eq('administrator')
       end
     end
   end
@@ -157,6 +167,38 @@ describe Project do
       results = @project.base_images('CentOS-6.5')
       expect(results.size).to eq(1)
       expect(results.first.os_version).to eq('CentOS-6.5')
+    end
+  end
+
+  describe 'create_preset_roles' do
+    it 'create roles' do
+      @project.save!
+
+      expect(Role.where(project: @project).count).to eq(2)
+
+      role_admin = Role.find_by(project: @project, name: 'administrator')
+      expect(role_admin).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'project').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'assignment').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'read')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'create')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'role').action).to eq('manage')
+
+      models = [:cloud, :base_image, :pattern, :blueprint, :system, :environment, :application, :application_history, :deployment]
+
+      models.each do |model|
+        expect(Permission.find_by(role: role_admin, model: model).action).to eq('manage')
+      end
+
+      role_operator = Role.find_by(project: @project, name: 'operator')
+      expect(role_operator).to_not be_nil
+      expect(Permission.find_by(role: role_operator, model: 'project').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'assignment').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'account').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'role').action).to eq('read')
+      models.each do |model|
+        expect(Permission.find_by(role: role_operator, model: model).action).to eq('manage')
+      end
     end
   end
 end

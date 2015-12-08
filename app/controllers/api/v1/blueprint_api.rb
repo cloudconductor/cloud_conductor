@@ -3,8 +3,11 @@ module API
     class BlueprintAPI < API::V1::Base
       resource :blueprints do
         desc 'List blueprints'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Blueprint.all.select do |blueprint|
+          ::Blueprint.where(params.slice(:project_id).to_hash).select do |blueprint|
             can?(:read, blueprint)
           end
         end
@@ -21,12 +24,14 @@ module API
 
         desc 'Create blueprint'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'Blueprint name'
           optional :description, type: String, desc: 'Blueprint description'
         end
         post '/' do
-          authorize!(:create, ::Blueprint)
+          project = ::Project.find_by(id: params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Blueprint, project: project)
           ::Blueprint.create!(declared_params)
         end
 
@@ -61,7 +66,7 @@ module API
         post '/:blueprint_id/build' do
           blueprint = Blueprint.find(params[:blueprint_id])
           authorize!(:read, blueprint)
-          authorize!(:create, BlueprintHistory)
+          authorize!(:create, BlueprintHistory, project: blueprint.project)
           history = BlueprintHistory.create!(declared_params)
           status 202
           history

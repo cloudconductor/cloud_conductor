@@ -3,8 +3,11 @@ module API
     class CloudAPI < API::V1::Base
       resource :clouds do
         desc 'List clouds'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Cloud.all.select do |cloud|
+          ::Cloud.where(params.slice(:project_id).to_hash).select do |cloud|
             can?(:read, cloud)
           end
         end
@@ -21,7 +24,7 @@ module API
 
         desc 'Create cloud'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'Cloud name'
           requires :type, type: String, desc: 'Cloud type (aws or openstack)'
           requires :key, type: String, desc: 'AccessKey or username to authenticate cloud'
@@ -31,7 +34,9 @@ module API
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'
         end
         post '/' do
-          authorize!(:create, ::Cloud)
+          project = ::Project.find_by(id: params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Cloud, project: project)
           ::Cloud.create!(declared_params)
         end
 

@@ -8,6 +8,10 @@ class BlueprintHistory < ActiveRecord::Base
   before_create :set_version
   before_create :build_pattern_snapshots
 
+  def project
+    blueprint.project
+  end
+
   def status
     if pattern_snapshots.any? { |pattern_snapshot| pattern_snapshot.status == :ERROR }
       :ERROR

@@ -33,7 +33,7 @@ module API
             post '/' do
               blueprint = Blueprint.find(params[:blueprint_id])
               authorize!(:update, blueprint)
-              authorize!(:create, BlueprintPattern)
+              authorize!(:create, BlueprintPattern, project: blueprint.project)
               BlueprintPattern.create!(declared_params)
             end
 

@@ -7,4 +7,8 @@ class BlueprintPattern < ActiveRecord::Base
   after_initialize do
     self.os_version ||= 'default'
   end
+
+  def project
+    blueprint.project
+  end
 end

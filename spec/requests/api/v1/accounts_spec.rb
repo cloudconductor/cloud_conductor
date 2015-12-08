@@ -16,24 +16,69 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'normal_account', normal: true do
-        let(:result) { format_iso8601([normal_account]) }
-        it_behaves_like('200 OK')
-      end
-
-      context 'administrator', admin: true do
+      context 'all (without project_id)' do
         let(:result) { format_iso8601(accounts) }
-        it_behaves_like('200 OK')
+
+        context 'normal_account', normal: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
       end
 
-      context 'project_owner', project_owner: true do
-        let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
-        it_behaves_like('200 OK')
-      end
+      context 'with project' do
+        context 'in the existing project_id' do
+          let(:params) { { project_id: project.id } }
+          let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
 
-      context 'project_operator', project_operator: true do
-        let(:result) { format_iso8601([project_owner_account, project_operator_account, monitoring_account]) }
-        it_behaves_like('200 OK')
+          context 'normal_account', normal: true do
+            let(:result) { [] }
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+
+        context 'in the not existing project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 
@@ -47,7 +92,7 @@ describe API do
       end
 
       context 'normal_account', normal: true do
-        it_behaves_like('403 Forbidden')
+        it_behaves_like('200 OK')
       end
 
       context 'not_exist_id', admin: true do
@@ -61,7 +106,7 @@ describe API do
 
       context 'project_owner', project_owner: true do
         context 'for_other_project_user' do
-          it_behaves_like('403 Forbidden')
+          it_behaves_like('200 OK')
         end
 
         context 'for_same_project_user' do
@@ -73,7 +118,7 @@ describe API do
 
       context 'project_operator', project_operator: true do
         context 'for_other_project_user' do
-          it_behaves_like('403 Forbidden')
+          it_behaves_like('200 OK')
         end
 
         context 'for_same_project_user' do
@@ -111,7 +156,7 @@ describe API do
         end
 
         context 'project_owner', project_owner: true do
-          it_behaves_like('201 Created')
+          it_behaves_like('403 Forbidden')
         end
 
         context 'project_operator', project_operator: true do

@@ -4,6 +4,8 @@ module API
       mount API::V1::TokenAPI
       mount API::V1::AccountAPI
       mount API::V1::ProjectAPI
+      mount API::V1::AssignmentAPI
+      mount API::V1::AssignmentRoleAPI
       mount API::V1::CloudAPI
       mount API::V1::BaseImageAPI
       mount API::V1::BlueprintAPI
@@ -15,6 +17,8 @@ module API
       mount API::V1::EventAPI
       mount API::V1::ApplicationAPI
       mount API::V1::ApplicationHistoryAPI
+      mount API::V1::RoleAPI
+      mount API::V1::PermissionAPI
     end
   end
 end

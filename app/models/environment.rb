@@ -34,6 +34,12 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     self.status ||= :PENDING
   end
 
+  scope :select_by_project_id, -> (project_id) { joins(:system).where(systems: { project_id: project_id }) }
+
+  def project
+    system.project
+  end
+
   def create_or_update_stacks
     if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks

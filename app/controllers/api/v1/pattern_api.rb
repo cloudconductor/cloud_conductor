@@ -3,8 +3,11 @@ module API
     class PatternAPI < API::V1::Base
       resource :patterns do
         desc 'List patterns'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Pattern.all.select do |pattern|
+          ::Pattern.where(params.slice(:project_id).to_hash).select do |pattern|
             can?(:read, pattern)
           end
         end
@@ -21,12 +24,14 @@ module API
 
         desc 'Create pattern'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :url, type: String, desc: 'URL of repository that contains pattern'
           optional :revision, type: String, desc: 'revision of repository'
         end
         post '/' do
-          authorize!(:create, ::Pattern)
+          project = ::Project.find_by(id: params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::Pattern, project: project)
           ::Pattern.create!(declared_params)
         end
 

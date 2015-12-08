@@ -1,3 +1,5 @@
+require 'validators/exists_id'
+
 module API
   module V1
     class Base < Grape::API

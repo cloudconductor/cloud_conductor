@@ -3,8 +3,19 @@ module API
     class ApplicationAPI < API::V1::Base
       resource :applications do
         desc 'List applications'
+        params do
+          optional :system_id, type: Integer, desc: 'Target system id'
+          optional :project_id, type: Integer, desc: 'Target project id'
+        end
         get '/' do
-          ::Application.all.select do |application|
+          if params[:system_id]
+            applications = ::Application.where(system_id: params[:system_id])
+          elsif params[:project_id]
+            applications = ::Application.select_by_project_id(params[:project_id])
+          else
+            applications = ::Application.all
+          end
+          applications.select do |application|
             can?(:read, application)
           end
         end
@@ -21,13 +32,15 @@ module API
 
         desc 'Create application'
         params do
-          requires :system_id, type: Integer, desc: 'Target system id'
+          requires :system_id, type: Integer, exists_id: :system, desc: 'Target system id'
           requires :name, type: String, desc: 'Application name'
           optional :description, type: String, desc: 'Application description'
           optional :domain, type: String, desc: 'Application domain name'
         end
         post '/' do
-          authorize!(:create, ::Application)
+          system = ::System.find_by(id: params[:system_id])
+          authorize!(:read, system)
+          authorize!(:create, ::Application, project: system.project)
           ::Application.create!(declared_params)
         end
 
@@ -63,9 +76,9 @@ module API
           optional :application_history_id, type: Integer, desc: 'Application history id'
         end
         post '/:id/deploy' do
-          authorize!(:create, ::Deployment)
           application = ::Application.find(params[:id])
           authorize!(:read, application)
+          authorize!(:create, ::Deployment, project: application.project)
           if params[:application_history_id]
             application_history = application.histories.find(params[:application_history_id])
           else

@@ -37,7 +37,7 @@ module API
             post '/' do
               application = ::Application.find(params[:application_id])
               authorize!(:update, application)
-              authorize!(:create, ::ApplicationHistory)
+              authorize!(:create, ::ApplicationHistory, project: application.project)
               ::ApplicationHistory.create!(declared_params)
             end
 

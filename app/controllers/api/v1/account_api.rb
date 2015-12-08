@@ -3,9 +3,20 @@ module API
     class AccountAPI < API::V1::Base
       resource :accounts do
         desc 'List accounts'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::Account.all.select do |account|
-            can?(:read, account)
+          if params[:project_id]
+            project = ::Project.find_by(id: params[:project_id])
+            return ::Account.none unless project && can?(:read, project)
+            ::Account.assigned_to(params[:project_id]).select do |account|
+              can?(:read, account)
+            end
+          else
+            ::Account.all.select do |account|
+              can?(:read, account)
+            end
           end
         end
 
