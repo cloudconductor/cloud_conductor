@@ -198,6 +198,7 @@ describe API do
       let(:result) do
         params.merge(
           'id' => Fixnum,
+          'preset' => false,
           'created_at' => String,
           'updated_at' => String
         )
@@ -276,6 +277,32 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
       end
+
+      context 'on preset role' do
+        let(:url) { "/api/v1/roles/#{project_operator_role.id}" }
+        let(:result) do
+          project_operator_role.as_json.merge(params).merge(
+            'created_at' => project_operator_role.created_at.iso8601(3),
+            'updated_at' => String
+          )
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('403 Forbidden')
+        end
+      end
     end
 
     describe 'DELETE /roles/:id' do
@@ -309,6 +336,26 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
+      end
+
+      context 'on preset role' do
+        let(:url) { "/api/v1/roles/#{project_operator_role.id}" }
+
+        context 'normal_account', normal: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('204 No Content')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('403 Forbidden')
+        end
       end
     end
   end

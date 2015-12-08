@@ -102,13 +102,41 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
       end
+
+      context 'on preset role' do
+        let(:url) { "/api/v1/roles/#{project_operator_role.id}/permissions" }
+        let(:params) { FactoryGirl.attributes_for(:permission, role_id: project_operator_role.id) }
+        let(:result) do
+          params.merge(
+            'id' => Fixnum,
+            'created_at' => String,
+            'updated_at' => String
+          )
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('201 Created')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('403 Forbidden')
+        end
+      end
     end
 
     describe 'DELETE /roles/:roleid/permissions/:id' do
       let(:method) { 'delete' }
       let(:url) { "/api/v1/roles/#{new_role.id}/permissions/#{new_permission.id}" }
       let(:new_role) { FactoryGirl.create(:role, project: project) }
-      let(:new_permission) { FactoryGirl.create(:permission, role: new_role) }
+      let(:new_permission) { FactoryGirl.create(:permission, model: :permission, role: new_role) }
 
       before do
       end
@@ -136,6 +164,26 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('403 Forbidden')
+      end
+
+      context 'on preset role' do
+        let(:url) { "/api/v1/roles/#{project_operator_role.id}/permissions/#{new_permission.id}" }
+
+        context 'normal_account', normal: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('204 No Content')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('403 Forbidden')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('403 Forbidden')
+        end
       end
     end
   end

@@ -22,13 +22,13 @@ class Project < ActiveRecord::Base
   before_destroy :delete_monitoring_account
 
   def assign_project_administrator
-    role = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator')
+    role = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator', preset: true)
 
     assignments.build(account: current_account, roles: [role]) if current_account
   end
 
   def create_monitoring_account
-    role = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator')
+    role = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator', preset: true)
 
     account = Account.create!(email: "monitoring@#{name}.example.com", name: 'monitoring', password: "#{SecureRandom.hex}")
     assignments.build(account: account, roles: [role])

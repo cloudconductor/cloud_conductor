@@ -36,5 +36,7 @@ class Ability
         can permission.action.to_sym, klass
       end
     end
+
+    cannot [:update, :destroy], Role, preset: true
   end
 end
