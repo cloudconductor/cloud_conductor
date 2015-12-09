@@ -25,7 +25,7 @@ class Role < ActiveRecord::Base
 
   def add_permission(model, *actions)
     actions.each do |action|
-      permissions.build(model: model.to_s, action: action.to_s)
+      permissions.create(model: model.to_s, action: action.to_s)
     end
   end
 end

@@ -16,7 +16,7 @@ describe API do
       let(:method) { 'get' }
       let(:url) { "/api/v1/roles/#{role.id}/permissions" }
       let(:result) do
-        format_iso8601([permission])
+        format_iso8601(role.permissions)
       end
 
       context 'not_logged_in' do

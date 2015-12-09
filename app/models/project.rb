@@ -43,7 +43,7 @@ class Project < ActiveRecord::Base
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_admin = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator')
+    role_admin = roles.find { |role| role.name == 'administrator' } || roles.create(name: 'administrator')
 
     role_admin.add_permission(:project, :manage)
     role_admin.add_permission(:assignment, :manage)
@@ -53,26 +53,22 @@ class Project < ActiveRecord::Base
     models.each do |model|
       role_admin.add_permission(model, :manage)
     end
-
-    role_admin.save!
   end
 
   def create_operator_role
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_operator = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator')
+    role_operator = roles.find { |role| role.name == 'operator' } || roles.create(name: 'operator')
 
     role_operator.add_permission(:project, :read)
     role_operator.add_permission(:assignment, :read)
-    role_operator.add_permission(:account, :read, :read)
+    role_operator.add_permission(:account, :read)
     role_operator.add_permission(:role, :read)
     role_operator.add_permission(:permission, :read)
     models.each do |model|
       role_operator.add_permission(model, :manage)
     end
-
-    role_operator.save!
   end
 
   def update_monitoring_account

@@ -28,13 +28,12 @@ class Ability
     assign = account.assignments.find_by(project: project)
     return unless assign
 
-    assign.roles.each do |role|
-      role.permissions.each do |permission|
-        klass = permission.model.classify.constantize
-        next if klass == Account
+    Permission.joins(role: [:assignments])
+      .where(assignments: { project_id: project.id, account_id: account.id }).each do |permission|
+      klass = permission.model.classify.constantize
+      next if klass == Account
 
-        can permission.action.to_sym, klass
-      end
+      can permission.action.to_sym, klass
     end
 
     cannot [:update, :destroy], Role, preset: true
