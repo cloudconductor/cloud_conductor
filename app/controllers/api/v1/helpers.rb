@@ -53,12 +53,39 @@ module API
 
       def track_api
         account_id = current_account.id if current_account
-        project_id = request.params[:project_id] if request.params.key?(:project_id)
+        project_id = load_project_id
         ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
       end
 
       def authorize!(action, subject, *args)
         create_ability(subject, *args).authorize!(action, subject, *args)
+      end
+
+      def load_project_id
+        if request.params.key?(:project_id)
+          request.params[:project_id]
+        elsif request.params.key?(:system_id)
+          system = System.find(request.params[:system_id])
+          system.project_id
+        elsif request.params.key?(:cloud_id)
+          cloud = Cloud.find(request.params[:cloud_id])
+          cloud.project_id
+        elsif request.params.key?(:blueprint_id)
+          blueprint = Blueprint.find(request.params[:blueprint_id])
+          blueprint.project_id
+        elsif request.params.key?(:pattern_id)
+          pattern = Pattern.find(request.params[:pattern_id])
+          pattern.project_id
+        elsif request.params.key?(:application_id)
+          application = Application.find(request.params[:application_id])
+          system = System.find(application.system_id)
+          system.project_id
+        end
+      end
+
+      def authorize!(*args)
+        current_ability.authorize!(*args)
+>>>>>>> Fix track_api
       end
 
       def can?(action, subject, *args)
