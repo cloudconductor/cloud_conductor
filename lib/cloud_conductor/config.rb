@@ -29,6 +29,9 @@ module CloudConductor
       default :path, '/opt/packer/packer'
       default :aws_instance_type, 'c3.large'
     end
+    config_context :terraform do
+      default :path, '/opt/terraform/terraform'
+    end
     config_context :dns do
     end
     config_context :zabbix do
