@@ -17,34 +17,34 @@ patterns << Pattern.new(name: 'zabbix_pattern',
 
 mappings = {
   cloud_conductor_init: {
-    availability_zones: { type: :value, value: 'us-east-1a, us-east-1b' },
-    subnet_size: { type: :value, value: 2 }
+    availability_zones: { type: :static, value: 'us-east-1a, us-east-1b' },
+    subnet_size: { type: :static, value: 2 }
   },
   tomcat_pattern: {
     bootstrap_expect: { type: :variable, value: 'bootstrap_expect', default: '0' },
     vpc_id: { type: :module, value: 'cloud_conductor_init.vpc_id' },
     subnet_ids: { type: :module, value: 'cloud_conductor_init.subnet_ids' },
     shared_security_group: { type: :module, value: 'cloud_conductor_init.shared_security_group' },
-    key_name: { type: :value, value: 'develop-key' },
-    web_image: { type: :value, value: 'ami-c66326ac' },
-    ap_image: { type: :value, value: 'ami-52602538' },
-    db_image: { type: :value, value: 'ami-ea632680' },
-    web_instance_type: { type: :value, value: 't2.micro' },
-    ap_instance_type: { type: :value, value: 't2.micro' },
-    db_instance_type: { type: :value, value: 't2.micro' },
-    web_server_size: { type: :value, value: 1 },
-    ap_server_size: { type: :value, value: 1 },
-    db_server_size: { type: :value, value: 1 }
+    key_name: { type: :static, value: 'develop-key' },
+    web_image: { type: :static, value: 'ami-c66326ac' },
+    ap_image: { type: :static, value: 'ami-52602538' },
+    db_image: { type: :static, value: 'ami-ea632680' },
+    web_instance_type: { type: :static, value: 't2.micro' },
+    ap_instance_type: { type: :static, value: 't2.micro' },
+    db_instance_type: { type: :static, value: 't2.micro' },
+    web_server_size: { type: :static, value: 1 },
+    ap_server_size: { type: :static, value: 1 },
+    db_server_size: { type: :static, value: 1 }
   },
   zabbix_pattern: {
     bootstrap_expect: { type: :variable, value: 'bootstrap_expect' },
     vpc_id: { type: :module, value: 'cloud_conductor_init.vpc_id' },
     subnet_ids: { type: :module, value: 'cloud_conductor_init.subnet_ids' },
     shared_security_group: { type: :module, value: 'cloud_conductor_init.shared_security_group' },
-    key_name: { type: :value, value: 'develop-key' },
-    monitoring_image: { type: :value, value: 'ami-8c6c29e6' },
-    monitoring_instance_type: { type: :value, value: 't2.micro' },
-    monitoring_server_size: { type: :value, value: 1 }
+    key_name: { type: :static, value: 'develop-key' },
+    monitoring_image: { type: :static, value: 'ami-8c6c29e6' },
+    monitoring_instance_type: { type: :static, value: 't2.micro' },
+    monitoring_server_size: { type: :static, value: 1 }
   }
 }.with_indifferent_access
 

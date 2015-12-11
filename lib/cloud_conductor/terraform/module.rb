@@ -33,7 +33,7 @@ module CloudConductor
         @variables = {}
         (template[:variable] || {}).keys.each do |key|
           case
-          when @mappings[key][:type] == :value
+          when @mappings[key][:type] == :static
             @variables[key] = @mappings[key][:value]
           when @mappings[key][:type] == :module
             @variables[key] = "${module.#{@mappings[key][:value]}}"
