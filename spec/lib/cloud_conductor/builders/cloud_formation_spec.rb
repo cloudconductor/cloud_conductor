@@ -87,7 +87,6 @@ module CloudConductor
 
           allow(@builder).to receive(:wait_for_finished)
           allow(@builder).to receive(:update_environment)
-          allow(@builder).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
           allow(@builder).to receive(:reset_stacks)
         end
 
@@ -95,7 +94,6 @@ module CloudConductor
           expect(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).ordered
           expect(@builder).to receive(:update_environment).with(key: 'dummy').ordered
           expect(@builder).to receive(:wait_for_finished).with(@environment.stacks[1], anything).ordered
-          expect(@builder).to receive(:finish_environment).ordered
           expect(@builder).not_to receive(:reset_stacks)
           @builder.build_infrastructure
         end
@@ -109,13 +107,6 @@ module CloudConductor
         it 'create all stacks' do
           @builder.build_infrastructure
           expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
-        end
-
-        it 'set status of stacks to :ERROR when all candidates failed' do
-          allow(@environment).to receive(:status).and_return(:ERROR)
-          @builder.build_infrastructure
-
-          expect(@environment.stacks.all?(&:error?)).to be_truthy
         end
       end
 
@@ -200,54 +191,6 @@ module CloudConductor
         end
       end
 
-      describe '#finish_environment' do
-        before do
-          @event = double(:event, sync_fire: 1)
-          allow(@environment).to receive(:event).and_return(@event)
-          allow(@builder).to receive(:configure_payload).and_return({})
-          allow(@builder).to receive(:application_payload).and_return({})
-        end
-
-        it 'will request configure event to consul' do
-          expect(@event).to receive(:sync_fire).with(:configure, {})
-          @builder.send(:finish_environment)
-        end
-
-        it 'will request restore event to consul' do
-          expect(@event).to receive(:sync_fire).with(:restore, {})
-          @builder.send(:finish_environment)
-        end
-
-        it 'won\'t request deploy event to consul when create new environment' do
-          expect(@event).not_to receive(:sync_fire).with(:deploy, anything)
-          @builder.send(:finish_environment)
-        end
-
-        it 'will request deploy event to consul when create already deploymented environment' do
-          @environment.status = :CREATE_COMPLETE
-          FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-          @environment.status = :PROGRESS
-
-          expect(@event).to receive(:sync_fire).with(:deploy, {})
-          @builder.send(:finish_environment)
-        end
-
-        it 'will request spec event to consul' do
-          expect(@event).to receive(:sync_fire).with(:spec)
-          @builder.send(:finish_environment)
-        end
-
-        it 'change application history status if deploy event is finished' do
-          @environment.status = :CREATE_COMPLETE
-          FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-          @environment.status = :PROGRESS
-
-          expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
-          @builder.send(:finish_environment)
-          expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
-        end
-      end
-
       describe '#reset_stacks' do
         before do
           allow(@environment).to receive(:destroy_stacks) do
@@ -281,54 +224,6 @@ module CloudConductor
           allow(@builder).to receive(:next_cloud).and_return(nil)
           @builder.send(:reset_stacks)
           expect(@environment.status).to eq(:ERROR)
-        end
-      end
-
-      describe '#configure_payload' do
-        before do
-          @environment.stacks.each { |stack| stack.update_attributes(status: :CREATE_COMPLETE) }
-        end
-
-        it 'return payload that contains random salt' do
-          key = 'cloudconductor/cloudconductor'
-          payload = @builder.send(:configure_payload, @environment)[key]
-          expect(payload[:cloudconductor][:salt]).to match(/^[0-9a-f]{64}$/)
-        end
-
-        it 'will request configure event to serf with payload' do
-          key1 = "cloudconductor/patterns/#{@platform_stack.pattern_snapshot.name}/attributes"
-          key2 = "cloudconductor/patterns/#{@optional_stack.pattern_snapshot.name}/attributes"
-          payload = @builder.send(:configure_payload, @environment)
-          expect(payload.keys).to include(key1, key2)
-
-          expect(payload[key1]).to eq(JSON.parse(@platform_stack.parameters, symbolize_names: true))
-          expect(payload[key2]).to eq(JSON.parse(@optional_stack.parameters, symbolize_names: true))
-        end
-      end
-
-      describe '#application_payload' do
-        it 'return empty payload when deployments are empty' do
-          expect(@builder.send(:application_payload, @environment)).to eq({})
-        end
-
-        it 'return merged payload that contains all deployments' do
-          @system = System.eager_load(:project).find(system)
-          @environment.status = :CREATE_COMPLETE
-          application1 = FactoryGirl.build(:application, name: 'application1', system: @system)
-          application2 = FactoryGirl.build(:application, name: 'application2', system: @system)
-          history1 = FactoryGirl.build(:application_history, application: application1)
-          history2 = FactoryGirl.build(:application_history, application: application2)
-
-          FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
-          FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
-          @environment.status = :PROGRESS
-
-          key1 = 'cloudconductor/applications/application1'
-          key2 = 'cloudconductor/applications/application2'
-          payload = @builder.send(:application_payload, @environment)
-          expect(payload.keys).to eq([key1, key2])
-          expect(payload[key1][:cloudconductor][:applications]['application1']).to be_is_a(Hash)
-          expect(payload[key2][:cloudconductor][:applications]['application2']).to be_is_a(Hash)
         end
       end
 

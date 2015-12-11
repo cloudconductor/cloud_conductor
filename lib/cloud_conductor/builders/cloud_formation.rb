@@ -16,7 +16,7 @@ require 'cloud_conductor/builders/builder'
 
 module CloudConductor
   module Builders
-    class CloudFormation < Builder # rubocop:disable ClassLength
+    class CloudFormation < Builder
       CHECK_PERIOD = 3
 
       def initialize(cloud, environment)
@@ -24,11 +24,7 @@ module CloudConductor
         @clouds = environment.candidates.sorted.map(&:cloud)
       end
 
-      def build_infrastructure # rubocop:disable MethodLength
-        Log.info "Start creating stacks of environment(#{@environment.name}) on #{@cloud.name}"
-        @environment.status = :PROGRESS
-        @environment.save!
-
+      def build_infrastructure
         until @environment.stacks.select(&:pending?).empty?
           platforms = @environment.stacks.select(&:pending?).select(&:platform?)
           optionals = @environment.stacks.select(&:pending?).select(&:optional?)
@@ -46,17 +42,6 @@ module CloudConductor
           stack.save!
 
           stack.client.post_process
-        end
-
-        finish_environment if @environment.reload
-
-        Log.info "Created all stacks on environment(#{@environment.name}) on #{@cloud.name}"
-
-        unless @environment.status == :CREATE_COMPLETE
-          @environment.stacks.each do |stack|
-            stack.status = :ERROR
-            stack.save!
-          end
         end
       rescue => e
         reset_stacks
@@ -118,19 +103,6 @@ module CloudConductor
         @environment.save!
       end
 
-      def finish_environment
-        @environment.event.sync_fire(:configure, configure_payload(@environment))
-        @environment.event.sync_fire(:restore, application_payload(@environment))
-        @environment.event.sync_fire(:deploy, application_payload(@environment)) unless @environment.deployments.empty?
-        @environment.event.sync_fire(:spec)
-
-        @environment.status = :CREATE_COMPLETE
-        @environment.deployments.each do |deployment|
-          deployment.update_attributes!(status: 'DEPLOY_COMPLETE')
-        end
-        @environment.save!
-      end
-
       def reset_stacks
         Log.info 'Reset all stacks.'
         cloud = next_cloud(@environment.stacks.first.cloud)
@@ -153,28 +125,6 @@ module CloudConductor
       end
 
       private
-
-      def configure_payload(environment)
-        payload = {}
-
-        payload['cloudconductor/cloudconductor'] = {
-          cloudconductor: {
-            salt: OpenSSL::Digest::SHA256.hexdigest(environment.system.created_at.iso8601(6))
-          }
-        }
-
-        environment.stacks.created.each do |stack|
-          payload.deep_merge! stack.payload
-        end
-
-        payload
-      end
-
-      def application_payload(environment)
-        return {} if environment.deployments.empty?
-
-        environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
-      end
 
       def next_cloud(current_cloud)
         index = @clouds.index(current_cloud)
