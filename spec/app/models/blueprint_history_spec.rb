@@ -197,6 +197,13 @@ describe BlueprintHistory do
       @history.pattern_snapshots[2].providers = '{ "aws": ["terraform"], "openstack": ["heat"]}'
       expect(@history.providers).to eq('aws' => %w(terraform))
     end
+
+    it 'return usable providers on aws if provider in metadata.yml as string instead of array' do
+      @history.pattern_snapshots[0].providers = '{ "aws": "terraform" }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"] }'
+      expect(@history.providers).to eq('aws' => %w(terraform))
+    end
   end
 
   describe '#build_pattern_snapshots' do

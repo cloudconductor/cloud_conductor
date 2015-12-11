@@ -32,7 +32,7 @@ class BlueprintHistory < ActiveRecord::Base
 
     providers.map(&:keys).inject(&:|).each do |cloud|
       providers.each do |provider|
-        list = provider[cloud] || []
+        list = [provider[cloud]].flatten.compact
         result[cloud] ||= list
         result[cloud] = result[cloud] & list
       end
