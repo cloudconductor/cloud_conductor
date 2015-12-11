@@ -44,6 +44,7 @@ module API
             requires :cloud_id, type: String, desc: 'Cloud id'
             optional :priority, type: Integer, desc: 'Cloud priority(prefer cloud that has higher value)'
           end
+          optional :mappings_json, type: String, desc: 'Variable mappings to create environment by terraform'
         end
         post '/' do
           system = ::System.find_by(id: params[:system_id])
@@ -101,6 +102,7 @@ module API
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
           optional :template_parameters, type: String, desc: 'Parameters JSON'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
+          optional :mappings_json, type: String, desc: 'Variable mappings to create environment by terraform'
         end
         post '/:id/rebuild' do
           environment = ::Environment.find(params[:id])
