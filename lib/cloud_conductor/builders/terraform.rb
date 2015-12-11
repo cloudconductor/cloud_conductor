@@ -10,8 +10,8 @@ module CloudConductor
 
       private
 
-      def build_infrastructure(mappings = {})
-        directory = generate_template(@cloud, @environment, mappings)
+      def build_infrastructure
+        directory = generate_template(@cloud, @environment)
         outputs = execute_terraform(directory)
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
       rescue => e
@@ -19,7 +19,8 @@ module CloudConductor
         raise e
       end
 
-      def generate_template(cloud, environment, mappings)
+      def generate_template(cloud, environment)
+        mappings = JSON.parse(environment.mappings_json).with_indifferent_access
         parent = CloudConductor::Terraform::Parent.new(cloud)
         environment.blueprint_history.pattern_snapshots.each do |snapshot|
           parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])

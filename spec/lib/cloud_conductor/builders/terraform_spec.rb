@@ -56,17 +56,17 @@ module CloudConductor
         it 'will create directory if directory does not exist' do
           allow(Dir).to receive(:exist?).and_return(false)
           expect(FileUtils).to receive(:mkdir_p).with(/[0-9a-f\-]{36}/)
-          @builder.send(:generate_template, cloud_aws, environment, {})
+          @builder.send(:generate_template, cloud_aws, environment)
         end
 
         it 'call Parent#save and Parent#cleanup to generate/cleanup parent template' do
           expect(@parent).to receive(:save).ordered
           expect(@parent).to receive(:cleanup).ordered
-          @builder.send(:generate_template, cloud_aws, environment, {})
+          @builder.send(:generate_template, cloud_aws, environment)
         end
 
         it 'return directory path that contains parent template.tf' do
-          path = @builder.send(:generate_template, cloud_aws, environment, {})
+          path = @builder.send(:generate_template, cloud_aws, environment)
           expect(path).to match(%r(/tmp/terraform/[0-9a-f\-]{36}$))
         end
       end
