@@ -15,7 +15,7 @@
 FactoryGirl.define do
   factory :stack, class: Stack do
     environment { build(:environment) }
-    pattern_snapshot { build(:pattern_snapshot, type: :platform, blueprint_history: environment.blueprint_history) }
+    pattern_snapshot { build(:pattern_snapshot, type: :platform, blueprint_history: environment.blueprint_history, images: FactoryGirl.build_list(:image, 1, status: :CREATE_COMPLETE)) }
     cloud { build(:cloud, :aws, project: environment.system.project) }
 
     sequence(:name) { |n| "stack-#{n}" }

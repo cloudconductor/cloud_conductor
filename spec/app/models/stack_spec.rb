@@ -64,7 +64,7 @@ describe Stack do
     it 'return true when name is not unique in two Clouds' do
       @environment = Environment.eager_load(:system).find(environment)
       @cloud = FactoryGirl.create(:cloud, :openstack, project: project)
-      FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: @cloud)
+      FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
