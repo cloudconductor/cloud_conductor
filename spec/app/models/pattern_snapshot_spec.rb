@@ -97,9 +97,9 @@ describe PatternSnapshot do
       expect(@pattern.status).to eq(:PROGRESS)
     end
 
-    it 'return :ERROR when pattern hasn\'t images' do
+    it 'return :CREATE_COMPLETE when pattern hasn\'t images' do
       @pattern.images.delete_all
-      expect(@pattern.status).to eq(:ERROR)
+      expect(@pattern.status).to eq(:CREATE_COMPLETE)
     end
 
     it 'return :CREATE_COMPLETE when all images have CREATE_COMPLETE status' do

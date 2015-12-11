@@ -13,7 +13,7 @@ class PatternSnapshot < ActiveRecord::Base
   before_destroy :check_pattern_usage
 
   def status
-    if images.empty? || images.any? { |image| image.status == :ERROR }
+    if images.any? { |image| image.status == :ERROR }
       :ERROR
     elsif images.all? { |image| image.status == :CREATE_COMPLETE }
       :CREATE_COMPLETE
