@@ -30,7 +30,6 @@ module CloudConductor
         FileUtils.mkdir_p temporary unless Dir.exist? temporary
 
         parent.save("#{temporary}/template.tf")
-        parent.cleanup
         temporary
       end
 

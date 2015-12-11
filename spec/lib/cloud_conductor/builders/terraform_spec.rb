@@ -61,7 +61,6 @@ module CloudConductor
 
         it 'call Parent#save and Parent#cleanup to generate/cleanup parent template' do
           expect(@parent).to receive(:save).ordered
-          expect(@parent).to receive(:cleanup).ordered
           @builder.send(:generate_template, cloud_aws, environment)
         end
 
