@@ -27,7 +27,7 @@ module PatternAccessor
     template_path = File.expand_path('template.json', path)
     JSON.parse(File.open(template_path).read).with_indifferent_access
   rescue Errno::ENOENT
-    raise 'template.json is not contained in pattern'
+    {}
   end
 
   def load_metadata(path)
@@ -43,7 +43,8 @@ module PatternAccessor
 
   def read_roles(path)
     template = load_template(path)
-    fail 'Resources was not found' if template[:Resources].nil?
+    return [] if template[:Resources].nil?
+
     resources = {}
     resources.update template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration'))
     resources.update template[:Resources].select(&type?('AWS::EC2::Instance'))

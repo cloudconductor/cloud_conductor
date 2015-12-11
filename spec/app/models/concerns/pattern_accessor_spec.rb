@@ -79,6 +79,13 @@ describe PatternAccessor do
       result = @accessor.send(:load_template, cloned_path)
       expect(result).to eq('key' => 'value')
     end
+
+    it 'return empty hash when template.json does not exist' do
+      allow(File).to receive(:open).with("#{cloned_path}/template.json").and_raise(Errno::ENOENT)
+
+      result = @accessor.send(:load_template, cloned_path)
+      expect(result).to eq({})
+    end
   end
 
   describe '#load_metadata' do
@@ -135,9 +142,9 @@ describe PatternAccessor do
   end
 
   describe '#read_roles' do
-    it 'raise error when Resources does not exist' do
+    it 'return empty array when Resources does not exist' do
       allow(@accessor).to receive(:load_template).and_return({})
-      expect { @accessor.send(:read_roles, cloned_path) }.to raise_error('Resources was not found')
+      expect(@accessor.send(:read_roles, cloned_path)).to eq([])
     end
 
     it 'will load template.json and get role list' do
