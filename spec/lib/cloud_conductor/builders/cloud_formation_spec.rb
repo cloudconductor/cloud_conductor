@@ -81,7 +81,7 @@ module CloudConductor
         end
       end
 
-      describe '#build' do
+      describe '#build_infrastructure' do
         before do
           allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
 
@@ -97,23 +97,23 @@ module CloudConductor
           expect(@builder).to receive(:wait_for_finished).with(@environment.stacks[1], anything).ordered
           expect(@builder).to receive(:finish_environment).ordered
           expect(@builder).not_to receive(:reset_stacks)
-          @builder.build
+          @builder.build_infrastructure
         end
 
         it 'call #reset_stacks when some method raise error' do
           allow(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).and_raise
           expect(@builder).to receive(:reset_stacks)
-          expect { @builder.build }.to raise_error RuntimeError
+          expect { @builder.build_infrastructure }.to raise_error RuntimeError
         end
 
         it 'create all stacks' do
-          @builder.build
+          @builder.build_infrastructure
           expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
         end
 
         it 'set status of stacks to :ERROR when all candidates failed' do
           allow(@environment).to receive(:status).and_return(:ERROR)
-          @builder.build
+          @builder.build_infrastructure
 
           expect(@environment.stacks.all?(&:error?)).to be_truthy
         end

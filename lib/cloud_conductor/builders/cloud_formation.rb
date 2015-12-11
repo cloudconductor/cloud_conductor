@@ -20,12 +20,11 @@ module CloudConductor
       CHECK_PERIOD = 3
 
       def initialize(cloud, environment)
-        @cloud = cloud
+        super
         @clouds = environment.candidates.sorted.map(&:cloud)
-        @environment = environment
       end
 
-      def build # rubocop:disable MethodLength
+      def build_infrastructure # rubocop:disable MethodLength
         Log.info "Start creating stacks of environment(#{@environment.name}) on #{@cloud.name}"
         @environment.status = :PROGRESS
         @environment.save!

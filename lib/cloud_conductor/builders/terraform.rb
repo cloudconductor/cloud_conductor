@@ -1,14 +1,16 @@
 require 'cloud_conductor/builders/builder'
+require 'rterraform'
 
 module CloudConductor
   module Builders
     class Terraform < Builder
       def initialize(cloud, environment)
-        @cloud = cloud
-        @environment = environment
+        super
       end
 
-      def build
+      private
+
+      def build_infrastructure(mappings = {})
       end
     end
   end
