@@ -26,7 +26,7 @@ module CloudConductor
           parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])
         end
 
-        temporary = File.expand_path("../../tmp/terraform/#{SecureRandom.uuid}", File.dirname(__FILE__))
+        temporary = File.expand_path("../../../tmp/terraform/#{SecureRandom.uuid}", File.dirname(__FILE__))
         FileUtils.mkdir_p temporary unless Dir.exist? temporary
 
         parent.save("#{temporary}/template.tf")
