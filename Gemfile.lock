@@ -5,6 +5,13 @@ GIT
     cfn_converter (0.1.0)
       activesupport (~> 4.1)
 
+GIT
+  remote: https://github.com/cloudconductor/rterraform.git
+  revision: 72dc7c497df75d76bca5f385f5ad00f793022b53
+  branch: develop
+  specs:
+    rterraform (0.1.0)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -399,6 +406,7 @@ DEPENDENCIES
   rspec-mocks
   rspec-rails
   rspec_junit_formatter
+  rterraform!
   simplecov
   simplecov-rcov
   spring
