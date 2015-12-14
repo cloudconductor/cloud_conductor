@@ -2,6 +2,22 @@ module API
   module V1
     class PatternAPI < API::V1::Base
       resource :patterns do
+        before do
+          @project_id = nil
+          if request.params.key?(:project_id)
+            @project_id = request.params[:project_id]
+          end
+
+          if request.params.key?(:id)
+            pattern = Pattern.find_by_id(request.params[:id])
+            @project_id = pattern.project_id
+          end
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List patterns'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

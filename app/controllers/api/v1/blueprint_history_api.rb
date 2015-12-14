@@ -4,6 +4,18 @@ module API
       resource :blueprints do
         route_param :blueprint_id do
           resource :histories do
+            before do
+              @project_id = nil
+              if request.params.key?(:blueprint_id)
+                blueprint = Blueprint.find_by_id(request.params[:blueprint_id])
+                @project_id = blueprint.project_id if blueprint
+              end
+            end
+
+            after do
+              track_api(@project_id)
+            end
+
             desc 'List blueprint histories'
             get '/' do
               Blueprint.find(params[:blueprint_id]).histories.select do |history|

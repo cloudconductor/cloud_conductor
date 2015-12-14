@@ -12,10 +12,6 @@ module API
             authenticate_account_from_token! unless require_no_authentication
           end
 
-          after do
-            track_api
-          end
-
           rescue_exceptions
         end
       end

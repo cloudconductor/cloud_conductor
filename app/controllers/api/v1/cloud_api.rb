@@ -2,6 +2,22 @@ module API
   module V1
     class CloudAPI < API::V1::Base
       resource :clouds do
+        before do
+          @project_id = nil
+          if request.params.key?(:project_id)
+            @project_id = request.params[:project_id]
+          end
+
+          if request.params.key?(:id)
+            cloud = Cloud.find_by_id(request.params[:id])
+            @project_id = cloud.project_id if cloud
+          end
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List clouds'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

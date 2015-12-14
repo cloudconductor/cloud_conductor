@@ -89,6 +89,22 @@ module ApiSpecHelper
     end
   end
 
+  shared_examples_for 'create audit with project_id' do
+    it 'create audit and project_id is not nil' do
+      subject
+      expect(Audit.count).to be(1)
+      expect(Audit.last.project_id).not_to be_nil
+    end
+  end
+
+  shared_examples_for 'create audit without project_id' do
+    it 'create audit and project_id is not nil' do
+      subject
+      expect(Audit.count).to be(1)
+      expect(Audit.last.project_id).to be_nil
+    end
+  end
+
   def app
     Rails.application
   end

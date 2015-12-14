@@ -17,6 +17,7 @@ module API
         end
       end
 
+<<<<<<< a8a91b85f97b62226ec4762fa22ecccead8387b2
       def find_project(subject)
         project = nil
         unless subject.class == Class
@@ -52,11 +53,15 @@ module API
       end
 
       def track_api
+=======
+      def track_api(project_id)
+>>>>>>> Move track_api from Base to each API
         account_id = current_account.id if current_account
-        project_id = load_project_id
+        # project_id = current_project_id
         ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
       end
 
+<<<<<<< a8a91b85f97b62226ec4762fa22ecccead8387b2
       def authorize!(action, subject, *args)
         create_ability(subject, *args).authorize!(action, subject, *args)
       end
@@ -83,6 +88,8 @@ module API
         end
       end
 
+=======
+>>>>>>> Move track_api from Base to each API
       def authorize!(*args)
         current_ability.authorize!(*args)
 >>>>>>> Fix track_api

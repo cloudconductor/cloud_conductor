@@ -2,6 +2,30 @@ module API
   module V1
     class ApplicationAPI < API::V1::Base
       resource :applications do
+        before do
+          @project_id = nil
+          if request.params.key?(:project_id)
+            @project_id = request.params[:project_id]
+          end
+
+          if request.params.key?(:system_id)
+            system_id = request.params[:system_id]
+            system = System.find_by_id(system_id)
+            @project_id = system.project_id if system
+          end
+
+          if request.params.key?(:id)
+            application = Application.find_by_id(request.params[:id])
+            system_id = application.system_id if application
+            system = System.find_by_id(system_id)
+            @project_id = system.project_id if system
+          end
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List applications'
         params do
           optional :system_id, type: Integer, desc: 'Target system id'

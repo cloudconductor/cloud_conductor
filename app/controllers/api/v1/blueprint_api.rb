@@ -2,6 +2,27 @@ module API
   module V1
     class BlueprintAPI < API::V1::Base
       resource :blueprints do
+        before do
+          @project_id = nil
+          if request.params.key?(:project_id)
+            @project_id = request.params[:project_id]
+          end
+
+          if request.params.key?(:id)
+            blueprint = Blueprint.find_by_id(request.params[:id])
+            @project_id = blueprint.project_id if blueprint
+          end
+
+          if request.params.key?(:blueprint_id)
+            blueprint = Blueprint.find_by_id(request.params[:blueprint_id])
+            @project_id = blueprint.project_id if blueprint
+          end
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List blueprints'
         params do
           optional :project_id, type: Integer, desc: 'Project id'
