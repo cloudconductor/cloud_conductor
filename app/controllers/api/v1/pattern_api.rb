@@ -10,7 +10,7 @@ module API
 
           if @project_id == nil && params.key?(:id)
             pattern = Pattern.find_by_id(params[:id])
-            @project_id = pattern.project_id
+            @project_id = pattern.project_id if pattern
           end
         end
 

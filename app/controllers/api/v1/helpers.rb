@@ -17,7 +17,6 @@ module API
         end
       end
 
-<<<<<<< a8a91b85f97b62226ec4762fa22ecccead8387b2
       def find_project(subject)
         project = nil
         unless subject.class == Class
@@ -52,46 +51,13 @@ module API
         Ability.new(current_account, project)
       end
 
-      def track_api
-=======
       def track_api(project_id)
->>>>>>> Move track_api from Base to each API
         account_id = current_account.id if current_account
         ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
       end
 
-<<<<<<< a8a91b85f97b62226ec4762fa22ecccead8387b2
       def authorize!(action, subject, *args)
         create_ability(subject, *args).authorize!(action, subject, *args)
-      end
-
-      def load_project_id
-        if request.params.key?(:project_id)
-          request.params[:project_id]
-        elsif request.params.key?(:system_id)
-          system = System.find(request.params[:system_id])
-          system.project_id
-        elsif request.params.key?(:cloud_id)
-          cloud = Cloud.find(request.params[:cloud_id])
-          cloud.project_id
-        elsif request.params.key?(:blueprint_id)
-          blueprint = Blueprint.find(request.params[:blueprint_id])
-          blueprint.project_id
-        elsif request.params.key?(:pattern_id)
-          pattern = Pattern.find(request.params[:pattern_id])
-          pattern.project_id
-        elsif request.params.key?(:application_id)
-          application = Application.find(request.params[:application_id])
-          system = System.find(application.system_id)
-          system.project_id
-        end
-      end
-
-=======
->>>>>>> Move track_api from Base to each API
-      def authorize!(*args)
-        current_ability.authorize!(*args)
->>>>>>> Fix track_api
       end
 
       def can?(action, subject, *args)

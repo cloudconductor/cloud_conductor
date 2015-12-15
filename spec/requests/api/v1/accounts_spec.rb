@@ -16,17 +16,12 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'normal_account', normal: true do
-        let(:result) { format_iso8601([normal_account]) }
-        it_behaves_like('200 OK')
-        it_behaves_like('create audit without project_id')
-      end
-
-      context 'all (without project_id)' do 
+      context 'all (without project_id)' do
         let(:result) { format_iso8601(accounts) }
 
         context 'normal_account', normal: true do
           it_behaves_like('200 OK')
+          it_behaves_like('create audit without project_id')
         end
 
         context 'administrator', admin: true do
