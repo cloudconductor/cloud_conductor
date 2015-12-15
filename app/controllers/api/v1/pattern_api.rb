@@ -4,12 +4,12 @@ module API
       resource :patterns do
         before do
           @project_id = nil
-          if request.params.key?(:project_id)
-            @project_id = request.params[:project_id]
+          if params.key?(:project_id)
+            @project_id = params[:project_id]
           end
 
-          if request.params.key?(:id)
-            pattern = Pattern.find_by_id(request.params[:id])
+          if @project_id == nil && params.key?(:id)
+            pattern = Pattern.find_by_id(params[:id])
             @project_id = pattern.project_id
           end
         end

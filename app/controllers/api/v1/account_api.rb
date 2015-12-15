@@ -2,6 +2,10 @@ module API
   module V1
     class AccountAPI < API::V1::Base
       resource :accounts do
+        after do
+          track_api(nil)
+        end
+
         desc 'List accounts'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

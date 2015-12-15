@@ -57,7 +57,6 @@ module API
       def track_api(project_id)
 >>>>>>> Move track_api from Base to each API
         account_id = current_account.id if current_account
-        # project_id = current_project_id
         ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
       end
 

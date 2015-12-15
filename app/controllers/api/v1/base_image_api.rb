@@ -4,18 +4,18 @@ module API
       resource :base_images do
         before do
           @project_id = nil
-          if request.params.key?(:project_id)
-            @project_id = request.params[:project_id]
+          if params.key?(:project_id)
+            @project_id = params[:project_id]
           end
 
-          if request.params.key?(:cloud_id)
-            cloud_id = request.params[:cloud_id]
+          if @project_id == nil && params.key?(:cloud_id)
+            cloud_id = params[:cloud_id]
             cloud = Cloud.find_by_id(cloud_id)
             @project_id = cloud.project_id if cloud
           end
 
-          if request.params.key?(:id)
-            baseimage = BaseImage.find_by_id(request.params[:id])
+          if @project_id == nil && params.key?(:id)
+            baseimage = BaseImage.find_by_id(params[:id])
             cloud_id = baseimage.cloud_id if baseimage
             cloud = Cloud.find_by_id(cloud_id)
             @project_id = cloud.project_id if cloud

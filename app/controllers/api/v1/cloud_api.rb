@@ -4,12 +4,12 @@ module API
       resource :clouds do
         before do
           @project_id = nil
-          if request.params.key?(:project_id)
-            @project_id = request.params[:project_id]
+          if params.key?(:project_id)
+            @project_id = params[:project_id]
           end
 
-          if request.params.key?(:id)
-            cloud = Cloud.find_by_id(request.params[:id])
+          if @project_id == nil && params.key?(:id)
+            cloud = Cloud.find_by_id(params[:id])
             @project_id = cloud.project_id if cloud
           end
         end

@@ -16,7 +16,13 @@ describe API do
         it_behaves_like('401 Unauthorized')
       end
 
-      context 'all (without project_id)' do
+      context 'normal_account', normal: true do
+        let(:result) { format_iso8601([normal_account]) }
+        it_behaves_like('200 OK')
+        it_behaves_like('create audit without project_id')
+      end
+
+      context 'all (without project_id)' do 
         let(:result) { format_iso8601(accounts) }
 
         context 'normal_account', normal: true do
@@ -102,6 +108,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit without project_id')
       end
 
       context 'project_owner', project_owner: true do
@@ -153,6 +160,7 @@ describe API do
 
         context 'administrator', admin: true do
           it_behaves_like('201 Created')
+          it_behaves_like('create audit without project_id')
         end
 
         context 'project_owner', project_owner: true do
@@ -181,6 +189,7 @@ describe API do
 
         context 'administrator', admin: true do
           it_behaves_like('201 Created')
+          it_behaves_like('create audit without project_id')
         end
 
         context 'project_owner', project_owner: true do
@@ -228,6 +237,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit without project_id')
       end
 
       context 'project_owner', project_owner: true do
@@ -258,6 +268,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit without project_id')
       end
 
       context 'project_owner', project_owner: true do

@@ -4,17 +4,17 @@ module API
       resource :blueprints do
         before do
           @project_id = nil
-          if request.params.key?(:project_id)
-            @project_id = request.params[:project_id]
+          if params.key?(:project_id)
+            @project_id = params[:project_id]
           end
 
-          if request.params.key?(:id)
-            blueprint = Blueprint.find_by_id(request.params[:id])
+          if @project_id == nil && params.key?(:id)
+            blueprint = Blueprint.find_by_id(params[:id])
             @project_id = blueprint.project_id if blueprint
           end
 
-          if request.params.key?(:blueprint_id)
-            blueprint = Blueprint.find_by_id(request.params[:blueprint_id])
+          if @project_id == nil && params.key?(:blueprint_id)
+            blueprint = Blueprint.find_by_id(params[:blueprint_id])
             @project_id = blueprint.project_id if blueprint
           end
         end

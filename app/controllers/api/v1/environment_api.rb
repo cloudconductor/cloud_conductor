@@ -4,18 +4,18 @@ module API
       resource :environments do
         before do
           @project_id = nil
-          if request.params.key?(:project_id)
-            @project_id = request.params[:project_id]
+          if params.key?(:project_id)
+            @project_id = params[:project_id]
           end
 
-          if request.params.key?(:system_id)
-            system_id = request.params[:system_id]
+          if @project_id == nil && params.key?(:system_id)
+            system_id = params[:system_id]
             system = System.find_by_id(system_id)
             @project_id = system.project_id if system
           end
 
-          if request.params.key?(:id)
-            environment = Environment.find_by_id(request.params[:id])
+          if @project_id == nil && params.key?(:id)
+            environment = Environment.find_by_id(params[:id])
             system_id = environment.system_id if environment
             system = System.find_by_id(system_id)
             @project_id = system.project_id if system
