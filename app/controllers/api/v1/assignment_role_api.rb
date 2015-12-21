@@ -4,6 +4,16 @@ module API
       resource :assignments do
         route_param :assignment_id do
           resource :roles do
+            before do
+              project = current_project(AssignmentRole)
+              @project_id = nil
+              @project_id = project.id if project
+            end
+
+            after do
+              track_api(@project_id)
+            end
+
             desc 'List assignment roles'
             get '/' do
               assignment = ::Assignment.find(params[:assignment_id])

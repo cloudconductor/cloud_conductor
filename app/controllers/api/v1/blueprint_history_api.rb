@@ -5,11 +5,9 @@ module API
         route_param :blueprint_id do
           resource :histories do
             before do
+              project = current_project(BlueprintHistory)
               @project_id = nil
-              if params.key?(:blueprint_id)
-                blueprint = Blueprint.find_by_id(params[:blueprint_id])
-                @project_id = blueprint.project_id if blueprint
-              end
+              @project_id = project.id if project
             end
 
             after do

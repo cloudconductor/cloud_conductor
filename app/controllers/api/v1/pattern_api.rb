@@ -3,15 +3,9 @@ module API
     class PatternAPI < API::V1::Base
       resource :patterns do
         before do
+          temp = current_project(Pattern)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:id)
-            pattern = Pattern.find_by_id(params[:id])
-            @project_id = pattern.project_id if pattern
-          end
+          @project_id = temp.id if temp
         end
 
         after do

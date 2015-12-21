@@ -4,14 +4,11 @@ module API
       resource :projects do
         before do
           @project_id = nil
-
-          if params.key?(:id)
-            @project_id = params[:id]
-          end
+          @project_id = params[:id] if params.key?(:id)
         end
 
         after do
-          if @project_id == nil && params.key?(:name)
+          if @project_id.nil? && params.key?(:name)
             project = Project.find_by_name(params[:name])
             @project_id = project.id if project
           end

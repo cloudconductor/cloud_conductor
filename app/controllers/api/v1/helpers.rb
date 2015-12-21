@@ -51,9 +51,35 @@ module API
         Ability.new(current_account, project)
       end
 
+      def current_project(model)
+        project = nil
+        if params.key?(:project_id)
+          project = Project.find_by_id(params[:project_id])
+        else
+          data = nil
+          temp = { application_id: Application,
+                   system_id: System,
+                   cloud_id: Cloud,
+                   blueprint_id: Blueprint,
+                   assignment_id: Assignment,
+                   role_id: Role,
+                   id: model
+                 }
+          temp.each_key do |key|
+            data = temp[key].find_by_id(params[key]) if params.key?(key)
+            break if data
+          end
+          project = data.project if data
+        end
+        project
+      end
+
       def track_api(project_id)
-        account_id = current_account.id if current_account
-        ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
+        track_method = CloudConductor::Config.audit.method
+        if track_method.include?(request.request_method)
+          account_id = current_account.id if current_account
+          ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
+        end
       end
 
       def authorize!(action, subject, *args)

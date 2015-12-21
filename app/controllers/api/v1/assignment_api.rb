@@ -2,6 +2,16 @@ module API
   module V1
     class AssignmentAPI < API::V1::Base
       resource :assignments do
+        before do
+          project = current_project(Assignment)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List assignments'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

@@ -5,7 +5,7 @@ application_log_path "log/conductor_#{environment}.log"
 access_log_path 'log/conductor_access.log'
 
 # cloudconductor server settings
-cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
+cloudconductor.url 'http://10.255.197.146:30435/api/v1'
 
 # cloudconductor_init settings
 cloudconductor_init.url 'https://github.com/cloudconductor/cloud_conductor_init.git'
@@ -42,4 +42,7 @@ consul.options.ssl_options.verify false
 event.timeout 1800
 
 # system build setting
-system_build.timeout 1800
+# system_build.timeout 1800
+
+# audit settings
+audit.method 'PUT', 'POST', 'DELETE'

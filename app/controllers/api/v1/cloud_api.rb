@@ -3,15 +3,9 @@ module API
     class CloudAPI < API::V1::Base
       resource :clouds do
         before do
+          project = current_project(Cloud)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:id)
-            cloud = Cloud.find_by_id(params[:id])
-            @project_id = cloud.project_id if cloud
-          end
+          @project_id = project.id if project
         end
 
         after do

@@ -3,20 +3,9 @@ module API
     class BlueprintAPI < API::V1::Base
       resource :blueprints do
         before do
+          project = current_project(Blueprint)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:id)
-            blueprint = Blueprint.find_by_id(params[:id])
-            @project_id = blueprint.project_id if blueprint
-          end
-
-          if @project_id == nil && params.key?(:blueprint_id)
-            blueprint = Blueprint.find_by_id(params[:blueprint_id])
-            @project_id = blueprint.project_id if blueprint
-          end
+          @project_id = project.id if project
         end
 
         after do

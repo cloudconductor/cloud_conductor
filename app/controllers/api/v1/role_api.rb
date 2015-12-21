@@ -2,6 +2,16 @@ module API
   module V1
     class RoleAPI < API::V1::Base
       resource :roles do
+        before do
+          project = current_project(Role)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List roles'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

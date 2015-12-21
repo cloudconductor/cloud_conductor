@@ -214,6 +214,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
@@ -268,6 +269,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
@@ -328,6 +330,7 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do

@@ -3,23 +3,9 @@ module API
     class EventAPI < API::V1::Base
       resource :environments do
         before do
+          project = current_project(Environment)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:system_id)
-            system_id = params[:system_id]
-            system = System.find_by_id(system_id)
-            @project_id = system.project_id if system
-          end
-
-          if @project_id == nil && params.key?(:id)
-            environment = Environment.find_by_id(params[:id])
-            system_id = environment.system_id if environment
-            system = System.find_by_id(system_id)
-            @project_id = system.project_id if system
-          end
+          @project_id = project.id if project
         end
 
         after do

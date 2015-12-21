@@ -3,15 +3,9 @@ module API
     class SystemAPI < API::V1::Base
       resource :systems do
         before do
+          temp = current_project(System)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:id)
-            system = System.find_by_id(params[:id])
-            @project_id = system.project_id if system
-          end
+          @project_id = temp.id if temp
         end
 
         after do

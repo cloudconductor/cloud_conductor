@@ -3,23 +3,9 @@ module API
     class ApplicationAPI < API::V1::Base
       resource :applications do
         before do
+          project = current_project(Application)
           @project_id = nil
-          if params.key?(:project_id)
-            @project_id = params[:project_id]
-          end
-
-          if @project_id == nil && params.key?(:system_id)
-            system_id = params[:system_id]
-            system = System.find_by_id(system_id)
-            @project_id = system.project_id if system
-          end
-
-          if @project_id == nil && params.key?(:id)
-            application = Application.find_by_id(params[:id])
-            system_id = application.system_id if application
-            system = System.find_by_id(system_id)
-            @project_id = system.project_id if system
-          end
+          @project_id = project.id if project
         end
 
         after do

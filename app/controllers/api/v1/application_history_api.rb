@@ -5,17 +5,9 @@ module API
         route_param :application_id do
           resource :histories do
             before do
+              project = current_project(ApplicationHistory)
               @project_id = nil
-              if params.key?(:project_id)
-                @project_id = params[:project_id]
-              end
-
-              if @project_id == nil && params.key?(:application_id)
-                application = Application.find_by_id(params[:application_id])
-                system_id = application.system_id if application
-                system = System.find_by_id(system_id)
-                @project_id = system.project_id if system
-              end
+              @project_id = project.id if project
             end
 
             after do

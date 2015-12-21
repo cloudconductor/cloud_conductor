@@ -17,7 +17,6 @@ describe API do
       context 'normal_account', normal: true do
         let(:result) { [] }
         it_behaves_like('200 OK')
-        it_behaves_like('create audit without project_id')
       end
 
       context 'administrator', admin: true do
@@ -103,7 +102,6 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
-        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
