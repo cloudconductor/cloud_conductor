@@ -42,7 +42,7 @@ consul.options.ssl_options.verify false
 event.timeout 1800
 
 # system build setting
-# system_build.timeout 1800
+system_build.timeout 1800
 
 # audit settings
 audit.method 'PUT', 'POST', 'DELETE'
