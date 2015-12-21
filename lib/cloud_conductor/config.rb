@@ -46,7 +46,7 @@ module CloudConductor
       default :timeout, 1800
     end
     config_context :audit do
-      default :method, ['PUT', 'POST', 'DELETE']
+      default :method, %w(PUT POST DELETE)
     end
   end
 end
