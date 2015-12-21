@@ -16,7 +16,8 @@ describe Application do
   include_context 'default_resources'
 
   before do
-    @application = FactoryGirl.build(:application, system: system)
+    @system = System.eager_load(:project).find(system)
+    @application = FactoryGirl.build(:application, system: @system)
   end
 
   describe '#save' do
@@ -56,18 +57,19 @@ describe Application do
     end
 
     it 'delete all relational history' do
-      @application.histories << FactoryGirl.create(:application_history, application: @application)
-      @application.histories << FactoryGirl.create(:application_history, application: @application)
+      @application.histories << FactoryGirl.build(:application_history, application: @application)
+      @application.histories << FactoryGirl.build(:application_history, application: @application)
       @application.save!
+
       expect { @application.destroy }.to change { ApplicationHistory.count }.by(-2)
     end
   end
 
   describe '#latest' do
     it 'return latest ApplicationHistory' do
-      @application.histories << FactoryGirl.create(:application_history, application: @application)
+      @application.histories << FactoryGirl.build(:application_history, application: @application)
 
-      latest = FactoryGirl.create(:application_history, application: @application)
+      latest = FactoryGirl.build(:application_history, application: @application)
       @application.histories << latest
       @application.save!
 

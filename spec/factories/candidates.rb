@@ -14,7 +14,11 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :candidate, class: Candidate do
-    cloud { create(:cloud, :aws) }
+    transient do
+      project { build(:project) }
+    end
+
+    cloud { build(:cloud, :aws, project: project) }
     environment
     sequence(:priority) { |n| n * 10 }
   end

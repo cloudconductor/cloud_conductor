@@ -17,7 +17,7 @@ FactoryGirl.define do
     sequence(:name) { |n| "environment-#{n}" }
     description 'environment description'
     system
-    blueprint_history
+    blueprint_history { build(:blueprint_history, project: system.project) }
     platform_outputs '{}'
     ip_address '127.0.0.1'
 
@@ -29,7 +29,7 @@ FactoryGirl.define do
     factory :environment, class: Environment do
       after(:build) do |environment, evaluator|
         if evaluator.candidates.blank?
-          environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment)
+          environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment, project: environment.system.project)
         end
       end
     end

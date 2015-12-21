@@ -18,7 +18,8 @@ describe ApplicationHistory do
   let(:today) { Date.today.strftime('%Y%m%d') }
 
   before do
-    @history = FactoryGirl.build(:application_history, application: application)
+    @application = Application.eager_load(system: [:project]).find(application)
+    @history = FactoryGirl.build(:application_history, application: @application)
   end
 
   describe '#save' do

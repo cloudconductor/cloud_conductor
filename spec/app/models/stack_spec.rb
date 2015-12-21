@@ -16,12 +16,15 @@ describe Stack do
   include_context 'default_resources'
 
   before do
-    @stack = FactoryGirl.build(:stack, pattern_snapshot: pattern_snapshot, cloud: cloud, environment: environment)
+    @pattern_snapshot = PatternSnapshot.eager_load(:images).find(pattern_snapshot)
+    @environment = Environment.eager_load(:system, blueprint_history: [:pattern_snapshots]).find(environment)
+    @stack = FactoryGirl.build(:stack, pattern_snapshot: @pattern_snapshot, cloud: cloud, environment: @environment)
   end
 
   describe '.in_progress' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, status: :PROGRESS)
+      @environment = Environment.eager_load(system: [:project]).find(environment)
+      stack = FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, status: :PROGRESS)
       expect(Stack.in_progress).to include(stack)
       [:PENDING, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR, :CREATE_COMPLETE].each do |state|
         stack.update_columns(status: state)
@@ -32,7 +35,9 @@ describe Stack do
 
   describe '.created' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, status: :CREATE_COMPLETE)
+      @environment = Environment.eager_load(system: [:project]).find(environment)
+      @pattern_snapshot = PatternSnapshot.eager_load(:images).find(pattern_snapshot)
+      stack = FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: @pattern_snapshot, status: :CREATE_COMPLETE)
       expect(Stack.created).to include(stack)
       [:PENDING, :PROGRESS, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR].each do |state|
         stack.update_columns(status: state)
@@ -55,7 +60,9 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, environment: environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
+      @environment = Environment.eager_load(:system).find(environment)
+      @cloud = FactoryGirl.create(:cloud, :openstack, project: project)
+      FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: @cloud)
       expect(@stack.valid?).to be_truthy
     end
 

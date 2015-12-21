@@ -80,13 +80,13 @@ describe Blueprint do
     end
 
     it 'returns true when patterns has platform pattern' do
-      @blueprint.patterns << FactoryGirl.build(:pattern, :platform)
+      @blueprint.patterns << FactoryGirl.build(:pattern, :platform, project: project)
       expect(@blueprint).to be_can_build
     end
 
     it 'returns true when patterns hasn\'t platform pattern' do
-      @blueprint.patterns << FactoryGirl.build(:pattern, :optional)
-      @blueprint.patterns << FactoryGirl.build(:pattern, :optional)
+      @blueprint.patterns << FactoryGirl.build(:pattern, :optional, project: project)
+      @blueprint.patterns << FactoryGirl.build(:pattern, :optional, project: project)
       expect(@blueprint).not_to be_can_build
     end
   end

@@ -14,9 +14,9 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :stack, class: Stack do
-    environment { create(:environment) }
-    pattern_snapshot { create(:pattern_snapshot, type: :platform) }
-    cloud { create(:cloud, :aws) }
+    environment { build(:environment) }
+    pattern_snapshot { build(:pattern_snapshot, type: :platform, blueprint_history: environment.blueprint_history) }
+    cloud { build(:cloud, :aws, project: environment.system.project) }
 
     sequence(:name) { |n| "stack-#{n}" }
 

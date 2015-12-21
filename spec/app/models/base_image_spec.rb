@@ -16,7 +16,8 @@ describe BaseImage do
   include_context 'default_resources'
 
   before do
-    @base_image = FactoryGirl.build(:base_image, cloud: cloud)
+    @cloud = Cloud.eager_load(:project).find(cloud)
+    @base_image = FactoryGirl.build(:base_image, cloud: @cloud)
   end
 
   describe '#initialize' do

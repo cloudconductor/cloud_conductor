@@ -40,16 +40,20 @@ describe Project do
       FactoryGirl.create(:cloud, :aws, project: @project)
       FactoryGirl.create(:cloud, :aws, project: @project)
 
-      expect(@project.clouds.size).to eq(2)
-      expect { @project.destroy }.to change { Cloud.count }.by(-2)
+      project = Project.eager_load(:clouds, :roles).find(@project)
+
+      expect(project.clouds.size).to eq(2)
+      expect { project.destroy }.to change { Cloud.count }.by(-2)
     end
 
     it 'delete all system records' do
       FactoryGirl.create(:system, project: @project)
       FactoryGirl.create(:system, project: @project)
 
-      expect(@project.systems.size).to eq(2)
-      expect { @project.destroy }.to change { System.count }.by(-2)
+      project = Project.eager_load(:systems, :roles).find(@project)
+
+      expect(project.systems.size).to eq(2)
+      expect { project.destroy }.to change { System.count }.by(-2)
     end
 
     it 'delete all blueprint records' do
@@ -57,8 +61,10 @@ describe Project do
       FactoryGirl.create(:blueprint, project: @project)
       FactoryGirl.create(:blueprint, project: @project)
 
-      expect(@project.blueprints.size).to eq(2)
-      expect { @project.destroy }.to change { Blueprint.count }.by(-2)
+      project = Project.eager_load(:blueprints, :roles).find(@project)
+
+      expect(project.blueprints.size).to eq(2)
+      expect { project.destroy }.to change { Blueprint.count }.by(-2)
     end
 
     it 'call #delete_monitoring_account callback' do
@@ -71,7 +77,7 @@ describe Project do
       FactoryGirl.create(:role, project: @project)
       FactoryGirl.create(:role, project: @project)
 
-      project = Project.find(@project)
+      project = Project.eager_load(:roles).find(@project)
 
       expect(project.roles.size).to eq(4)
       expect { project.destroy }.to change { Role.count }.by(-4)
@@ -161,7 +167,7 @@ describe Project do
 
   describe '#base_images' do
     it 'collect base images belongs to this project' do
-      cloud = FactoryGirl.create(:cloud, :aws, project: @project)
+      cloud = FactoryGirl.build(:cloud, :aws, project: @project)
       FactoryGirl.create(:base_image, cloud: cloud, os_version: 'CentOS-6.5')
 
       results = @project.base_images('CentOS-6.5')

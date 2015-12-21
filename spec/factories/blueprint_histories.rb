@@ -1,6 +1,10 @@
 FactoryGirl.define do
   factory :blueprint_history, class: BlueprintHistory do
-    blueprint
+    transient do
+      project { build(:project) }
+    end
+
+    blueprint { build(:blueprint, project: project) }
     sequence(:version) { |n| n }
 
     after(:build) do |blueprint_history, _evaluator|
