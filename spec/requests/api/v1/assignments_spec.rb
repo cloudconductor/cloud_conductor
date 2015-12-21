@@ -91,7 +91,7 @@ describe API do
 
       context 'with account' do
         let(:params) { { account_id: project_operator_account.id } }
-        let(:result) { format_iso8601(project_operator_account.assignments) }
+        let(:result) { format_iso8601(Assignment.where(account_id: project_operator_account.id)) }
 
         context 'not_logged_in' do
           it_behaves_like('401 Unauthorized')

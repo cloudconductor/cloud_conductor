@@ -8,7 +8,7 @@ module API
           optional :account_id, type: Integer, desc: 'Account id'
         end
         get '/' do
-          ::Assignment.where(params.slice(:project_id, :account_id).to_hash)
+          ::Assignment.eager_load(:project).where(params.slice(:project_id, :account_id).to_hash)
             .select do |assignment|
             can?(:read, assignment)
           end

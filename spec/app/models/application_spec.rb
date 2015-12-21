@@ -57,6 +57,9 @@ describe Application do
     end
 
     it 'delete all relational history' do
+      @application.save!
+      @application = Application.eager_load(:histories).find(@application)
+
       @application.histories << FactoryGirl.build(:application_history, application: @application)
       @application.histories << FactoryGirl.build(:application_history, application: @application)
       @application.save!
@@ -67,6 +70,9 @@ describe Application do
 
   describe '#latest' do
     it 'return latest ApplicationHistory' do
+      @application.save!
+      @application = Application.eager_load(:histories).find(@application)
+
       @application.histories << FactoryGirl.build(:application_history, application: @application)
 
       latest = FactoryGirl.build(:application_history, application: @application)

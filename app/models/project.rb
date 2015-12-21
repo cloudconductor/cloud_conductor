@@ -56,7 +56,7 @@ class Project < ActiveRecord::Base
       permissions_attributes << { model: model.to_s, action: 'manage' }
     end
 
-    roles.build(name: 'administrator', permissions_attributes: permissions_attributes)
+    roles.build(name: 'administrator', permissions_attributes: permissions_attributes, preset: true)
   end
 
   def create_operator_role
@@ -75,7 +75,7 @@ class Project < ActiveRecord::Base
       permissions_attributes << { model: model.to_s, action: 'manage' }
     end
 
-    roles.build(name: 'operator', permissions_attributes: permissions_attributes)
+    roles.build(name: 'operator', permissions_attributes: permissions_attributes, preset: true)
   end
 
   def update_monitoring_account
