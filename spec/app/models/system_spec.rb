@@ -16,6 +16,8 @@ describe System do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @system = FactoryGirl.build(:system, project: project)
 
     allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)

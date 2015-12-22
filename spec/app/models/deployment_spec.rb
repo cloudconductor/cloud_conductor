@@ -16,6 +16,8 @@ describe Deployment do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @environment = Environment.eager_load(:system).find(environment)
     @application_history = ApplicationHistory.eager_load(:application).find(application_history)
     @deployment = FactoryGirl.build(:deployment, environment: @environment, application_history: @application_history)

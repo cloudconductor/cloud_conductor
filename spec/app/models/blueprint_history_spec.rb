@@ -16,6 +16,8 @@ describe BlueprintHistory do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @history = FactoryGirl.build(:blueprint_history, blueprint: blueprint)
     @history.version = 1
 

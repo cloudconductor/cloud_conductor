@@ -16,6 +16,8 @@ describe Application do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @system = System.eager_load(:project).find(system)
     @application = FactoryGirl.build(:application, system: @system)
   end

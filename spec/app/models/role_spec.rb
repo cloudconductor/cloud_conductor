@@ -17,6 +17,8 @@ describe Role do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @role = Role.new
     @role.name = 'test'
     @role.project = project

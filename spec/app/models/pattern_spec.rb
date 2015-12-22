@@ -22,6 +22,8 @@ describe Pattern do
   end
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @pattern = FactoryGirl.build(:pattern, :platform, project: project)
   end
 

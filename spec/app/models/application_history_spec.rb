@@ -18,6 +18,8 @@ describe ApplicationHistory do
   let(:today) { Date.today.strftime('%Y%m%d') }
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @application = Application.eager_load(system: [:project]).find(application)
     @history = FactoryGirl.build(:application_history, application: @application)
   end

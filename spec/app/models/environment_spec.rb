@@ -16,6 +16,8 @@ describe Environment do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @cloud_aws = FactoryGirl.create(:cloud, :aws, project: project)
     @cloud_openstack = FactoryGirl.create(:cloud, :openstack, project: project)
 

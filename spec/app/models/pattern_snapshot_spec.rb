@@ -22,6 +22,8 @@ describe PatternSnapshot do
   end
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @pattern = FactoryGirl.build(:pattern_snapshot)
     @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern], project: project)
   end

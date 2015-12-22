@@ -16,6 +16,8 @@ describe BaseImage do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @cloud = Cloud.eager_load(:project).find(cloud)
     @base_image = FactoryGirl.build(:base_image, cloud: @cloud)
   end

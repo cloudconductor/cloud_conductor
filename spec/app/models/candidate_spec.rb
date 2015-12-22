@@ -19,6 +19,10 @@ describe Candidate do
   let(:cloud2) { FactoryGirl.create(:cloud, :openstack, project: project) }
   let(:cloud3) { FactoryGirl.create(:cloud, :aws, name: 'new_cloud', project: project) }
 
+  before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+  end
+
   describe '.primary' do
     it 'return single candidate that has highest priority on specified environment' do
       @blueprint_history = BlueprintHistory.eager_load(:pattern_snapshots).find(blueprint_history)

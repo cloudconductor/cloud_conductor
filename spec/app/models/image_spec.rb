@@ -16,6 +16,8 @@ describe Image do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @pattern = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
     @image = FactoryGirl.build(:image, cloud: cloud, pattern_snapshot: @pattern, base_image: base_image)
   end

@@ -16,6 +16,8 @@ describe Stack do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @pattern_snapshot = PatternSnapshot.eager_load(:images).find(pattern_snapshot)
     @environment = Environment.eager_load(:system, blueprint_history: [:pattern_snapshots]).find(environment)
     @stack = FactoryGirl.build(:stack, pattern_snapshot: @pattern_snapshot, cloud: cloud, environment: @environment)

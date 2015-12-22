@@ -16,6 +16,8 @@ describe Blueprint do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @blueprint = FactoryGirl.build(:blueprint, project: project)
   end
 
