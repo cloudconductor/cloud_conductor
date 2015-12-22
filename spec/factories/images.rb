@@ -14,7 +14,10 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :image, class: Image do
-    pattern_snapshot { build(:pattern_snapshot) }
+    transient do
+      project { build(:project) }
+    end
+    pattern_snapshot { build(:pattern_snapshot, project: project) }
     sequence(:role) { |n| "role#{n}" }
     image { SecureRandom.uuid }
     cloud { build(:cloud, :aws, project: pattern_snapshot.blueprint_history.blueprint.project) }

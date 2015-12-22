@@ -14,7 +14,10 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :pattern_snapshot do
-    blueprint_history { build(:blueprint_history) }
+    transient do
+      project { build(:project) }
+    end
+    blueprint_history { build(:blueprint_history, project: project) }
     sequence(:name) { |n| "pattern_snapshot-#{n}" }
     url 'https://example.com/cloudconductor-dev/sample_platform_pattern.git'
 
