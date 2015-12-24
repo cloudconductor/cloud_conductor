@@ -51,6 +51,12 @@ module Consul
       end
     end
 
+    describe '#catalog' do
+      it 'return Catalog instance' do
+        expect(@client.catalog).to be_is_a Consul::Client::Catalog
+      end
+    end
+
     describe '#running?' do
       let(:should_yield) do
         (-> {}).tap { |proc| expect(proc).to receive(:call) }
