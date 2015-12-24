@@ -39,6 +39,18 @@ module Consul
       end
     end
 
+    describe '#host' do
+      it 'returns host' do
+        expect(@client.host).to eq('localhost')
+      end
+    end
+
+    describe '#port' do
+      it 'returns port' do
+        expect(@client.port).to eq(8500)
+      end
+    end
+
     describe '#kv' do
       it 'return KV instance' do
         expect(@client.kv).to be_is_a Consul::Client::KV
