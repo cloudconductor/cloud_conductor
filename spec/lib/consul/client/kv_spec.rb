@@ -37,6 +37,17 @@ module Consul
           @stubs.get(path) { [200, {}, body] }
         end
 
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          add_stub '/v1/kv/dummy', 'dummy_value'
+          @client.get 'dummy'
+        end
+
         it 'return nil if specified key does not exist' do
           @stubs.get('/v1/kv/not_found') { [404, {}, ''] }
           expect(@client.get('not_found')).to be_nil
@@ -109,6 +120,17 @@ module Consul
       describe '#put' do
         let(:should_yield) do
           (-> {}).tap { |proc| expect(proc).to receive(:call) }
+        end
+
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.put('/v1/kv/dummy', &should_yield)
+          @client.put 'dummy', 'dummy_value'
         end
 
         it 'will request PUT /v1/kv with key' do
@@ -185,6 +207,23 @@ module Consul
           result = @client.send(:safety_parse, value)
           expect(result).to be_is_a(String)
           expect(result).to eq('dummy string')
+        end
+      end
+
+      describe '#sequential_try' do
+        it 'retry with next faraday when previous faraday is failed' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return('dummy_result')
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq('dummy_result')
         end
       end
     end

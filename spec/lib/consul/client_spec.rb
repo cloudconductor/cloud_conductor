@@ -37,17 +37,25 @@ module Consul
       it 'does not occurred any error when specified valid options' do
         Consul::Client.new 'localhost'
       end
-    end
 
-    describe '#host' do
-      it 'returns host' do
-        expect(@client.host).to eq('localhost')
+      it 'create faraday client for host when passed argument as string' do
+        client = Consul::Client.new 'localhost'
+        expect(client.instance_variable_get(:@faradaies).map(&:host)).to eq(%w(localhost))
       end
-    end
 
-    describe '#port' do
-      it 'returns port' do
-        expect(@client.port).to eq(8500)
+      it 'create faraday client for host when passed argument as array' do
+        client = Consul::Client.new ['localhost']
+        expect(client.instance_variable_get(:@faradaies).map(&:host)).to eq(%w(localhost))
+      end
+
+      it 'create faraday client for each address when host has multiple addresses as string' do
+        client = Consul::Client.new 'localhost, 192.168.0.1'
+        expect(client.instance_variable_get(:@faradaies).map(&:host)).to eq(%w(localhost 192.168.0.1))
+      end
+
+      it 'create faraday client for each address when host has multiple addresses' do
+        client = Consul::Client.new ['localhost', '192.168.0.1']
+        expect(client.instance_variable_get(:@faradaies).map(&:host)).to eq(%w(localhost 192.168.0.1))
       end
     end
 

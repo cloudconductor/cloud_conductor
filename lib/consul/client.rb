@@ -18,29 +18,29 @@ require 'consul/client/catalog'
 
 module Consul
   class Client
-    attr_reader :host, :port, :kv, :event, :catalog
+    attr_reader :kv, :event, :catalog
 
-    def initialize(host, port = 8500, options = {})
-      fail 'Consul::Client require host option' unless host
+    def initialize(hosts, port = 8500, options = {})
+      fail 'Consul::Client require host option' unless hosts
 
-      if options[:ssl]
-        url = URI::HTTPS.build(host: host, port: port, path: '/v1')
-        @faraday = Faraday.new url, ssl: options[:ssl_options]
-      else
-        url = URI::HTTP.build(host: host, port: port, path: '/v1')
-        @faraday = Faraday.new url
+      hosts = hosts.split(',').map(&:strip) if hosts.is_a? String
+      @faradaies = hosts.map do |host|
+        if options[:ssl]
+          url = URI::HTTPS.build(host: host, port: port, path: '/v1')
+          Faraday.new url, ssl: options[:ssl_options]
+        else
+          url = URI::HTTP.build(host: host, port: port, path: '/v1')
+          Faraday.new url
+        end
       end
 
-      @host = host
-      @port = port
-      @kv = Consul::Client::KV.new @faraday, options
-      @event = Consul::Client::Event.new @faraday, options
-      @catalog = Consul::Client::Catalog.new @faraday
+      @kv = Consul::Client::KV.new @faradaies, options
+      @event = Consul::Client::Event.new @faradaies, options
+      @catalog = Consul::Client::Catalog.new @faradaies
     end
 
     def running?
-      response = @faraday.get('/')
-      response.success?
+      @faradaies.any? { |faraday| faraday.get('/').success? }
     rescue
       false
     end

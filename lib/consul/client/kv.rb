@@ -15,30 +15,34 @@
 module Consul
   class Client
     class KV
-      def initialize(faraday, options = {})
-        @faraday = faraday
+      def initialize(faradaies, options = {})
+        @faradaies = faradaies
         @token = options[:token]
       end
 
       def get(key, is_recurse = false)
-        @faraday.params.clear
-        @faraday.params[:token] = @token
-        @faraday.params[:recurse] = true if is_recurse
-        response = @faraday.get("kv/#{key}")
-        return nil unless response.success?
+        sequential_try do |faraday|
+          faraday.params.clear
+          faraday.params[:token] = @token
+          faraday.params[:recurse] = true if is_recurse
+          response = faraday.get("kv/#{key}")
+          return nil unless response.success?
 
-        result = {}
-        JSON.parse(response.body).each do |entry|
-          result[entry['Key']] = safety_parse(Base64.decode64 entry['Value']) if entry['Value']
+          result = {}
+          JSON.parse(response.body).each do |entry|
+            result[entry['Key']] = safety_parse(Base64.decode64 entry['Value']) if entry['Value']
+          end
+
+          is_recurse ? result : result.values.first
         end
-
-        is_recurse ? result : result.values.first
       end
 
       def put(key, value)
-        value = value.to_json if value.is_a? Hash
-        @faraday.params = { token: @token }
-        @faraday.put("kv/#{key}", value)
+        sequential_try do |faraday|
+          value = value.to_json if value.is_a? Hash
+          faraday.params = { token: @token }
+          faraday.put("kv/#{key}", value)
+        end
       end
 
       def merge(key, value)
@@ -53,6 +57,18 @@ module Consul
         JSON.parse(value).with_indifferent_access
       rescue
         value
+      end
+
+      def sequential_try
+        fail "Block doesn't given" unless block_given?
+
+        @faradaies.find do |faraday|
+          begin
+            break yield faraday
+          rescue
+            nil
+          end
+        end
       end
     end
   end
