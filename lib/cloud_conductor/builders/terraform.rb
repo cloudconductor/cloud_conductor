@@ -12,7 +12,10 @@ module CloudConductor
 
       def build_infrastructure
         directory = generate_template(@cloud, @environment)
-        outputs = execute_terraform(directory)
+        variables = cloud_variables(@cloud)
+        # TODO: Generate and put key on image when it had created by packer and store key to database
+        variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
+        outputs = execute_terraform(directory, variables)
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
       rescue => e
         reset
@@ -33,7 +36,7 @@ module CloudConductor
         temporary
       end
 
-      def execute_terraform(directory)
+      def execute_terraform(directory, variables)
         options = {
           terraform_path: CloudConductor::Config.terraform.path
         }
@@ -43,9 +46,7 @@ module CloudConductor
         terraform.get
 
         # terraform plan
-        variables = {
-          bootstrap_expect: 0
-        }
+        variables[:bootstrap_expect] = 0
         outputs = terraform.plan(variables)
 
         # terraform apply
@@ -65,6 +66,26 @@ module CloudConductor
 
       def frontend_addresses(outputs)
         outputs['module'].values.map { |value| value['frontend_addresses'] }.compact.join(', ')
+      end
+
+      def cloud_variables(cloud)
+        case cloud.type
+        when 'aws'
+          {
+            aws_access_key: cloud.key,
+            aws_secret_key: cloud.secret,
+            aws_region: cloud.entry_point
+          }
+        when 'openstack'
+          {
+            openstack_user_name: cloud.key,
+            openstack_password: cloud.secret,
+            openstack_auth_url: cloud.entry_point + 'v2.0',
+            openstack_tenant_name: cloud.tenant_name
+          }
+        else
+          {}
+        end
       end
     end
   end

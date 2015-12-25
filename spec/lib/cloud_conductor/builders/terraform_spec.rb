@@ -83,11 +83,11 @@ module CloudConductor
           expect(@terraform).to receive(:plan).ordered
           expect(@terraform).to receive(:apply).ordered
           expect(@terraform).to receive(:output).ordered
-          @builder.send(:execute_terraform, 'directory')
+          @builder.send(:execute_terraform, 'directory', {})
         end
 
-        it 'terraform output as hash' do
-          result = @builder.send(:execute_terraform, 'directory')
+        it 'return terraform output as hash' do
+          result = @builder.send(:execute_terraform, 'directory', {})
           expect(result).to eq({})
         end
       end
@@ -154,6 +154,38 @@ module CloudConductor
           }
 
           expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
+        end
+      end
+
+      describe '#cloud_variables' do
+        it 'returns hash which has some keys to authorize aws if cloud is aws' do
+          cloud = FactoryGirl.build(:cloud, :aws)
+          result = @builder.send(:cloud_variables, cloud)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq(
+            aws_access_key: cloud.key,
+            aws_secret_key: cloud.secret,
+            aws_region: cloud.entry_point
+          )
+        end
+
+        it 'returns hash which has some keys to authorize openstack if cloud is openstack' do
+          cloud = FactoryGirl.build(:cloud, :openstack)
+          result = @builder.send(:cloud_variables, cloud)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq(
+            openstack_user_name: cloud.key,
+            openstack_password: cloud.secret,
+            openstack_auth_url: cloud.entry_point + 'v2.0',
+            openstack_tenant_name: cloud.tenant_name
+          )
+        end
+
+        it 'returns empty hash if unknown cloud has been specified' do
+          cloud = Cloud.new(type: :unknown)
+          result = @builder.send(:cloud_variables, cloud)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq({})
         end
       end
     end

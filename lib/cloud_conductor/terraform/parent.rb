@@ -6,8 +6,14 @@ module CloudConductor
 
       def initialize(cloud)
         @cloud = cloud
-        @variables = %w(aws_access_key aws_secret_key aws_region ssh_key_file)
         @modules = []
+
+        case cloud.type
+        when 'aws'
+          @variables = %w(bootstrap_expect aws_access_key aws_secret_key aws_region ssh_key_file)
+        when 'openstack'
+          @variables = %w(bootstrap_expect os_user_name os_tenant_name os_password os_auth_url ssh_key_file)
+        end
       end
 
       def variables
