@@ -65,7 +65,7 @@ module CloudConductor
       end
 
       def frontend_addresses(outputs)
-        outputs['module'].values.map { |value| value['frontend_addresses'] }.compact.join(', ')
+        outputs.select { |k, _v| k.end_with? '.frontend_addresses' }.values.reject(&:blank?).join(', ')
       end
 
       def cloud_variables(cloud)

@@ -141,16 +141,10 @@ module CloudConductor
       describe '#frontend_addresses' do
         it 'returns frontend addresses in output hash' do
           outputs = {
-            'module' => {
-              'tomcat' => {
-                'frontend_addresses' => '203.0.113.1'
-              },
-              'dummy' => {
-              },
-              'zabbix' => {
-                'frontend_addresses' => '203.0.113.2'
-              }
-            }
+            'cloud_conductor_init.shared_security_group' => 'sg-xxxxxx',
+            'tomcat.frontend_addresses' => '203.0.113.1',
+            'dummy.frontend_addresses' => '',
+            'zabbix.frontend_addresses' => '203.0.113.2'
           }
 
           expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
