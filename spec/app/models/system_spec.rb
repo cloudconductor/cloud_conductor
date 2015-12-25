@@ -16,12 +16,16 @@ describe System do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @system = FactoryGirl.build(:system, project: project)
 
     allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)
   end
 
   describe '#save' do
+    let (:blueprint_history) { FactoryGirl.build(:blueprint_history, blueprint: blueprint) }
+    let (:environment) { FactoryGirl.build(:environment, system: @system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
     it 'create with valid parameters' do
       expect { @system.save! }.to change { System.count }.by(1)
     end
@@ -95,11 +99,15 @@ describe System do
     end
 
     it 'delete all application records' do
-      @system.applications << FactoryGirl.create(:application, system: @system)
-      @system.applications << FactoryGirl.create(:application, system: @system)
+      @system.applications << FactoryGirl.build(:application, system: @system)
+      @system.applications << FactoryGirl.build(:application, system: @system)
 
-      expect(@system.applications.size).to eq(2)
-      expect { @system.destroy }.to change { Application.count }.by(-2)
+      @system.save!
+
+      system = System.eager_load(:applications).find(@system)
+
+      expect(system.applications.size).to eq(2)
+      expect { system.destroy }.to change { Application.count }.by(-2)
     end
 
     it 'delete all environment records' do

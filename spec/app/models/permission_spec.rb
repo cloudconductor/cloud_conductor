@@ -41,9 +41,9 @@ describe Permission do
       expect(@permission.valid?).to be_truthy
     end
 
-    it 'returns false when role is unset' do
+    it 'returns true when role is unset' do
       @permission.role = nil
-      expect(@permission.valid?).to be_falsey
+      expect(@permission.valid?).to be_truthy
     end
 
     it 'returns false when model is unset' do

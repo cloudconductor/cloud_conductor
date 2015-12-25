@@ -15,6 +15,10 @@
 describe BlueprintPattern do
   include_context 'default_resources'
 
+  before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+  end
+
   describe '#valid?' do
     it 'returns true with blueprint and pattern' do
       relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern)

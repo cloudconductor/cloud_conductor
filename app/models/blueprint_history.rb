@@ -40,7 +40,7 @@ class BlueprintHistory < ActiveRecord::Base
   end
 
   def build_pattern_snapshots
-    blueprint.blueprint_patterns.each do |relation|
+    BlueprintPattern.eager_load(:pattern).where(blueprint_id: blueprint.id).each do |relation|
       pattern_snapshots.build(
         url: relation.pattern.url,
         revision: relation.revision || relation.pattern.revision,

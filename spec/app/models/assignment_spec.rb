@@ -18,6 +18,7 @@ describe Assignment do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
     @assignment = Assignment.new
     @assignment.project = project
     @assignment.account = FactoryGirl.create(:account)

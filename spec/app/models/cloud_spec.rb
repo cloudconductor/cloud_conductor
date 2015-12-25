@@ -16,6 +16,8 @@ describe Cloud do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @cloud = FactoryGirl.build(:cloud, :aws)
 
     allow(@cloud).to receive(:update_base_image)

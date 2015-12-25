@@ -16,29 +16,32 @@ module CloudConductor
   describe SystemBuilder do
     include_context 'default_resources'
 
-    let(:cloud_aws) { FactoryGirl.create(:cloud, :aws) }
-    let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack) }
+    let(:cloud_aws) { FactoryGirl.create(:cloud, :aws, project: project) }
+    let(:cloud_openstack) { FactoryGirl.create(:cloud, :openstack, project: project) }
     let(:blueprint_history) do
       allow_any_instance_of(Pattern).to receive(:set_metadata_from_repository)
+      @cloud = Cloud.eager_load(:project).find(cloud)
+
       blueprint_history = FactoryGirl.create(:blueprint_history,
                                              blueprint: blueprint,
-                                             pattern_snapshots: [FactoryGirl.create(:pattern_snapshot, type: 'platform'),
-                                                                 FactoryGirl.create(:pattern_snapshot, type: 'optional')])
+                                             pattern_snapshots: [FactoryGirl.build(:pattern_snapshot, type: 'platform'),
+                                                                 FactoryGirl.build(:pattern_snapshot, type: 'optional')])
       blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: cloud, status: :CREATE_COMPLETE)
+        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, base_image: base_image, cloud: @cloud, status: :CREATE_COMPLETE)
       end
       blueprint_history
     end
     let(:environment) do
+      @blueprint_history = BlueprintHistory.eager_load(:pattern_snapshots).find(blueprint_history)
       FactoryGirl.create(:environment,
                          system: system,
-                         blueprint_history: blueprint_history,
+                         blueprint_history: @blueprint_history,
                          candidates_attributes: [{ cloud_id: cloud_aws.id, priority: 10 },
                                                  { cloud_id: cloud_openstack.id, priority: 20 }])
     end
 
     before do
-      @environment = environment
+      @environment = Environment.eager_load(:system).find(environment)
       @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, cloud: cloud_openstack, environment: @environment)
       @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, cloud: cloud_openstack, environment: @environment)
       @environment.stacks += [@platform_stack, @optional_stack]
@@ -303,11 +306,12 @@ module CloudConductor
       end
 
       it 'return merged payload that contains all deployments' do
+        @system = System.eager_load(:project).find(system)
         @environment.status = :CREATE_COMPLETE
-        application1 = FactoryGirl.create(:application, name: 'application1')
-        application2 = FactoryGirl.create(:application, name: 'application2')
-        history1 = FactoryGirl.create(:application_history, application: application1)
-        history2 = FactoryGirl.create(:application_history, application: application2)
+        application1 = FactoryGirl.build(:application, name: 'application1', system: @system)
+        application2 = FactoryGirl.build(:application, name: 'application2', system: @system)
+        history1 = FactoryGirl.build(:application_history, application: application1)
+        history2 = FactoryGirl.build(:application_history, application: application2)
 
         FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
         FactoryGirl.create(:deployment, environment: @environment, application_history: history2)

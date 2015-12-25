@@ -13,10 +13,9 @@ class Project < ActiveRecord::Base
   validates_presence_of :name
   validates_uniqueness_of :name
 
+  before_create :create_preset_roles
   before_create :assign_project_administrator
   before_create :create_monitoring_account
-
-  after_create :create_preset_roles
 
   before_update :update_monitoring_account
   before_destroy :delete_monitoring_account
@@ -43,32 +42,40 @@ class Project < ActiveRecord::Base
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_admin = roles.find { |role| role.name == 'administrator' } || roles.create(name: 'administrator')
+    # role_admin = roles.find { |role| role.name == 'administrator' } || roles.build(name: 'administrator')
 
-    role_admin.add_permission(:project, :manage)
-    role_admin.add_permission(:assignment, :manage)
-    role_admin.add_permission(:account, :read, :create)
-    role_admin.add_permission(:role, :manage)
-    role_admin.add_permission(:permission, :manage)
+    permissions_attributes = []
+
+    permissions_attributes << { model: 'project', action: 'manage' }
+    permissions_attributes << { model: 'assignment', action: 'manage' }
+    permissions_attributes << { model: 'account', action: 'read' }
+    permissions_attributes << { model: 'account', action: 'create' }
+    permissions_attributes << { model: 'role', action: 'manage' }
+    permissions_attributes << { model: 'permission', action: 'manage' }
     models.each do |model|
-      role_admin.add_permission(model, :manage)
+      permissions_attributes << { model: model.to_s, action: 'manage' }
     end
+
+    roles.build(name: 'administrator', permissions_attributes: permissions_attributes, preset: true)
   end
 
   def create_operator_role
     models = [:cloud, :base_image, :pattern, :blueprint, :blueprint_pattern, :blueprint_history]
     models += [:system, :environment, :application, :application_history, :deployment]
 
-    role_operator = roles.find { |role| role.name == 'operator' } || roles.create(name: 'operator')
+    # role_operator = roles.find { |role| role.name == 'operator' } || roles.build(name: 'operator')
 
-    role_operator.add_permission(:project, :read)
-    role_operator.add_permission(:assignment, :read)
-    role_operator.add_permission(:account, :read)
-    role_operator.add_permission(:role, :read)
-    role_operator.add_permission(:permission, :read)
+    permissions_attributes = []
+    permissions_attributes << { model: 'project', action: 'read' }
+    permissions_attributes << { model: 'assignment', action: 'read' }
+    permissions_attributes << { model: 'account', action: 'read' }
+    permissions_attributes << { model: 'role', action: 'read' }
+    permissions_attributes << { model: 'permission', action: 'read' }
     models.each do |model|
-      role_operator.add_permission(model, :manage)
+      permissions_attributes << { model: model.to_s, action: 'manage' }
     end
+
+    roles.build(name: 'operator', permissions_attributes: permissions_attributes, preset: true)
   end
 
   def update_monitoring_account

@@ -49,6 +49,7 @@ module CloudConductor
       before do
         allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
+        @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
@@ -63,7 +64,7 @@ module CloudConductor
 
       it 'add ImageId/Image pair to parameter-hash' do
         image1 = pattern_snapshot.images.first
-        image2 = FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, cloud: cloud)
+        image2 = FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud)
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
 
@@ -76,7 +77,7 @@ module CloudConductor
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, cloud: cloud, role: 'web, ap, db')
+        FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys).to be_include('WebApDbImageId')
         end
@@ -90,6 +91,7 @@ module CloudConductor
       before do
         allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
+        @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
 
       it 'call adapter#update_stack with same arguments without pattern' do
@@ -104,7 +106,7 @@ module CloudConductor
 
       it 'add ImageId/Image pair to parameter-hash' do
         image1 = pattern_snapshot.images.first
-        image2 = FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, cloud: cloud)
+        image2 = FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud)
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-zA-Z0-9_]*ImageId/) }).to eq(2)
           expect(parameters["#{image1.role.camelize}ImageId"]).to eq(image1.image)
@@ -116,7 +118,7 @@ module CloudConductor
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        FactoryGirl.create(:image, pattern_snapshot: pattern_snapshot, cloud: cloud, role: 'web, ap, db')
+        FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys).to be_include('WebApDbImageId')
         end

@@ -22,8 +22,10 @@ describe PatternSnapshot do
   end
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @pattern = FactoryGirl.build(:pattern_snapshot)
-    @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern])
+    @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern], project: project)
   end
 
   describe '#initialize' do
@@ -50,10 +52,13 @@ describe PatternSnapshot do
     end
 
     it 'delete all image records' do
-      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern)
+      @pattern.images << FactoryGirl.build(:image, pattern_snapshot: @pattern)
+      @pattern.save!
 
-      expect(@pattern.images.size).to eq(1)
-      expect { @pattern.destroy }.to change { Image.count }.by(-1)
+      pattern = PatternSnapshot.eager_load(:images).find(@pattern)
+
+      expect(pattern.images.size).to eq(1)
+      expect { pattern.destroy }.to change { Image.count }.by(-1)
     end
   end
 
@@ -83,9 +88,9 @@ describe PatternSnapshot do
 
   describe '#status' do
     before do
-      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
-      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
-      @pattern.images << FactoryGirl.create(:image, pattern_snapshot: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.build(:image, pattern_snapshot: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.build(:image, pattern_snapshot: @pattern, status: :PROGRESS)
+      @pattern.images << FactoryGirl.build(:image, pattern_snapshot: @pattern, status: :PROGRESS)
     end
 
     it 'return status that integrated status over all images' do
@@ -208,10 +213,10 @@ describe PatternSnapshot do
         }
       }
 
-      base_image_aws = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :aws, name: 'aws'))
-      base_image_openstack = FactoryGirl.create(:base_image, cloud: FactoryGirl.create(:cloud, :openstack, name: 'openstack'))
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_aws, role: 'nginx')
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_openstack, role: 'nginx')
+      cloud_aws = FactoryGirl.build(:cloud, :aws, name: 'aws', project: project)
+      cloud_openstack = FactoryGirl.build(:cloud, :openstack, name: 'openstack', project: project)
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_aws, role: 'nginx')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_openstack, role: 'nginx')
       @pattern.send(:update_images, results)
 
       aws = Image.where(name: 'aws-default----nginx').first

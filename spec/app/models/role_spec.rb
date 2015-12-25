@@ -17,6 +17,8 @@ describe Role do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @role = Role.new
     @role.name = 'test'
     @role.project = project
@@ -40,8 +42,8 @@ describe Role do
     end
 
     it 'delete all assignment_role records' do
-      @role.assignments << FactoryGirl.create(:assignment, project: project, account: FactoryGirl.create(:account))
-      @role.assignments << FactoryGirl.create(:assignment, project: project, account: FactoryGirl.create(:account))
+      @role.assignments << FactoryGirl.build(:assignment, project: project, account: FactoryGirl.create(:account))
+      @role.assignments << FactoryGirl.build(:assignment, project: project, account: FactoryGirl.create(:account))
       @role.save!
       expect(@role.assignment_roles.size).to eq(2)
       expect { @role.destroy }.to change { AssignmentRole.count }.by(-2)

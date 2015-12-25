@@ -16,12 +16,16 @@ describe Deployment do
   include_context 'default_resources'
 
   before do
-    @deployment = FactoryGirl.build(:deployment, environment: environment, application_history: application_history)
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
+    @environment = Environment.eager_load(:system).find(environment)
+    @application_history = ApplicationHistory.eager_load(:application).find(application_history)
+    @deployment = FactoryGirl.build(:deployment, environment: @environment, application_history: @application_history)
 
     @event = double(:event, fire: 1, sync_fire: 1)
     allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
     allow(@event).to receive_message_chain(:find, :success?).and_return(true)
-    allow(environment).to receive(:event).and_return(@event)
+    allow(@environment).to receive(:event).and_return(@event)
   end
 
   describe '#initialize' do
@@ -139,13 +143,13 @@ describe Deployment do
     end
 
     it 'does not register CNAME record to DNS server when system domain is null' do
-      system.domain = nil
+      @environment.system.domain = nil
       expect(@client).not_to receive(:update)
       @deployment.send(:update_dns_record)
     end
 
     it 'does not register CNAME record to DNS server when application domain is null' do
-      application_history.application.domain = nil
+      @application_history.application.domain = nil
       expect(@client).not_to receive(:update)
       @deployment.send(:update_dns_record)
     end

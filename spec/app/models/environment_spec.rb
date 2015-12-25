@@ -16,10 +16,14 @@ describe Environment do
   include_context 'default_resources'
 
   before do
-    @cloud_aws = FactoryGirl.create(:cloud, :aws)
-    @cloud_openstack = FactoryGirl.create(:cloud, :openstack)
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
 
-    @environment = FactoryGirl.build(:environment, system: system, blueprint_history: blueprint_history,
+    @cloud_aws = FactoryGirl.create(:cloud, :aws, project: project)
+    @cloud_openstack = FactoryGirl.create(:cloud, :openstack, project: project)
+
+    @system = System.eager_load(:project).find(system)
+    @blueprint_history = FactoryGirl.build(:blueprint_history, blueprint: blueprint)
+    @environment = FactoryGirl.build(:environment, system: @system, blueprint_history: @blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
     allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
@@ -126,6 +130,7 @@ describe Environment do
 
   describe '#dup' do
     it 'duplicate all attributes in environment without name and ip_address' do
+      @environment.save!
       duplicated_environment = @environment.dup
       expect(duplicated_environment.system).to eq(@environment.system)
       expect(duplicated_environment.blueprint_history).to eq(@environment.blueprint_history)
@@ -236,9 +241,9 @@ describe Environment do
 
   describe '#destroy_stacks' do
     before do
-      pattern1 = FactoryGirl.create(:pattern_snapshot, type: 'optional')
-      pattern2 = FactoryGirl.create(:pattern_snapshot, type: 'platform')
-      pattern3 = FactoryGirl.create(:pattern_snapshot, type: 'optional')
+      pattern1 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
+      pattern2 = FactoryGirl.build(:pattern_snapshot, type: 'platform', blueprint_history: @blueprint_history)
+      pattern3 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
 
       @environment.stacks.delete_all
       @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern1, cloud: @cloud_aws)
@@ -338,12 +343,12 @@ describe Environment do
     end
 
     it 'return :DEPLOY_COMPLETE if latest deployment has succeeded each application' do
-      application1 = FactoryGirl.create(:application)
-      application2 = FactoryGirl.create(:application)
+      application1 = FactoryGirl.build(:application, system: @system)
+      application2 = FactoryGirl.build(:application, system: @system)
 
-      history1 = FactoryGirl.create(:application_history, application: application1)
-      history2 = FactoryGirl.create(:application_history, application: application2)
-      history3 = FactoryGirl.create(:application_history, application: application1)
+      history1 = FactoryGirl.build(:application_history, application: application1)
+      history2 = FactoryGirl.build(:application_history, application: application2)
+      history3 = FactoryGirl.build(:application_history, application: application1)
 
       FactoryGirl.create(:deployment, environment: @environment, application_history: history1, status: :ERROR)
       FactoryGirl.create(:deployment, environment: @environment, application_history: history2, status: :DEPLOY_COMPLETE)
@@ -359,12 +364,12 @@ describe Environment do
     end
 
     it 'return latest deployments each application' do
-      application1 = FactoryGirl.create(:application)
-      application2 = FactoryGirl.create(:application)
+      application1 = FactoryGirl.build(:application, system: @system)
+      application2 = FactoryGirl.build(:application, system: @system)
 
-      history1 = FactoryGirl.create(:application_history, application: application1)
-      history2 = FactoryGirl.create(:application_history, application: application2)
-      history3 = FactoryGirl.create(:application_history, application: application1)
+      history1 = FactoryGirl.build(:application_history, application: application1)
+      history2 = FactoryGirl.build(:application_history, application: application2)
+      history3 = FactoryGirl.build(:application_history, application: application1)
 
       _deployment1 = FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
       deployment2 = FactoryGirl.create(:deployment, environment: @environment, application_history: history2)

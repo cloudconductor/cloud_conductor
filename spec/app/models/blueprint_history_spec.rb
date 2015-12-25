@@ -16,6 +16,8 @@ describe BlueprintHistory do
   include_context 'default_resources'
 
   before do
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
     @history = FactoryGirl.build(:blueprint_history, blueprint: blueprint)
     @history.version = 1
 
@@ -121,9 +123,9 @@ describe BlueprintHistory do
 
   describe '#status' do
     before do
-      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
-      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
-      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot, blueprint_history: @history)
       allow(@history.pattern_snapshots[0]).to receive(:status).and_return(:PROGRESS)
       allow(@history.pattern_snapshots[1]).to receive(:status).and_return(:PROGRESS)
       allow(@history.pattern_snapshots[2]).to receive(:status).and_return(:PROGRESS)
@@ -160,8 +162,8 @@ describe BlueprintHistory do
     it 'create pattern_snapshot from relation' do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original
       allow_any_instance_of(PatternSnapshot).to receive(:freeze_pattern)
-      blueprint.patterns << FactoryGirl.create(:pattern, :platform)
-      blueprint.patterns << FactoryGirl.create(:pattern, :optional)
+      blueprint.patterns << FactoryGirl.create(:pattern, :platform, project: project)
+      blueprint.patterns << FactoryGirl.create(:pattern, :optional, project: project)
       @history.send(:build_pattern_snapshots)
       expect(@history.pattern_snapshots.size).to eq(2)
     end

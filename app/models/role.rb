@@ -4,6 +4,8 @@ class Role < ActiveRecord::Base
   has_many :assignments, through: :assignment_roles
   has_many :permissions, dependent: :destroy
 
+  accepts_nested_attributes_for :permissions
+
   validates_presence_of :name, :project
 
   validates :name, uniqueness: { scope: :project_id }
