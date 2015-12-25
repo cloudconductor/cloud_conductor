@@ -14,15 +14,18 @@
 # limitations under the License.
 module CloudConductor
   class Event
-    def initialize(host, port = 8500, options = {})
-      @client = Consul::Client.new(host, port, options)
+    def initialize(hosts, port = 8500, options = {})
+      hosts = hosts.split(',').map(&:strip) if hosts.is_a? String
+      @clients = hosts.map { |host| Consul::Client.new(host, port, options) }
     end
 
     def fire(name, payload = {}, filter = {})
-      payload.each do |key, value|
-        @client.kv.merge key, value
+      sequential_try do |client|
+        payload.each do |key, value|
+          client.kv.merge key, value
+        end
+        client.event.fire name, filter
       end
-      @client.event.fire name, filter
     end
 
     def sync_fire(name, payload = {}, filter = {})
@@ -48,12 +51,31 @@ module CloudConductor
     end
 
     def list
-      Metronome::EventResult.list(@client)
+      sequential_try do |client|
+        Metronome::EventResult.list(client)
+      end
     end
 
     def find(id)
-      result = Metronome::EventResult.find(@client, id)
-      result.refresh! if result
+      sequential_try do |client|
+        result = Metronome::EventResult.find(client, id)
+        result.refresh! if result
+      end
+    end
+
+    private
+
+    def sequential_try
+      fail "Block doesn't given" unless block_given?
+
+      @clients.find do |client|
+        begin
+          result = yield client
+          break result if result
+        rescue
+          nil
+        end
+      end
     end
   end
 end
