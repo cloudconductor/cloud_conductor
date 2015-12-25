@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: https://github.com/cloudconductor/rterraform.git
-  revision: 72dc7c497df75d76bca5f385f5ad00f793022b53
+  revision: de4332769a8eb88369ec73779e8c06a2a3e9890a
   branch: develop
   specs:
     rterraform (0.1.0)
