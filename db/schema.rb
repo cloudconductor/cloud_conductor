@@ -89,6 +89,8 @@ ActiveRecord::Schema.define(version: 20151208021748) do
     t.string   "project_id"
   end
 
+  add_index "audits", ["project_id"], name: "index_audits_on_project_id", using: :btree
+
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
     t.string   "source_image"
