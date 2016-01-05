@@ -39,10 +39,8 @@ module Consul
         it 'delegate retry logic to #sequential_try' do
           expect(@client).to receive(:sequential_try)
 
-          @stubs.put('/v1/event/fire/dummy') do |env|
-            expect(env.body).to eq('dummy_token')
-          end
-          @client.fire(:dummy, 'dummy_token')
+          @stubs.put('/v1/event/fire/dummy') {}
+          @client.fire(:dummy)
         end
 
         it 'return consul event ID' do

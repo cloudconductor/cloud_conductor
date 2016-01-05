@@ -46,7 +46,7 @@ module CloudConductor
         @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, cloud: cloud_openstack, environment: @environment)
         @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, cloud: cloud_openstack, environment: @environment)
         @environment.stacks += [@platform_stack, @optional_stack]
-        @builder = CloudFormation.new @environment
+        @builder = CloudFormation.new cloud_aws, @environment
         allow_any_instance_of(Environment).to receive(:create_or_update_stack)
         allow_any_instance_of(Environment).to receive(:destroy_stack)
         allow_any_instance_of(Pattern).to receive(:execute_packer)

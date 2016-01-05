@@ -20,14 +20,14 @@ module Consul
         @token = options[:token]
       end
 
-      def fire(name, payload = nil, filter = {})
+      def fire(name, filter = {})
         sequential_try do |faraday|
           faraday.params[:token] = @token
           faraday.params[:node] = filter[:node].join('|') if filter[:node]
           faraday.params[:service] = filter[:service].join('|') if filter[:service]
           faraday.params[:tag] = filter[:tag].join('|') if filter[:tag]
 
-          response = faraday.put("event/fire/#{name}", payload)
+          response = faraday.put("event/fire/#{name}")
           break nil unless response.success?
 
           JSON.parse(response.body)['ID']

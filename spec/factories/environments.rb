@@ -16,8 +16,8 @@ FactoryGirl.define do
   factory :environment_without_candidates, class: Environment do
     sequence(:name) { |n| "environment-#{n}" }
     description 'environment description'
-    system { build(:system) }
-    blueprint_history { build(:blueprint_history, project: system.project) }
+    system { FactoryGirl.build(:system) }
+    blueprint_history { FactoryGirl.build(:blueprint_history, project: system.project) }
     platform_outputs '{}'
     ip_address '127.0.0.1'
 
