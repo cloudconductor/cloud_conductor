@@ -98,6 +98,7 @@ describe API do
         params.except(:parameters).merge(
           'id' => Fixnum,
           'roles' => String,
+          'providers' => nil,
           'created_at' => String,
           'updated_at' => String
         )
