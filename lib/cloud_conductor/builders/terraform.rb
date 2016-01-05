@@ -87,6 +87,9 @@ module CloudConductor
           {}
         end
       end
+
+      def reset
+      end
     end
   end
 end
