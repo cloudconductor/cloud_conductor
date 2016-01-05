@@ -186,15 +186,15 @@ describe API do
       end
       let(:result) do
         params.except(:candidates_attributes, :stacks_attributes, :platform_outputs, :blueprint_id, :version, :blueprint_history)
-        .merge(
-          id: Fixnum,
-          blueprint_history_id: Fixnum,
-          created_at: String,
-          updated_at: String,
-          status: 'PENDING',
-          application_status: 'NOT_DEPLOYED',
-          ip_address: nil
-        )
+          .merge(
+            id: Fixnum,
+            blueprint_history_id: Fixnum,
+            created_at: String,
+            updated_at: String,
+            status: 'PENDING',
+            application_status: 'NOT_DEPLOYED',
+            ip_address: nil
+          )
       end
 
       before do

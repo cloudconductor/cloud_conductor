@@ -24,8 +24,8 @@ describe System do
   end
 
   describe '#save' do
-    let (:blueprint_history) { FactoryGirl.build(:blueprint_history, blueprint: blueprint) }
-    let (:environment) { FactoryGirl.build(:environment, system: @system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
+    let(:blueprint_history) { FactoryGirl.build(:blueprint_history, blueprint: blueprint) }
+    let(:environment) { FactoryGirl.build(:environment, system: @system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
     it 'create with valid parameters' do
       expect { @system.save! }.to change { System.count }.by(1)
     end
