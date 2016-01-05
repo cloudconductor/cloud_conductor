@@ -182,6 +182,52 @@ module CloudConductor
           expect(result).to eq({})
         end
       end
+
+      describe '#image_variables' do
+        it 'returns hash which has image id' do
+          pattern_snapshots = FactoryGirl.build_list(:pattern_snapshot, 2)
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'web', cloud: cloud, image: 'ami-000000')
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'ap', cloud: cloud, image: 'ami-111111')
+          pattern_snapshots[1].images << FactoryGirl.build(:image, role: 'db', cloud: cloud, image: 'ami-222222')
+          environment.blueprint_history.pattern_snapshots = pattern_snapshots
+
+          result = @builder.send(:image_variables, cloud, environment)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq(
+            web_image: 'ami-000000',
+            ap_image: 'ami-111111',
+            db_image: 'ami-222222'
+          )
+        end
+
+        it 'filter images by target cloud' do
+          dummy_cloud = FactoryGirl.build(:cloud)
+          pattern_snapshots = FactoryGirl.build_list(:pattern_snapshot, 1)
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'web', cloud: cloud, image: 'ami-000000')
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'ap', cloud: dummy_cloud, image: 'ami-111111')
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'db', cloud: cloud, image: 'ami-222222')
+          environment.blueprint_history.pattern_snapshots = pattern_snapshots
+
+          result = @builder.send(:image_variables, cloud, environment)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq(
+            web_image: 'ami-000000',
+            db_image: 'ami-222222'
+          )
+        end
+
+        it 'combine roles with underscore if image has multiple roles' do
+          pattern_snapshots = FactoryGirl.build_list(:pattern_snapshot, 1)
+          pattern_snapshots[0].images << FactoryGirl.build(:image, role: 'web, ap', cloud: cloud, image: 'ami-000000')
+          environment.blueprint_history.pattern_snapshots = pattern_snapshots
+
+          result = @builder.send(:image_variables, cloud, environment)
+          expect(result).to be_is_a(Hash)
+          expect(result).to eq(
+            web_ap_image: 'ami-000000'
+          )
+        end
+      end
     end
   end
 end

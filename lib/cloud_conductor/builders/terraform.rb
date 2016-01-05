@@ -12,7 +12,9 @@ module CloudConductor
 
       def build_infrastructure
         directory = generate_template(@cloud, @environment)
-        variables = cloud_variables(@cloud)
+        variables = {}
+        variables.merge!(cloud_variables(@cloud))
+        variables.merge!(image_variables(@cloud, @environment))
         # TODO: Generate and put key on image when it had created by packer and store key to database
         variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
         outputs = execute_terraform(directory, variables)
@@ -86,6 +88,16 @@ module CloudConductor
         else
           {}
         end
+      end
+
+      def image_variables(cloud, environment)
+        images = environment.blueprint_history.pattern_snapshots.map(&:images).flatten
+        results = {}
+        images.select { |image| image.cloud == cloud }.each do |image|
+          combined_roles = image.role.split(/\s*,\s*/).join('_')
+          results["#{combined_roles}_image".to_sym] = image.image
+        end
+        results
       end
 
       def reset
