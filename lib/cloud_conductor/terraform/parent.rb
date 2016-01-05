@@ -17,7 +17,7 @@ module CloudConductor
       end
 
       def variables
-        @variables + @modules.map(&:dynamic_variables).flatten.uniq
+        (@variables + @modules.map(&:dynamic_variables).flatten).uniq
       end
 
       def collect_outputs(key)

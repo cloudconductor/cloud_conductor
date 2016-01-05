@@ -46,7 +46,7 @@ module CloudConductor
       end
 
       def dynamic_variables
-        @variables.keys.select { |key| @mappings[key][:type] == :variable }
+        @variables.keys.select { |key| @mappings[key][:type].to_sym == :variable }.map(&:to_s)
       end
 
       def cleanup
