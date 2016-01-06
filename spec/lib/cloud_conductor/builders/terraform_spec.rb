@@ -46,6 +46,19 @@ module CloudConductor
           expect(@builder).to receive(:reset)
           expect { @builder.send(:build_infrastructure) }.to raise_error(RuntimeError)
         end
+
+        it 'update status of stack to :CREATE_COMPLETE when success' do
+          environment.stacks << FactoryGirl.build(:stack)
+          @builder.send(:build_infrastructure)
+          expect(environment.stacks).to all(be_create_complete)
+        end
+
+        it 'update status of stack to :ERROR when some error has been occurred' do
+          environment.stacks << FactoryGirl.build(:stack)
+          allow(@builder).to receive(:execute_terraform).and_raise
+          expect { @builder.send(:build_infrastructure) }.to raise_error(RuntimeError)
+          expect(environment.stacks).to all(be_error)
+        end
       end
 
       describe '#generate_template' do

@@ -11,6 +11,8 @@ module CloudConductor
       private
 
       def build_infrastructure
+        @environment.stacks.each { |stack| stack.update_attribute(:status, :PROGRESS) }
+
         directory = generate_template(@cloud, @environment)
         variables = {}
         variables.merge!(cloud_variables(@cloud))
@@ -18,8 +20,11 @@ module CloudConductor
         # TODO: Generate and put key on image when it had created by packer and store key to database
         variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
         outputs = execute_terraform(directory, variables)
+
+        @environment.stacks.each { |stack| stack.update_attribute(:status, :CREATE_COMPLETE) }
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
       rescue => e
+        @environment.stacks.each { |stack| stack.update_attribute(:status, :ERROR) }
         reset
         raise e
       end
