@@ -33,37 +33,13 @@ module CloudConductor
         CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
       end
 
-      it 'create consul client for host when passed argument as string' do
+      it 'create consul client for host' do
         event = CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
-        expect(event.instance_variable_get(:@clients)).to eq([@client])
-      end
-
-      it 'create consul client for host when passed argument as array' do
-        event = CloudConductor::Event.new ['localhost'], 8500, token: 'dummy_token'
-        expect(event.instance_variable_get(:@clients)).to eq([@client])
-      end
-
-      it 'create consul client for each address when host has multiple addresses as string' do
-        event = CloudConductor::Event.new 'localhost, 192.168.0.1', 8500, token: 'dummy_token'
-        expect(event.instance_variable_get(:@clients)).to eq([@client, @client])
-      end
-
-      it 'create consul client for each address when host has multiple addresses' do
-        event = CloudConductor::Event.new ['localhost', '192.168.0.1'], 8500, token: 'dummy_token'
-        expect(event.instance_variable_get(:@clients)).to eq([@client, @client])
+        expect(event.instance_variable_get(:@client)).to eq(@client)
       end
     end
 
     describe '#fire' do
-      before do
-        allow(@event).to receive(:sequential_try).and_yield(@client)
-      end
-
-      it 'delegate retry logic to #sequential_try' do
-        expect(@event).to receive(:sequential_try)
-        @event.fire(:configure, {})
-      end
-
       it 'call KV#merge' do
         expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key1', {})
         expect(@client).to receive_message_chain(:kv, :merge).with('dummy/key2', {})
@@ -157,15 +133,6 @@ module CloudConductor
     end
 
     describe '#list' do
-      before do
-        allow(@event).to receive(:sequential_try).and_yield(@client)
-      end
-
-      it 'delegate retry logic to #sequential_try' do
-        expect(@event).to receive(:sequential_try)
-        @event.list
-      end
-
       it 'delegate to Metronome::EventResult' do
         expect(Metronome::EventResult).to receive(:list).with(@client)
         @event.list
@@ -173,38 +140,10 @@ module CloudConductor
     end
 
     describe '#find' do
-      before do
-        allow(@event).to receive(:sequential_try).and_yield(@client)
-      end
-
-      it 'delegate retry logic to #sequential_try' do
-        expect(@event).to receive(:sequential_try)
-        @event.find('dummy_id')
-      end
-
       it 'delegate to Metronome::EventResult' do
         event_result = double(:event_result, refresh!: nil)
         expect(Metronome::EventResult).to receive(:find).with(@client, 'dummy_id').and_return(event_result)
         @event.find('dummy_id')
-      end
-    end
-
-    describe '#sequential_try' do
-      it 'retry next client when previous client is failed' do
-        client1 = @client.clone
-        client2 = @client.clone
-        client3 = @client.clone
-        client4 = @client.clone
-        @event.instance_variable_set(:@clients, [client1, client2, client3, client4])
-
-        block = double(:block)
-        expect(block).to receive(:call).with(client1).and_return(nil)
-        expect(block).to receive(:call).with(client2).and_raise
-        expect(block).to receive(:call).with(client3).and_return('dummy_result')
-        expect(block).to_not receive(:call).with(client4)
-
-        result = @event.send(:sequential_try) { |client| block.call(client) }
-        expect(result).to eq('dummy_result')
       end
     end
   end
