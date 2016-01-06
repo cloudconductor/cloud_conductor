@@ -24,6 +24,8 @@ module CloudConductor
       describe '#build_infrastructure' do
         before do
           allow(@builder).to receive(:generate_template)
+          allow(@builder).to receive(:cloud_variables).and_return({})
+          allow(@builder).to receive(:image_variables).and_return({})
           allow(@builder).to receive(:execute_terraform)
           allow(@builder).to receive(:frontend_addresses)
           allow(@builder).to receive(:reset)
@@ -31,7 +33,10 @@ module CloudConductor
 
         it 'call subroutines except #reset' do
           expect(@builder).to receive(:generate_template).ordered
+          expect(@builder).to receive(:cloud_variables).ordered
+          expect(@builder).to receive(:image_variables).ordered
           expect(@builder).to receive(:execute_terraform).ordered
+          expect(@builder).to receive(:frontend_addresses).ordered
           expect(@builder).not_to receive(:reset)
           @builder.send(:build_infrastructure)
         end
