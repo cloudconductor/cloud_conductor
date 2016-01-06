@@ -24,6 +24,8 @@ module CloudConductor
         @clouds = environment.candidates.sorted.map(&:cloud)
       end
 
+      private
+
       def build_infrastructure
         until @environment.stacks.select(&:pending?).empty?
           platforms = @environment.stacks.select(&:pending?).select(&:platform?)
@@ -47,8 +49,6 @@ module CloudConductor
         reset_stacks
         raise e
       end
-
-      private
 
       # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
       def wait_for_finished(stack, timeout)
