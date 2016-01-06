@@ -44,10 +44,5 @@ module Consul
     rescue
       false
     end
-
-    def inspect
-      object_id = '0x%014x'.format(self.object_id * 2)
-      "#<#{self.class.name}:#{object_id}>"
-    end
   end
 end
