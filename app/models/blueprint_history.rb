@@ -26,8 +26,8 @@ class BlueprintHistory < ActiveRecord::Base
     return {} if pattern_snapshots.empty?
 
     result = {}
-    providers = pattern_snapshots.map do |pattern_snapshot|
-      JSON.parse(pattern_snapshot.providers)
+    providers = pattern_snapshots.map(&:providers).compact.map do |provider|
+      JSON.parse(provider)
     end
 
     providers.map(&:keys).inject(&:|).each do |cloud|

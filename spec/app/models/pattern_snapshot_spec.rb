@@ -124,6 +124,7 @@ describe PatternSnapshot do
       metadata = {
         name: 'name',
         type: 'platform',
+        providers: { aws: ['cloud_formation'] },
         supports: [
           {
             platform: 'CentOS',
@@ -164,12 +165,20 @@ describe PatternSnapshot do
       @pattern.send(:freeze_pattern)
     end
 
-    it 'update attributes by metadata' do
+    it 'set attributes from metadata' do
       @pattern.send(:freeze_pattern)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
       expect(@pattern.platform).to eq('CentOS')
       expect(@pattern.platform_version).to eq('6.5')
+      expect(@pattern.providers).to eq('{"aws":["cloud_formation"]}')
+    end
+
+    it 'set nil to providers when metadata does not contain providers' do
+      allow(@pattern).to receive(:load_metadata).and_return({})
+
+      @pattern.send(:freeze_pattern)
+      expect(@pattern.providers).to be_nil
     end
   end
 

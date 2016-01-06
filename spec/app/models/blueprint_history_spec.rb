@@ -204,6 +204,13 @@ describe BlueprintHistory do
       @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"] }'
       expect(@history.providers).to eq('aws' => %w(terraform))
     end
+
+    it 'isn\'t effected by nil provider' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[2].providers = nil
+      expect(@history.providers).to eq('aws' => %w(terraform))
+    end
   end
 
   describe '#build_pattern_snapshots' do

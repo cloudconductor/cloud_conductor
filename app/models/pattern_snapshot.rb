@@ -40,7 +40,7 @@ class PatternSnapshot < ActiveRecord::Base
 
       self.name = metadata[:name]
       self.type = metadata[:type]
-      self.providers = metadata[:providers].to_json
+      self.providers = metadata[:providers].to_json if metadata[:providers]
       self.parameters = read_parameters(path).to_json
       self.roles = read_roles(path).to_json
       if metadata[:supports]
