@@ -21,21 +21,23 @@ describe BlueprintPattern do
 
   describe '#valid?' do
     it 'returns true with blueprint and pattern' do
-      relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern)
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern, platform: 'centos')
       expect(relation).to be_valid
     end
 
     it 'returns false without blueprint' do
-      relation = BlueprintPattern.new(blueprint: nil, pattern: pattern)
+      relation = BlueprintPattern.new(blueprint: nil, pattern: pattern, platform: 'centos')
       expect(relation).not_to be_valid
     end
 
     it 'returns false without pattern' do
-      relation = BlueprintPattern.new(blueprint: blueprint, pattern: nil)
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: nil, platform: 'centos')
       expect(relation).not_to be_valid
     end
-  end
 
-  describe '#initialize' do
+    it 'returns false without platform' do
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern, platform: nil)
+      expect(relation).not_to be_valid
+    end
   end
 end

@@ -2,7 +2,7 @@ class BlueprintPattern < ActiveRecord::Base
   belongs_to :blueprint, inverse_of: :blueprint_patterns
   belongs_to :pattern
 
-  validates_presence_of :blueprint, :pattern
+  validates_presence_of :blueprint, :pattern, :platform
 
   def project
     blueprint.project

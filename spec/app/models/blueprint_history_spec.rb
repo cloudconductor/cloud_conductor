@@ -162,8 +162,12 @@ describe BlueprintHistory do
     it 'create pattern_snapshot from relation' do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original
       allow_any_instance_of(PatternSnapshot).to receive(:freeze_pattern)
-      blueprint.patterns << FactoryGirl.create(:pattern, :platform, project: project)
-      blueprint.patterns << FactoryGirl.create(:pattern, :optional, project: project)
+
+      pattern1 = FactoryGirl.build(:pattern, :platform, project: project)
+      pattern2 = FactoryGirl.build(:pattern, :optional, project: project)
+      blueprint.blueprint_patterns << FactoryGirl.build(:blueprint_pattern, blueprint: blueprint, pattern: pattern1)
+      blueprint.blueprint_patterns << FactoryGirl.build(:blueprint_pattern, blueprint: blueprint, pattern: pattern2)
+
       @history.send(:build_pattern_snapshots)
       expect(@history.pattern_snapshots.size).to eq(2)
     end
