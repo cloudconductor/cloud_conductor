@@ -88,6 +88,13 @@ describe BaseImage do
       @base_image.ssh_username = ''
       expect(@base_image.valid?).to be_falsey
     end
+
+    it 'returns false when platform is uniqueness' do
+      cloud.base_images << FactoryGirl.build(:base_image, cloud: cloud, platform: 'centos', platform_version: '6.5')
+      @base_image.platform = 'centos'
+      @base_image.platform_version = '6.5'
+      expect(@base_image.valid?).to be_falsey
+    end
   end
 
   describe '#name' do

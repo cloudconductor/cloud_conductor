@@ -4,6 +4,7 @@ class BaseImage < ActiveRecord::Base
 
   validates_associated :cloud
   validates_presence_of :cloud, :platform, :source_image, :ssh_username
+  validates :platform, uniqueness: { scope: [:cloud, :platform_version] }
   validate do
     errors.add(:platform, 'is invalid') if platform && !Platform.family(platform)
   end
