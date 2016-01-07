@@ -121,9 +121,19 @@ describe PatternSnapshot do
 
   describe '#freeze_pattern' do
     before do
+      metadata = {
+        name: 'name',
+        type: 'platform',
+        supports: [
+          {
+            platform: 'CentOS',
+            platform_version: '6.5'
+          }
+        ]
+      }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
       allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
-      allow(@pattern).to receive(:load_metadata).and_return({})
+      allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:freeze_revision)
@@ -152,6 +162,14 @@ describe PatternSnapshot do
     it 'will call #freeze_revision' do
       expect(@pattern).to receive(:freeze_revision)
       @pattern.send(:freeze_pattern)
+    end
+
+    it 'update attributes by metadata' do
+      @pattern.send(:freeze_pattern)
+      expect(@pattern.name).to eq('name')
+      expect(@pattern.type).to eq('platform')
+      expect(@pattern.platform).to eq('CentOS')
+      expect(@pattern.platform_version).to eq('6.5')
     end
   end
 
