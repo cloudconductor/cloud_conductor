@@ -37,8 +37,5 @@ describe BlueprintPattern do
   end
 
   describe '#initialize' do
-    it 'set os_version to default' do
-      expect(BlueprintPattern.new.os_version).to eq('default')
-    end
   end
 end

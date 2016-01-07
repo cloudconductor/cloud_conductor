@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20151207004843) do
+ActiveRecord::Schema.define(version: 20160107015409) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -81,11 +81,11 @@ ActiveRecord::Schema.define(version: 20151207004843) do
 
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
-    t.string   "os_version"
     t.string   "source_image"
     t.string   "ssh_username"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
+    t.string   "platform"
   end
 
   create_table "blueprint_histories", force: true do |t|
@@ -100,9 +100,9 @@ ActiveRecord::Schema.define(version: 20151207004843) do
     t.integer  "blueprint_id", null: false
     t.integer  "pattern_id",   null: false
     t.string   "revision"
-    t.string   "os_version"
     t.datetime "created_at",   null: false
     t.datetime "updated_at",   null: false
+    t.string   "platform"
   end
 
   create_table "blueprints", force: true do |t|
@@ -174,11 +174,11 @@ ActiveRecord::Schema.define(version: 20151207004843) do
     t.string   "protocol"
     t.string   "url"
     t.string   "revision"
-    t.string   "os_version"
     t.text     "parameters"
     t.string   "roles"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
+    t.string   "platform"
   end
 
   create_table "patterns", force: true do |t|

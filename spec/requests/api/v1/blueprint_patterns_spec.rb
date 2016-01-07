@@ -77,8 +77,7 @@ describe API do
           id: Fixnum,
           created_at: String,
           updated_at: String,
-          revision: String,
-          os_version: String
+          revision: String
         )
       end
 
@@ -133,7 +132,7 @@ describe API do
       let(:params) do
         {
           'revision' => 'dummy',
-          'os_version' => 'dummy_os'
+          'platform' => 'centos'
         }
       end
       let(:result) do

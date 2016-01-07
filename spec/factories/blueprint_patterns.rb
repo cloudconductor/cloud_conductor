@@ -17,6 +17,6 @@ FactoryGirl.define do
     blueprint
     pattern { FactoryGirl.build(:pattern, :platform) }
     revision 'develop'
-    os_version 'CentOS-6.5'
+    platform 'centos'
   end
 end

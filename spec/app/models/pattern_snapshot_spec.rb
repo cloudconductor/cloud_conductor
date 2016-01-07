@@ -28,12 +28,6 @@ describe PatternSnapshot do
     @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern], project: project)
   end
 
-  describe '#initialize' do
-    it 'set os_version to default' do
-      expect(@pattern.os_version).to eq('default')
-    end
-  end
-
   describe '#save' do
     it 'create with valid parameters' do
       expect { @pattern.save! }.to change { PatternSnapshot.count }.by(1)
@@ -166,7 +160,7 @@ describe PatternSnapshot do
       base_image
       @pattern.name = 'name'
       @pattern.roles = '["nginx"]'
-      @pattern.os_version = 'default'
+      @pattern.platform = 'default'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
@@ -203,11 +197,11 @@ describe PatternSnapshot do
   describe '#update_images' do
     it 'update status of all images' do
       results = {
-        'aws-default----nginx' => {
+        'aws-centos----nginx' => {
           status: :SUCCESS,
           image: 'ami-12345678'
         },
-        'openstack-default----nginx' => {
+        'openstack-centos----nginx' => {
           status: :ERROR,
           message: 'dummy_message'
         }
@@ -219,12 +213,12 @@ describe PatternSnapshot do
       FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_openstack, role: 'nginx')
       @pattern.send(:update_images, results)
 
-      aws = Image.where(name: 'aws-default----nginx').first
+      aws = Image.where(name: 'aws-centos----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
       expect(aws.image).to eq('ami-12345678')
       expect(aws.message).to be_nil
 
-      openstack = Image.where(name: 'openstack-default----nginx').first
+      openstack = Image.where(name: 'openstack-centos----nginx').first
       expect(openstack.status).to eq(:ERROR)
       expect(openstack.image).to be_nil
       expect(openstack.message).to eq('dummy_message')

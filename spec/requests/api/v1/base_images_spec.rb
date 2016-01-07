@@ -227,7 +227,7 @@ describe API do
       let(:url) { "/api/v1/base_images/#{base_image.id}" }
       let(:params) do
         {
-          'os_version' => 'CentOS-7.0',
+          'platform' => 'CentOS',
           'ssh_username' => 'root',
           'source_image' => SecureRandom.uuid
         }

@@ -12,10 +12,6 @@ class PatternSnapshot < ActiveRecord::Base
 
   before_destroy :check_pattern_usage
 
-  after_initialize do
-    self.os_version ||= 'default'
-  end
-
   def status
     if images.empty? || images.any? { |image| image.status == :ERROR }
       :ERROR
@@ -54,7 +50,7 @@ class PatternSnapshot < ActiveRecord::Base
 
   def create_images
     JSON.parse(roles).each do |role|
-      new_images = BaseImage.where(os_version: os_version).map do |base_image|
+      new_images = BaseImage.where(platform: platform).map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
       packer_variables = {

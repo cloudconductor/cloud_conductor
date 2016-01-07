@@ -44,7 +44,7 @@ class BlueprintHistory < ActiveRecord::Base
       pattern_snapshots.build(
         url: relation.pattern.url,
         revision: relation.revision || relation.pattern.revision,
-        os_version: relation.os_version
+        platform: relation.platform
       )
     end
     pattern_snapshots.each(&:freeze_pattern)

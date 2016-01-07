@@ -4,10 +4,6 @@ class BlueprintPattern < ActiveRecord::Base
 
   validates_presence_of :blueprint, :pattern
 
-  after_initialize do
-    self.os_version ||= 'default'
-  end
-
   def project
     blueprint.project
   end

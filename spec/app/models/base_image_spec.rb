@@ -23,17 +23,16 @@ describe BaseImage do
   end
 
   describe '#initialize' do
-    it 'set default to os_version and ssh_username' do
+    it 'set default to ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.os_version).to eq('default')
       expect(base_image.ssh_username).to eq('ec2-user')
     end
 
-    it 'set specified value to os_version and ssh_username' do
-      base_image = BaseImage.new(os_version: 'dummy_os', ssh_username: 'dummy_user')
+    it 'set specified value to platform and ssh_username' do
+      base_image = BaseImage.new(platform: 'dummy_platform', ssh_username: 'dummy_user')
 
-      expect(base_image.os_version).to eq('dummy_os')
+      expect(base_image.platform).to eq('dummy_platform')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
@@ -60,11 +59,11 @@ describe BaseImage do
       expect(@base_image.valid?).to be_falsey
     end
 
-    it 'returns false when os_version is unset' do
-      @base_image.os_version = nil
+    it 'returns false when platform is unset' do
+      @base_image.platform = nil
       expect(@base_image.valid?).to be_falsey
 
-      @base_image.os_version = ''
+      @base_image.platform = ''
       expect(@base_image.valid?).to be_falsey
     end
 
@@ -86,8 +85,8 @@ describe BaseImage do
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and os_version with hyphen' do
-      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.os_version}")
+    it 'return string that joined cloud name and platform with hyphen' do
+      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.platform}")
     end
   end
 
