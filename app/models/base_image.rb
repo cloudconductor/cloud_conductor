@@ -16,7 +16,7 @@ class BaseImage < ActiveRecord::Base
   end
 
   def name
-    "#{cloud.name}-#{platform}"
+    "#{cloud.name}-#{platform}-#{platform_version}"
   end
 
   def builder

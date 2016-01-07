@@ -86,8 +86,8 @@ describe BaseImage do
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and platform with hyphen' do
-      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.platform}")
+    it 'return string that joined cloud name, platform and platform_version with hyphen' do
+      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.platform}-#{@base_image.platform_version}")
     end
   end
 

@@ -197,11 +197,11 @@ describe PatternSnapshot do
   describe '#update_images' do
     it 'update status of all images' do
       results = {
-        'aws-centos----nginx' => {
+        'aws-centos-6.5----nginx' => {
           status: :SUCCESS,
           image: 'ami-12345678'
         },
-        'openstack-centos----nginx' => {
+        'openstack-centos-6.5----nginx' => {
           status: :ERROR,
           message: 'dummy_message'
         }
@@ -209,16 +209,18 @@ describe PatternSnapshot do
 
       cloud_aws = FactoryGirl.build(:cloud, :aws, name: 'aws', project: project)
       cloud_openstack = FactoryGirl.build(:cloud, :openstack, name: 'openstack', project: project)
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_aws, role: 'nginx')
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_openstack, role: 'nginx')
+      base_image_aws = FactoryGirl.create(:base_image, cloud: cloud_aws, platform: 'centos', platform_version: '6.5')
+      base_image_openstack = FactoryGirl.create(:base_image, cloud: cloud_openstack, platform: 'centos', platform_version: '6.5')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_aws, cloud: cloud_aws, role: 'nginx')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_openstack, cloud: cloud_openstack, role: 'nginx')
       @pattern.send(:update_images, results)
 
-      aws = Image.where(name: 'aws-centos----nginx').first
+      aws = Image.where(name: 'aws-centos-6.5----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
       expect(aws.image).to eq('ami-12345678')
       expect(aws.message).to be_nil
 
-      openstack = Image.where(name: 'openstack-centos----nginx').first
+      openstack = Image.where(name: 'openstack-centos-6.5----nginx').first
       expect(openstack.status).to eq(:ERROR)
       expect(openstack.image).to be_nil
       expect(openstack.message).to eq('dummy_message')
