@@ -83,9 +83,10 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.integer  "cloud_id"
     t.string   "source_image"
     t.string   "ssh_username"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
     t.string   "platform"
+    t.string   "platform_version"
   end
 
   create_table "blueprint_histories", force: true do |t|
@@ -97,12 +98,13 @@ ActiveRecord::Schema.define(version: 20160107015409) do
   end
 
   create_table "blueprint_patterns", force: true do |t|
-    t.integer  "blueprint_id", null: false
-    t.integer  "pattern_id",   null: false
+    t.integer  "blueprint_id",     null: false
+    t.integer  "pattern_id",       null: false
     t.string   "revision"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
     t.string   "platform"
+    t.string   "platform_version"
   end
 
   create_table "blueprints", force: true do |t|
@@ -179,6 +181,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
     t.string   "platform"
+    t.string   "platform_version"
   end
 
   create_table "patterns", force: true do |t|

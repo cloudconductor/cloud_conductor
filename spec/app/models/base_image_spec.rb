@@ -29,10 +29,11 @@ describe BaseImage do
       expect(base_image.ssh_username).to eq('ec2-user')
     end
 
-    it 'set specified value to platform and ssh_username' do
-      base_image = BaseImage.new(platform: 'dummy_platform', ssh_username: 'dummy_user')
+    it 'set specified value to platform, platform_version  and ssh_username' do
+      base_image = BaseImage.new(platform: 'dummy_platform', platform_version: 'dummy_version', ssh_username: 'dummy_user')
 
       expect(base_image.platform).to eq('dummy_platform')
+      expect(base_image.platform_version).to eq('dummy_version')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 

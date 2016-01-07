@@ -168,7 +168,7 @@ describe API do
     describe 'POST /base_images' do
       let(:method) { 'post' }
       let(:url) { '/api/v1/base_images' }
-      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id) }
+      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id, platform_version: '6.5') }
       let(:result) do
         params.merge(
           'id' => Fixnum,
