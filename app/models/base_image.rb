@@ -4,6 +4,9 @@ class BaseImage < ActiveRecord::Base
 
   validates_associated :cloud
   validates_presence_of :cloud, :platform, :source_image, :ssh_username
+  validate do
+    errors.add(:platform, 'is invalid') if platform && !Platform.family(platform)
+  end
 
   after_initialize do
     self.ssh_username ||= 'ec2-user'

@@ -160,7 +160,7 @@ describe PatternSnapshot do
       base_image
       @pattern.name = 'name'
       @pattern.roles = '["nginx"]'
-      @pattern.platform = 'default'
+      @pattern.platform = 'centos'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})

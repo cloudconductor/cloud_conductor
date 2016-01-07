@@ -39,5 +39,10 @@ describe BlueprintPattern do
       relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern, platform: nil)
       expect(relation).not_to be_valid
     end
+
+    it 'returns false when platform is not family' do
+      relation = BlueprintPattern.new(blueprint: blueprint, pattern: pattern, platform: 'testOS')
+      expect(relation).not_to be_valid
+    end
   end
 end

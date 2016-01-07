@@ -35,7 +35,7 @@ class Cloud < ActiveRecord::Base
     return if type == 'openstack'
 
     if base_images.empty?
-      base_images.build(source_image: aws_images[entry_point], platform: 'default')
+      base_images.build(source_image: aws_images[entry_point], platform: 'centos')
     else
       base_images.first.update_attributes(source_image: aws_images[entry_point])
     end

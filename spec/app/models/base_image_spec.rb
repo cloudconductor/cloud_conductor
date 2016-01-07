@@ -68,6 +68,11 @@ describe BaseImage do
       expect(@base_image.valid?).to be_falsey
     end
 
+    it 'returns false when platform is not family' do
+      @base_image.platform = 'testOS'
+      expect(@base_image.valid?).to be_falsey
+    end
+
     it 'returns false when source_image is unset' do
       @base_image.source_image = nil
       expect(@base_image.valid?).to be_falsey
