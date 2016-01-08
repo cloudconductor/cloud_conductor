@@ -24,8 +24,7 @@ module CloudConductor
       describe '#build_infrastructure' do
         before do
           allow(@builder).to receive(:generate_template)
-          allow(@builder).to receive(:cloud_variables).and_return({})
-          allow(@builder).to receive(:image_variables).and_return({})
+          allow(@builder).to receive(:terraform_variables).and_return({})
           allow(@builder).to receive(:execute_terraform)
           allow(@builder).to receive(:frontend_addresses)
           allow(@builder).to receive(:reset)
@@ -33,8 +32,7 @@ module CloudConductor
 
         it 'call subroutines except #reset' do
           expect(@builder).to receive(:generate_template).ordered
-          expect(@builder).to receive(:cloud_variables).ordered
-          expect(@builder).to receive(:image_variables).ordered
+          expect(@builder).to receive(:terraform_variables).ordered
           expect(@builder).to receive(:execute_terraform).ordered
           expect(@builder).to receive(:frontend_addresses).ordered
           expect(@builder).not_to receive(:reset)
@@ -72,6 +70,7 @@ module CloudConductor
           @parent = double(:parent, save: nil, cleanup: nil)
           @mod = double(:module)
 
+          allow(@builder).to receive(:template_directory).and_return('template_directory')
           allow(FileUtils).to receive(:mkdir_p)
           allow(CloudConductor::Terraform::Parent).to receive(:new).and_return(@parent)
           allow(CloudConductor::Terraform::Module).to receive(:new).and_return(@mod)
@@ -79,18 +78,13 @@ module CloudConductor
 
         it 'will create directory if directory does not exist' do
           allow(Dir).to receive(:exist?).and_return(false)
-          expect(FileUtils).to receive(:mkdir_p).with(/[0-9a-f\-]{36}/)
+          expect(FileUtils).to receive(:mkdir_p).with('template_directory')
           @builder.send(:generate_template, cloud_aws, environment)
         end
 
         it 'call Parent#save and Parent#cleanup to generate/cleanup parent template' do
           expect(@parent).to receive(:save).ordered
           @builder.send(:generate_template, cloud_aws, environment)
-        end
-
-        it 'return directory path that contains parent template.tf' do
-          path = @builder.send(:generate_template, cloud_aws, environment)
-          expect(path).to match(%r(/tmp/terraform/[0-9a-f\-]{36}$))
         end
       end
 
@@ -107,11 +101,11 @@ module CloudConductor
           expect(@terraform).to receive(:plan).ordered
           expect(@terraform).to receive(:apply).ordered
           expect(@terraform).to receive(:output).ordered
-          @builder.send(:execute_terraform, 'directory', {})
+          @builder.send(:execute_terraform, {})
         end
 
         it 'return terraform output as hash' do
-          result = @builder.send(:execute_terraform, 'directory', {})
+          result = @builder.send(:execute_terraform, {})
           expect(result).to eq({})
         end
       end
@@ -172,6 +166,21 @@ module CloudConductor
           }
 
           expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
+        end
+      end
+
+      describe '#template_directory' do
+        it 'return template directory which contains environment name and cloud name' do
+          expect(@builder.send(:template_directory)).to match(/#{environment.name}_#{cloud_aws.name}/)
+        end
+      end
+
+      describe '#terraform_variables' do
+        it 'combine #cloud_variables and #image_variables' do
+          expect(@builder).to receive(:cloud_variables).and_return(cloud: 'dummy1')
+          expect(@builder).to receive(:image_variables).and_return(image: 'dummy2')
+
+          expect(@builder.send(:terraform_variables)).to include(cloud: 'dummy1', image: 'dummy2')
         end
       end
 

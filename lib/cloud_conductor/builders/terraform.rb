@@ -12,13 +12,9 @@ module CloudConductor
       def build_infrastructure
         @environment.stacks.each { |stack| stack.update_attributes(cloud: @cloud, status: :PROGRESS) }
 
-        directory = generate_template(@cloud, @environment)
-        variables = {}
-        variables.merge!(cloud_variables(@cloud))
-        variables.merge!(image_variables(@cloud, @environment))
-        # TODO: Generate and put key on image when it had created by packer and store key to database
-        variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
-        outputs = execute_terraform(directory, variables)
+        generate_template(@cloud, @environment)
+
+        outputs = execute_terraform(terraform_variables)
 
         @environment.stacks.each { |stack| stack.update_attribute(:status, :CREATE_COMPLETE) }
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
@@ -35,18 +31,16 @@ module CloudConductor
           parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])
         end
 
-        temporary = File.expand_path("../../../tmp/terraform/#{SecureRandom.uuid}", File.dirname(__FILE__))
-        FileUtils.mkdir_p temporary unless Dir.exist? temporary
+        FileUtils.mkdir_p template_directory unless Dir.exist? template_directory
 
-        parent.save("#{temporary}/template.tf")
-        temporary
+        parent.save("#{template_directory}/template.tf")
       end
 
-      def execute_terraform(directory, variables)
+      def execute_terraform(variables)
         options = {
           terraform_path: CloudConductor::Config.terraform.path
         }
-        terraform = Rterraform::Client.new(directory, options)
+        terraform = Rterraform::Client.new(template_directory, options)
 
         # terraform get
         terraform.get
@@ -72,6 +66,20 @@ module CloudConductor
 
       def frontend_addresses(outputs)
         outputs.select { |k, _v| k.end_with? '.frontend_addresses' }.values.reject(&:blank?).join(', ')
+      end
+
+      def template_directory
+        File.expand_path("../../../tmp/terraform/#{@environment.name}_#{@cloud.name}", File.dirname(__FILE__))
+      end
+
+      def terraform_variables
+        variables = {}
+        variables.merge!(cloud_variables(@cloud))
+        variables.merge!(image_variables(@cloud, @environment))
+
+        # TODO: Generate and put key on image when it had created by packer and store key to database
+        variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
+        variables
       end
 
       def cloud_variables(cloud)
