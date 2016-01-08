@@ -25,6 +25,10 @@ module CloudConductor
       end
 
       def destroy_infrastructure(delete_stacks = true)
+        @environment.stacks.destroy_all if delete_stacks
+
+        return unless Dir.exist? template_directory
+
         options = {
           terraform_path: CloudConductor::Config.terraform.path
         }
@@ -33,8 +37,6 @@ module CloudConductor
         variables = terraform_variables
         variables[:bootstrap_expect] = 0
         terraform.destroy(variables)
-
-        @environment.stacks.destroy_all if delete_stacks
       end
 
       def reset

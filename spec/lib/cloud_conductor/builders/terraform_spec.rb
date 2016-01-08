@@ -67,6 +67,7 @@ module CloudConductor
 
       describe '#destroy_infrastructure' do
         before do
+          allow(Dir).to receive(:exist?).and_return(true)
           @terraform = double(:terraform, destroy: true)
           allow(Rterraform::Client).to receive(:new).and_return(@terraform)
         end
