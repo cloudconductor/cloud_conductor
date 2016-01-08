@@ -144,7 +144,7 @@ describe Stack do
   describe '#create_stack' do
     before do
       allow(@stack).to receive(:create_stack).and_call_original
-      allow(@stack).to receive_message_chain(:client, :create_stack)
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(true)
     end
 
     it 'call Client#create_stack' do
@@ -152,11 +152,20 @@ describe Stack do
       @stack.create_stack
     end
 
-    it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
+    it 'update status to :PROGRESS if Client#create_stack return stack without error' do
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(true)
       @stack.status = :READY_FOR_CREATE
       @stack.create_stack
 
       expect(@stack.attributes['status']).to eq(:PROGRESS)
+    end
+
+    it 'update status to :CREATE_COMPETE if Client#create_stack return nil without error' do
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(nil)
+      @stack.status = :READY_FOR_CREATE
+      @stack.create_stack
+
+      expect(@stack.attributes['status']).to eq(:CREATE_COMPLETE)
     end
 
     it 'update status to :ERROR if Client#create_stack raise error' do
@@ -177,6 +186,22 @@ describe Stack do
     it 'call Client#update_stack' do
       expect(@stack).to receive_message_chain(:client, :update_stack)
       @stack.update_stack
+    end
+
+    it 'update status to :PROGRESS if Client#update_stack return stack without error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_return(true)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.update_stack
+
+      expect(@stack.attributes['status']).to eq(:PROGRESS)
+    end
+
+    it 'update status to :CREATE_COMPETE if Client#update_stack return nil without error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_return(nil)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.update_stack
+
+      expect(@stack.attributes['status']).to eq(:CREATE_COMPLETE)
     end
 
     it 'update status to :ERROR if Client#update_stack raise error' do

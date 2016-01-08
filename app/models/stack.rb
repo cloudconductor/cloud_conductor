@@ -46,7 +46,13 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def create_stack
-    client.create_stack(name, pattern_snapshot, generate_parameters)
+    if client.create_stack(name, pattern_snapshot, generate_parameters)
+      self.status = :PROGRESS
+    else
+      self.status = :CREATE_COMPLETE
+    end
+
+    Log.info("Create stack on #{cloud.name} ... SUCCESS")
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -61,13 +67,16 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     Log.warn("Create stack on #{cloud.name} ... FAILED")
     Log.warn "Unexpected error has occurred while creating stack(#{name}) on #{cloud.name}"
     Log.warn(e)
-  else
-    self.status = :PROGRESS
-    Log.info("Create stack on #{cloud.name} ... SUCCESS")
   end
 
   def update_stack
-    client.update_stack name, pattern_snapshot, generate_parameters
+    if client.update_stack name, pattern_snapshot, generate_parameters
+      self.status = :PROGRESS
+    else
+      self.status = :CREATE_COMPLETE
+    end
+
+    Log.info("Update stack on #{cloud.name} ... SUCCESS")
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -77,9 +86,6 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   rescue Net::OpenTimeout
     self.status = :ERROR
     Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
-  else
-    self.status = :PROGRESS
-    Log.info("Update stack on #{cloud.name} ... SUCCESS")
   end
 
   def generate_parameters

@@ -84,6 +84,7 @@ module CloudConductor
       describe '#build_infrastructure' do
         before do
           allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
+          allow_any_instance_of(Stack).to receive(:progress?).and_return(true)
 
           allow(@builder).to receive(:wait_for_finished)
           allow(@builder).to receive(:update_environment)
@@ -107,6 +108,13 @@ module CloudConductor
         it 'create all stacks' do
           @builder.send(:build_infrastructure)
           expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
+        end
+
+        it 'doesn\'t call #wait_for_finished and #update_environment if pattern doesn\'t contain template.json' do
+          allow_any_instance_of(Stack).to receive(:progress?).and_return(false)
+          expect(@builder).not_to receive(:wait_for_finished)
+          expect(@builder).not_to receive(:update_environment)
+          @builder.send(:build_infrastructure)
         end
       end
 

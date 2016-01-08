@@ -36,7 +36,9 @@ module CloudConductor
     def create_stack(name, pattern, parameters)
       template = ''
       pattern.clone_repository(pattern.url, pattern.revision) do |path|
-        template = open(File.expand_path('template.json', path)).read
+        template_path = File.expand_path('template.json', path)
+        return nil unless File.exist?(template_path)
+        template = open(template_path).read
       end
 
       az_list = @adapter.availability_zones
@@ -56,7 +58,9 @@ module CloudConductor
     def update_stack(name, pattern, parameters)
       template = ''
       pattern.clone_repository(pattern.url, pattern.revision) do |path|
-        template = open(File.expand_path('template.json', path)).read
+        template_path = File.expand_path('template.json', path)
+        return nil unless File.exist?(template_path)
+        template = open(template_path).read
       end
 
       az_list = @adapter.availability_zones

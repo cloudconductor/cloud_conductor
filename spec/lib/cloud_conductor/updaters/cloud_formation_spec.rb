@@ -65,6 +65,8 @@ module CloudConductor
       describe '#update' do
         before do
           allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
+          allow_any_instance_of(Stack).to receive(:progress?).and_return(true)
+
           allow(@environment).to receive(:create_or_update_stacks) do
             @environment.stacks.each do |stack|
               stack.update_columns(status: :CREATE_COMPLETE)
@@ -91,6 +93,13 @@ module CloudConductor
           @updater.update
 
           expect(@environment.stacks.all?(&:error?)).to be_truthy
+        end
+
+        it 'doesn\'t call #wait_for_finished and #update_environment if pattern doesn\'t contain template.json' do
+          allow_any_instance_of(Stack).to receive(:progress?).and_return(false)
+          expect(@updater).not_to receive(:wait_for_finished)
+          expect(@updater).not_to receive(:update_environment)
+          @updater.update
         end
       end
 

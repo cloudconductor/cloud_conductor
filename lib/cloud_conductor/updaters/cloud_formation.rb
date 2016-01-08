@@ -24,7 +24,7 @@ module CloudConductor
         @environment = environment
       end
 
-      def update # rubocop:disable MethodLength
+      def update # rubocop:disable MethodLength, Metrics/CyclomaticComplexity
         @nodes = get_nodes(@environment)
         ActiveRecord::Base.connection_pool.with_connection do
           begin
@@ -40,12 +40,14 @@ module CloudConductor
               stack.status = :READY_FOR_UPDATE
               stack.save!
 
-              wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
+              if stack.progress?
+                wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
 
-              update_environment stack.outputs if stack.platform?
+                update_environment stack.outputs if stack.platform?
 
-              stack.status = :CREATE_COMPLETE
-              stack.save!
+                stack.status = :CREATE_COMPLETE
+                stack.save!
+              end
 
               stack.client.post_process
             end

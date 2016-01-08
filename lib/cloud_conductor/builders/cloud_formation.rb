@@ -36,12 +36,14 @@ module CloudConductor
           stack.status = :READY_FOR_CREATE
           stack.save!
 
-          wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
+          if stack.progress?
+            wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
 
-          update_environment stack.outputs if stack.platform?
+            update_environment stack.outputs if stack.platform?
 
-          stack.status = :CREATE_COMPLETE
-          stack.save!
+            stack.status = :CREATE_COMPLETE
+            stack.save!
+          end
 
           stack.client.post_process
         end
