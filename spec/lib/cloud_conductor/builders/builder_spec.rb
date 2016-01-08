@@ -45,10 +45,34 @@ module CloudConductor
         end
       end
 
+      describe '#destroy' do
+        before do
+          allow(@builder).to receive(:destroy_infrastructure)
+        end
+
+        it 'call subroutines that can be overridden in child classes' do
+          expect(@builder).to receive(:destroy_infrastructure)
+          @builder.destroy
+        end
+
+        it 'raise error and update environment status to :ERROR when some error has been occurred' do
+          allow(@builder).to receive(:destroy_infrastructure).and_raise
+          expect { @builder.destroy }.to raise_error(RuntimeError)
+          expect(environment.status).to eq(:ERROR)
+        end
+      end
+
       describe '#build_infrastructure' do
         it 'raise exception when call don\'t overrided build_infrastructure' do
           allow(@builder).to receive(:build_infrastructure).and_call_original
           expect { @builder.send(:build_infrastructure) }.to raise_error(RuntimeError)
+        end
+      end
+
+      describe '#destroy_infrastructure' do
+        it 'raise exception when call don\'t overrided destroy_infrastructure' do
+          allow(@builder).to receive(:destroy_infrastructure).and_call_original
+          expect { @builder.send(:destroy_infrastructure) }.to raise_error(RuntimeError)
         end
       end
 

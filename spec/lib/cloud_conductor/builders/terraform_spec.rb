@@ -65,6 +65,25 @@ module CloudConductor
         end
       end
 
+      describe '#destroy_infrastructure' do
+        before do
+          @terraform = double(:terraform, destroy: true)
+          allow(Rterraform::Client).to receive(:new).and_return(@terraform)
+        end
+
+        it 'call subroutines except #reset' do
+          expect(@terraform).to receive(:destroy)
+          @builder.send(:destroy_infrastructure)
+        end
+      end
+
+      describe '#reset' do
+        it 'delegate delete logic to #destroy_infrastructure' do
+          expect(@builder).to receive(:destroy_infrastructure)
+          @builder.send(:reset)
+        end
+      end
+
       describe '#generate_template' do
         before do
           @parent = double(:parent, save: nil, cleanup: nil)

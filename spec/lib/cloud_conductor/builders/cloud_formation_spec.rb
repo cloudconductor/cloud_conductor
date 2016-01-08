@@ -118,6 +118,73 @@ module CloudConductor
         end
       end
 
+      describe '#destroy_infrastructure' do
+        before do
+          pattern1 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: blueprint_history)
+          pattern2 = FactoryGirl.build(:pattern_snapshot, type: 'platform', blueprint_history: blueprint_history)
+          pattern3 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: blueprint_history)
+
+          @environment.stacks.delete_all
+          @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern1, cloud: cloud_aws)
+          @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern2, cloud: cloud_aws)
+          @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern3, cloud: cloud_aws)
+
+          @environment.save!
+
+          allow(@builder).to receive(:sleep)
+          allow(@builder).to receive(:stack_destroyed?).and_return(-> (_) { true })
+
+          allow_any_instance_of(Stack).to receive(:destroy)
+
+          original_timeout = Timeout.method(:timeout)
+          allow(Timeout).to receive(:timeout) do |_, &block|
+            original_timeout.call(0.1, &block)
+          end
+        end
+
+        it 'destroy all stacks of environment' do
+          expect(@environment.stacks).not_to be_empty
+          @builder.send(:destroy_infrastructure)
+          expect(@environment.stacks).to be_empty
+        end
+
+        it 'destroy optional patterns before platform' do
+          expect(@environment.stacks[0]).to receive(:destroy).ordered
+          expect(@environment.stacks[2]).to receive(:destroy).ordered
+          expect(@environment.stacks[1]).to receive(:destroy).ordered
+
+          @builder.send(:destroy_infrastructure)
+        end
+
+        it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
+          allow(@builder).to receive(:stack_destroyed?).and_return(-> (_) { false })
+
+          expect(@environment.stacks[0]).to receive(:destroy).ordered
+          expect(@environment.stacks[2]).to receive(:destroy).ordered
+          expect(@builder).to receive(:sleep).at_least(:once).ordered
+          expect(@environment.stacks[1]).to receive(:destroy).ordered
+
+          @builder.send(:destroy_infrastructure)
+        end
+
+        it 'wait and destroy platform pattern when destroyed all optional patterns' do
+          allow(@builder).to receive(:stack_destroyed?).and_return(-> (_) { false }, -> (_) { true })
+
+          expect(@environment.stacks[0]).to receive(:destroy).ordered
+          expect(@environment.stacks[2]).to receive(:destroy).ordered
+          expect(@builder).to receive(:sleep).once.ordered
+          expect(@environment.stacks[1]).to receive(:destroy).ordered
+
+          @builder.send(:destroy_infrastructure)
+        end
+
+        it 'ensure destroy platform when some error occurred while destroying optional' do
+          allow(@environment.stacks[0]).to receive(:destroy).and_raise(RuntimeError)
+          expect(@environment.stacks[1]).to receive(:destroy)
+          expect { @builder.send(:destroy_infrastructure) }.to raise_error(RuntimeError)
+        end
+      end
+
       describe '#wait_for_finished' do
         before do
           allow(@builder).to receive(:sleep)
@@ -201,7 +268,7 @@ module CloudConductor
 
       describe '#reset_stacks' do
         before do
-          allow(@environment).to receive(:destroy_stacks) do
+          allow(@builder).to receive(:destroy_infrastructure) do
             @environment.stacks.each(&:delete)
           end
         end
@@ -218,7 +285,6 @@ module CloudConductor
         end
 
         it 'reset ip_address and platform_outputs in environment' do
-          allow(@builder).to receive(:next_cloud).and_return(nil)
           @environment.ip_address = '127.0.0.1'
           @environment.platform_outputs = '{ "key": "dummy" }'
 
@@ -228,16 +294,9 @@ module CloudConductor
           expect(@environment.platform_outputs).to eq('{}')
         end
 
-        it 'change status of environment to :ERROR when some error occurred' do
-          allow(@builder).to receive(:next_cloud).and_return(nil)
+        it 'change status of environment to :ERROR' do
           @builder.send(:reset_stacks)
           expect(@environment.status).to eq(:ERROR)
-        end
-      end
-
-      describe '#next_cloud' do
-        it 'Return cloud to make the next stack' do
-          expect(@builder.send(:next_cloud, @environment.stacks.first.cloud)).to eq(cloud_aws)
         end
       end
     end

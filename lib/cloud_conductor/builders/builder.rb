@@ -23,9 +23,27 @@ module CloudConductor
         raise
       end
 
+      def destroy
+        Log.info "Start destroying environment(#{@environment.name}) on #{@cloud.name}"
+
+        destroy_infrastructure
+
+        Log.info "Destroyed environment(#{@environment.name}) on #{@cloud.name}"
+      rescue => e
+        @environment.update_attribute(:status, :ERROR)
+        Log.warn "Following errors have been occurred while destroying environment(#{@environment.name}) on #{@cloud.name}"
+        Log.warn e.message
+        Log.debug e.backtrace
+        raise
+      end
+
       private
 
       def build_infrastructure
+        fail 'Unimplement method'
+      end
+
+      def destroy_infrastructure
         fail 'Unimplement method'
       end
 

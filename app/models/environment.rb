@@ -162,35 +162,15 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   def destroy_stacks
     return if stacks.empty?
-    platforms = stacks.select(&:platform?)
-    optionals = stacks.select(&:optional?)
-    stacks.delete_all
 
-    begin
-      optionals.each(&:destroy)
-      Timeout.timeout(CloudConductor::Config.system_build.timeout) do
-        sleep 10 until optionals.all?(&stack_destroyed?)
-      end
-    rescue Timeout::Error
-      Log.warn "Exceeded timeout while destroying stacks #{optionals}"
-    ensure
-      platforms.each(&:destroy)
-    end
+    builder = CloudConductor::Builders.builder(stacks.first.cloud, self)
+    builder.destroy
   end
 
   def latest_deployments
     deployments_each_application = deployments.group_by { |deployment| deployment.application_history.application_id }.values
     deployments_each_application.map do |deployments|
       deployments.sort_by(&:updated_at).last
-    end
-  end
-
-  private
-
-  def stack_destroyed?
-    lambda do |stack|
-      return true unless stack.exists_on_cloud?
-      [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
     end
   end
 end

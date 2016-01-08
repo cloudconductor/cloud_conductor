@@ -50,6 +50,24 @@ module CloudConductor
         raise e
       end
 
+      def destroy_infrastructure
+        stacks = @environment.stacks
+        platforms = stacks.select(&:platform?)
+        optionals = stacks.select(&:optional?)
+        stacks.delete_all
+
+        begin
+          optionals.each(&:destroy)
+          Timeout.timeout(CloudConductor::Config.system_build.timeout) do
+            sleep 10 until optionals.all?(&stack_destroyed?)
+          end
+        rescue Timeout::Error
+          Log.warn "Exceeded timeout while destroying stacks #{optionals}"
+        ensure
+          platforms.each(&:destroy)
+        end
+      end
+
       # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
       def wait_for_finished(stack, timeout)
         elapsed_time = 0
@@ -105,7 +123,6 @@ module CloudConductor
 
       def reset_stacks
         Log.info 'Reset all stacks.'
-        cloud = next_cloud(@environment.stacks.first.cloud)
         stacks = @environment.stacks.map(&:dup)
 
         @environment.status = :ERROR
@@ -113,22 +130,16 @@ module CloudConductor
         @environment.platform_outputs = '{}'
         @environment.save!
 
-        @environment.destroy_stacks
+        destroy_infrastructure
 
-        return unless cloud
-
-        Log.info "Recreate stacks on next cloud(#{cloud})"
-        stacks.each do |stack|
-          stack.cloud = cloud
-        end
         @environment.stacks = stacks
       end
 
-      private
-
-      def next_cloud(current_cloud)
-        index = @clouds.index(current_cloud)
-        @clouds[index + 1]
+      def stack_destroyed?
+        lambda do |stack|
+          return true unless stack.exists_on_cloud?
+          [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
+        end
       end
     end
   end

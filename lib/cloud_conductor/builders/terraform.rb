@@ -24,6 +24,23 @@ module CloudConductor
         raise e
       end
 
+      def destroy_infrastructure(delete_stacks = true)
+        options = {
+          terraform_path: CloudConductor::Config.terraform.path
+        }
+        terraform = Rterraform::Client.new(template_directory, options)
+
+        variables = terraform_variables
+        variables[:bootstrap_expect] = 0
+        terraform.destroy(variables)
+
+        @environment.stacks.destroy_all if delete_stacks
+      end
+
+      def reset
+        destroy_infrastructure(false)
+      end
+
       def generate_template(cloud, environment)
         mappings = JSON.parse(environment.mappings_json).with_indifferent_access
         parent = CloudConductor::Terraform::Parent.new(cloud)
@@ -110,9 +127,6 @@ module CloudConductor
           results["#{combined_roles}_image".to_sym] = image.image
         end
         results
-      end
-
-      def reset
       end
     end
   end
