@@ -220,10 +220,10 @@ module CloudConductor
           result = @builder.send(:cloud_variables, cloud)
           expect(result).to be_is_a(Hash)
           expect(result).to eq(
-            openstack_user_name: cloud.key,
-            openstack_password: cloud.secret,
-            openstack_auth_url: cloud.entry_point + 'v2.0',
-            openstack_tenant_name: cloud.tenant_name
+            os_user_name: cloud.key,
+            os_password: cloud.secret,
+            os_auth_url: cloud.entry_point + 'v2.0',
+            os_tenant_name: cloud.tenant_name
           )
         end
 
