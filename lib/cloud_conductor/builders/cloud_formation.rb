@@ -12,11 +12,9 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-require 'cloud_conductor/builders/builder'
-
 module CloudConductor
   module Builders
-    class CloudFormation < Builder
+    class CloudFormation < CloudConductor::Builders::Builder
       CHECK_PERIOD = 3
 
       def initialize(cloud, environment)

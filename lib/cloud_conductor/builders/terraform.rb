@@ -1,9 +1,8 @@
-require 'cloud_conductor/builders/builder'
 require 'rterraform'
 
 module CloudConductor
   module Builders
-    class Terraform < Builder
+    class Terraform < CloudConductor::Builders::Builder
       def initialize(cloud, environment)
         super
       end
