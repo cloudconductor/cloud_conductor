@@ -89,10 +89,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       begin
         builder = CloudConductor::Builders.builder(cloud, self)
         builder.build
-      rescue => e
-        Log.warn "Following errors have been occurred while creating stacks on environment(#{name}) on #{cloud.name}"
-        Log.warn e.message
-        Log.debug e.backtrace
+      rescue
         false
       end
     end

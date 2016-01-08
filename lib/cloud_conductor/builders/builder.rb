@@ -7,16 +7,19 @@ module CloudConductor
       end
 
       def build
-        Log.info "Start creating stacks of environment(#{@environment.name}) on #{@cloud.name}"
+        Log.info "Start creating environment(#{@environment.name}) on #{@cloud.name}"
         @environment.update_attribute(:status, :PROGRESS)
 
         build_infrastructure
         send_events(@environment)
 
         @environment.update_attribute(:status, :CREATE_COMPLETE)
-        Log.info "Created all stacks on environment(#{@environment.name}) on #{@cloud.name}"
-      rescue
+        Log.info "Created environment(#{@environment.name}) on #{@cloud.name}"
+      rescue => e
         @environment.update_attribute(:status, :ERROR)
+        Log.warn "Following errors have been occurred while creating environment(#{@environment.name}) on #{@cloud.name}"
+        Log.warn e.message
+        Log.debug e.backtrace
         raise
       end
 
