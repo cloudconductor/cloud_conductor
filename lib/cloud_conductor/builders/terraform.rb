@@ -10,7 +10,7 @@ module CloudConductor
       private
 
       def build_infrastructure
-        @environment.stacks.each { |stack| stack.update_attribute(:status, :PROGRESS) }
+        @environment.stacks.each { |stack| stack.update_attributes(cloud: @cloud, status: :PROGRESS) }
 
         directory = generate_template(@cloud, @environment)
         variables = {}

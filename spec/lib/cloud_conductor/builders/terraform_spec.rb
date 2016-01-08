@@ -47,6 +47,12 @@ module CloudConductor
           expect { @builder.send(:build_infrastructure) }.to raise_error(RuntimeError)
         end
 
+        it 'update cloud of stack to target cloud when success' do
+          environment.stacks << FactoryGirl.build(:stack)
+          @builder.send(:build_infrastructure)
+          expect(environment.stacks.map(&:cloud)).to all(eq(cloud_aws))
+        end
+
         it 'update status of stack to :CREATE_COMPLETE when success' do
           environment.stacks << FactoryGirl.build(:stack)
           @builder.send(:build_infrastructure)
