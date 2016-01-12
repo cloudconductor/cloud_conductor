@@ -54,7 +54,13 @@ class PatternSnapshot < ActiveRecord::Base
 
   def create_images
     JSON.parse(roles).each do |role|
-      new_images = BaseImage.where(platform: platform).map do |base_image|
+      base_images = blueprint_history.blueprint.project.clouds.map do |cloud|
+        result = BaseImage.filtered_base_image(cloud, platform, platform_version)
+        fail 'BaseImage does not exist' if result.nil?
+        result
+      end
+
+      new_images = base_images.map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
 

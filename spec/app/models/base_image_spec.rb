@@ -127,4 +127,35 @@ describe BaseImage do
       expect(result[:instance_type]).to eq('dummy_instance_type')
     end
   end
+
+  describe '#filtered_base_image' do
+    before do
+      @cloud = FactoryGirl.create(:cloud, :openstack)
+      @base_image1 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'centos', platform_version: nil)
+      @base_image2 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'centos', platform_version: '7.2')
+      @base_image3 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'redhat', platform_version: '9.0')
+      @base_image4 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'ubuntu', platform_version: '14.04')
+      @base_image5 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'fedora', platform_version: '23')
+    end
+
+    it 'return usable base_image that filtered by platform and platform_version' do
+      expect(BaseImage.filtered_base_image(@cloud, 'centos', '7.2')).to eq(@base_image2)
+    end
+
+    it 'return usable base_image that filtered by platform and platform_version is nil' do
+      expect(BaseImage.filtered_base_image(@cloud, 'ubuntu', nil)).to eq(@base_image4)
+    end
+
+    it 'return usable base_image that filtered by platform' do
+      expect(BaseImage.filtered_base_image(@cloud, 'ubuntu', '15.04')).to eq(@base_image4)
+    end
+
+    it 'return usable base_image that filtered by platform family' do
+      expect(BaseImage.filtered_base_image(@cloud, 'pidora', '20')).to eq(@base_image5)
+    end
+
+    it 'raise error when usable base image does not exist' do
+      expect(BaseImage.filtered_base_image(@cloud, 'windows', '10')).to be_nil
+    end
+  end
 end
