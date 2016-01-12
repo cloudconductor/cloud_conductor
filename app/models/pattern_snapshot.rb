@@ -57,24 +57,31 @@ class PatternSnapshot < ActiveRecord::Base
       new_images = BaseImage.where(platform: platform).map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
-      packer_variables = {
-        pattern_name: name,
-        patterns: {},
-        role: role,
-        consul_secret_key: blueprint_history.consul_secret_key
-      }
 
-      blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-        packer_variables[:patterns][pattern_snapshot.name] = {
-          url: pattern_snapshot.url,
-          revision: pattern_snapshot.revision
-        }
-      end
+      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key)
 
-      CloudConductor::PackerClient.new.build(new_images, packer_variables) do |results|
+      CloudConductor::PackerClient.new.build(new_images, variables) do |results|
         update_images(results)
       end
     end
+  end
+
+  def packer_variables(pattern_name, platterns, role, consul_sercret_key)
+    packer_variables = {
+      pattern_name: pattern_name,
+      patterns: platterns,
+      role: role,
+      consul_secret_key: consul_sercret_key
+    }
+
+    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+      packer_variables[:patterns][pattern_snapshot.name] = {
+        url: pattern_snapshot.url,
+        revision: pattern_snapshot.revision
+      }
+    end
+
+    packer_variables
   end
 
   def update_images(results)

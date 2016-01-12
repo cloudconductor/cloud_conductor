@@ -212,6 +212,23 @@ describe PatternSnapshot do
     end
   end
 
+  describe '#packer_variables' do
+    it 'call #packer_variables' do
+      parameters = {
+        pattern_name: 'dummy_pattern',
+        patterns: {},
+        role: 'nginx',
+        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA=='
+      }
+      parameters[:patterns][@pattern.name] = {
+        url: @pattern.url,
+        revision: @pattern.revision
+      }
+
+      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==')).to eq(parameters)
+    end
+  end
+
   describe '#update_images' do
     it 'update status of all images' do
       results = {
