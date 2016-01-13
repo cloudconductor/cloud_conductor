@@ -5,8 +5,15 @@ class BlueprintHistory < ActiveRecord::Base
   validates_presence_of :blueprint
 
   before_create :set_consul_secret_key
+  before_create :set_ssh_private_key
   before_create :set_version
   before_create :build_pattern_snapshots
+
+  def crypt
+    secure = Rails.application.key_generator.generate_key('encrypted secret')
+    sign_secure = Rails.application.key_generator.generate_key('signed encrypted secret')
+    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
+  end
 
   def project
     blueprint.project
@@ -41,8 +48,23 @@ class BlueprintHistory < ActiveRecord::Base
     result.reject { |_key, value| value.empty? }
   end
 
+  def ssh_private_key
+    crypt.decrypt_and_verify(encrypted_ssh_private_key) if encrypted_ssh_private_key
+  end
+
+  def ssh_private_key=(s)
+    self.encrypted_ssh_private_key = crypt.encrypt_and_sign(s)
+  end
+
+  def ssh_public_key
+    return nil if ssh_private_key.nil?
+    Base64.encode64(OpenSSL::PKey::RSA.new(ssh_private_key).public_key.to_blob).gsub(/[\r\n]/, '')
+  end
+
   def as_json(options = {})
-    super({ methods: :status }.merge(options))
+    json = super({ methods: :status }.merge(options))
+    json['encrypted_ssh_private_key'] = '********'
+    json
   end
 
   private
@@ -50,6 +72,10 @@ class BlueprintHistory < ActiveRecord::Base
   def set_consul_secret_key
     return unless CloudConductor::Config.consul.options.acl
     self.consul_secret_key ||= SecureRandom.base64(16)
+  end
+
+  def set_ssh_private_key
+    self.ssh_private_key = OpenSSL::PKey::RSA.generate(2048).to_pem
   end
 
   def set_version

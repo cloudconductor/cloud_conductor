@@ -65,7 +65,7 @@ class PatternSnapshot < ActiveRecord::Base
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
 
-      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key)
+      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key, blueprint_history.ssh_public_key)
 
       CloudConductor::PackerClient.new.build(new_images, variables) do |results|
         update_images(results)
@@ -73,12 +73,13 @@ class PatternSnapshot < ActiveRecord::Base
     end
   end
 
-  def packer_variables(pattern_name, platterns, role, consul_sercret_key)
+  def packer_variables(pattern_name, platterns, role, consul_sercret_key, ssh_public_key)
     packer_variables = {
       pattern_name: pattern_name,
       patterns: platterns,
       role: role,
-      consul_secret_key: consul_sercret_key
+      consul_secret_key: consul_sercret_key,
+      ssh_public_key: ssh_public_key
     }
 
     blueprint_history.pattern_snapshots.each do |pattern_snapshot|

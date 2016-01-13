@@ -24,6 +24,7 @@ module CloudConductor
       describe '#build_infrastructure' do
         before do
           allow(@builder).to receive(:generate_template)
+          allow(@builder).to receive(:save_ssh_private_key).and_yield('tmp/terraform/dummy.pem')
           allow(@builder).to receive(:terraform_variables).and_return({})
           allow(@builder).to receive(:execute_terraform)
           allow(@builder).to receive(:frontend_addresses)
@@ -32,6 +33,7 @@ module CloudConductor
 
         it 'call subroutines except #reset' do
           expect(@builder).to receive(:generate_template).ordered
+          expect(@builder).to receive(:save_ssh_private_key).ordered
           expect(@builder).to receive(:terraform_variables).ordered
           expect(@builder).to receive(:execute_terraform).ordered
           expect(@builder).to receive(:frontend_addresses).ordered
@@ -186,6 +188,28 @@ module CloudConductor
           }
 
           expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
+        end
+      end
+
+      describe '#save_ssh_private_key' do
+        before do
+          allow(File).to receive(:open).with(%r{/tmp/terraform/[0-9a-f-]*.pem}, anything, anything)
+          allow(File).to receive(:exist?).with(%r{/tmp/terraform/[0-9a-f-]*.pem}).and_return(true)
+          allow(FileUtils).to receive(:rm).with(%r{/tmp/terraform/[0-9a-f-]*.pem})
+        end
+
+        it 'yield block with path of private key' do
+          expect { |b| @builder.send(:save_ssh_private_key, 'dummy_key', &b) }.to yield_with_args(kind_of(String))
+        end
+
+        it 'remove generated file of private key' do
+          expect(FileUtils).to receive(:rm).with(%r{/tmp/terraform/[0-9a-f-]*.pem})
+          @builder.send(:save_ssh_private_key, 'dummy_key') {}
+        end
+
+        it 'remove generated file of private key when some errors occurred' do
+          expect(FileUtils).to receive(:rm).with(%r{/tmp/terraform/[0-9a-f-]*.pem})
+          expect { @builder.send(:save_ssh_private_key, 'dummy_key') { fail } }.to raise_error(RuntimeError)
         end
       end
 

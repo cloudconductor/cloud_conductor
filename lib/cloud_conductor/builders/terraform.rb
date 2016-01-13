@@ -14,7 +14,9 @@ module CloudConductor
 
         generate_template(@cloud, @environment)
 
-        outputs = execute_terraform(terraform_variables)
+        outputs = save_ssh_private_key(@environment.blueprint_history.ssh_private_key) do |path|
+          execute_terraform(terraform_variables(path))
+        end
 
         @environment.stacks.each { |stack| stack.update_attribute(:status, :CREATE_COMPLETE) }
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
@@ -87,17 +89,26 @@ module CloudConductor
         outputs.select { |k, _v| k.end_with? '.frontend_addresses' }.values.reject(&:blank?).join(', ')
       end
 
+      def save_ssh_private_key(ssh_private_key)
+        path = File.expand_path("./tmp/terraform/#{SecureRandom.uuid}.pem")
+        File.open(path, 'w', 0400) do |file|
+          file.write(ssh_private_key)
+        end
+
+        yield(path)
+      ensure
+        FileUtils.rm(path) if File.exist?(path)
+      end
+
       def template_directory
         File.expand_path("../../../tmp/terraform/#{@environment.name}_#{@cloud.name}", File.dirname(__FILE__))
       end
 
-      def terraform_variables
+      def terraform_variables(ssh_key_file = '')
         variables = {}
         variables.merge!(cloud_variables(@cloud))
         variables.merge!(image_variables(@cloud, @environment))
-
-        # TODO: Generate and put key on image when it had created by packer and store key to database
-        variables[:ssh_key_file] = '~/.ssh/develop-key.pem'
+        variables[:ssh_key_file] = ssh_key_file
         variables
       end
 

@@ -197,12 +197,13 @@ describe PatternSnapshot do
       expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
     end
 
-    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
+    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key and ssh_public_key' do
       parameters = {
         pattern_name: @pattern.name,
         patterns: {},
         role: 'nginx',
-        consul_secret_key: @pattern.blueprint_history.consul_secret_key
+        consul_secret_key: @pattern.blueprint_history.consul_secret_key,
+        ssh_public_key: @pattern.blueprint_history.ssh_public_key
       }
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
@@ -227,14 +228,15 @@ describe PatternSnapshot do
         pattern_name: 'dummy_pattern',
         patterns: {},
         role: 'nginx',
-        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA=='
+        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA==',
+        ssh_public_key: 'dummy_key'
       }
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
         revision: @pattern.revision
       }
 
-      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==')).to eq(parameters)
+      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==', 'dummy_key')).to eq(parameters)
     end
   end
 
