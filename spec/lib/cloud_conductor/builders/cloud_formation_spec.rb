@@ -71,13 +71,11 @@ module CloudConductor
         end
 
         it 'set @cloud' do
-          cloud = @builder.instance_variable_get :@cloud
-          expect(cloud).to eq(cloud_aws)
+          expect(@builder.instance_variable_get(:@cloud)).to eq(cloud_aws)
         end
 
         it 'set @environment' do
-          environment = @builder.instance_variable_get :@environment
-          expect(environment).to eq(@environment)
+          expect(@builder.instance_variable_get(:@environment)).to eq(@environment)
         end
       end
 

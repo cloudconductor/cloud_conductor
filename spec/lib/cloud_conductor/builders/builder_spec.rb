@@ -11,13 +11,11 @@ module CloudConductor
 
       describe '#new' do
         it 'keep @cloud' do
-          cloud = @builder.instance_variable_get :@cloud
-          expect(cloud).to eq(cloud)
+          expect(@builder.instance_variable_get(:@cloud)).to eq(cloud)
         end
 
         it 'keep @environment' do
-          env = @builder.instance_variable_get :@environment
-          expect(env).to eq(environment)
+          expect(@builder.instance_variable_get(:@environment)).to eq(environment)
         end
       end
 
