@@ -97,6 +97,13 @@ module CloudConductor
           @builder.send(:build_infrastructure)
         end
 
+        it 'set status of stacks to :ERROR when some method raise error' do
+          allow(@builder).to receive(:wait_for_finished).and_raise
+          expect { @builder.send(:build_infrastructure) }.to raise_error RuntimeError
+
+          expect(@environment.stacks.all?(&:error?)).to be_truthy
+        end
+
         it 'call #reset_stacks when some method raise error' do
           allow(@builder).to receive(:wait_for_finished).with(@environment.stacks[0], anything).and_raise
           expect(@builder).to receive(:reset_stacks)

@@ -46,6 +46,7 @@ module CloudConductor
           stack.client.post_process
         end
       rescue => e
+        @environment.stacks.each { |stack| stack.update_attribute(:status, :ERROR) }
         reset_stacks
         raise e
       end
