@@ -45,52 +45,48 @@ module CloudConductor
 
       before do
         @environment = Environment.eager_load(system: [:project]).find(environment)
-        allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
         @platform_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.first, name: blueprint_history.pattern_snapshots.first.name, environment: @environment, status: :PENDING)
         @optional_stack = FactoryGirl.build(:stack, pattern_snapshot: blueprint_history.pattern_snapshots.last, name: blueprint_history.pattern_snapshots.last.name, environment: @environment, status: :PENDING)
         @environment.stacks += [@platform_stack, @optional_stack]
-        @updater = CloudFormation.new cloud, @environment
+        @updater = CloudFormation.new cloud_aws, @environment
         allow_any_instance_of(Pattern).to receive(:clone_repository)
-        allow_any_instance_of(Stack).to receive(:update_stack)
         allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
       end
 
       describe '#initialize' do
+        it 'set @cloud' do
+          expect(@updater.instance_variable_get(:@cloud)).to eq(cloud_aws)
+        end
+
         it 'set @environment' do
-          result = @updater.instance_variable_get :@environment
-          expect(result).to eq(@environment)
+          expect(@updater.instance_variable_get(:@environment)).to eq(@environment)
         end
       end
 
-      describe '#update' do
+      describe '#update_infrastructure' do
         before do
-          allow_any_instance_of(Stack).to receive(:outputs).and_return(key: 'dummy')
+          allow_any_instance_of(Stack).to receive(:outputs)
           allow_any_instance_of(Stack).to receive(:progress?).and_return(true)
+          allow_any_instance_of(Stack).to receive(:update_stack)
 
-          allow(@environment).to receive(:create_or_update_stacks) do
-            @environment.stacks.each do |stack|
-              stack.update_columns(status: :CREATE_COMPLETE)
-            end
-          end
+          allow(@updater).to receive(:get_nodes).and_return(['dummy_node'])
           allow(@updater).to receive(:wait_for_finished)
           allow(@updater).to receive(:update_environment)
-          allow(@updater).to receive(:finish_environment) { @environment.status = :CREATE_COMPLETE }
         end
 
         it 'keep previous nodes' do
-          @updater.update
-          nodes = @updater.instance_variable_get :@nodes
-          expect(nodes).to eq(['dummy_node'])
+          @updater.send(:update_infrastructure)
+          expect(@updater.instance_variable_get(:@nodes)).to eq(['dummy_node'])
         end
 
         it 'create all stacks' do
-          @updater.update
+          @updater.send(:update_infrastructure)
           expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
         end
 
-        it 'set status of stacks to :ERROR when all candidates failed' do
-          allow(@environment).to receive(:status).and_return(:ERROR)
-          @updater.update
+        it 'set status of stacks to :ERROR when some method raise error' do
+          allow(@updater).to receive(:wait_for_finished).and_raise
+          expect { @updater.send(:update_infrastructure) }.to raise_error RuntimeError
 
           expect(@environment.stacks.all?(&:error?)).to be_truthy
         end
@@ -99,7 +95,7 @@ module CloudConductor
           allow_any_instance_of(Stack).to receive(:progress?).and_return(false)
           expect(@updater).not_to receive(:wait_for_finished)
           expect(@updater).not_to receive(:update_environment)
-          @updater.update
+          @updater.send(:update_infrastructure)
         end
       end
 
@@ -183,50 +179,6 @@ module CloudConductor
         end
       end
 
-      describe '#finish_environment' do
-        before do
-          @updater.instance_variable_set :@nodes, ['dummy_node']
-          @event = double(:event, sync_fire: 1)
-          allow(@environment).to receive(:event).and_return(@event)
-          allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }, { node: 'sample_node' }]
-          allow(@updater).to receive(:configure_payload).and_return({})
-        end
-
-        it 'will request configure event to consul' do
-          expect(@event).to receive(:sync_fire).with(:configure, {})
-          @updater.send(:finish_environment)
-        end
-
-        it 'will request restore event to consul' do
-          expect(@event).to receive(:sync_fire).with(:restore, {}, node: ['sample_node'])
-          @updater.send(:finish_environment)
-        end
-
-        it 'won\'t request deploy event to consul if environment hasn\'t deployment' do
-          expect(@event).not_to receive(:sync_fire).with(:deploy, anything, anything)
-          @updater.send(:finish_environment)
-        end
-
-        it 'will request deploy event to consul when create already deployed environment' do
-          @environment.status = :CREATE_COMPLETE
-          FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-          @environment.status = :PROGRESS
-
-          expect(@event).to receive(:sync_fire).with(:deploy, {}, node: ['sample_node'])
-          @updater.send(:finish_environment)
-        end
-
-        it 'change application history status if deploy event is finished' do
-          @environment.status = :CREATE_COMPLETE
-          FactoryGirl.create(:deployment, environment: @environment, application_history: application_history)
-          @environment.status = :PROGRESS
-
-          expect(@environment.deployments.first.status).to eq('NOT_DEPLOYED')
-          @updater.send(:finish_environment)
-          expect(@environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
-        end
-      end
-
       describe '#configure_payload' do
         it 'return payload hash to use configure event' do
           expected_payload = {
@@ -246,6 +198,8 @@ module CloudConductor
 
       describe '#get_nodes' do
         it 'return node list for consul catalog' do
+          allow(@environment).to receive_message_chain(:consul, :catalog, :nodes).and_return [{ node: 'dummy_node' }]
+
           result = @updater.send(:get_nodes, @environment)
           expect(result).to eq(['dummy_node'])
         end

@@ -14,64 +14,41 @@
 # limitations under the License.
 module CloudConductor
   module Updaters
-    class CloudFormation < CloudConductor::Updaters::Updater # rubocop:disable ClassLength
+    class CloudFormation < CloudConductor::Updaters::Updater
       CHECK_PERIOD = 3
 
       def initialize(cloud, environment)
-        @cloud = cloud
-        @environment = environment
-      end
-
-      def update # rubocop:disable MethodLength, Metrics/CyclomaticComplexity
-        @nodes = get_nodes(@environment)
-        ActiveRecord::Base.connection_pool.with_connection do
-          begin
-            cloud = @environment.stacks.first.cloud
-            Log.info "Start updating stacks of environment(#{@environment.name}) on #{cloud.name}"
-            @environment.status = :PROGRESS
-            @environment.save!
-
-            until @environment.stacks.select(&:pending?).empty?
-              platforms = @environment.stacks.select(&:pending?).select(&:platform?)
-              optionals = @environment.stacks.select(&:pending?).select(&:optional?)
-              stack = (platforms + optionals).first
-              stack.status = :READY_FOR_UPDATE
-              stack.save!
-
-              if stack.progress?
-                wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
-
-                update_environment stack.outputs if stack.platform?
-
-                stack.status = :CREATE_COMPLETE
-                stack.save!
-              end
-
-              stack.client.post_process
-            end
-
-            finish_environment if @environment.reload
-
-            Log.info "Updated all stacks on environment(#{@environment.name}) on #{cloud.name}"
-            break
-          rescue => e
-            Log.warn "Some error has occurred while updating stacks on environment(#{@environment.name}) on #{cloud.name}"
-            Log.warn e.message
-            @environment.status = :ERROR
-            @environment.save!
-          end
-        end
-
-        @environment.stacks.each do |stack|
-          stack.status = :ERROR
-          stack.save!
-        end unless @environment.status == :CREATE_COMPLETE
+        super
       end
 
       private
 
-      # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
-      def wait_for_finished(stack, timeout)
+      def update_infrastructure
+        @nodes = get_nodes(@environment)
+        until @environment.stacks.select(&:pending?).empty?
+          platforms = @environment.stacks.select(&:pending?).select(&:platform?)
+          optionals = @environment.stacks.select(&:pending?).select(&:optional?)
+          stack = (platforms + optionals).first
+          stack.status = :READY_FOR_UPDATE
+          stack.save!
+
+          if stack.progress?
+            wait_for_finished(stack, CloudConductor::Config.system_build.timeout)
+
+            update_environment stack.outputs if stack.platform?
+
+            stack.status = :CREATE_COMPLETE
+            stack.save!
+          end
+
+          stack.client.post_process
+        end
+      rescue
+        @environment.stacks.each { |stack| stack.update_attribute(:status, :ERROR) }
+        raise
+      end
+
+      def wait_for_finished(stack, timeout) # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
         elapsed_time = 0
 
         Log.debug "Wait until status of stack has changed for #{stack.name}"
@@ -114,7 +91,6 @@ module CloudConductor
           break
         end
       end
-      # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
       def update_environment(outputs)
         Log.info 'Platform stack has updated.'
@@ -122,24 +98,6 @@ module CloudConductor
         @environment.platform_outputs = outputs.except('FrontendAddress').to_json
         @environment.save!
       end
-
-      def finish_environment
-        @environment.event.sync_fire(:configure, configure_payload(@environment))
-        target_node = get_nodes(@environment) - @nodes
-        unless target_node.empty?
-          @environment.event.sync_fire(:restore, {}, node: target_node)
-          @environment.event.sync_fire(:deploy, {}, node: target_node) unless @environment.deployments.empty?
-        end
-        @environment.event.sync_fire(:spec)
-
-        @environment.status = :CREATE_COMPLETE
-        @environment.deployments.each do |deployment|
-          deployment.update_attributes!(status: 'DEPLOY_COMPLETE')
-        end
-        @environment.save!
-      end
-
-      private
 
       def configure_payload(environment)
         payload = {
