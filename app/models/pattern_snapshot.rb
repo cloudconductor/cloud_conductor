@@ -28,10 +28,18 @@ class PatternSnapshot < ActiveRecord::Base
 
   def filtered_parameters(is_include_computed = false)
     return JSON.parse(parameters) if is_include_computed
-    filtered_parameters = JSON.parse(parameters || '{}').reject do |_, param|
-      param['Description'] =~ /^\[computed\]/
+
+    filtered_parameters = JSON.parse(parameters || '{}')
+
+    (filtered_parameters['cloud_formation'] || {}).reject!(&computed?)
+    (filtered_parameters['terraform'] || {}).each do |_, variables|
+      variables.reject!(&computed?)
     end
     filtered_parameters
+  end
+
+  def computed?
+    ->(_, v) { (v['Description'] || v['description']) =~ /^\[computed\]/ }
   end
 
   def freeze_pattern

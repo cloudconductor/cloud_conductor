@@ -99,6 +99,43 @@ describe PatternAccessor do
   end
 
   describe '#read_parameters' do
+    it 'merge #read_cloud_formation_parameters and #read_terraform_parameters' do
+      parameters1 = {
+        'KeyName' => {
+          'Description' => 'CF description'
+        }
+      }
+      parameters2 = {
+        'aws' => {
+          'web_instance_type' => {
+            'description' => 'Terraform description'
+          }
+        }
+      }
+
+      expected_parameters = {
+        'cloud_formation' => {
+          'KeyName' => {
+            'Description' => 'CF description'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_instance_type' => {
+              'description' => 'Terraform description'
+            }
+          }
+        }
+      }
+
+      allow(@accessor).to receive(:read_cloud_formation_parameters).and_return(parameters1)
+      allow(@accessor).to receive(:read_terraform_parameters).and_return(parameters2)
+
+      expect(@accessor.send(:read_parameters, cloned_path)).to eq(expected_parameters)
+    end
+  end
+
+  describe '#read_cloud_formation_parameters' do
     it 'will load template.json and get parameters' do
       json = <<-EOS
         {
@@ -134,10 +171,89 @@ describe PatternAccessor do
       EOS
       template = double('File', read: json)
       allow(File).to receive(:open).with("#{cloned_path}/template.json").and_return(template)
-      parameters = @accessor.send(:read_parameters, cloned_path)
+      parameters = @accessor.send(:read_cloud_formation_parameters, cloned_path)
       expect(parameters).to be_is_a Hash
       expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType WebImageId)
       expect(parameters['KeyName']['MinLength']).to eq '1'
+    end
+  end
+
+  describe '#read_terraform_parameters' do
+    it 'read *.tf files and extract variables' do
+      template1 = <<-EOS
+        variable "vpc_id" {
+          description = "VPC ID which is created by common network pattern."
+        }
+        variable "subnet_ids" {
+          description = "Subnet ID which is created by common network pattern."
+        }
+        resource "aws_security_group" "web_security_group" {
+          name = "WebSecurityGroup"
+        }
+      EOS
+
+      template2 = <<-EOS
+        variable "web_image" {
+          description = "[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor."
+        }
+        variable "web_instance_type" {
+          description = "WebServer instance type"
+          default = "t2.small"
+        }
+      EOS
+
+      template3 = <<-EOS
+        variable "web_image" {
+          description = "[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor."
+        }
+        variable "web_instance_type" {
+          description = "WebServer instance type"
+          default = "t2.small"
+        }
+      EOS
+
+      expected_parameters = {
+        'aws' => {
+          'vpc_id' => {
+            'description' => 'VPC ID which is created by common network pattern.'
+          },
+          'subnet_ids' => {
+            'description' => 'Subnet ID which is created by common network pattern.'
+          },
+          'web_image' => {
+            'description' => '[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.'
+          },
+          'web_instance_type' => {
+            'description' => 'WebServer instance type',
+            'default' => 't2.small'
+          }
+        },
+        'openstack' => {
+          'web_image' => {
+            'description' => '[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.'
+          },
+          'web_instance_type' => {
+            'description' => 'WebServer instance type',
+            'default' => 't2.small'
+          }
+        }
+      }
+
+      allow(Dir).to receive(:glob).with("#{cloned_path}/templates/*")
+        .and_yield("#{cloned_path}/templates/aws")
+        .and_yield("#{cloned_path}/templates/openstack")
+
+      allow(Dir).to receive(:glob).with("#{cloned_path}/templates/aws/*.tf")
+        .and_return(["#{cloned_path}/templates/aws/variable1.tf", "#{cloned_path}/templates/aws/variable2.tf"])
+
+      allow(Dir).to receive(:glob).with("#{cloned_path}/templates/openstack/*.tf")
+        .and_return(["#{cloned_path}/templates/openstack/variable.tf"])
+
+      allow(File).to receive(:read).with("#{cloned_path}/templates/aws/variable1.tf").and_return(template1)
+      allow(File).to receive(:read).with("#{cloned_path}/templates/aws/variable2.tf").and_return(template2)
+      allow(File).to receive(:read).with("#{cloned_path}/templates/openstack/variable.tf").and_return(template3)
+
+      expect(@accessor.send(:read_terraform_parameters, cloned_path)).to eq(expected_parameters)
     end
   end
 

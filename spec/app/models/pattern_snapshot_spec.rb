@@ -294,34 +294,98 @@ describe PatternSnapshot do
     before do
       @pattern.parameters = <<-EOS
         {
-          "KeyName" : {
-            "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
-            "Type" : "String"
+          "cloud_formation": {
+            "WebImageId" : {
+              "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
+              "Type" : "String"
+            },
+            "WebInstanceType" : {
+              "Description" : "WebServer instance type",
+              "Type" : "String"
+            }
           },
-          "SSHLocation" : {
-            "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
-            "Type" : "String"
-          },
-          "WebImageId" : {
-            "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
-            "Type" : "String"
-          },
-          "WebInstanceType" : {
-            "Description" : "WebServer instance type",
-            "Type" : "String"
+          "terraform": {
+            "aws": {
+              "web_image_id" : {
+                "description" : "[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor."
+              },
+              "web_instance_type" : {
+                "description" : "WebServer instance type",
+                "default" : "t2.small"
+              }
+            },
+            "openstack": {
+              "ap_image_id" : {
+                "description" : "[computed] APServer Image Id. This parameter is automatically filled by CloudConductor."
+              },
+              "ap_instance_type" : {
+                "description" : "APServer instance type",
+                "default" : "t2.small"
+              }
+            }
           }
         }
       EOS
     end
 
     it 'return parameters without [computed] annotation' do
-      parameters = @pattern.filtered_parameters
-      expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType)
+      expect(@pattern.filtered_parameters).to eq(
+        'cloud_formation' => {
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_instance_type' => {
+              'description' => 'WebServer instance type',
+              'default' => 't2.small'
+            }
+          },
+          'openstack' => {
+            'ap_instance_type' => {
+              'description' => 'APServer instance type',
+              'default' => 't2.small'
+            }
+          }
+        }
+      )
     end
 
     it 'return all parameters when specified option' do
-      parameters = @pattern.filtered_parameters(true)
-      expect(parameters.keys).to eq %w(KeyName SSHLocation WebImageId WebInstanceType)
+      expect(@pattern.filtered_parameters(true)).to eq(
+        'cloud_formation' => {
+          'WebImageId' => {
+            'Description' => '[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.',
+            'Type' => 'String'
+          },
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_image_id' => {
+              'description' => '[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.'
+            },
+            'web_instance_type' => {
+              'description' => 'WebServer instance type',
+              'default' => 't2.small'
+            }
+          },
+          'openstack' => {
+            'ap_image_id' => {
+              'description' => '[computed] APServer Image Id. This parameter is automatically filled by CloudConductor.'
+            },
+            'ap_instance_type' => {
+              'description' => 'APServer instance type',
+              'default' => 't2.small'
+            }
+          }
+        }
+      )
     end
   end
 end
