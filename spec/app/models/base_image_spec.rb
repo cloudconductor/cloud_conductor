@@ -154,7 +154,7 @@ describe BaseImage do
       expect(BaseImage.filtered_base_image(@cloud, 'pidora', '20')).to eq(@base_image5)
     end
 
-    it 'raise error when usable base image does not exist' do
+    it 'return nil when usable base image does not exist' do
       expect(BaseImage.filtered_base_image(@cloud, 'windows', '10')).to be_nil
     end
   end
