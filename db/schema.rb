@@ -182,9 +182,9 @@ ActiveRecord::Schema.define(version: 20160113145914) do
     t.string   "roles"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
-    t.string   "providers"
     t.string   "platform"
     t.string   "platform_version"
+    t.string   "providers"
   end
 
   create_table "patterns", force: true do |t|
