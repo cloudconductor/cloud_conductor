@@ -38,7 +38,6 @@ module API
           requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          optional :template_parameters, type: String, desc: 'Parameter JSON'
           optional :user_attributes, type: String, desc: 'User Attribute JSON'
           requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment' do
             requires :cloud_id, type: String, desc: 'Cloud id'
@@ -76,7 +75,6 @@ module API
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          optional :template_parameters, type: String, desc: 'Parameters JSON'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         put '/:id' do
@@ -100,7 +98,6 @@ module API
           optional :version, type: Integer, desc: 'Blueprint version'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
-          optional :template_parameters, type: String, desc: 'Parameters JSON'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
           optional :mappings_json, type: String, desc: 'Variable mappings to create environment by terraform'
         end

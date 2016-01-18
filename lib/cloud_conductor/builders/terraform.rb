@@ -46,7 +46,9 @@ module CloudConductor
       end
 
       def generate_template(cloud, environment)
-        mappings = JSON.parse(environment.mappings_json).with_indifferent_access
+        mappings = JSON.parse(environment.mappings_json).each_with_object({}) do |(k, v), h|
+          h[k] = (v.with_indifferent_access[:terraform] || {})[cloud.type]
+        end
         parent = CloudConductor::Terraform::Parent.new(cloud)
         environment.blueprint_history.pattern_snapshots.each do |snapshot|
           parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])

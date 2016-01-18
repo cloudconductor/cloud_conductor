@@ -360,4 +360,38 @@ describe Environment do
       expect(@environment.latest_deployments).to match_array([deployment2, deployment3])
     end
   end
+
+  describe '#cfn_parameters' do
+    it 'returns extract part of JSON for CloudFormation/Heat from mappings_json' do
+      @environment.mappings_json = <<-EOS
+      {
+        "dummy_pattern": {
+          "cloud_formation": {
+            "WebInstanceType": {
+              "type": "static",
+              "value": "t2.micro"
+            },
+            "WebInstanceSize": {
+              "type": "static",
+              "value": "2"
+            }
+          },
+          "terraform": {
+            "aws": {
+              "web_instance_type": {
+                "type": "static",
+                "value": "t2.small"
+              }
+            }
+          }
+        }
+      }
+      EOS
+      result = @environment.send(:cfn_parameters, 'dummy_pattern')
+      expect(result).to eq(
+        'WebInstanceType' => 't2.micro',
+        'WebInstanceSize' => '2'
+      )
+    end
+  end
 end

@@ -10,7 +10,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
 
-  attr_accessor :template_parameters, :user_attributes
+  attr_accessor :user_attributes
 
   validates_presence_of :system, :blueprint_history, :candidates
   validates :name, presence: true, uniqueness: true
@@ -28,11 +28,10 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   before_destroy :destroy_stacks_in_background
 
   after_initialize do
-    self.template_parameters ||= '{}'
+    self.mappings_json ||= '{}'
     self.user_attributes ||= '{}'
     self.platform_outputs ||= '{}'
     self.status ||= :PENDING
-    self.mappings_json ||= '{}'
   end
 
   scope :select_by_project_id, -> (project_id) { joins(:system).where(systems: { project_id: project_id }) }
@@ -44,14 +43,13 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   def create_or_update_stacks
     if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
-    elsif template_parameters != '{}' || user_attributes != '{}'
+    elsif mappings_json != '{}' || user_attributes != '{}'
       update_stacks
     end
   end
 
   def create_stacks
     primary_cloud = candidates.sort.first.cloud
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     blueprint_history.pattern_snapshots.each do |pattern_snapshot|
       pattern_name = pattern_snapshot.name
@@ -59,27 +57,18 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
         cloud: primary_cloud,
         pattern_snapshot: pattern_snapshot,
         name: "#{system.name}-#{id}-#{pattern_name}",
-        template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
-        parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'
+        template_parameters: cfn_parameters(pattern_name).to_json,
+        parameters: (user_attributes_hash[pattern_name] || {}).to_json
       )
     end
   end
 
   def update_stacks
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
       pattern_name = stack.pattern_snapshot.name
-      if cfn_parameters_hash.key?(pattern_name)
-        new_template_parameters = JSON.dump(cfn_parameters_hash[pattern_name])
-      else
-        new_template_parameters = '{}'
-      end
-      if user_attributes_hash.key?(pattern_name)
-        new_user_attributes = JSON.dump(user_attributes_hash[pattern_name])
-      else
-        new_user_attributes = '{}'
-      end
+      new_template_parameters = cfn_parameters(pattern_name).to_json
+      new_user_attributes = (user_attributes_hash[pattern_name] || {}).to_json
       stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes, status: :PENDING)
     end
   end
@@ -171,6 +160,16 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     deployments_each_application = deployments.group_by { |deployment| deployment.application_history.application_id }.values
     deployments_each_application.map do |deployments|
       deployments.sort_by(&:updated_at).last
+    end
+  end
+
+  private
+
+  def cfn_parameters(pattern_name)
+    pattern_mappings = JSON.parse(mappings_json)[pattern_name] || {}
+    cfn_mappings = pattern_mappings['cloud_formation'] || {}
+    cfn_mappings.each_with_object({}) do |(k, v), h|
+      h[k] = v['value']
     end
   end
 end
