@@ -28,7 +28,8 @@ module API
               requires :blueprint_id, type: Integer, desc: 'Blueprint id'
               requires :pattern_id, type: Integer, desc: 'Pattern id'
               optional :revision, type: String, desc: 'Revision on pattern'
-              optional :os_version, type: String, desc: 'Operationg system version'
+              optional :platform, type: String, desc: 'Operating system name'
+              optional :platform_version, type: String, desc: 'Operating system version'
             end
             post '/' do
               blueprint = Blueprint.find(params[:blueprint_id])
@@ -41,7 +42,8 @@ module API
             params do
               requires :pattern_id, type: Integer, desc: 'Pattern id'
               optional :revision, type: String, desc: 'Revision on pattern'
-              optional :os_version, type: String, desc: 'Operationg system version'
+              optional :platform, type: String, desc: 'Operating system name'
+              optional :platform_version, type: String, desc: 'Operating system version'
             end
             put '/:pattern_id' do
               blueprint = Blueprint.find(params[:blueprint_id])

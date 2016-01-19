@@ -35,7 +35,8 @@ module API
           requires :cloud_id, type: Integer, exists_id: :cloud, desc: 'Cloud id'
           requires :ssh_username, type: String, desc: 'SSH login username to created instance'
           requires :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os_version, type: String, desc: 'Operating system name', default: 'default'
+          requires :platform, type: String, desc: 'Operating system name'
+          optional :platform_version, type: String, desc: 'Operating system version'
         end
         post '/' do
           cloud = ::Cloud.find_by(id: params[:cloud_id])
@@ -49,7 +50,8 @@ module API
           requires :id, type: Integer, desc: 'BaseImage id'
           optional :ssh_username, type: String, desc: 'SSH login username to created instance'
           optional :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os_version, type: String, desc: 'Operating system name', default: 'default'
+          optional :platform, type: String, desc: 'Operating system name'
+          optional :platform_version, type: String, desc: 'Operating system version'
         end
         put '/:id' do
           base_image = ::BaseImage.find(params[:id])

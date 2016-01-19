@@ -168,11 +168,11 @@ describe Project do
   describe '#base_images' do
     it 'collect base images belongs to this project' do
       cloud = FactoryGirl.build(:cloud, :aws, project: @project)
-      FactoryGirl.create(:base_image, cloud: cloud, os_version: 'CentOS-6.5')
+      FactoryGirl.create(:base_image, cloud: cloud, platform: 'CentOS')
 
-      results = @project.base_images('CentOS-6.5')
+      results = @project.base_images('CentOS')
       expect(results.size).to eq(1)
-      expect(results.first.os_version).to eq('CentOS-6.5')
+      expect(results.first.platform).to eq('CentOS')
     end
   end
 

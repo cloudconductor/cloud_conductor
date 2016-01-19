@@ -195,15 +195,15 @@ describe Cloud do
   describe '#aws_images' do
     it 'return ami id list that corresponding to all of the Region' do
       expected_list = {
-        'ap-northeast-1' => 'ami-0d9b720d',
-        'ap-southeast-1' => 'ami-36556364',
-        'ap-southeast-2' => 'ami-11b0c12b',
-        'eu-west-1' => 'ami-ede0739a',
-        'eu-central-1' => 'ami-98a79585',
-        'sa-east-1' => 'ami-7f56ef62',
-        'us-east-1' => 'ami-0e80db66',
-        'us-west-1' => 'ami-777f9b33',
-        'us-west-2' => 'ami-3b1a390b'
+        'ap-northeast-1' => { 'platform' => 'centos', 'image' => 'ami-0d9b720d' },
+        'ap-southeast-1' => { 'platform' => 'centos', 'image' => 'ami-36556364' },
+        'ap-southeast-2' => { 'platform' => 'centos', 'image' => 'ami-11b0c12b' },
+        'eu-west-1' => { 'platform' => 'centos', 'image' => 'ami-ede0739a' },
+        'eu-central-1' => { 'platform' => 'centos', 'image' => 'ami-98a79585' },
+        'sa-east-1' => { 'platform' => 'centos', 'image' => 'ami-7f56ef62' },
+        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-0e80db66' },
+        'us-west-1' => { 'platform' => 'centos', 'image' => 'ami-777f9b33' },
+        'us-west-2' => { 'platform' => 'centos', 'image' => 'ami-3b1a390b' }
       }
 
       expect(@cloud.aws_images).to eq(expected_list)

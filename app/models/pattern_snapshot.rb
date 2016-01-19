@@ -12,10 +12,6 @@ class PatternSnapshot < ActiveRecord::Base
 
   before_destroy :check_pattern_usage
 
-  after_initialize do
-    self.os_version ||= 'default'
-  end
-
   def status
     if images.empty? || images.any? { |image| image.status == :ERROR }
       :ERROR
@@ -46,6 +42,10 @@ class PatternSnapshot < ActiveRecord::Base
       self.type = metadata[:type]
       self.parameters = read_parameters(path).to_json
       self.roles = read_roles(path).to_json
+      if metadata[:supports]
+        self.platform = metadata[:supports].first[:platform]
+        self.platform_version = metadata[:supports].first[:platform_version]
+      end
       freeze_revision(path)
     end
   end
@@ -54,27 +54,40 @@ class PatternSnapshot < ActiveRecord::Base
 
   def create_images
     JSON.parse(roles).each do |role|
-      new_images = BaseImage.where(os_version: os_version).map do |base_image|
+      base_images = blueprint_history.blueprint.project.clouds.map do |cloud|
+        result = BaseImage.filtered_base_image(cloud, platform, platform_version)
+        fail 'BaseImage does not exist' if result.nil?
+        result
+      end
+
+      new_images = base_images.map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
-      packer_variables = {
-        pattern_name: name,
-        patterns: {},
-        role: role,
-        consul_secret_key: blueprint_history.consul_secret_key
-      }
 
-      blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-        packer_variables[:patterns][pattern_snapshot.name] = {
-          url: pattern_snapshot.url,
-          revision: pattern_snapshot.revision
-        }
-      end
+      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key)
 
-      CloudConductor::PackerClient.new.build(new_images, packer_variables) do |results|
+      CloudConductor::PackerClient.new.build(new_images, variables) do |results|
         update_images(results)
       end
     end
+  end
+
+  def packer_variables(pattern_name, platterns, role, consul_sercret_key)
+    packer_variables = {
+      pattern_name: pattern_name,
+      patterns: platterns,
+      role: role,
+      consul_secret_key: consul_sercret_key
+    }
+
+    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+      packer_variables[:patterns][pattern_snapshot.name] = {
+        url: pattern_snapshot.url,
+        revision: pattern_snapshot.revision
+      }
+    end
+
+    packer_variables
   end
 
   def update_images(results)

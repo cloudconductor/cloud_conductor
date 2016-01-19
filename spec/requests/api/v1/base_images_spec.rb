@@ -168,7 +168,7 @@ describe API do
     describe 'POST /base_images' do
       let(:method) { 'post' }
       let(:url) { '/api/v1/base_images' }
-      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id) }
+      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id, platform_version: '6.5') }
       let(:result) do
         params.merge(
           'id' => Fixnum,
@@ -227,7 +227,7 @@ describe API do
       let(:url) { "/api/v1/base_images/#{base_image.id}" }
       let(:params) do
         {
-          'os_version' => 'CentOS-7.0',
+          'platform' => 'CentOS',
           'ssh_username' => 'root',
           'source_image' => SecureRandom.uuid
         }

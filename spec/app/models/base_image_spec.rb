@@ -23,17 +23,17 @@ describe BaseImage do
   end
 
   describe '#initialize' do
-    it 'set default to os_version and ssh_username' do
+    it 'set default to ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.os_version).to eq('default')
       expect(base_image.ssh_username).to eq('ec2-user')
     end
 
-    it 'set specified value to os_version and ssh_username' do
-      base_image = BaseImage.new(os_version: 'dummy_os', ssh_username: 'dummy_user')
+    it 'set specified value to platform, platform_version  and ssh_username' do
+      base_image = BaseImage.new(platform: 'dummy_platform', platform_version: 'dummy_version', ssh_username: 'dummy_user')
 
-      expect(base_image.os_version).to eq('dummy_os')
+      expect(base_image.platform).to eq('dummy_platform')
+      expect(base_image.platform_version).to eq('dummy_version')
       expect(base_image.ssh_username).to eq('dummy_user')
     end
 
@@ -60,11 +60,16 @@ describe BaseImage do
       expect(@base_image.valid?).to be_falsey
     end
 
-    it 'returns false when os_version is unset' do
-      @base_image.os_version = nil
+    it 'returns false when platform is unset' do
+      @base_image.platform = nil
       expect(@base_image.valid?).to be_falsey
 
-      @base_image.os_version = ''
+      @base_image.platform = ''
+      expect(@base_image.valid?).to be_falsey
+    end
+
+    it 'returns false when platform is not family' do
+      @base_image.platform = 'testOS'
       expect(@base_image.valid?).to be_falsey
     end
 
@@ -83,11 +88,18 @@ describe BaseImage do
       @base_image.ssh_username = ''
       expect(@base_image.valid?).to be_falsey
     end
+
+    it 'returns false when platform is uniqueness' do
+      cloud.base_images << FactoryGirl.build(:base_image, cloud: cloud, platform: 'centos', platform_version: '6.5')
+      @base_image.platform = 'centos'
+      @base_image.platform_version = '6.5'
+      expect(@base_image.valid?).to be_falsey
+    end
   end
 
   describe '#name' do
-    it 'return string that joined cloud name and os_version with hyphen' do
-      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.os_version}")
+    it 'return string that joined cloud name, platform and platform_version with hyphen' do
+      expect(@base_image.name).to eq("#{cloud.name}-#{@base_image.platform}-#{@base_image.platform_version}")
     end
   end
 
@@ -113,6 +125,37 @@ describe BaseImage do
       expect(result[:name]).to eq("#{@base_image.name}----{{user `role`}}")
       expect(result[:access_key]).to eq(cloud.key)
       expect(result[:instance_type]).to eq('dummy_instance_type')
+    end
+  end
+
+  describe '#filtered_base_image' do
+    before do
+      @cloud = FactoryGirl.create(:cloud, :openstack)
+      @base_image1 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'centos', platform_version: nil)
+      @base_image2 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'centos', platform_version: '7.2')
+      @base_image3 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'redhat', platform_version: '9.0')
+      @base_image4 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'ubuntu', platform_version: '14.04')
+      @base_image5 = FactoryGirl.create(:base_image, cloud: @cloud, platform: 'fedora', platform_version: '23')
+    end
+
+    it 'return usable base_image that filtered by platform and platform_version' do
+      expect(BaseImage.filtered_base_image(@cloud, 'centos', '7.2')).to eq(@base_image2)
+    end
+
+    it 'return usable base_image that filtered by platform and platform_version is nil' do
+      expect(BaseImage.filtered_base_image(@cloud, 'ubuntu', nil)).to eq(@base_image4)
+    end
+
+    it 'return usable base_image that filtered by platform' do
+      expect(BaseImage.filtered_base_image(@cloud, 'ubuntu', '15.04')).to eq(@base_image4)
+    end
+
+    it 'return usable base_image that filtered by platform family' do
+      expect(BaseImage.filtered_base_image(@cloud, 'pidora', '20')).to eq(@base_image5)
+    end
+
+    it 'return nil when usable base image does not exist' do
+      expect(BaseImage.filtered_base_image(@cloud, 'windows', '10')).to be_nil
     end
   end
 end

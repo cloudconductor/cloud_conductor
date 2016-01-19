@@ -71,14 +71,13 @@ describe API do
     describe 'POST /blueprints/:blueprint_id/patterns' do
       let(:method) { 'post' }
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/patterns" }
-      let(:params) { FactoryGirl.attributes_for(:blueprint_pattern, blueprint_id: blueprint.id, pattern_id: pattern.id) }
+      let(:params) { FactoryGirl.attributes_for(:blueprint_pattern, blueprint_id: blueprint.id, pattern_id: pattern.id, platform_version: '6.5') }
       let(:result) do
         params.merge(
           id: Fixnum,
           created_at: String,
           updated_at: String,
-          revision: String,
-          os_version: String
+          revision: String
         )
       end
 
@@ -133,7 +132,8 @@ describe API do
       let(:params) do
         {
           'revision' => 'dummy',
-          'os_version' => 'dummy_os'
+          'platform' => 'centos',
+          'platform_version' => 'dummy_version'
         }
       end
       let(:result) do

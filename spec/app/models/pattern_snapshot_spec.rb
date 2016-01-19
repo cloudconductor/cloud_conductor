@@ -28,12 +28,6 @@ describe PatternSnapshot do
     @pattern.blueprint_history = FactoryGirl.build(:blueprint_history, pattern_snapshots: [@pattern], project: project)
   end
 
-  describe '#initialize' do
-    it 'set os_version to default' do
-      expect(@pattern.os_version).to eq('default')
-    end
-  end
-
   describe '#save' do
     it 'create with valid parameters' do
       expect { @pattern.save! }.to change { PatternSnapshot.count }.by(1)
@@ -127,9 +121,19 @@ describe PatternSnapshot do
 
   describe '#freeze_pattern' do
     before do
+      metadata = {
+        name: 'name',
+        type: 'platform',
+        supports: [
+          {
+            platform: 'CentOS',
+            platform_version: '6.5'
+          }
+        ]
+      }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
       allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
-      allow(@pattern).to receive(:load_metadata).and_return({})
+      allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:freeze_revision)
@@ -159,6 +163,14 @@ describe PatternSnapshot do
       expect(@pattern).to receive(:freeze_revision)
       @pattern.send(:freeze_pattern)
     end
+
+    it 'update attributes by metadata' do
+      @pattern.send(:freeze_pattern)
+      expect(@pattern.name).to eq('name')
+      expect(@pattern.type).to eq('platform')
+      expect(@pattern.platform).to eq('CentOS')
+      expect(@pattern.platform_version).to eq('6.5')
+    end
   end
 
   describe '#create_images' do
@@ -166,7 +178,7 @@ describe PatternSnapshot do
       base_image
       @pattern.name = 'name'
       @pattern.roles = '["nginx"]'
-      @pattern.os_version = 'default'
+      @pattern.platform = 'centos'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
       allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
@@ -200,14 +212,31 @@ describe PatternSnapshot do
     end
   end
 
+  describe '#packer_variables' do
+    it 'call #packer_variables' do
+      parameters = {
+        pattern_name: 'dummy_pattern',
+        patterns: {},
+        role: 'nginx',
+        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA=='
+      }
+      parameters[:patterns][@pattern.name] = {
+        url: @pattern.url,
+        revision: @pattern.revision
+      }
+
+      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==')).to eq(parameters)
+    end
+  end
+
   describe '#update_images' do
     it 'update status of all images' do
       results = {
-        'aws-default----nginx' => {
+        'aws-centos-6.5----nginx' => {
           status: :SUCCESS,
           image: 'ami-12345678'
         },
-        'openstack-default----nginx' => {
+        'openstack-centos-6.5----nginx' => {
           status: :ERROR,
           message: 'dummy_message'
         }
@@ -215,16 +244,18 @@ describe PatternSnapshot do
 
       cloud_aws = FactoryGirl.build(:cloud, :aws, name: 'aws', project: project)
       cloud_openstack = FactoryGirl.build(:cloud, :openstack, name: 'openstack', project: project)
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_aws, role: 'nginx')
-      FactoryGirl.create(:image, pattern_snapshot: @pattern, cloud: cloud_openstack, role: 'nginx')
+      base_image_aws = FactoryGirl.create(:base_image, cloud: cloud_aws, platform: 'centos', platform_version: '6.5')
+      base_image_openstack = FactoryGirl.create(:base_image, cloud: cloud_openstack, platform: 'centos', platform_version: '6.5')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_aws, cloud: cloud_aws, role: 'nginx')
+      FactoryGirl.create(:image, pattern_snapshot: @pattern, base_image: base_image_openstack, cloud: cloud_openstack, role: 'nginx')
       @pattern.send(:update_images, results)
 
-      aws = Image.where(name: 'aws-default----nginx').first
+      aws = Image.where(name: 'aws-centos-6.5----nginx').first
       expect(aws.status).to eq(:CREATE_COMPLETE)
       expect(aws.image).to eq('ami-12345678')
       expect(aws.message).to be_nil
 
-      openstack = Image.where(name: 'openstack-default----nginx').first
+      openstack = Image.where(name: 'openstack-centos-6.5----nginx').first
       expect(openstack.status).to eq(:ERROR)
       expect(openstack.image).to be_nil
       expect(openstack.message).to eq('dummy_message')
