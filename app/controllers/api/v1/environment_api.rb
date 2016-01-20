@@ -38,12 +38,12 @@ module API
           requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
+          optional :template_parameters, type: String, desc: 'Variables to build environment by cfn/terraform'
           optional :user_attributes, type: String, desc: 'User Attribute JSON'
           requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment' do
             requires :cloud_id, type: String, desc: 'Cloud id'
             optional :priority, type: Integer, desc: 'Cloud priority(prefer cloud that has higher value)'
           end
-          optional :mappings_json, type: String, desc: 'Variable mappings to create environment by terraform'
         end
         post '/' do
           system = ::System.find_by(id: params[:system_id])
@@ -98,8 +98,8 @@ module API
           optional :version, type: Integer, desc: 'Blueprint version'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
+          optional :template_parameters, type: String, desc: 'Variables to build environment by cfn/terraform'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
-          optional :mappings_json, type: String, desc: 'Variable mappings to create environment by terraform'
         end
         post '/:id/rebuild' do
           environment = ::Environment.find(params[:id])

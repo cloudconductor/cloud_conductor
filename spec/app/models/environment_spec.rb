@@ -362,8 +362,8 @@ describe Environment do
   end
 
   describe '#cfn_parameters' do
-    it 'returns extract part of JSON for CloudFormation/Heat from mappings_json' do
-      @environment.mappings_json = <<-EOS
+    it 'returns extract part of JSON for CloudFormation/Heat from template_parameters' do
+      @environment.template_parameters = <<-EOS
       {
         "dummy_pattern": {
           "cloud_formation": {

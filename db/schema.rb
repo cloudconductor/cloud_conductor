@@ -155,7 +155,7 @@ ActiveRecord::Schema.define(version: 20160113145914) do
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
     t.integer  "blueprint_history_id"
-    t.text     "mappings_json"
+    t.text     "template_parameters"
   end
 
   create_table "images", force: true do |t|

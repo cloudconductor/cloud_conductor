@@ -193,7 +193,7 @@ describe API do
           status: 'PENDING',
           application_status: 'NOT_DEPLOYED',
           ip_address: nil,
-          mappings_json: String
+          template_parameters: String
         )
       end
 

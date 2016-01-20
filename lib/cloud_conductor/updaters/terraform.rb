@@ -30,7 +30,7 @@ module CloudConductor
       end
 
       def generate_template(cloud, environment)
-        mappings = JSON.parse(environment.mappings_json).each_with_object({}) do |(k, v), h|
+        mappings = JSON.parse(environment.template_parameters).each_with_object({}) do |(k, v), h|
           h[k] = (v.with_indifferent_access[:terraform] || {})[cloud.type]
         end
         parent = CloudConductor::Terraform::Parent.new(cloud)

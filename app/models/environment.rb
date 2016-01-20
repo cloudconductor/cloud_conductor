@@ -28,7 +28,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   before_destroy :destroy_stacks_in_background
 
   after_initialize do
-    self.mappings_json ||= '{}'
+    self.template_parameters ||= '{}'
     self.user_attributes ||= '{}'
     self.platform_outputs ||= '{}'
     self.status ||= :PENDING
@@ -43,7 +43,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   def create_or_update_stacks
     if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
-    elsif mappings_json != '{}' || user_attributes != '{}'
+    elsif template_parameters != '{}' || user_attributes != '{}'
       update_stacks
     end
   end
@@ -166,7 +166,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   private
 
   def cfn_parameters(pattern_name)
-    pattern_mappings = JSON.parse(mappings_json)[pattern_name] || {}
+    pattern_mappings = JSON.parse(template_parameters)[pattern_name] || {}
     cfn_mappings = pattern_mappings['cloud_formation'] || {}
     cfn_mappings.each_with_object({}) do |(k, v), h|
       h[k] = v['value']
