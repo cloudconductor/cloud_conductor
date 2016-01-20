@@ -33,6 +33,8 @@ module CloudConductor
         @variables = {}
         (template[:variable] || {}).keys.each do |key|
           case
+          when @mappings[key].nil?
+            @variables[key] = "${var.#{key}}"
           when @mappings[key][:type].to_sym == :static
             @variables[key] = @mappings[key][:value]
           when @mappings[key][:type].to_sym == :module
@@ -46,7 +48,7 @@ module CloudConductor
       end
 
       def dynamic_variables
-        @variables.keys.select { |key| @mappings[key][:type].to_sym == :variable }.map(&:to_s)
+        @variables.keys.select { |key| @mappings[key].nil? || @mappings[key][:type].to_sym == :variable }.map(&:to_s)
       end
 
       def cleanup
