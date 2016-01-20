@@ -23,6 +23,7 @@ module API
       mount API::V1::ApplicationHistoryAPI
       mount API::V1::RoleAPI
       mount API::V1::PermissionAPI
+      mount API::V1::AuditAPI
     end
   end
 end

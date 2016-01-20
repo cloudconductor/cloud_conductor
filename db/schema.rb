@@ -81,12 +81,12 @@ ActiveRecord::Schema.define(version: 20151208021748) do
 
   create_table "audits", force: true do |t|
     t.string   "ip"
-    t.string   "account"
-    t.string   "status"
+    t.integer  "account"
+    t.integer  "status"
     t.string   "request"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.string   "project_id"
+    t.integer  "project_id"
   end
 
   add_index "audits", ["project_id"], name: "index_audits_on_project_id", using: :btree
