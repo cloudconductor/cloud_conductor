@@ -2,24 +2,24 @@ require 'open3'
 require 'ruby-hcl/lib/hcl'
 
 module PatternAccessor
-  def clone_repository(url, revision)
-    fail 'PatternAccessor#clone_repository needs block' unless block_given?
+  def clone_repository(url, revision, options = {})
+    secret_key = options[:secret_key]
+    directory = options[:directory] || File.expand_path('./tmp/patterns/')
+    cloned_path = File.join(directory, SecureRandom.uuid)
 
-    path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-
-    _, _, status = Open3.capture3('git', 'clone', url, path)
+    if secret_key.blank?
+      _, _, status = Open3.capture3('git', 'clone', url, cloned_path)
+    else
+      _, _, status = clone_private_repository(secret_key, url, cloned_path)
+    end
     fail 'An error has occurred while git clone' unless status.success?
 
-    Dir.chdir path do
-      unless revision.blank?
-        _, _, status = Open3.capture3('git', 'checkout', revision)
-        fail 'An error has occurred while git checkout' unless status.success?
-      end
-    end
+    checkout_revision(cloned_path, revision)
 
-    yield path
+    yield cloned_path if block_given?
+    cloned_path
   ensure
-    FileUtils.rm_r path, force: true if path
+    FileUtils.rm_r cloned_path, force: true if cloned_path
   end
 
   private
@@ -77,5 +77,28 @@ module PatternAccessor
 
   def type?(type)
     ->(_, resource) { resource[:Type] == type }
+  end
+
+  def clone_private_repository(secret_key, url, clone_path)
+    git_ssh_path = File.expand_path("./tmp/git_ssh/#{SecureRandom.uuid}")
+    FileUtils.mkdir_p(git_ssh_path)
+    File.open("#{git_ssh_path}/secret_key_file", 'w', 0600) { |f| f.puts secret_key }
+
+    ssh_command = "exec ssh -oIdentityFile=#{git_ssh_path}/secret_key_file \"$@\""
+    File.open("#{git_ssh_path}/git-ssh.sh", 'w', 0700) { |f| f.puts ssh_command }
+
+    env = { 'GIT_SSH' => "#{git_ssh_path}/git-ssh.sh" }
+    Open3.capture3(env, 'git', 'clone', "#{url}", "#{clone_path}")
+  ensure
+    FileUtils.rm_r git_ssh_path, force: true if git_ssh_path
+  end
+
+  def checkout_revision(path, revision)
+    Dir.chdir path do
+      unless revision.blank?
+        _, _, status = Open3.capture3('git', 'checkout', revision)
+        fail 'An error has occurred while git checkout' unless status.success?
+      end
+    end
   end
 end

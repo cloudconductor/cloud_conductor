@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160113145914) do
+ActiveRecord::Schema.define(version: 20160121033312) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -197,6 +197,7 @@ ActiveRecord::Schema.define(version: 20160113145914) do
     t.string   "platform"
     t.string   "platform_version"
     t.string   "providers"
+    t.text     "secret_key"
   end
 
   create_table "patterns", force: true do |t|
@@ -211,6 +212,7 @@ ActiveRecord::Schema.define(version: 20160113145914) do
     t.integer  "project_id"
     t.string   "roles"
     t.string   "providers"
+    t.text     "secret_key"
   end
 
   create_table "permissions", force: true do |t|

@@ -15,6 +15,23 @@ class Pattern < ActiveRecord::Base
 
   before_save :update_metadata
 
+  def crypt
+    secure = Rails.application.key_generator.generate_key('secret key')
+    sign_secure = Rails.application.key_generator.generate_key('signed secret key')
+    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
+  end
+
+  def secret_key
+    encrypted_secret_key = read_attribute(:secret_key)
+    return encrypted_secret_key if encrypted_secret_key.blank?
+    crypt.decrypt_and_verify(encrypted_secret_key)
+  end
+
+  def secret_key=(s)
+    wirte_attribute(:secret_key, s) if s.blank?
+    write_attribute(:secret_key, crypt.encrypt_and_sign(s))
+  end
+
   def as_json(options = {})
     super({ except: :parameters }.merge(options))
   end
@@ -22,7 +39,8 @@ class Pattern < ActiveRecord::Base
   private
 
   def update_metadata
-    clone_repository(url, revision) do |path|
+    options = { secret_key: secret_key }
+    clone_repository(url, revision, options) do |path|
       metadata = load_metadata(path)
 
       self.name = metadata[:name]

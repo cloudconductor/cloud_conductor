@@ -18,6 +18,8 @@ describe PatternAccessor do
   let(:cloned_path) { File.expand_path("./tmp/patterns/#{SecureRandom.uuid}") }
   let(:url) { 'https://www.example.com/' }
   let(:revision) { 'develop' }
+  let(:secret_key) { 'dummy' }
+  let(:option) { { secret_key: secret_key, directory: cloned_path } }
 
   before do
     @accessor = Object.new
@@ -32,11 +34,13 @@ describe PatternAccessor do
       allow(Open3).to receive(:capture3).and_return(['', '', status])
     end
 
-    it 'will raise error when block does not given' do
-      expect { @accessor.clone_repository(url, revision) }.to raise_error('PatternAccessor#clone_repository needs block')
+    it 'will call clone_private_repository when secret_key is not blank' do
+      options = { secret_key: secret_key }
+      expect(:clone_private_repository)
+      @accessor.clone_repository(url, revision, options) {}
     end
 
-    it 'will clone repository to temporary directory' do
+    it 'will clone with https repository to temporary directory' do
       expect(Open3).to receive(:capture3).with('git', 'clone', url, %r(.*tmp\/patterns\/[a-f0-9-]{36}))
       @accessor.clone_repository(url, revision) {}
     end
@@ -68,6 +72,11 @@ describe PatternAccessor do
     it 'will remove cloned repository when some errors occurred while yielding block' do
       expect(FileUtils).to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
       expect { @accessor.clone_repository(url, revision) { fail } }.to raise_error(RuntimeError)
+    end
+    it 'will raise error when failed to clone repository' do
+      status = double('status', success?: false)
+      allow(Open3).to receive(:capture3).and_return(['', '', status])
+      expect { @accessor.clone_repository(url, revision, option) {} }.to raise_error('An error has occurred while git clone')
     end
   end
 
@@ -293,6 +302,72 @@ describe PatternAccessor do
       allow(@accessor).to receive(:load_template).and_return(template)
       roles = %w(nginx rails Dummy4)
       expect(@accessor.send(:read_roles, cloned_path)).to match_array(roles)
+    end
+  end
+
+  describe '#clone_private_repository' do
+    before do
+      allow(FileUtils).to receive(:rm_r)
+      allow(FileUtils).to receive(:mkdir_p)
+      status = double('status', success?: true)
+      allow(Open3).to receive(:capture3).and_return(['', '', status])
+      allow(File).to receive(:open)
+    end
+
+    it 'will create temporary director for clone with ssh in the git_ssh directory ' do
+      expect(FileUtils).to receive(:mkdir_p).with(%r(.*tmp\/git_ssh\/[a-f0-9-]{36}))
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+
+    it 'will call File.open method for create secret_key_file' do
+      expect(File).to receive(:open).with(%r(.*tmp\/git_ssh\/[a-f0-9-]{36}\/secret_key_file), 'w', 0600)
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+
+    it 'will call File.open method for create git-ssh.sh' do
+      expect(File).to receive(:open).with(%r(.*tmp\/git_ssh\/[a-f0-9-]{36}\/git-ssh.sh), 'w', 0700)
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+
+    it 'will clone with ssh repository to temporary directory' do
+      env = { 'GIT_SSH' => %r(.*tmp\/git_ssh\/[a-f0-9-]{36}\/git-ssh.s) }
+      expect(Open3).to receive(:capture3).with(env, 'git', 'clone', "#{url}", %r(.*tmp\/patterns\/[a-f0-9-]{36}))
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+
+    it 'will remove created git_ssh files after call clone_private_repository method' do
+      expect(FileUtils).to receive(:rm_r).with(%r{/tmp/git_ssh/[a-f0-9-]{36}}, force: true)
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+
+    it 'will remove created git_ssh files when failed to clone repository' do
+      status = double('status', success?: false)
+      allow(Open3).to receive(:capture3).and_return(['', '', status])
+      expect(FileUtils).to receive(:rm_r).with(%r{/tmp/git_ssh/[a-f0-9-]{36}}, force: true)
+      @accessor.send(:clone_private_repository, secret_key, url, cloned_path)
+    end
+  end
+
+  describe '#checkout_revision' do
+    before do
+      allow(Dir).to receive(:chdir).and_yield
+      status = double('status', success?: true)
+      allow(Open3).to receive(:capture3).and_return(['', '', status])
+    end
+
+    it 'will change current directory to cloned repoitory and restore current directory after exit' do
+      expect(Dir).to receive(:chdir).with(%r{/tmp/patterns/[a-f0-9-]{36}}).and_yield
+      @accessor.send(:checkout_revision, cloned_path, revision)
+    end
+
+    it 'will change branch to specified revision when revision has specified' do
+      expect(Open3).to receive(:capture3).with('git', 'checkout', revision)
+      @accessor.send(:checkout_revision, cloned_path, revision)
+    end
+
+    it 'won\'t change branch when revision is nil' do
+      expect(Open3).not_to receive(:capture3).with('git', 'checkout', nil)
+      @accessor.send(:checkout_revision, cloned_path, revision)
     end
   end
 end
