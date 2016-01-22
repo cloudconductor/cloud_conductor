@@ -66,7 +66,7 @@ module CloudConductor
         terraform = Rterraform::Client.new(template_directory, options)
 
         # terraform get
-        terraform.get
+        terraform.get({}, update: true)
 
         # terraform plan
         variables[:bootstrap_expect] = 0
