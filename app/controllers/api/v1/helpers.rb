@@ -19,13 +19,11 @@ module API
 
       def find_project(subject)
         project = nil
-        unless subject.class == Class
-          unless subject.is_a?(Audit)
-            if subject.is_a?(Project)
-              project = subject
-            elsif !subject.is_a?(Account)
-              project = subject.project
-            end
+        unless (subject.class == Class) || subject.is_a?(Audit)
+          if subject.is_a?(Project)
+            project = subject
+          elsif !subject.is_a?(Account)
+            project = subject.project
           end
         end
         project

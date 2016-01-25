@@ -34,5 +34,6 @@ module ModelSpecHelper
     end
 
     let(:role) { FactoryGirl.create(:role, project: project) }
+    let(:audit) { FactoryGirl.create(:audit, project_id: project.id) }
   end
 end
