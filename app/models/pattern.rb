@@ -28,12 +28,16 @@ class Pattern < ActiveRecord::Base
   end
 
   def secret_key=(s)
-    wirte_attribute(:secret_key, s) if s.blank?
+    write_attribute(:secret_key, s) if s.blank?
     write_attribute(:secret_key, crypt.encrypt_and_sign(s))
   end
 
   def as_json(options = {})
-    super({ except: :parameters }.merge(options))
+    original_secret_key = secret_key
+    self.secret_key = '********'
+    json = super({ except: :parameters, methods: :secret_key }.merge(options))
+    self.secret_key = original_secret_key
+    json
   end
 
   private
