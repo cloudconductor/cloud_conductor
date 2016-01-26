@@ -12,7 +12,10 @@ module CloudConductor
         @mappings = mappings
 
         load_metadata("#{@cloned_path}/metadata.yml")
-        load_templates("#{@source}/*.tf")
+        template = load_templates("#{@source}/*.tf")
+
+        @outputs = (template[:output] || {}).keys
+        @variables = generate_variables(template, @mappings)
       end
 
       # Load dependencies from metadata.yml
@@ -21,30 +24,31 @@ module CloudConductor
         @dependencies = metadata[:dependencies] || []
       end
 
-      # Load variables and outputs from templates
+      # Load and combine templates
       def load_templates(directory)
         templates = Dir.glob(directory).map do |path|
           HCLParser.new.parse(File.read(path))
         end
-        template = templates.inject(&:deep_merge).deep_symbolize_keys
+        templates.inject(&:deep_merge).deep_symbolize_keys
+      end
 
-        @outputs = (template[:output] || {}).keys
-
-        @variables = {}
+      def generate_variables(template, mappings)
+        variables = {}
         (template[:variable] || {}).keys.each do |key|
           case
-          when @mappings[key].nil?
-            @variables[key] = "${var.#{key}}"
-          when @mappings[key][:type].to_sym == :static
-            @variables[key] = @mappings[key][:value]
-          when @mappings[key][:type].to_sym == :module
-            @variables[key] = "${module.#{@mappings[key][:value]}}"
-          when @mappings[key][:type].to_sym == :variable
-            @variables[key] = "${var.#{@mappings[key][:value]}}"
+          when mappings[key].nil?
+            variables[key] = "${var.#{key}}"
+          when mappings[key][:type].to_sym == :static
+            variables[key] = mappings[key][:value]
+          when mappings[key][:type].to_sym == :module
+            variables[key] = "${module.#{mappings[key][:value]}}"
+          when mappings[key][:type].to_sym == :variable
+            variables[key] = "${var.#{mappings[key][:value]}}"
           else
-            fail "Unknown type(#{@mappings[key][:type]})"
+            fail "Unknown type(#{mappings[key][:type]})"
           end
         end
+        variables
       end
 
       def dynamic_variables
