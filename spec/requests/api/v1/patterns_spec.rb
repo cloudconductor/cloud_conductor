@@ -98,7 +98,7 @@ describe API do
         params.except(:parameters).merge(
           'id' => Fixnum,
           'roles' => String,
-          'secret_key' => nil,
+          'secret_key' => '********',
           'providers' => nil,
           'created_at' => String,
           'updated_at' => String
