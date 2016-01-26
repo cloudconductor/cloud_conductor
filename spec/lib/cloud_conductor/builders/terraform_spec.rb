@@ -174,6 +174,35 @@ module CloudConductor
 
           expect(@builder.send(:bootstrap_expect, outputs)).to eq(4)
         end
+
+        it 'return size of instances in output that is created by terraform plan for aws with count argument' do
+          outputs = {
+            'null_resource' => {},
+            'module' => {
+              'tomcat' => {
+                'aws_instance' => {
+                  'web_server' => {},
+                  'ap_server' => {
+                    '0' => {},
+                    '1' => {}
+                  },
+                  'db_server' => {
+                    '0' => {},
+                    '1' => {},
+                    '2' => {}
+                  }
+                }
+              },
+              'zabbix' => {
+                'aws_instance' => {
+                  'web_server' => {}
+                }
+              }
+            }
+          }
+
+          expect(@builder.send(:bootstrap_expect, outputs)).to eq(7)
+        end
       end
 
       describe '#frontend_addresses' do
