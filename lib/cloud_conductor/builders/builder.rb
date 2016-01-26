@@ -40,10 +40,12 @@ module CloudConductor
       private
 
       def build_infrastructure
+        # This method will be implemented on subclasses
         fail 'Unimplement method'
       end
 
       def destroy_infrastructure
+        # This method will be implemented on subclasses
         fail 'Unimplement method'
       end
 

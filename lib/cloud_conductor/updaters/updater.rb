@@ -27,6 +27,7 @@ module CloudConductor
       private
 
       def update_infrastructure
+        # This method will be implemented on subclasses
         fail 'Unimplement method'
       end
 
