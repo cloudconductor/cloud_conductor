@@ -8,8 +8,6 @@ class PatternSnapshot < ActiveRecord::Base
 
   validates_presence_of :blueprint_history
 
-  before_create :create_images
-
   before_destroy :check_pattern_usage
 
   def status
@@ -57,9 +55,7 @@ class PatternSnapshot < ActiveRecord::Base
     freeze_revision(path)
   end
 
-  private
-
-  def create_images
+  def create_images(archived_path, &block)
     JSON.parse(roles).each do |role|
       base_images = blueprint_history.blueprint.project.clouds.map do |cloud|
         result = BaseImage.filtered_base_image(cloud, platform, platform_version)
@@ -80,10 +76,18 @@ class PatternSnapshot < ActiveRecord::Base
       }
       variables = merge_patterns(packer_variables)
 
-      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key, blueprint_history.ssh_public_key)
+      CloudConductor::PackerClient.new.build(new_images, variables, block)
+    end
+  end
 
-      CloudConductor::PackerClient.new.build(new_images, variables) do |results|
-        update_images(results)
+  def update_images(results)
+    ActiveRecord::Base.connection_pool.with_connection do
+      results.each do |name, result|
+        image = images.where(name: name).first
+        image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
+        image.image = result[:image]
+        image.message = result[:message]
+        image.save!
       end
     end
   end
@@ -99,18 +103,6 @@ class PatternSnapshot < ActiveRecord::Base
     end
 
     packer_variables
-  end
-
-  def update_images(results)
-    ActiveRecord::Base.connection_pool.with_connection do
-      results.each do |name, result|
-        image = images.where(name: name).first
-        image.status = result[:status] == :SUCCESS ? :CREATE_COMPLETE : :ERROR
-        image.image = result[:image]
-        image.message = result[:message]
-        image.save!
-      end
-    end
   end
 
   def freeze_revision(path)

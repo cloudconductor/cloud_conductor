@@ -8,11 +8,17 @@
     "role": null,
     "image_name": null,
     "consul_secret_key": null,
-    "ssh_public_key": null
+    "ssh_public_key": null,
+    "archived_path": null
   },
   "builders": [
   ],
   "provisioners": [
+    {
+      "type": "file",
+      "source": "{{user `archived_path`}}",
+      "destination": "~/{{user `pattern_name`}}.tar"
+    },
     {
       "type": "shell",
       "inline_shebang": "/bin/bash -ex",
@@ -23,6 +29,9 @@
 
         "cd {{user `cloudconductor_root`}}",
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
+
+        "sudo tar -xvf ~/{{user `pattern_name`}}.tar -C {{user `cloudconductor_root`}}/patterns/",
+        "rm ~/{{user `pattern_name`}}.tar",
 
         "if [ -f ./bin/init.sh ]; then",
         "  sudo ROLE={{user `role`}} PATTERNS_JSON='{{user `patterns_json`}}' CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/bootstrap.log && exit 1)",
