@@ -101,4 +101,19 @@ module PatternAccessor
       end
     end
   end
+
+  def clone_repositories(snapshots, directory)
+    fail 'BlueprintHistory#cloen_repositories needs block' unless block_given?
+    FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
+    snapshots.each do |snapshot|
+      options = { secret_key: snapshot.secret_key, directory: directory }
+      cloned_path = clone_repository(snapshot.url, snapshot.revision, options)
+      snapshot.freeze_pattern(cloned_path)
+      renamed_path = File.join(directory, snapshot.name)
+      File.rename(cloned_path, renamed_path)
+    end
+    yield snapshots
+  ensure
+    FileUtils.rm_r directory, force: true
+  end
 end
