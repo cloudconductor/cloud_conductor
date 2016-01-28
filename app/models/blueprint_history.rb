@@ -1,4 +1,5 @@
 class BlueprintHistory < ActiveRecord::Base
+  include PatternAccessor
   belongs_to :blueprint
   has_many :pattern_snapshots, dependent: :destroy
 
@@ -90,10 +91,21 @@ class BlueprintHistory < ActiveRecord::Base
         url: relation.pattern.url,
         revision: relation.revision || relation.pattern.revision,
         platform: relation.platform,
-        platform_version: relation.platform_version
-      )
+        platform_version: relation.platform_version,
+        secret_key: relation.pattern.secret_key)
     end
-    pattern_snapshots.each(&:freeze_pattern)
+
+    archives_directory = File.expand_path('./tmp/archives/')
+    patterns_directory = File.join(archives_directory, SecureRandom.uuid)
+    clone_repositories(pattern_snapshots, patterns_directory) do |snapshots|
+      archived_path = compress_patterns(patterns_directory, archives_directory)
+      snapshots.each do |snapshot|
+        snapshot.create_images(archived_path) do |results|
+          snapshot.update_images(results)
+          FileUtils.rm_r archived_path if snapshot.status != :PROGRESS
+        end
+      end
+    end
 
     fail 'Patterns don\'t have usable providers on any cloud' if providers.empty?
   end

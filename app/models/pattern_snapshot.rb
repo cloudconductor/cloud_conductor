@@ -42,21 +42,19 @@ class PatternSnapshot < ActiveRecord::Base
     ->(_, v) { (v['Description'] || v['description']) =~ /^\[computed\]/ }
   end
 
-  def freeze_pattern
-    clone_repository(url, revision) do |path|
-      metadata = load_metadata(path)
+  def freeze_pattern(path)
+    metadata = load_metadata(path)
 
-      self.name = metadata[:name]
-      self.type = metadata[:type]
-      self.providers = metadata[:providers].to_json if metadata[:providers]
-      self.parameters = read_parameters(path).to_json
-      self.roles = read_roles(path).to_json
-      if metadata[:supports]
-        self.platform = metadata[:supports].first[:platform]
-        self.platform_version = metadata[:supports].first[:platform_version]
-      end
-      freeze_revision(path)
+    self.name = metadata[:name]
+    self.type = metadata[:type]
+    self.providers = metadata[:providers].to_json if metadata[:providers]
+    self.parameters = read_parameters(path).to_json
+    self.roles = read_roles(path).to_json
+    if metadata[:supports]
+      self.platform = metadata[:supports].first[:platform]
+      self.platform_version = metadata[:supports].first[:platform_version]
     end
+    freeze_revision(path)
   end
 
   private
