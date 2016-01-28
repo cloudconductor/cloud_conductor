@@ -97,4 +97,15 @@ class BlueprintHistory < ActiveRecord::Base
 
     fail 'Patterns don\'t have usable providers on any cloud' if providers.empty?
   end
+
+  private
+
+  def compress_patterns(source_directory, dest_directory)
+    FileUtils.mkdir_p(dest_directory) unless Dir.exist?(dest_directory)
+    archived_path = File.join(dest_directory, "#{SecureRandom.uuid}.tar")
+
+    file_names = Dir.glob("#{source_directory}/*").map(&File.method(:basename))
+    Open3.capture3('tar', '-zcvf', archived_path, '-C', source_directory, *file_names)
+    archived_path
+  end
 end
