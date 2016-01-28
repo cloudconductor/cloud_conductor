@@ -16,6 +16,7 @@ describe PatternSnapshot do
   include_context 'default_resources'
 
   let(:cloned_path) { File.expand_path("./tmp/patterns/#{SecureRandom.uuid}") }
+  let(:archived_path) { File.join('/tmp/archives/', "#{SecureRandom.uuid}.tar") }
 
   it 'include PatternAccessor' do
     expect(PatternSnapshot).to be_include(PatternAccessor)
@@ -133,40 +134,34 @@ describe PatternSnapshot do
         ]
       }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
-      allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:freeze_revision)
     end
 
-    it 'will call #clone_repository' do
-      expect(@pattern).to receive(:clone_repository)
-      @pattern.send(:freeze_pattern)
-    end
-
     it 'will call #load_metadata' do
       expect(@pattern).to receive(:load_metadata)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #read_parameters' do
       expect(@pattern).to receive(:read_parameters)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #read_roles' do
       expect(@pattern).to receive(:read_roles)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #freeze_revision' do
       expect(@pattern).to receive(:freeze_revision)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'set attributes from metadata' do
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
       expect(@pattern.platform).to eq('CentOS')
@@ -177,7 +172,7 @@ describe PatternSnapshot do
     it 'set nil to providers when metadata does not contain providers' do
       allow(@pattern).to receive(:load_metadata).and_return({})
 
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.providers).to be_nil
     end
   end
