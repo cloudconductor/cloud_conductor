@@ -70,6 +70,15 @@ class PatternSnapshot < ActiveRecord::Base
       new_images = base_images.map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
+      packer_variables = {
+        pattern_name: name,
+        patterns: {},
+        role: role,
+        consul_secret_key: blueprint_history.consul_secret_key,
+        ssh_public_key: blueprint_history.ssh_public_key,
+        archived_path: archived_path
+      }
+      variables = merge_patterns(packer_variables)
 
       variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key, blueprint_history.ssh_public_key)
 
@@ -79,15 +88,9 @@ class PatternSnapshot < ActiveRecord::Base
     end
   end
 
-  def packer_variables(pattern_name, platterns, role, consul_sercret_key, ssh_public_key)
-    packer_variables = {
-      pattern_name: pattern_name,
-      patterns: platterns,
-      role: role,
-      consul_secret_key: consul_sercret_key,
-      ssh_public_key: ssh_public_key
-    }
+  private
 
+  def merge_patterns(packer_variables)
     blueprint_history.pattern_snapshots.each do |pattern_snapshot|
       packer_variables[:patterns][pattern_snapshot.name] = {
         url: pattern_snapshot.url,
