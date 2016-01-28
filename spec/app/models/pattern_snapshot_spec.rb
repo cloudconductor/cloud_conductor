@@ -214,21 +214,23 @@ describe PatternSnapshot do
     end
   end
 
-  describe '#packer_variables' do
-    it 'call #packer_variables' do
-      parameters = {
+  describe '#merge_patterns' do
+    it 'call #merge_patterns' do
+      packer_variables = {
         pattern_name: 'dummy_pattern',
         patterns: {},
         role: 'nginx',
         consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA==',
-        ssh_public_key: 'dummy_key'
+        ssh_public_key: 'dummy_key',
+        archived_path: archived_path
       }
+      parameters = packer_variables.deep_dup
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
         revision: @pattern.revision
       }
 
-      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==', 'dummy_key')).to eq(parameters)
+      expect(@pattern.send(:merge_patterns, packer_variables)).to eq(parameters)
     end
   end
 
