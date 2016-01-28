@@ -48,6 +48,7 @@ module CloudConductor
     describe '#create_stack' do
       before do
         allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(true)
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
         @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
@@ -59,6 +60,12 @@ module CloudConductor
 
       it 'call adapter#create_stack with template.json in repository' do
         expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
+        @client.create_stack 'stack_name', pattern_snapshot, {}
+      end
+
+      it 'doesn\'t call adapter#create_stack when target pattern doesn\'t contain template.json' do
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(false)
+        expect(@client.adapter).not_to receive(:create_stack)
         @client.create_stack 'stack_name', pattern_snapshot, {}
       end
 
@@ -90,6 +97,7 @@ module CloudConductor
     describe '#update_stack' do
       before do
         allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(true)
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
         @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
@@ -101,6 +109,12 @@ module CloudConductor
 
       it 'call adapter#update_stack with template.json in repository' do
         expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
+        @client.update_stack 'stack_name', pattern_snapshot, {}
+      end
+
+      it 'doesn\'t call adapter#update_stack when target pattern doesn\'t contain template.json' do
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(false)
+        expect(@client.adapter).not_to receive(:update_stack)
         @client.update_stack 'stack_name', pattern_snapshot, {}
       end
 

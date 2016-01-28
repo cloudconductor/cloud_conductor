@@ -13,7 +13,7 @@ class PatternSnapshot < ActiveRecord::Base
   before_destroy :check_pattern_usage
 
   def status
-    if images.empty? || images.any? { |image| image.status == :ERROR }
+    if images.any? { |image| image.status == :ERROR }
       :ERROR
     elsif images.all? { |image| image.status == :CREATE_COMPLETE }
       :CREATE_COMPLETE
@@ -28,10 +28,18 @@ class PatternSnapshot < ActiveRecord::Base
 
   def filtered_parameters(is_include_computed = false)
     return JSON.parse(parameters) if is_include_computed
-    filtered_parameters = JSON.parse(parameters || '{}').reject do |_, param|
-      param['Description'] =~ /^\[computed\]/
+
+    filtered_parameters = JSON.parse(parameters || '{}')
+
+    (filtered_parameters['cloud_formation'] || {}).reject!(&computed?)
+    (filtered_parameters['terraform'] || {}).each do |_, variables|
+      variables.reject!(&computed?)
     end
     filtered_parameters
+  end
+
+  def computed?
+    ->(_, v) { (v['Description'] || v['description']) =~ /^\[computed\]/ }
   end
 
   def freeze_pattern
@@ -40,6 +48,7 @@ class PatternSnapshot < ActiveRecord::Base
 
       self.name = metadata[:name]
       self.type = metadata[:type]
+      self.providers = metadata[:providers].to_json if metadata[:providers]
       self.parameters = read_parameters(path).to_json
       self.roles = read_roles(path).to_json
       if metadata[:supports]
@@ -64,7 +73,7 @@ class PatternSnapshot < ActiveRecord::Base
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
 
-      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key)
+      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key, blueprint_history.ssh_public_key)
 
       CloudConductor::PackerClient.new.build(new_images, variables) do |results|
         update_images(results)
@@ -72,12 +81,13 @@ class PatternSnapshot < ActiveRecord::Base
     end
   end
 
-  def packer_variables(pattern_name, platterns, role, consul_sercret_key)
+  def packer_variables(pattern_name, platterns, role, consul_sercret_key, ssh_public_key)
     packer_variables = {
       pattern_name: pattern_name,
       patterns: platterns,
       role: role,
-      consul_secret_key: consul_sercret_key
+      consul_secret_key: consul_sercret_key,
+      ssh_public_key: ssh_public_key
     }
 
     blueprint_history.pattern_snapshots.each do |pattern_snapshot|

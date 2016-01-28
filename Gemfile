@@ -35,6 +35,7 @@ group :development, :test do
   gem 'pry-doc'
   gem 'pry-stack_explorer'
   gem 'pry-rails'
+  gem 'rterraform', git: 'https://github.com/cloudconductor/rterraform.git', branch: 'develop'
 end
 
 group :development do

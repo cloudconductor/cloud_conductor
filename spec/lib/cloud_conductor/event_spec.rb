@@ -16,6 +16,8 @@ module CloudConductor
   describe Event do
     before do
       @client = double(:client)
+      allow(@client).to receive(:host).and_return('localhost')
+      allow(@client).to receive(:port).and_return(8500)
       allow(@client).to receive_message_chain(:kv, :merge)
       allow(@client).to receive_message_chain(:kv, :get)
       allow(@client).to receive_message_chain(:event, :fire)
@@ -29,6 +31,11 @@ module CloudConductor
       it 'create  Consul::Client instance' do
         expect(Consul::Client).to receive(:new)
         CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
+      end
+
+      it 'create consul client for host' do
+        event = CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
+        expect(event.instance_variable_get(:@client)).to eq(@client)
       end
     end
 

@@ -128,6 +128,35 @@ describe Environment do
   describe '#update_stacks' do
   end
 
+  describe '#build' do
+    before do
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: cloud)
+      @environment.save!
+
+      @builder = double(:builder, build: true)
+      allow(CloudConductor::Builders).to receive(:builder).and_return(@builder)
+    end
+
+    it 'call Builder#build just once when successfully created' do
+      expect(@builder).to receive(:build).once.and_return(true)
+      @environment.build
+    end
+
+    it 'call Builder#build twice when failed to create first cloud' do
+      expect(@builder).to receive(:build).twice.and_return(false, true)
+      @environment.build
+    end
+
+    it 'call Builder#build twice when raise exception while creating on first cloud' do
+      count = 0
+      expect(@builder).to receive(:build).twice do
+        count += 1
+        count <= 1 ? fail : true
+      end
+      @environment.build
+    end
+  end
+
   describe '#dup' do
     it 'duplicate all attributes in environment without name and ip_address' do
       @environment.save!
@@ -241,68 +270,21 @@ describe Environment do
 
   describe '#destroy_stacks' do
     before do
-      pattern1 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
-      pattern2 = FactoryGirl.build(:pattern_snapshot, type: 'platform', blueprint_history: @blueprint_history)
-      pattern3 = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
-
-      @environment.stacks.delete_all
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern1, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern2, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern3, cloud: @cloud_aws)
-
-      @environment.save!
-
-      allow(@environment).to receive(:sleep)
-      allow_any_instance_of(Stack).to receive(:destroy)
-
-      original_timeout = Timeout.method(:timeout)
-      allow(Timeout).to receive(:timeout) do |_, &block|
-        original_timeout.call(0.1, &block)
-      end
-
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { true })
+      @builder = double(:builder, build: true)
+      allow(CloudConductor::Builders).to receive(:builder).and_return(@builder)
     end
 
-    it 'destroy all stacks of environment' do
-      expect(@environment.stacks).not_to be_empty
-      @environment.destroy_stacks
-      expect(@environment.stacks).to be_empty
-    end
-
-    it 'destroy optional patterns before platform' do
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
+    it 'does not call Builder#destroy when stacks are empty' do
+      expect(@builder).not_to receive(:destroy)
       @environment.destroy_stacks
     end
 
-    it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false })
+    it 'call Builder#destroy' do
+      pattern_snapshot = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern_snapshot, cloud: @cloud_aws)
 
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment).to receive(:sleep).at_least(:once).ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
+      expect(@builder).to receive(:destroy)
       @environment.destroy_stacks
-    end
-
-    it 'wait and destroy platform pattern when destroyed all optional patterns' do
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false }, -> (_) { true })
-
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment).to receive(:sleep).once.ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
-      @environment.destroy_stacks
-    end
-
-    it 'ensure destroy platform when some error occurred while destroying optional' do
-      allow(@environment.stacks[0]).to receive(:destroy).and_raise(RuntimeError)
-      expect(@environment.stacks[1]).to receive(:destroy)
-      expect { @environment.destroy_stacks }.to raise_error(RuntimeError)
     end
   end
 
@@ -376,6 +358,40 @@ describe Environment do
       deployment3 = FactoryGirl.create(:deployment, environment: @environment, application_history: history3)
 
       expect(@environment.latest_deployments).to match_array([deployment2, deployment3])
+    end
+  end
+
+  describe '#cfn_parameters' do
+    it 'returns extract part of JSON for CloudFormation/Heat from template_parameters' do
+      @environment.template_parameters = <<-EOS
+      {
+        "dummy_pattern": {
+          "cloud_formation": {
+            "WebInstanceType": {
+              "type": "static",
+              "value": "t2.micro"
+            },
+            "WebInstanceSize": {
+              "type": "static",
+              "value": "2"
+            }
+          },
+          "terraform": {
+            "aws": {
+              "web_instance_type": {
+                "type": "static",
+                "value": "t2.small"
+              }
+            }
+          }
+        }
+      }
+      EOS
+      result = @environment.send(:cfn_parameters, 'dummy_pattern')
+      expect(result).to eq(
+        'WebInstanceType' => 't2.micro',
+        'WebInstanceSize' => '2'
+      )
     end
   end
 end

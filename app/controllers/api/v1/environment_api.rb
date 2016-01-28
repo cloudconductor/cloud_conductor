@@ -38,7 +38,7 @@ module API
           requires :version, type: Integer, desc: 'Blueprint version'
           requires :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          optional :template_parameters, type: String, desc: 'Parameter JSON'
+          optional :template_parameters, type: String, desc: 'Variables to build environment by cfn/terraform'
           optional :user_attributes, type: String, desc: 'User Attribute JSON'
           requires :candidates_attributes, type: Array, desc: 'Cloud ids to build environment' do
             requires :cloud_id, type: String, desc: 'Cloud id'
@@ -58,10 +58,10 @@ module API
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
-              CloudConductor::SystemBuilder.new(environment).build
-              system = environment.system
-              if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
-                system.update_attributes!(primary_environment: environment)
+              environment.build
+
+              if system.primary_environment.nil? && status == :CREATE_COMPLETE
+                system.update_attributes!(primary_environment: self)
               end
             end
           end
@@ -75,7 +75,6 @@ module API
           requires :id, type: Integer, desc: 'Environment id'
           optional :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
-          optional :template_parameters, type: String, desc: 'Parameters JSON'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         put '/:id' do
@@ -85,7 +84,7 @@ module API
           environment.update_attributes!(declared_params.except(:id, :switch).merge(status: :PENDING))
 
           Thread.new do
-            CloudConductor::SystemUpdater.new(environment).update
+            CloudConductor::Updaters::CloudFormation.new(environment).update
           end
 
           environment
@@ -99,7 +98,7 @@ module API
           optional :version, type: Integer, desc: 'Blueprint version'
           optional :description, type: String, desc: 'Environment description'
           optional :switch, type: Boolean, desc: 'Switch primary environment automatically'
-          optional :template_parameters, type: String, desc: 'Parameters JSON'
+          optional :template_parameters, type: String, desc: 'Variables to build environment by cfn/terraform'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
         end
         post '/:id/rebuild' do

@@ -14,8 +14,8 @@
 # limitations under the License.
 module CloudConductor
   class Event
-    def initialize(host, port = 8500, options = {})
-      @client = Consul::Client.new(host, port, options)
+    def initialize(hosts, port = 8500, options = {})
+      @client = Consul::Client.new(hosts, port, options)
     end
 
     def fire(name, payload = {}, filter = {})

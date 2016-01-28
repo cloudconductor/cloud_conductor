@@ -10,7 +10,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
 
-  attr_accessor :template_parameters, :user_attributes
+  attr_accessor :user_attributes
 
   validates_presence_of :system, :blueprint_history, :candidates
   validates :name, presence: true, uniqueness: true
@@ -50,7 +50,6 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   def create_stacks
     primary_cloud = candidates.sort.first.cloud
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     blueprint_history.pattern_snapshots.each do |pattern_snapshot|
       pattern_name = pattern_snapshot.name
@@ -58,29 +57,32 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
         cloud: primary_cloud,
         pattern_snapshot: pattern_snapshot,
         name: "#{system.name}-#{id}-#{pattern_name}",
-        template_parameters: cfn_parameters_hash.key?(pattern_name) ? JSON.dump(cfn_parameters_hash[pattern_name]) : '{}',
-        parameters: user_attributes_hash.key?(pattern_name) ? JSON.dump(user_attributes_hash[pattern_name]) : '{}'
+        template_parameters: cfn_parameters(pattern_name).to_json,
+        parameters: (user_attributes_hash[pattern_name] || {}).to_json
       )
     end
   end
 
   def update_stacks
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
       pattern_name = stack.pattern_snapshot.name
-      if cfn_parameters_hash.key?(pattern_name)
-        new_template_parameters = JSON.dump(cfn_parameters_hash[pattern_name])
-      else
-        new_template_parameters = '{}'
-      end
-      if user_attributes_hash.key?(pattern_name)
-        new_user_attributes = JSON.dump(user_attributes_hash[pattern_name])
-      else
-        new_user_attributes = '{}'
-      end
+      new_template_parameters = cfn_parameters(pattern_name).to_json
+      new_user_attributes = (user_attributes_hash[pattern_name] || {}).to_json
       stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes, status: :PENDING)
     end
+  end
+
+  def build
+    result = candidates.sorted.map(&:cloud).any? do |cloud|
+      begin
+        builder = CloudConductor::Builders.builder(cloud, self)
+        builder.build
+      rescue
+        false
+      end
+    end
+    fail 'Failed to create environment over all candidates' unless result
   end
 
   def status
@@ -149,20 +151,9 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   def destroy_stacks
     return if stacks.empty?
-    platforms = stacks.select(&:platform?)
-    optionals = stacks.select(&:optional?)
-    stacks.delete_all
 
-    begin
-      optionals.each(&:destroy)
-      Timeout.timeout(CloudConductor::Config.system_build.timeout) do
-        sleep 10 until optionals.all?(&stack_destroyed?)
-      end
-    rescue Timeout::Error
-      Log.warn "Exceeded timeout while destroying stacks #{optionals}"
-    ensure
-      platforms.each(&:destroy)
-    end
+    builder = CloudConductor::Builders.builder(stacks.first.cloud, self)
+    builder.destroy
   end
 
   def latest_deployments
@@ -174,10 +165,11 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   private
 
-  def stack_destroyed?
-    lambda do |stack|
-      return true unless stack.exists_on_cloud?
-      [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
+  def cfn_parameters(pattern_name)
+    pattern_mappings = JSON.parse(template_parameters)[pattern_name] || {}
+    cfn_mappings = pattern_mappings['cloud_formation'] || {}
+    cfn_mappings.each_with_object({}) do |(k, v), h|
+      h[k] = v['value']
     end
   end
 end

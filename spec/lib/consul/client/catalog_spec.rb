@@ -24,6 +24,17 @@ module Consul
           @stubs.get(path) { [200, {}, body] }
         end
 
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.get('/v1/catalog/nodes') { [200, {}, '[]'] }
+          @client.nodes
+        end
+
         it 'return empty array if response is empty' do
           @stubs.get('/v1/catalog/nodes') { [200, {}, '[]'] }
           nodes = @client.nodes
@@ -63,6 +74,23 @@ module Consul
         it 'request nil when some error occurred while request' do
           @stubs.get('/v1/catalog/nodes') { [404, {}, ''] }
           expect(@client.nodes).to be_nil
+        end
+      end
+
+      describe '#sequential_try' do
+        it 'retry with next faraday when previous faraday is failed' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return('dummy_result')
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq('dummy_result')
         end
       end
     end

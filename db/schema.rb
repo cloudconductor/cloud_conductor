@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160107015409) do
+ActiveRecord::Schema.define(version: 20160113145914) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -90,11 +90,12 @@ ActiveRecord::Schema.define(version: 20160107015409) do
   end
 
   create_table "blueprint_histories", force: true do |t|
-    t.integer  "blueprint_id",      null: false
-    t.integer  "version",           null: false
+    t.integer  "blueprint_id",              null: false
+    t.integer  "version",                   null: false
     t.string   "consul_secret_key"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.text     "encrypted_ssh_private_key"
   end
 
   create_table "blueprint_patterns", force: true do |t|
@@ -154,6 +155,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
     t.integer  "blueprint_history_id"
+    t.text     "template_parameters"
   end
 
   create_table "images", force: true do |t|
@@ -182,6 +184,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.datetime "updated_at",           null: false
     t.string   "platform"
     t.string   "platform_version"
+    t.string   "providers"
   end
 
   create_table "patterns", force: true do |t|
@@ -195,6 +198,7 @@ ActiveRecord::Schema.define(version: 20160107015409) do
     t.datetime "updated_at", null: false
     t.integer  "project_id"
     t.string   "roles"
+    t.string   "providers"
   end
 
   create_table "permissions", force: true do |t|

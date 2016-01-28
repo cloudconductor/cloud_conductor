@@ -7,7 +7,8 @@
     "patterns_json": null,
     "role": null,
     "image_name": null,
-    "consul_secret_key": null
+    "consul_secret_key": null,
+    "ssh_public_key": null
   },
   "builders": [
   ],
@@ -16,6 +17,8 @@
       "type": "shell",
       "inline_shebang": "/bin/bash -ex",
       "inline": [
+        "echo ssh-rsa {{user `ssh_public_key`}} >> ~/.ssh/authorized_keys",
+
         "sudo git clone {{user `cloudconductor_init_url`}} {{user `cloudconductor_root`}}",
 
         "cd {{user `cloudconductor_root`}}",

@@ -97,9 +97,9 @@ describe PatternSnapshot do
       expect(@pattern.status).to eq(:PROGRESS)
     end
 
-    it 'return :ERROR when pattern hasn\'t images' do
+    it 'return :CREATE_COMPLETE when pattern hasn\'t images' do
       @pattern.images.delete_all
-      expect(@pattern.status).to eq(:ERROR)
+      expect(@pattern.status).to eq(:CREATE_COMPLETE)
     end
 
     it 'return :CREATE_COMPLETE when all images have CREATE_COMPLETE status' do
@@ -124,6 +124,7 @@ describe PatternSnapshot do
       metadata = {
         name: 'name',
         type: 'platform',
+        providers: { aws: ['cloud_formation'] },
         supports: [
           {
             platform: 'CentOS',
@@ -164,12 +165,20 @@ describe PatternSnapshot do
       @pattern.send(:freeze_pattern)
     end
 
-    it 'update attributes by metadata' do
+    it 'set attributes from metadata' do
       @pattern.send(:freeze_pattern)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
       expect(@pattern.platform).to eq('CentOS')
       expect(@pattern.platform_version).to eq('6.5')
+      expect(@pattern.providers).to eq('{"aws":["cloud_formation"]}')
+    end
+
+    it 'set nil to providers when metadata does not contain providers' do
+      allow(@pattern).to receive(:load_metadata).and_return({})
+
+      @pattern.send(:freeze_pattern)
+      expect(@pattern.providers).to be_nil
     end
   end
 
@@ -188,12 +197,13 @@ describe PatternSnapshot do
       expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
     end
 
-    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name and consul_secret_key' do
+    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key and ssh_public_key' do
       parameters = {
         pattern_name: @pattern.name,
         patterns: {},
         role: 'nginx',
-        consul_secret_key: @pattern.blueprint_history.consul_secret_key
+        consul_secret_key: @pattern.blueprint_history.consul_secret_key,
+        ssh_public_key: @pattern.blueprint_history.ssh_public_key
       }
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
@@ -218,14 +228,15 @@ describe PatternSnapshot do
         pattern_name: 'dummy_pattern',
         patterns: {},
         role: 'nginx',
-        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA=='
+        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA==',
+        ssh_public_key: 'dummy_key'
       }
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
         revision: @pattern.revision
       }
 
-      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==')).to eq(parameters)
+      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==', 'dummy_key')).to eq(parameters)
     end
   end
 
@@ -283,34 +294,98 @@ describe PatternSnapshot do
     before do
       @pattern.parameters = <<-EOS
         {
-          "KeyName" : {
-            "Description" : "Name of an existing EC2/OpenStack KeyPair to enable SSH access to the instances",
-            "Type" : "String"
+          "cloud_formation": {
+            "WebImageId" : {
+              "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
+              "Type" : "String"
+            },
+            "WebInstanceType" : {
+              "Description" : "WebServer instance type",
+              "Type" : "String"
+            }
           },
-          "SSHLocation" : {
-            "Description" : "The IP address range that can be used to SSH to the EC2/OpenStack instances",
-            "Type" : "String"
-          },
-          "WebImageId" : {
-            "Description" : "[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.",
-            "Type" : "String"
-          },
-          "WebInstanceType" : {
-            "Description" : "WebServer instance type",
-            "Type" : "String"
+          "terraform": {
+            "aws": {
+              "web_image_id" : {
+                "description" : "[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor."
+              },
+              "web_instance_type" : {
+                "description" : "WebServer instance type",
+                "default" : "t2.small"
+              }
+            },
+            "openstack": {
+              "ap_image_id" : {
+                "description" : "[computed] APServer Image Id. This parameter is automatically filled by CloudConductor."
+              },
+              "ap_instance_type" : {
+                "description" : "APServer instance type",
+                "default" : "t2.small"
+              }
+            }
           }
         }
       EOS
     end
 
     it 'return parameters without [computed] annotation' do
-      parameters = @pattern.filtered_parameters
-      expect(parameters.keys).to eq %w(KeyName SSHLocation WebInstanceType)
+      expect(@pattern.filtered_parameters).to eq(
+        'cloud_formation' => {
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_instance_type' => {
+              'description' => 'WebServer instance type',
+              'default' => 't2.small'
+            }
+          },
+          'openstack' => {
+            'ap_instance_type' => {
+              'description' => 'APServer instance type',
+              'default' => 't2.small'
+            }
+          }
+        }
+      )
     end
 
     it 'return all parameters when specified option' do
-      parameters = @pattern.filtered_parameters(true)
-      expect(parameters.keys).to eq %w(KeyName SSHLocation WebImageId WebInstanceType)
+      expect(@pattern.filtered_parameters(true)).to eq(
+        'cloud_formation' => {
+          'WebImageId' => {
+            'Description' => '[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.',
+            'Type' => 'String'
+          },
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_image_id' => {
+              'description' => '[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.'
+            },
+            'web_instance_type' => {
+              'description' => 'WebServer instance type',
+              'default' => 't2.small'
+            }
+          },
+          'openstack' => {
+            'ap_image_id' => {
+              'description' => '[computed] APServer Image Id. This parameter is automatically filled by CloudConductor.'
+            },
+            'ap_instance_type' => {
+              'description' => 'APServer instance type',
+              'default' => 't2.small'
+            }
+          }
+        }
+      )
     end
   end
 end

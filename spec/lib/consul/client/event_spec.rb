@@ -32,6 +32,17 @@ module Consul
       end
 
       describe '#fire' do
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.put('/v1/event/fire/dummy') {}
+          @client.fire(:dummy)
+        end
+
         it 'return consul event ID' do
           body = %({"ID":"12345678-1234-1234-1234-1234567890ab","Name":"configure","Payload":null,"NodeFilter":"","ServiceFilter":"","TagFilter":"","Version":1,"LTime":0})
           @stubs.put('/v1/event/fire/configure') { [200, {}, body] }
@@ -67,6 +78,23 @@ module Consul
             expect(env.params['tag']).to eq('tag1|tag2')
           end
           @client.fire(:dummy, tag: %w(tag1 tag2))
+        end
+      end
+
+      describe '#sequential_try' do
+        it 'retry with next faraday when previous faraday is failed' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return('dummy_result')
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq('dummy_result')
         end
       end
     end

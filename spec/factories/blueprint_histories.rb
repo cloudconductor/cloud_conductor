@@ -8,6 +8,7 @@ FactoryGirl.define do
     sequence(:version) { |n| n }
 
     after(:build) do |blueprint_history, _evaluator|
+      allow(blueprint_history).to receive(:set_ssh_private_key)
       allow(blueprint_history).to receive(:build_pattern_snapshots)
     end
   end

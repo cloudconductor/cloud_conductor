@@ -16,6 +16,9 @@ packer.path '/opt/packer/packer'
 packer.aws_instance_type 'c3.large'
 packer.openstack_flavor_name 'm1.small'
 
+# terraform settings
+terraform.path '/opt/terraform/terraform'
+
 # dns settings
 dns.service 'route53'
 dns.access_key 'your_access_key'
@@ -42,4 +45,5 @@ consul.options.ssl_options.verify false
 event.timeout 1800
 
 # system build setting
+system_build.providers [:terraform, :cloud_formation]
 system_build.timeout 1800
