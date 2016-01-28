@@ -41,7 +41,10 @@ module API
         end
 
         rescue_from :all do |e|
-          # logger.error()
+          if Rails.env == 'development'
+            Log.error(e)
+            e.backtrace.each { |line| Log.error(line) }
+          end
           error_response(message: "#{e.message}", status: 500)
         end
       end
