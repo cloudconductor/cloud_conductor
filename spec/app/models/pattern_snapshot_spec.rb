@@ -185,20 +185,21 @@ describe PatternSnapshot do
       @pattern.platform = 'centos'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
-      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
+      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build) { |_, _, block| block.call }
     end
 
     it 'create image each cloud and role' do
-      expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
+      expect { @pattern.send(:create_images, archived_path, &proc {}) }.to change { @pattern.images.size }.by(1)
     end
 
-    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key and ssh_public_key' do
+    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key, ssh_public_key and archived_path' do
       parameters = {
         pattern_name: @pattern.name,
         patterns: {},
         role: 'nginx',
         consul_secret_key: @pattern.blueprint_history.consul_secret_key,
-        ssh_public_key: @pattern.blueprint_history.ssh_public_key
+        ssh_public_key: @pattern.blueprint_history.ssh_public_key,
+        archived_path: archived_path
       }
       parameters[:patterns][@pattern.name] = {
         url: @pattern.url,
@@ -207,13 +208,9 @@ describe PatternSnapshot do
 
       packer_client = CloudConductor::PackerClient.new
       allow(CloudConductor::PackerClient).to receive(:new).and_return(packer_client)
-      expect(packer_client).to receive(:build).with(anything, parameters)
-      @pattern.send(:create_images)
-    end
-
-    it 'call #update_images with packer results' do
-      expect(@pattern).to receive(:update_images).with('dummy' => {})
-      @pattern.send(:create_images)
+      block = proc {}
+      expect(packer_client).to receive(:build).with(anything, parameters, block)
+      @pattern.send(:create_images, archived_path, &block)
     end
   end
 

@@ -76,17 +76,19 @@ module CloudConductor
 
       it 'will call #create_json to create json file' do
         expect(@client).to receive(:create_json).with(@images)
-        @client.build(@images, @parameters)
+        @client.build(@images, @parameters, proc {})
       end
 
       it 'will call #build_command to create packer command' do
         expected_parameters = @parameters.merge(packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
         expect(@client).to receive(:build_command).with(expected_parameters)
-        @client.build(@images, @parameters)
+        @client.build(@images, @parameters, proc {})
       end
 
       it 'will yield block with parsed results' do
-        expect { |b| @client.build(@images, @parameters, &b) }.to yield_with_args('dummy' => { status: :SUCCESS })
+        block = double(:block)
+        expect(block).to receive(:call).with('dummy' => { status: :SUCCESS })
+        @client.build(@images, @parameters, block)
       end
 
       it 'remove temporary json for packer when finished block without error' do
@@ -97,7 +99,7 @@ module CloudConductor
       it 'remove temporary json for packer when some errors occurred while yielding block' do
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
-        @client.build(@images, @parameters) { fail }
+        @client.build(@images, @parameters, proc { fail })
         expect(@images.map(&:status)).to all(eq(:ERROR))
       end
 
@@ -169,7 +171,8 @@ module CloudConductor
             }
           },
           consul_secret_key: 'default_key',
-          packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json'
+          packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json',
+          archived_path: File.join('/tmp/archives/', "#{SecureRandom.uuid}.tar")
         }
       end
 
