@@ -19,7 +19,7 @@ module PatternAccessor
     yield cloned_path if block_given?
     cloned_path
   ensure
-    FileUtils.rm_r cloned_path, force: true if cloned_path
+    FileUtils.rm_r cloned_path, force: true if block_given?
   end
 
   private
