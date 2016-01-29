@@ -330,4 +330,23 @@ Q2YDsDEKKlGHNNAQKVgANuHKf7Q2exap2LsxveBjwMxpLlSbAiiIEXA=
       expect { @history.send(:build_pattern_snapshots) }.to raise_error('Patterns don\'t have usable providers on any cloud')
     end
   end
+
+  describe '#compress_patterns' do
+    before do
+      allow(FileUtils).to receive(:mkdir_p)
+      allow(Dir).to receive(:glob).and_return(['xxxxx/tomcat_pattern'])
+      allow(Open3).to receive(:capture3)
+    end
+
+    it 'will create temporary directory when temporary directory not found' do
+      directory = './tmp_test/'
+      expect(FileUtils).to receive(:mkdir_p).with(directory)
+      @history.send(:compress_patterns, patterns_directory, directory)
+    end
+
+    it 'will compress patterns' do
+      expect(Open3).to receive(:capture3).with('tar', '-zcvf', %r{/tmp/archives/[a-f0-9-]{36}\.tar}, '-C', %r{/tmp/archives/[a-f0-9-]{36}}, 'tomcat_pattern')
+      @history.send(:compress_patterns, patterns_directory, archives_directory)
+    end
+  end
 end

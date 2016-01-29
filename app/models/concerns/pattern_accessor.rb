@@ -103,7 +103,7 @@ module PatternAccessor
   end
 
   def clone_repositories(snapshots, directory)
-    fail 'BlueprintHistory#cloen_repositories needs block' unless block_given?
+    fail 'PatternAccessor#cloen_repositories needs block' unless block_given?
     FileUtils.mkdir_p(directory) unless Dir.exist?(directory)
     snapshots.each do |snapshot|
       options = { secret_key: snapshot.secret_key, directory: directory }
