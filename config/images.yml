@@ -18,7 +18,7 @@ sa-east-1:
   image: ami-7f56ef62
 us-east-1:
   platform: centos
-  image: ami-0e80db66
+  image: ami-cb4c61a1
 us-west-1:
   platform: centos
   image: ami-777f9b33
