@@ -20,6 +20,7 @@ describe PatternAccessor do
   let(:revision) { 'develop' }
   let(:secret_key) { 'dummy' }
   let(:option) { { secret_key: secret_key, directory: cloned_path } }
+  let(:archives_directory) { File.expand_path("./tmp/archives/#{SecureRandom.uuid}") }
 
   before do
     @accessor = Object.new
@@ -368,6 +369,27 @@ describe PatternAccessor do
     it 'won\'t change branch when revision is nil' do
       expect(Open3).not_to receive(:capture3).with('git', 'checkout', nil)
       @accessor.send(:checkout_revision, cloned_path, revision)
+    end
+  end
+
+  describe '#clone_repositories' do
+    before do
+      allow(FileUtils).to receive(:rm_r)
+      allow(FileUtils).to receive(:mkdir_p)
+      allow(File).to receive(:rename)
+      @pattern_snapshots = []
+      @pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      allow(@accessor).to receive(:clone_repository).and_return(archives_directory)
+      allow(@pattern_snapshots[0]).to receive(:freeze_pattern)
+    end
+
+    it 'will remove cloned repository after yield block' do
+      expect(FileUtils).to receive(:rm_r).with(%r{/tmp/archives/[a-f0-9-]{36}}, force: true)
+      @accessor.send(:clone_repositories, @pattern_snapshots, archives_directory) {}
+    end
+
+    it 'will raise error when block does not given' do
+      expect { @accessor.send(:clone_repositories, @pattern_snapshots, archives_directory) }.to raise_error('PatternAccessor#cloen_repositories needs block')
     end
   end
 end
