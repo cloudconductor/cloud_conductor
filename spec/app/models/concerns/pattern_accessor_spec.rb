@@ -70,10 +70,16 @@ describe PatternAccessor do
       @accessor.clone_repository(url, revision) {}
     end
 
+    it 'will not remove cloned repository when block does not exist' do
+      expect(FileUtils).not_to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
+      @accessor.clone_repository(url, revision)
+    end
+
     it 'will remove cloned repository when some errors occurred while yielding block' do
       expect(FileUtils).to receive(:rm_r).with(%r{/tmp/patterns/[a-f0-9-]{36}}, force: true)
       expect { @accessor.clone_repository(url, revision) { fail } }.to raise_error(RuntimeError)
     end
+
     it 'will raise error when failed to clone repository' do
       status = double('status', success?: false)
       allow(Open3).to receive(:capture3).and_return(['', '', status])
