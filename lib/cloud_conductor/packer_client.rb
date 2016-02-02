@@ -36,7 +36,7 @@ module CloudConductor
       @vars = options[:variables]
     end
 
-    def build(images, parameters) # rubocop:disable MethodLength
+    def build(images, parameters, block = nil) # rubocop:disable MethodLength
       parameters[:packer_json_path] = create_json(images)
 
       command = build_command parameters
@@ -51,7 +51,7 @@ module CloudConductor
           fail "Packer failed(exitstatus: #{status.exitstatus})" unless status.success?
 
           ActiveRecord::Base.connection_pool.with_connection do
-            yield parse(IO.read(log_path), images) if block_given?
+            block.call parse(IO.read(log_path), images) unless block.nil?
           end
         rescue => e
           Log.error('Error occurred while executing packer')
@@ -90,13 +90,13 @@ module CloudConductor
       vars = @vars.dup
       vars[:role] = parameters[:role]
       vars[:pattern_name] = parameters[:pattern_name]
-      vars[:patterns_json] = parameters[:patterns].to_json
       vars[:image_name] = parameters[:role].gsub(/,\s*/, '-')
       vars[:cloudconductor_root] = @cloudconductor_root
       vars[:cloudconductor_init_url] = @cloudconductor_init_url
       vars[:cloudconductor_init_revision] = @cloudconductor_init_revision
       vars[:consul_secret_key] = parameters[:consul_secret_key] || ''
       vars[:ssh_public_key] = parameters[:ssh_public_key] || ''
+      vars[:archived_src_path] = parameters[:archived_path]
       vars_text = vars.map { |key, value| " -var #{key}=#{value.shellescape}" }.join(' ')
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"

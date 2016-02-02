@@ -16,6 +16,7 @@ describe PatternSnapshot do
   include_context 'default_resources'
 
   let(:cloned_path) { File.expand_path("./tmp/patterns/#{SecureRandom.uuid}") }
+  let(:archived_path) { File.join('/tmp/archives/', "#{SecureRandom.uuid}.tar") }
 
   it 'include PatternAccessor' do
     expect(PatternSnapshot).to be_include(PatternAccessor)
@@ -133,40 +134,34 @@ describe PatternSnapshot do
         ]
       }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
-      allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:freeze_revision)
     end
 
-    it 'will call #clone_repository' do
-      expect(@pattern).to receive(:clone_repository)
-      @pattern.send(:freeze_pattern)
-    end
-
     it 'will call #load_metadata' do
       expect(@pattern).to receive(:load_metadata)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #read_parameters' do
       expect(@pattern).to receive(:read_parameters)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #read_roles' do
       expect(@pattern).to receive(:read_roles)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'will call #freeze_revision' do
       expect(@pattern).to receive(:freeze_revision)
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
     end
 
     it 'set attributes from metadata' do
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
       expect(@pattern.platform).to eq('CentOS')
@@ -177,7 +172,7 @@ describe PatternSnapshot do
     it 'set nil to providers when metadata does not contain providers' do
       allow(@pattern).to receive(:load_metadata).and_return({})
 
-      @pattern.send(:freeze_pattern)
+      @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.providers).to be_nil
     end
   end
@@ -190,53 +185,27 @@ describe PatternSnapshot do
       @pattern.platform = 'centos'
       allow(@pattern).to receive(:create_images).and_call_original
       allow(@pattern).to receive(:update_images)
-      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build).and_yield('dummy' => {})
+      allow(CloudConductor::PackerClient).to receive_message_chain(:new, :build) { |_, _, block| block.call }
     end
 
     it 'create image each cloud and role' do
-      expect { @pattern.send(:create_images) }.to change { @pattern.images.size }.by(1)
+      expect { @pattern.send(:create_images, archived_path, &proc {}) }.to change { @pattern.images.size }.by(1)
     end
 
-    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key and ssh_public_key' do
+    it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key, ssh_public_key and archived_path' do
       parameters = {
         pattern_name: @pattern.name,
-        patterns: {},
         role: 'nginx',
         consul_secret_key: @pattern.blueprint_history.consul_secret_key,
-        ssh_public_key: @pattern.blueprint_history.ssh_public_key
-      }
-      parameters[:patterns][@pattern.name] = {
-        url: @pattern.url,
-        revision: @pattern.revision
+        ssh_public_key: @pattern.blueprint_history.ssh_public_key,
+        archived_path: archived_path
       }
 
       packer_client = CloudConductor::PackerClient.new
       allow(CloudConductor::PackerClient).to receive(:new).and_return(packer_client)
-      expect(packer_client).to receive(:build).with(anything, parameters)
-      @pattern.send(:create_images)
-    end
-
-    it 'call #update_images with packer results' do
-      expect(@pattern).to receive(:update_images).with('dummy' => {})
-      @pattern.send(:create_images)
-    end
-  end
-
-  describe '#packer_variables' do
-    it 'call #packer_variables' do
-      parameters = {
-        pattern_name: 'dummy_pattern',
-        patterns: {},
-        role: 'nginx',
-        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA==',
-        ssh_public_key: 'dummy_key'
-      }
-      parameters[:patterns][@pattern.name] = {
-        url: @pattern.url,
-        revision: @pattern.revision
-      }
-
-      expect(@pattern.send(:packer_variables, 'dummy_pattern', {}, 'nginx', 'vjqFYQBl/C6OCgQKacJkdA==', 'dummy_key')).to eq(parameters)
+      block = proc {}
+      expect(packer_client).to receive(:build).with(anything, parameters, block)
+      @pattern.send(:create_images, archived_path, &block)
     end
   end
 

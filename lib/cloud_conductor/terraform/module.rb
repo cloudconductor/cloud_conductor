@@ -7,6 +7,7 @@ module CloudConductor
       def initialize(cloud, snapshot, mappings)
         @cloud = cloud
         @name = snapshot.name
+        @snapshot = snapshot
         @cloned_path = clone_repository(snapshot.url, snapshot.revision)
         @source = "#{@cloned_path}/templates/#{@cloud.type}"
         @mappings = mappings
@@ -62,19 +63,7 @@ module CloudConductor
       private
 
       def clone_repository(url, revision)
-        path = File.expand_path("./tmp/patterns/#{SecureRandom.uuid}")
-
-        # FIXIT: Use -b option to checkout branch
-        _, _, status = Open3.capture3('git', 'clone', url, path)
-        fail 'An error has occurred while git clone' unless status.success?
-
-        Dir.chdir path do
-          unless revision.blank?
-            _, _, status = Open3.capture3('git', 'checkout', revision)
-            fail 'An error has occurred while git checkout' unless status.success?
-          end
-        end
-        path
+        @snapshot.clone_repository(url, revision, secret_key: @snapshot.secret_key)
       end
     end
   end

@@ -37,6 +37,7 @@ module API
           requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :url, type: String, desc: 'URL of repository that contains pattern'
           optional :revision, type: String, desc: 'revision of repository'
+          optional :secret_key, type: String, desc: 'secret_key for private repository'
         end
         post '/' do
           project = ::Project.find_by(id: params[:project_id])
@@ -49,6 +50,7 @@ module API
         params do
           optional :url, type: String, desc: 'URL of repository that contains pattern'
           optional :revision, type: String, desc: 'revision of repository'
+          optional :secret_key, type: String, desc: 'secret_key for private repository'
         end
         put '/:id' do
           pattern = ::Pattern.find(params[:id])

@@ -15,6 +15,11 @@
 describe BlueprintHistory do
   include_context 'default_resources'
 
+  let(:cloned_path) { File.expand_path("/tmp/archives/#{SecureRandom.uuid}") }
+  let(:archives_directory) { File.expand_path('./tmp/archives/') }
+  let(:archived_path) { File.join(archives_directory, "#{SecureRandom.uuid}.tar") }
+  let(:patterns_directory) { File.join(archives_directory, SecureRandom.uuid) }
+
   before do
     allow_any_instance_of(Project).to receive(:create_preset_roles)
 
@@ -280,24 +285,68 @@ Q2YDsDEKKlGHNNAQKVgANuHKf7Q2exap2LsxveBjwMxpLlSbAiiIEXA=
   describe '#build_pattern_snapshots' do
     before do
       allow(@history).to receive(:build_pattern_snapshots).and_call_original
-      allow_any_instance_of(PatternSnapshot).to receive(:freeze_pattern)
-    end
-
-    it 'create pattern_snapshot from relation' do
+      allow(@history).to receive(:clone_repositories)
+      allow(@history).to receive(:compress_patterns).and_return(archived_path)
       allow(@history).to receive(:providers).and_return('aws' => %w(terraform))
-
+      allow(FileUtils).to receive(:rm_r)
+      allow_any_instance_of(PatternSnapshot).to receive(:create_images)
+      allow_any_instance_of(PatternSnapshot).to receive(:update_images)
       pattern1 = FactoryGirl.build(:pattern, :platform, project: project)
       pattern2 = FactoryGirl.build(:pattern, :optional, project: project)
       blueprint.blueprint_patterns << FactoryGirl.build(:blueprint_pattern, blueprint: blueprint, pattern: pattern1)
       blueprint.blueprint_patterns << FactoryGirl.build(:blueprint_pattern, blueprint: blueprint, pattern: pattern2)
+    end
 
+    it 'create pattern_snapshot from relation' do
+      allow(@history).to receive(:providers).and_return('aws' => %w(terraform))
       @history.send(:build_pattern_snapshots)
       expect(@history.pattern_snapshots.size).to eq(2)
+    end
+
+    it 'will call #compress_patterns when block of clone_repositories call' do
+      allow(@history).to receive(:clone_repositories) { |_, _, &block| block.call @history.pattern_snapshots }
+      expect(@history).to receive(:compress_patterns).with(%r{/tmp/archives/[a-f0-9-]{36}}, archives_directory)
+      @history.send(:build_pattern_snapshots)
+    end
+
+    it 'will call #create_images when block of clone_repositories call' do
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      allow(@history).to receive(:clone_repositories) { |_, _, &block| block.call @history.pattern_snapshots }
+      expect(@history.pattern_snapshots[0]).to receive(:create_images).with(%r{/tmp/archives/[a-f0-9-]{36}\.tar})
+      @history.send(:build_pattern_snapshots)
+    end
+
+    it 'will call #update_images when block of create_iamges call' do
+      @history.pattern_snapshots << FactoryGirl.create(:pattern_snapshot)
+      results = { 'dummy' => {} }
+      allow(@history).to receive(:clone_repositories) { |_, _, &block| block.call @history.pattern_snapshots }
+      allow(@history.pattern_snapshots[0]).to receive(:create_images) { |_, &block| block.call results }
+      expect(@history.pattern_snapshots[0]).to receive(:update_images).with(results)
+      @history.send(:build_pattern_snapshots)
     end
 
     it 'raise error when patterns don\'t have usable providers on any cloud' do
       allow(@history).to receive(:providers).and_return({})
       expect { @history.send(:build_pattern_snapshots) }.to raise_error('Patterns don\'t have usable providers on any cloud')
+    end
+  end
+
+  describe '#compress_patterns' do
+    before do
+      allow(FileUtils).to receive(:mkdir_p)
+      allow(Dir).to receive(:glob).and_return(['xxxxx/tomcat_pattern'])
+      allow(Open3).to receive(:capture3)
+    end
+
+    it 'will create temporary directory when temporary directory not found' do
+      directory = './tmp_test/'
+      expect(FileUtils).to receive(:mkdir_p).with(directory)
+      @history.send(:compress_patterns, patterns_directory, directory)
+    end
+
+    it 'will compress patterns' do
+      expect(Open3).to receive(:capture3).with('tar', '-zcvf', %r{/tmp/archives/[a-f0-9-]{36}\.tar}, '-C', %r{/tmp/archives/[a-f0-9-]{36}}, 'tomcat_pattern')
+      @history.send(:compress_patterns, patterns_directory, archives_directory)
     end
   end
 end

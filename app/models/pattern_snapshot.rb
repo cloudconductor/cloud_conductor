@@ -8,8 +8,6 @@ class PatternSnapshot < ActiveRecord::Base
 
   validates_presence_of :blueprint_history
 
-  before_create :create_images
-
   before_destroy :check_pattern_usage
 
   def status
@@ -42,26 +40,22 @@ class PatternSnapshot < ActiveRecord::Base
     ->(_, v) { (v['Description'] || v['description']) =~ /^\[computed\]/ }
   end
 
-  def freeze_pattern
-    clone_repository(url, revision) do |path|
-      metadata = load_metadata(path)
+  def freeze_pattern(path)
+    metadata = load_metadata(path)
 
-      self.name = metadata[:name]
-      self.type = metadata[:type]
-      self.providers = metadata[:providers].to_json if metadata[:providers]
-      self.parameters = read_parameters(path).to_json
-      self.roles = read_roles(path).to_json
-      if metadata[:supports]
-        self.platform = metadata[:supports].first[:platform]
-        self.platform_version = metadata[:supports].first[:platform_version]
-      end
-      freeze_revision(path)
+    self.name = metadata[:name]
+    self.type = metadata[:type]
+    self.providers = metadata[:providers].to_json if metadata[:providers]
+    self.parameters = read_parameters(path).to_json
+    self.roles = read_roles(path).to_json
+    if metadata[:supports]
+      self.platform = metadata[:supports].first[:platform]
+      self.platform_version = metadata[:supports].first[:platform_version]
     end
+    freeze_revision(path)
   end
 
-  private
-
-  def create_images
+  def create_images(archived_path, &block)
     JSON.parse(roles).each do |role|
       base_images = blueprint_history.blueprint.project.clouds.map do |cloud|
         result = BaseImage.filtered_base_image(cloud, platform, platform_version)
@@ -72,32 +66,16 @@ class PatternSnapshot < ActiveRecord::Base
       new_images = base_images.map do |base_image|
         images.build(cloud: base_image.cloud, base_image: base_image, role: role)
       end
-
-      variables = packer_variables(name, {}, role, blueprint_history.consul_secret_key, blueprint_history.ssh_public_key)
-
-      CloudConductor::PackerClient.new.build(new_images, variables) do |results|
-        update_images(results)
-      end
-    end
-  end
-
-  def packer_variables(pattern_name, platterns, role, consul_sercret_key, ssh_public_key)
-    packer_variables = {
-      pattern_name: pattern_name,
-      patterns: platterns,
-      role: role,
-      consul_secret_key: consul_sercret_key,
-      ssh_public_key: ssh_public_key
-    }
-
-    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-      packer_variables[:patterns][pattern_snapshot.name] = {
-        url: pattern_snapshot.url,
-        revision: pattern_snapshot.revision
+      packer_variables = {
+        pattern_name: name,
+        role: role,
+        consul_secret_key: blueprint_history.consul_secret_key,
+        ssh_public_key: blueprint_history.ssh_public_key,
+        archived_path: archived_path
       }
-    end
 
-    packer_variables
+      CloudConductor::PackerClient.new.build(new_images, packer_variables, block)
+    end
   end
 
   def update_images(results)
@@ -111,6 +89,8 @@ class PatternSnapshot < ActiveRecord::Base
       end
     end
   end
+
+  private
 
   def freeze_revision(path)
     Dir.chdir path do

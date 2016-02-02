@@ -16,6 +16,7 @@ describe Pattern do
   include_context 'default_resources'
 
   let(:cloned_path) { File.expand_path("./tmp/patterns/#{SecureRandom.uuid}") }
+  let(:secret_key) { 'dummy' }
 
   it 'include PatternAccessor' do
     expect(Pattern).to be_include(PatternAccessor)
@@ -85,6 +86,7 @@ describe Pattern do
       allow(@pattern).to receive(:load_metadata).and_return({})
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:read_roles).and_return([])
+      allow(@pattern).to receive(:secret_key).and_return(secret_key)
     end
 
     it 'will call #clone_repository' do
