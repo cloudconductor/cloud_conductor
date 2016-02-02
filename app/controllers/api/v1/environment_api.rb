@@ -60,8 +60,8 @@ module API
             ActiveRecord::Base.connection_pool.with_connection do
               environment.build
 
-              if system.primary_environment.nil? && status == :CREATE_COMPLETE
-                system.update_attributes!(primary_environment: self)
+              if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
+                system.update_attributes!(primary_environment: environment)
               end
             end
           end
