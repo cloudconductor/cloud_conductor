@@ -96,7 +96,7 @@ module CloudConductor
       vars[:cloudconductor_init_revision] = @cloudconductor_init_revision
       vars[:consul_secret_key] = parameters[:consul_secret_key] || ''
       vars[:ssh_public_key] = parameters[:ssh_public_key] || ''
-      vars[:archived_path] = parameters[:archived_path]
+      vars[:archived_src_path] = parameters[:archived_path]
       vars_text = vars.map { |key, value| " -var #{key}=#{value.shellescape}" }.join(' ')
 
       "#{@packer_path} build -machine-readable #{vars_text} #{parameters[:packer_json_path]}"
