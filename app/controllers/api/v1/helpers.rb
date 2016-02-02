@@ -19,7 +19,7 @@ module API
 
       def find_project(subject)
         project = nil
-        unless subject.class == Class
+        unless (subject.class == Class) || subject.is_a?(Audit)
           if subject.is_a?(Project)
             project = subject
           elsif !subject.is_a?(Account)
@@ -49,6 +49,37 @@ module API
           project = find_project(subject)
         end
         Ability.new(current_account, project)
+      end
+
+      def current_project(model)
+        project = nil
+        model_object = nil
+        model_list = { project_id: Project,
+                       application_id: Application,
+                       system_id: System,
+                       cloud_id: Cloud,
+                       blueprint_id: Blueprint,
+                       assignment_id: Assignment,
+                       role_id: Role,
+                       id: model }
+        model_list.each_key do |key|
+          model_object = model_list[key].find_by_id(params[key]) if params.key?(key)
+          break if model_object
+        end
+        if model_object.class == Project
+          project = model_object
+        elsif model_object
+          project = model_object.project
+        end
+        project
+      end
+
+      def track_api(project_id)
+        track_method = %w(PUT POST DELETE)
+        if track_method.include?(request.request_method)
+          account_id = current_account.id if current_account
+          ::Audit.create!(ip: request.ip, account: account_id, status: status, request: request.url, project_id: project_id)
+        end
       end
 
       def authorize!(action, subject, *args)

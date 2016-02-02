@@ -7,9 +7,6 @@ module API
         super
         subclass.instance_eval do
           helpers API::V1::Helpers
-          version 'v1'
-          format :json
-          default_format :json
 
           before do
             authenticate_account_from_token! unless require_no_authentication

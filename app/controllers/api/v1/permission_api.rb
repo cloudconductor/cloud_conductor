@@ -4,6 +4,16 @@ module API
       resource :roles do
         route_param :role_id do
           resource :permissions do
+            before do
+              project = current_project(Permission)
+              @project_id = nil
+              @project_id = project.id if project
+            end
+
+            after do
+              track_api(@project_id)
+            end
+
             desc 'List permissions'
             get '/' do
               role = Role.find(params[:role_id])

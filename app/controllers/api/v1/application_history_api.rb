@@ -4,6 +4,16 @@ module API
       resource :applications do
         route_param :application_id do
           resource :histories do
+            before do
+              project = current_project(ApplicationHistory)
+              @project_id = nil
+              @project_id = project.id if project
+            end
+
+            after do
+              track_api(@project_id)
+            end
+
             desc 'List application histories'
             get '/' do
               Application.find(params[:application_id]).histories.select do |history|

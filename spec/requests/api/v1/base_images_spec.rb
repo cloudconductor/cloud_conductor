@@ -187,14 +187,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'in not existing coloud_id' do
@@ -254,14 +257,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
     end
 
@@ -284,14 +290,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
     end
   end

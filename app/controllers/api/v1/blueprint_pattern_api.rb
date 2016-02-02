@@ -4,6 +4,16 @@ module API
       resource :blueprints do
         route_param :blueprint_id do
           resource :patterns do
+            before do
+              project = current_project(BlueprintPattern)
+              @project_id = nil
+              @project_id = project.id if project
+            end
+
+            after do
+              track_api(@project_id)
+            end
+
             desc 'List patterns that are contained blueprint'
             get '/' do
               Blueprint.find(params[:blueprint_id]).blueprint_patterns.select do |relation|

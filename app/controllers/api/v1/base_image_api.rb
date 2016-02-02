@@ -2,6 +2,16 @@ module API
   module V1
     class BaseImageAPI < API::V1::Base
       resource :base_images do
+        before do
+          project = current_project(BaseImage)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List base images'
         params do
           optional :cloud_id, type: Integer, desc: 'Cloud id'

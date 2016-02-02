@@ -44,6 +44,9 @@ consul.options.ssl_options.verify false
 # event settings
 event.timeout 1800
 
-# system build setting
+# system build settings
 system_build.providers [:terraform, :cloud_formation]
 system_build.timeout 1800
+
+# audit log settings
+audit_log.export_limit 100

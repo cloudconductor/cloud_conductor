@@ -2,6 +2,16 @@ module API
   module V1
     class ApplicationAPI < API::V1::Base
       resource :applications do
+        before do
+          project = current_project(Application)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List applications'
         params do
           optional :system_id, type: Integer, desc: 'Target system id'

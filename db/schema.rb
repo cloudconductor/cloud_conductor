@@ -79,6 +79,18 @@ ActiveRecord::Schema.define(version: 20160113145914) do
 
   add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true, using: :btree
 
+  create_table "audits", force: true do |t|
+    t.string   "ip"
+    t.integer  "account"
+    t.integer  "status"
+    t.string   "request"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "project_id"
+  end
+
+  add_index "audits", ["project_id"], name: "index_audits_on_project_id", using: :btree
+
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
     t.string   "source_image"

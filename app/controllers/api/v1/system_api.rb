@@ -2,6 +2,16 @@ module API
   module V1
     class SystemAPI < API::V1::Base
       resource :systems do
+        before do
+          temp = current_project(System)
+          @project_id = nil
+          @project_id = temp.id if temp
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List systems'
         params do
           optional :project_id, type: Integer, desc: 'Project id'

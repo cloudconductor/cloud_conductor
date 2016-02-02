@@ -1,6 +1,10 @@
 module API
   module V1
-    class Root < API::V1::Base
+    class Root < Grape::API
+      version 'v1'
+      format :json
+      default_format :json
+
       mount API::V1::TokenAPI
       mount API::V1::AccountAPI
       mount API::V1::ProjectAPI
@@ -19,6 +23,7 @@ module API
       mount API::V1::ApplicationHistoryAPI
       mount API::V1::RoleAPI
       mount API::V1::PermissionAPI
+      mount API::V1::AuditAPI
     end
   end
 end

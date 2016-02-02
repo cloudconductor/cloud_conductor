@@ -2,6 +2,16 @@ module API
   module V1
     class EnvironmentAPI < API::V1::Base # rubocop:disable ClassLength
       resource :environments do
+        before do
+          project = current_project(Environment)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List environments'
         params do
           optional :system_id, type: Integer, desc: 'System id'

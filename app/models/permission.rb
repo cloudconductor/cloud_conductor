@@ -6,4 +6,8 @@ class Permission < ActiveRecord::Base
 
   validates :action, inclusion: { in: %w(manage read create update destroy) }, uniqueness: { scope: [:role_id, :model] }
   validates :model, inclusion: { in: %w(project assignment account role permission cloud base_image pattern blueprint blueprint_pattern blueprint_history system environment application application_history deployment) } # rubocop:disable Metrics/LineLength
+
+  def project
+    role.project
+  end
 end

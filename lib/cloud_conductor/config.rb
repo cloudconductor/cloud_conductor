@@ -49,5 +49,8 @@ module CloudConductor
       default :providers, [:terraform, :cloud_formation]
       default :timeout, 1800
     end
+    config_context :audit_log do
+      default :export_limit, 100
+    end
   end
 end

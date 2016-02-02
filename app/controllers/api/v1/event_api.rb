@@ -2,6 +2,16 @@ module API
   module V1
     class EventAPI < API::V1::Base
       resource :environments do
+        before do
+          project = current_project(Environment)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List events'
         params do
           requires :id, type: Integer, desc: 'Environment id'
@@ -21,7 +31,6 @@ module API
         get '/:id/events/:event_id' do
           environment = ::Environment.find(declared_params[:id])
           authorize!(:read, environment)
-
           event = environment.event.find(declared_params[:event_id])
           if event
             event.as_json(detail: true)
