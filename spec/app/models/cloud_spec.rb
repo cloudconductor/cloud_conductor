@@ -201,7 +201,7 @@ describe Cloud do
         'eu-west-1' => { 'platform' => 'centos', 'image' => 'ami-ede0739a' },
         'eu-central-1' => { 'platform' => 'centos', 'image' => 'ami-98a79585' },
         'sa-east-1' => { 'platform' => 'centos', 'image' => 'ami-7f56ef62' },
-        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-0e80db66' },
+        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-cb4c61a1' },
         'us-west-1' => { 'platform' => 'centos', 'image' => 'ami-777f9b33' },
         'us-west-2' => { 'platform' => 'centos', 'image' => 'ami-3b1a390b' }
       }
