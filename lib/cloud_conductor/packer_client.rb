@@ -90,7 +90,6 @@ module CloudConductor
       vars = @vars.dup
       vars[:role] = parameters[:role]
       vars[:pattern_name] = parameters[:pattern_name]
-      vars[:patterns_json] = parameters[:patterns].to_json
       vars[:image_name] = parameters[:role].gsub(/,\s*/, '-')
       vars[:cloudconductor_root] = @cloudconductor_root
       vars[:cloudconductor_init_url] = @cloudconductor_init_url

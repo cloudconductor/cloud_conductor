@@ -195,15 +195,10 @@ describe PatternSnapshot do
     it 'will call PackerClient#build with url, revision, name of clouds, role, pattern_name, consul_secret_key, ssh_public_key and archived_path' do
       parameters = {
         pattern_name: @pattern.name,
-        patterns: {},
         role: 'nginx',
         consul_secret_key: @pattern.blueprint_history.consul_secret_key,
         ssh_public_key: @pattern.blueprint_history.ssh_public_key,
         archived_path: archived_path
-      }
-      parameters[:patterns][@pattern.name] = {
-        url: @pattern.url,
-        revision: @pattern.revision
       }
 
       packer_client = CloudConductor::PackerClient.new
@@ -211,26 +206,6 @@ describe PatternSnapshot do
       block = proc {}
       expect(packer_client).to receive(:build).with(anything, parameters, block)
       @pattern.send(:create_images, archived_path, &block)
-    end
-  end
-
-  describe '#merge_patterns' do
-    it 'call #merge_patterns' do
-      packer_variables = {
-        pattern_name: 'dummy_pattern',
-        patterns: {},
-        role: 'nginx',
-        consul_secret_key: 'vjqFYQBl/C6OCgQKacJkdA==',
-        ssh_public_key: 'dummy_key',
-        archived_path: archived_path
-      }
-      parameters = packer_variables.deep_dup
-      parameters[:patterns][@pattern.name] = {
-        url: @pattern.url,
-        revision: @pattern.revision
-      }
-
-      expect(@pattern.send(:merge_patterns, packer_variables)).to eq(parameters)
     end
   end
 

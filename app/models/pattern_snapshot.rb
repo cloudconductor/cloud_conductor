@@ -68,15 +68,13 @@ class PatternSnapshot < ActiveRecord::Base
       end
       packer_variables = {
         pattern_name: name,
-        patterns: {},
         role: role,
         consul_secret_key: blueprint_history.consul_secret_key,
         ssh_public_key: blueprint_history.ssh_public_key,
         archived_path: archived_path
       }
-      variables = merge_patterns(packer_variables)
 
-      CloudConductor::PackerClient.new.build(new_images, variables, block)
+      CloudConductor::PackerClient.new.build(new_images, packer_variables, block)
     end
   end
 
@@ -93,17 +91,6 @@ class PatternSnapshot < ActiveRecord::Base
   end
 
   private
-
-  def merge_patterns(packer_variables)
-    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
-      packer_variables[:patterns][pattern_snapshot.name] = {
-        url: pattern_snapshot.url,
-        revision: pattern_snapshot.revision
-      }
-    end
-
-    packer_variables
-  end
 
   def freeze_revision(path)
     Dir.chdir path do
