@@ -69,7 +69,7 @@ module CloudConductor
         before do
           allow(Dir).to receive(:exist?).and_return(true)
           @terraform = double(:terraform, destroy: true)
-          allow(Rterraform::Client).to receive(:new).and_return(@terraform)
+          allow(RubyTerraform::Client).to receive(:new).and_return(@terraform)
         end
 
         it 'call subroutines except #reset' do
@@ -113,7 +113,7 @@ module CloudConductor
           allow(@builder).to receive(:bootstrap_expect).and_return([])
 
           @terraform = double(:terraform, get: true, plan: {}, apply: true, output: {})
-          allow(Rterraform::Client).to receive(:new).and_return(@terraform)
+          allow(RubyTerraform::Client).to receive(:new).and_return(@terraform)
         end
 
         it 'call subroutines except #reset' do

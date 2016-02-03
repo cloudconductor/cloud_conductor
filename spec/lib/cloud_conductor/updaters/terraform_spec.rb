@@ -96,7 +96,7 @@ module CloudConductor
           allow(@updater).to receive(:bootstrap_expect).and_return([])
 
           @terraform = double(:terraform, get: true, plan: {}, apply: true, output: {})
-          allow(Rterraform::Client).to receive(:new).and_return(@terraform)
+          allow(RubyTerraform::Client).to receive(:new).and_return(@terraform)
         end
 
         it 'call subroutines except #reset' do

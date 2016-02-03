@@ -47,7 +47,7 @@ module CloudConductor
         options = {
           terraform_path: CloudConductor::Config.terraform.path
         }
-        terraform = Rterraform::Client.new(template_directory, options)
+        terraform = RubyTerraform::Client.new(template_directory, options)
 
         # terraform get
         terraform.get({}, update: true)
