@@ -19,7 +19,6 @@ module CloudConductor
 
       def initialize(cloud, environment)
         super
-        @clouds = environment.candidates.sorted.map(&:cloud)
       end
 
       private
@@ -106,7 +105,8 @@ module CloudConductor
             consul_addresses = outputs['ConsulAddresses']
             Log.debug "  Outputs has ConsulAddresses(#{consul_addresses})"
 
-            consul = Consul::Client.new consul_addresses, CloudConductor::Config.consul.port, CloudConductor::Config.consul.options.save
+            consul_config = CloudConductor::Config.consul
+            consul = Consul::Client.new consul_addresses, consul_config.port, consul_config.options.save
             next unless consul.running?
           end
 

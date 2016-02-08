@@ -2,7 +2,7 @@ require 'ruby_terraform'
 
 module CloudConductor
   module Builders
-    class Terraform < CloudConductor::Builders::Builder # rubocop:disable ClassLength
+    class Terraform < CloudConductor::Builders::Builder
       def initialize(cloud, environment)
         super
       end
