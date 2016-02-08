@@ -26,6 +26,7 @@ module CloudConductor
           allow(@builder).to receive(:terraform_variables).and_return({})
           allow(@builder).to receive(:execute_terraform)
           allow(@builder).to receive(:frontend_addresses)
+          allow(@builder).to receive(:consul_addresses)
           allow(@builder).to receive(:reset)
         end
 
@@ -35,6 +36,7 @@ module CloudConductor
           expect(@builder).to receive(:terraform_variables).ordered
           expect(@builder).to receive(:execute_terraform).ordered
           expect(@builder).to receive(:frontend_addresses).ordered
+          expect(@builder).to receive(:consul_addresses).ordered
           expect(@builder).not_to receive(:reset)
           @builder.send(:build_infrastructure)
         end
@@ -215,6 +217,19 @@ module CloudConductor
           }
 
           expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
+        end
+      end
+
+      describe '#consul_addresses' do
+        it 'returns consul addresses in output hash' do
+          outputs = {
+            'cloud_conductor_init.shared_security_group' => 'sg-xxxxxx',
+            'tomcat.consul_addresses' => '203.0.113.1, 203.0.113.2',
+            'dummy.consul_addresses' => '',
+            'zabbix.consul_addresses' => '203.0.113.3'
+          }
+
+          expect(@builder.send(:consul_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2, 203.0.113.3')
         end
       end
 

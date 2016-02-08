@@ -117,6 +117,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     environment.name = "#{basename}-#{SecureRandom.uuid}"
     environment.ip_address = nil
+    environment.consul_addresses = nil
     environment.platform_outputs = '{}'
     environment.status = :PENDING
 
@@ -128,17 +129,17 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def consul
-    fail 'ip_address does not specified' unless ip_address
+    fail 'consul_addresses does not specified' unless consul_addresses
 
     options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
-    Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
+    Consul::Client.new(consul_addresses, CloudConductor::Config.consul.port, options)
   end
 
   def event
-    fail 'ip_address does not specified' unless ip_address
+    fail 'consul_addresses does not specified' unless consul_addresses
 
     options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
-    CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
+    CloudConductor::Event.new(consul_addresses, CloudConductor::Config.consul.port, options)
   end
 
   def destroy_stacks_in_background

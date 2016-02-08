@@ -20,6 +20,7 @@ module CloudConductor
 
         @environment.stacks.each { |stack| stack.update_attribute(:status, :CREATE_COMPLETE) }
         @environment.update_attribute(:ip_address, frontend_addresses(outputs))
+        @environment.update_attribute(:consul_addresses, consul_addresses(outputs))
       rescue => e
         @environment.stacks.each { |stack| stack.update_attribute(:status, :ERROR) }
         reset
@@ -73,6 +74,10 @@ module CloudConductor
 
       def frontend_addresses(outputs)
         outputs.select { |k, _v| k.end_with? '.frontend_addresses' }.values.reject(&:blank?).join(', ')
+      end
+
+      def consul_addresses(outputs)
+        outputs.select { |k, _v| k.end_with? '.consul_addresses' }.values.reject(&:blank?).join(', ')
       end
 
       def save_ssh_private_key(ssh_private_key)

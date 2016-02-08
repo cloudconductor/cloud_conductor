@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20160121033312) do
+ActiveRecord::Schema.define(version: 20160208100121) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -168,6 +168,7 @@ ActiveRecord::Schema.define(version: 20160121033312) do
     t.datetime "updated_at",           null: false
     t.integer  "blueprint_history_id"
     t.text     "template_parameters"
+    t.string   "consul_addresses"
   end
 
   create_table "images", force: true do |t|

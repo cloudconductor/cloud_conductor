@@ -13,7 +13,7 @@ class Deployment < ActiveRecord::Base
   after_initialize -> { self.status ||= :NOT_DEPLOYED }
 
   def consul_request
-    if environment.ip_address
+    if environment.consul_addresses
       self.status = :PROGRESS
       deploy_application
     else
