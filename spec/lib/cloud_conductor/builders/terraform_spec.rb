@@ -25,7 +25,7 @@ module CloudConductor
           allow(@builder).to receive(:save_ssh_private_key).and_yield('tmp/terraform/dummy.pem')
           allow(@builder).to receive(:terraform_variables).and_return({})
           allow(@builder).to receive(:execute_terraform)
-          allow(@builder).to receive(:frontend_addresses)
+          allow(@builder).to receive(:frontend_address)
           allow(@builder).to receive(:consul_addresses)
           allow(@builder).to receive(:reset)
         end
@@ -35,7 +35,7 @@ module CloudConductor
           expect(@builder).to receive(:save_ssh_private_key).ordered
           expect(@builder).to receive(:terraform_variables).ordered
           expect(@builder).to receive(:execute_terraform).ordered
-          expect(@builder).to receive(:frontend_addresses).ordered
+          expect(@builder).to receive(:frontend_address).ordered
           expect(@builder).to receive(:consul_addresses).ordered
           expect(@builder).not_to receive(:reset)
           @builder.send(:build_infrastructure)
@@ -207,16 +207,25 @@ module CloudConductor
         end
       end
 
-      describe '#frontend_addresses' do
-        it 'returns frontend addresses in output hash' do
+      describe '#frontend_address' do
+        it 'raise error if environment has multiple frontend addresses' do
           outputs = {
             'cloud_conductor_init.shared_security_group' => 'sg-xxxxxx',
-            'tomcat.frontend_addresses' => '203.0.113.1',
-            'dummy.frontend_addresses' => '',
-            'zabbix.frontend_addresses' => '203.0.113.2'
+            'tomcat.frontend_address' => '203.0.113.1',
+            'dummy.frontend_address' => '',
+            'zabbix.frontend_address' => '203.0.113.2'
           }
 
-          expect(@builder.send(:frontend_addresses, outputs)).to eq('203.0.113.1, 203.0.113.2')
+          expect { @builder.send(:frontend_address, outputs) }.to raise_error(RuntimeError)
+        end
+
+        it 'returns frontend address in output hash' do
+          outputs = {
+            'cloud_conductor_init.shared_security_group' => 'sg-xxxxxx',
+            'tomcat.frontend_address' => '203.0.113.1'
+          }
+
+          expect(@builder.send(:frontend_address, outputs)).to eq('203.0.113.1')
         end
       end
 

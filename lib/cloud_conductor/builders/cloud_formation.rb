@@ -117,7 +117,7 @@ module CloudConductor
 
       def update_environment(outputs)
         Log.info 'Platform stack has created.'
-        @environment.ip_address = outputs['FrontendAddress']
+        @environment.frontend_address = outputs['FrontendAddress']
         @environment.consul_addresses = outputs['ConsulAddresses']
         @environment.platform_outputs = outputs.except('FrontendAddress', 'ConsulAddresses').to_json
         @environment.save!
@@ -128,7 +128,7 @@ module CloudConductor
         stacks = @environment.stacks.map(&:dup)
 
         @environment.status = :ERROR
-        @environment.ip_address = nil
+        @environment.frontend_address = nil
         @environment.consul_addresses = nil
         @environment.platform_outputs = '{}'
         @environment.save!

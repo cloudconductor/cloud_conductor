@@ -16,7 +16,7 @@ class System < ActiveRecord::Base
 
   def update_dns
     dns_client = CloudConductor::DNSClient.new
-    dns_client.update domain, primary_environment.ip_address.split(/,\s*/).first
+    dns_client.update domain, primary_environment.frontend_address
   end
 
   def enable_monitoring

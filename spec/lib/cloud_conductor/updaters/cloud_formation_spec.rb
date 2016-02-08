@@ -175,7 +175,7 @@ module CloudConductor
 
           @updater.send(:update_environment, outputs)
 
-          expect(@environment.ip_address).to eq('127.0.0.1')
+          expect(@environment.frontend_address).to eq('127.0.0.1')
           expect(@environment.consul_addresses).to eq('192.168.0.1, 192.168.0.2')
           expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
         end

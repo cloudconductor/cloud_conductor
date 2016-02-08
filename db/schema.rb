@@ -162,7 +162,7 @@ ActiveRecord::Schema.define(version: 20160208100121) do
     t.string   "name"
     t.text     "description"
     t.string   "status"
-    t.string   "ip_address"
+    t.string   "frontend_address"
     t.text     "platform_outputs"
     t.datetime "created_at",           null: false
     t.datetime "updated_at",           null: false
