@@ -57,7 +57,7 @@ describe Deployment do
     end
 
     it 'call #consul_request callback' do
-      environment.ip_address = '127.0.0.1'
+      environment.consul_addresses = '127.0.0.1'
 
       expect(@deployment).to receive(:consul_request)
       @deployment.save!
