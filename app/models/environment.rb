@@ -116,7 +116,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     environment.name = "#{basename}-#{SecureRandom.uuid}"
-    environment.ip_address = nil
+    environment.frontend_address = nil
     environment.consul_addresses = nil
     environment.platform_outputs = '{}'
     environment.status = :PENDING

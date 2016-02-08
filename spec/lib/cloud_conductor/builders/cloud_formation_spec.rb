@@ -267,7 +267,7 @@ module CloudConductor
 
           @builder.send(:update_environment, outputs)
 
-          expect(@environment.ip_address).to eq('127.0.0.1')
+          expect(@environment.frontend_address).to eq('127.0.0.1')
           expect(@environment.consul_addresses).to eq('192.168.0.1, 192.168.0.2')
           expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
         end
@@ -291,14 +291,14 @@ module CloudConductor
           expect(Stack.all.all?(&:pending?)).to be_truthy
         end
 
-        it 'reset ip_address, consul_addresses and platform_outputs in environment' do
-          @environment.ip_address = '127.0.0.1'
+        it 'reset frontend_address and platform_outputs in environment' do
+          @environment.frontend_address = '127.0.0.1'
           @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
           @environment.platform_outputs = '{ "key": "dummy" }'
 
           @builder.send(:reset_stacks)
 
-          expect(@environment.ip_address).to be_nil
+          expect(@environment.frontend_address).to be_nil
           expect(@environment.consul_addresses).to be_nil
           expect(@environment.platform_outputs).to eq('{}')
         end

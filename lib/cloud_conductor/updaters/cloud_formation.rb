@@ -94,7 +94,7 @@ module CloudConductor
 
       def update_environment(outputs)
         Log.info 'Platform stack has updated.'
-        @environment.ip_address = outputs['FrontendAddress']
+        @environment.frontend_address = outputs['FrontendAddress']
         @environment.consul_addresses = outputs['ConsulAddresses']
         @environment.platform_outputs = outputs.except('FrontendAddress', 'ConsulAddresses').to_json
         @environment.save!

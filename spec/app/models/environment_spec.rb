@@ -172,9 +172,9 @@ describe Environment do
       expect(duplicated_environment.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
     end
 
-    it 'clear ip_address' do
-      @environment.ip_address = '192.168.0.1'
-      expect(@environment.dup.ip_address).to be_nil
+    it 'clear frontend_address' do
+      @environment.frontend_address = '192.168.0.1'
+      expect(@environment.dup.frontend_address).to be_nil
     end
 
     it 'clear consul_addresses' do
@@ -258,7 +258,7 @@ describe Environment do
   describe '#as_json' do
     before do
       @environment.id = 1
-      @environment.ip_address = '127.0.0.1'
+      @environment.frontend_address = '127.0.0.1'
       @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
       allow(@environment).to receive(:status).and_return(:PROGRESS)
       allow(@environment).to receive(:application_status).and_return(:DEPLOY_COMPLETE)
@@ -268,7 +268,7 @@ describe Environment do
       hash = @environment.as_json
       expect(hash['id']).to eq(@environment.id)
       expect(hash['name']).to eq(@environment.name)
-      expect(hash['ip_address']).to eq(@environment.ip_address)
+      expect(hash['frontend_address']).to eq(@environment.frontend_address)
       expect(hash['consul_addresses']).to eq(@environment.consul_addresses)
       expect(hash['status']).to eq(@environment.status)
       expect(hash['application_status']).to eq(@environment.application_status)
