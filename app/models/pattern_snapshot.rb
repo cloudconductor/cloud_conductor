@@ -47,7 +47,7 @@ class PatternSnapshot < ActiveRecord::Base
     self.type = metadata[:type]
     self.providers = metadata[:providers].to_json if metadata[:providers]
     self.parameters = read_parameters(path).to_json
-    self.roles = read_roles(path).to_json
+    self.roles = metadata[:roles]
     if metadata[:supports]
       self.platform = metadata[:supports].first[:platform]
       self.platform_version = metadata[:supports].first[:platform_version]

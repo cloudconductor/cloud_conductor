@@ -85,7 +85,6 @@ describe Pattern do
       allow(@pattern).to receive(:clone_repository).and_yield(cloned_path)
       allow(@pattern).to receive(:load_metadata).and_return({})
       allow(@pattern).to receive(:read_parameters).and_return({})
-      allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:secret_key).and_return(secret_key)
     end
 
@@ -101,11 +100,6 @@ describe Pattern do
 
     it 'will call #read_parameters' do
       expect(@pattern).to receive(:read_parameters)
-      @pattern.send(:update_metadata)
-    end
-
-    it 'will call #read_roles' do
-      expect(@pattern).to receive(:read_roles)
       @pattern.send(:update_metadata)
     end
   end

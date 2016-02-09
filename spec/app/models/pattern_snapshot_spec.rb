@@ -136,7 +136,6 @@ describe PatternSnapshot do
       allow(@pattern).to receive(:freeze_pattern).and_call_original
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
-      allow(@pattern).to receive(:read_roles).and_return([])
       allow(@pattern).to receive(:freeze_revision)
     end
 
@@ -147,11 +146,6 @@ describe PatternSnapshot do
 
     it 'will call #read_parameters' do
       expect(@pattern).to receive(:read_parameters)
-      @pattern.send(:freeze_pattern, cloned_path)
-    end
-
-    it 'will call #read_roles' do
-      expect(@pattern).to receive(:read_roles)
       @pattern.send(:freeze_pattern, cloned_path)
     end
 
