@@ -68,6 +68,16 @@ module CloudConductor
             salt: OpenSSL::Digest::SHA256.hexdigest(environment.system.created_at.iso8601(6))
           }
         }
+        payload['cloudconductor/environment_id'] = {
+          environment_id: environment.id
+        }
+        payload['cloudconductor/system_domain'] = {
+          name: environment.system.name,
+          dns: environment.system.domain
+        }
+        payload['cloudconductor/account_token'] = {
+          auth_token: get_account_authentication_token(environment)
+        }
 
         environment.stacks.created.each do |stack|
           payload.deep_merge! stack.payload
@@ -80,6 +90,10 @@ module CloudConductor
         return {} if environment.deployments.empty?
 
         environment.deployments.map(&:application_history).map(&:payload).inject(&:deep_merge)
+      end
+
+      def get_account_authentication_token(environment)
+        return environment.system.project.accounts.authentication_token
       end
     end
   end

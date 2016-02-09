@@ -34,8 +34,6 @@ module CloudConductor
     end
     config_context :dns do
     end
-    config_context :zabbix do
-    end
     config_context :consul do
       config_context :options do
         config_context :ssl_options do
