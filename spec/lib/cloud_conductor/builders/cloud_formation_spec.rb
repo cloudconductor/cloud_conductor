@@ -56,20 +56,6 @@ module CloudConductor
       end
 
       describe '#initialize' do
-        it 'set @clouds that contains candidate clouds orderd by priority' do
-          @environment.candidates[0].update_columns(priority: 10)
-          @environment.candidates[1].update_columns(priority: 20)
-          builder = CloudFormation.new cloud, @environment
-          clouds = builder.instance_variable_get :@clouds
-          expect(clouds).to eq([@environment.clouds.last, @environment.clouds.first])
-
-          @environment.candidates[0].update_columns(priority: 20)
-          @environment.candidates[1].update_columns(priority: 10)
-          builder = CloudFormation.new cloud, @environment
-          clouds = builder.instance_variable_get :@clouds
-          expect(clouds).to eq([@environment.clouds.first, @environment.clouds.last])
-        end
-
         it 'set @cloud' do
           expect(@builder.instance_variable_get(:@cloud)).to eq(cloud_aws)
         end
