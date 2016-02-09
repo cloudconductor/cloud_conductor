@@ -158,7 +158,7 @@ describe Environment do
   end
 
   describe '#dup' do
-    it 'duplicate all attributes in environment without name and ip_address' do
+    it 'duplicate all attributes in environment without some attributes which dependent previous environment' do
       @environment.save!
       duplicated_environment = @environment.dup
       expect(duplicated_environment.system).to eq(@environment.system)
@@ -172,9 +172,14 @@ describe Environment do
       expect(duplicated_environment.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
     end
 
-    it 'clear ip_address' do
-      @environment.ip_address = '192.168.0.1'
-      expect(@environment.dup.ip_address).to be_nil
+    it 'clear frontend_address' do
+      @environment.frontend_address = '192.168.0.1'
+      expect(@environment.dup.frontend_address).to be_nil
+    end
+
+    it 'clear consul_addresses' do
+      @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
+      expect(@environment.dup.consul_addresses).to be_nil
     end
 
     it 'clear platform_outputs' do
@@ -215,25 +220,25 @@ describe Environment do
   end
 
   describe '#consul' do
-    it 'will fail when ip_address does not specified' do
-      @environment.ip_address = nil
-      expect { @environment.consul }.to raise_error('ip_address does not specified')
+    it 'will fail when consul_addresses does not specified' do
+      @environment.consul_addresses = nil
+      expect { @environment.consul }.to raise_error('consul_addresses does not specified')
     end
 
-    it 'return consul client when ip_address already specified' do
-      @environment.ip_address = '127.0.0.1'
+    it 'return consul client when consul_addresses already specified' do
+      @environment.consul_addresses = '127.0.0.1'
       expect(@environment.consul).to be_a Consul::Client
     end
   end
 
   describe '#event' do
-    it 'will fail when ip_address does not specified' do
-      @environment.ip_address = nil
-      expect { @environment.event }.to raise_error('ip_address does not specified')
+    it 'will fail when consul_addresses does not specified' do
+      @environment.consul_addresses = nil
+      expect { @environment.event }.to raise_error('consul_addresses does not specified')
     end
 
-    it 'return event client when ip_address already specified' do
-      @environment.ip_address = '127.0.0.1'
+    it 'return event client when consul_addresses already specified' do
+      @environment.consul_addresses = '127.0.0.1'
       expect(@environment.event).to be_is_a CloudConductor::Event
     end
   end
@@ -253,7 +258,8 @@ describe Environment do
   describe '#as_json' do
     before do
       @environment.id = 1
-      @environment.ip_address = '127.0.0.1'
+      @environment.frontend_address = '127.0.0.1'
+      @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
       allow(@environment).to receive(:status).and_return(:PROGRESS)
       allow(@environment).to receive(:application_status).and_return(:DEPLOY_COMPLETE)
     end
@@ -262,7 +268,8 @@ describe Environment do
       hash = @environment.as_json
       expect(hash['id']).to eq(@environment.id)
       expect(hash['name']).to eq(@environment.name)
-      expect(hash['ip_address']).to eq(@environment.ip_address)
+      expect(hash['frontend_address']).to eq(@environment.frontend_address)
+      expect(hash['consul_addresses']).to eq(@environment.consul_addresses)
       expect(hash['status']).to eq(@environment.status)
       expect(hash['application_status']).to eq(@environment.application_status)
     end

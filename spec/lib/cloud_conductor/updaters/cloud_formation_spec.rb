@@ -104,10 +104,10 @@ module CloudConductor
           allow(@updater).to receive(:sleep)
 
           allow(@platform_stack).to receive(:status).and_return(:UPDATE_COMPLETE)
-          allow(@platform_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+          allow(@platform_stack).to receive(:outputs).and_return('ConsulAddresses' => '127.0.0.1')
 
           allow(@optional_stack).to receive(:status).and_return(:UPDATE_COMPLETE)
-          allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+          allow(@optional_stack).to receive(:outputs).and_return('ConsulAddresses' => '127.0.0.1')
 
           allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
         end
@@ -149,12 +149,12 @@ module CloudConductor
           expect { @updater.send(:wait_for_finished, @platform_stack, CloudFormation::CHECK_PERIOD) }.to raise_error(RuntimeError)
         end
 
-        it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
+        it 'infinity loop and timeout while outputs doesn\'t have ConsulAddresses on platform stack' do
           allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
           expect { @updater.send(:wait_for_finished, @platform_stack, CloudFormation::CHECK_PERIOD) }.to raise_error(RuntimeError)
         end
 
-        it 'return successfully when outputs doesn\'t have FrontendAddress on optional stack' do
+        it 'return successfully when outputs doesn\'t have ConsulAddresses on optional stack' do
           allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
           @updater.send(:wait_for_finished, @optional_stack, CloudFormation::CHECK_PERIOD)
         end
@@ -169,12 +169,14 @@ module CloudConductor
         it 'update environment when outputs exists' do
           outputs = {
             'FrontendAddress' => '127.0.0.1',
+            'ConsulAddresses' => '192.168.0.1, 192.168.0.2',
             'dummy' => 'value'
           }
 
           @updater.send(:update_environment, outputs)
 
-          expect(@environment.ip_address).to eq('127.0.0.1')
+          expect(@environment.frontend_address).to eq('127.0.0.1')
+          expect(@environment.consul_addresses).to eq('192.168.0.1, 192.168.0.2')
           expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
         end
       end

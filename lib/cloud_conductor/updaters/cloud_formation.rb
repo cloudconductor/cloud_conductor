@@ -79,12 +79,13 @@ module CloudConductor
 
           if stack.pattern_snapshot.type == 'platform'
             outputs = stack.outputs
-            next if outputs['FrontendAddress'].nil?
+            next if outputs['ConsulAddresses'].nil?
 
-            ip_address = outputs['FrontendAddress']
-            Log.debug "  Outputs has FrontendAddress(#{ip_address})"
+            consul_addresses = outputs['ConsulAddresses']
+            Log.debug "  Outputs has ConsulAddresses(#{consul_addresses})"
 
-            consul = Consul::Client.new ip_address, CloudConductor::Config.consul.port, CloudConductor::Config.consul.options.save
+            consul_config = CloudConductor::Config.consul
+            consul = Consul::Client.new consul_addresses, consul_config.port, consul_config.options.save
             next unless consul.running?
           end
 
@@ -94,8 +95,9 @@ module CloudConductor
 
       def update_environment(outputs)
         Log.info 'Platform stack has updated.'
-        @environment.ip_address = outputs['FrontendAddress']
-        @environment.platform_outputs = outputs.except('FrontendAddress').to_json
+        @environment.frontend_address = outputs['FrontendAddress']
+        @environment.consul_addresses = outputs['ConsulAddresses']
+        @environment.platform_outputs = outputs.except('FrontendAddress', 'ConsulAddresses').to_json
         @environment.save!
       end
 

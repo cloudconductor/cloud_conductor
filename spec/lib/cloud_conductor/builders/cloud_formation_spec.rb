@@ -195,11 +195,11 @@ module CloudConductor
           allow(@builder).to receive(:sleep)
 
           allow(@platform_stack).to receive(:status).and_return(:CREATE_COMPLETE)
-          allow(@platform_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+          allow(@platform_stack).to receive(:outputs).and_return('ConsulAddresses' => '127.0.0.1')
           allow(@platform_stack).to receive(:events).and_return([])
 
           allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
-          allow(@optional_stack).to receive(:outputs).and_return('FrontendAddress' => '127.0.0.1')
+          allow(@optional_stack).to receive(:outputs).and_return('ConsulAddresses' => '127.0.0.1')
           allow(@optional_stack).to receive(:events).and_return([])
 
           allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
@@ -241,12 +241,12 @@ module CloudConductor
           expect { @builder.send(:wait_for_finished, @platform_stack, CloudFormation::CHECK_PERIOD) }.to raise_error(RuntimeError)
         end
 
-        it 'infinity loop and timeout while outputs doesn\'t have FrontendAddress on platform stack' do
+        it 'infinity loop and timeout while outputs doesn\'t have ConsulAddresses on platform stack' do
           allow(@platform_stack).to receive(:outputs).and_return(dummy: 'value')
           expect { @builder.send(:wait_for_finished, @platform_stack, CloudFormation::CHECK_PERIOD) }.to raise_error(RuntimeError)
         end
 
-        it 'return successfully when outputs doesn\'t have FrontendAddress on optional stack' do
+        it 'return successfully when outputs doesn\'t have ConsulAddresses on optional stack' do
           allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
           @builder.send(:wait_for_finished, @optional_stack, CloudFormation::CHECK_PERIOD)
         end
@@ -261,12 +261,14 @@ module CloudConductor
         it 'update environment when outputs exists' do
           outputs = {
             'FrontendAddress' => '127.0.0.1',
+            'ConsulAddresses' => '192.168.0.1, 192.168.0.2',
             'dummy' => 'value'
           }
 
           @builder.send(:update_environment, outputs)
 
-          expect(@environment.ip_address).to eq('127.0.0.1')
+          expect(@environment.frontend_address).to eq('127.0.0.1')
+          expect(@environment.consul_addresses).to eq('192.168.0.1, 192.168.0.2')
           expect(@environment.platform_outputs).to eq('{"dummy":"value"}')
         end
       end
@@ -289,13 +291,15 @@ module CloudConductor
           expect(Stack.all.all?(&:pending?)).to be_truthy
         end
 
-        it 'reset ip_address and platform_outputs in environment' do
-          @environment.ip_address = '127.0.0.1'
+        it 'reset frontend_address and platform_outputs in environment' do
+          @environment.frontend_address = '127.0.0.1'
+          @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
           @environment.platform_outputs = '{ "key": "dummy" }'
 
           @builder.send(:reset_stacks)
 
-          expect(@environment.ip_address).to be_nil
+          expect(@environment.frontend_address).to be_nil
+          expect(@environment.consul_addresses).to be_nil
           expect(@environment.platform_outputs).to eq('{}')
         end
 

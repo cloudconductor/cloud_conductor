@@ -192,7 +192,8 @@ describe API do
           updated_at: String,
           status: 'PENDING',
           application_status: 'NOT_DEPLOYED',
-          ip_address: nil,
+          frontend_address: nil,
+          consul_addresses: nil,
           template_parameters: String
         )
       end
@@ -446,7 +447,8 @@ describe API do
           'created_at' => String,
           'updated_at' => String,
           'name' => /#{environment.name}-*/,
-          'ip_address' => nil
+          'frontend_address' => nil,
+          'consul_addresses' => nil
         )
       end
 

@@ -19,7 +19,8 @@ module CloudConductor
         end
 
         @environment.stacks.each { |stack| stack.update_attribute(:status, :CREATE_COMPLETE) }
-        @environment.update_attribute(:ip_address, frontend_addresses(outputs))
+        @environment.update_attribute(:frontend_address, frontend_address(outputs))
+        @environment.update_attribute(:consul_addresses, consul_addresses(outputs))
       rescue => e
         @environment.stacks.each { |stack| stack.update_attribute(:status, :ERROR) }
         reset
@@ -71,8 +72,14 @@ module CloudConductor
         end
       end
 
-      def frontend_addresses(outputs)
-        outputs.select { |k, _v| k.end_with? '.frontend_addresses' }.values.reject(&:blank?).join(', ')
+      def frontend_address(outputs)
+        frontend_addresses = outputs.select { |k, _v| k.end_with? '.frontend_address' }.values.reject(&:blank?)
+        fail 'frontend_address output has multiple addresses' if frontend_addresses.size > 1
+        frontend_addresses.first
+      end
+
+      def consul_addresses(outputs)
+        outputs.select { |k, _v| k.end_with? '.consul_addresses' }.values.reject(&:blank?).join(', ')
       end
 
       def save_ssh_private_key(ssh_private_key)

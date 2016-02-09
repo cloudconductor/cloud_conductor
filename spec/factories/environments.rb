@@ -19,7 +19,8 @@ FactoryGirl.define do
     system { FactoryGirl.build(:system) }
     blueprint_history { FactoryGirl.build(:blueprint_history, project: system.project) }
     platform_outputs '{}'
-    ip_address '127.0.0.1'
+    frontend_address '127.0.0.1'
+    consul_addresses '127.0.0.1'
 
     after(:build) do |environment, _evaluator|
       allow(environment).to receive(:create_or_update_stacks)

@@ -138,22 +138,12 @@ describe System do
   end
 
   describe '#update_dns' do
-    it 'call DNSClient#update when ip_address isn\'t nil' do
+    it 'call DNSClient#update when frontend_address isn\'t nil' do
       allow(@system).to receive(:update_dns).and_call_original
 
       @system.environments << environment
       @system.primary_environment = @system.environments.first
-
-      expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
-      @system.send(:update_dns)
-    end
-
-    it 'call DNSClient#update when ip_address isn\'t nil' do
-      allow(@system).to receive(:update_dns).and_call_original
-
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-      environment.ip_address = '127.0.0.1, 10.0.0.1'
+      environment.frontend_address = '127.0.0.1'
 
       expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
       @system.send(:update_dns)
