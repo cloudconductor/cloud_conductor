@@ -48,7 +48,7 @@ Install Packer (Please replace amd64 to 386 in case of working on 32bit operatin
 
 ```bash
 sudo mkdir /opt/packer
-wget https://dl.bintray.com/mitchellh/packer/packer_0.8.6_linux_amd64.zip
+wget https://releases.hashicorp.com/packer/0.8.6/packer_0.8.6_linux_amd64.zip
 sudo unzip packer_0.8.6_linux_amd64.zip -d /opt/packer
 ```
 
