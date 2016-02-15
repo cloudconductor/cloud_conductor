@@ -28,6 +28,8 @@ module CloudConductor
         @adapter = CloudConductor::Adapters::AWSAdapter.new attributes
       when 'openstack'
         @adapter = CloudConductor::Adapters::OpenStackAdapter.new attributes
+      when 'wakame-vdc'
+        @adapter = CloudConductor::Adapters::WakameVdcAdapter.new attributes
       else
         fail "Cannot find #{cloud.type} adapter"
       end
