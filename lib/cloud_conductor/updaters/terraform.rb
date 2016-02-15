@@ -105,7 +105,7 @@ module CloudConductor
         variables
       end
 
-      def cloud_variables(cloud)
+      def cloud_variables(cloud) # rubocop:disable MethodLength
         case cloud.type
         when 'aws'
           {
