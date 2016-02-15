@@ -64,7 +64,7 @@ module CloudConductor
       end
 
       def bootstrap_expect(outputs)
-        instance_types = %w(aws_instance openstack_compute_instance_v2)
+        instance_types = %w(aws_instance openstack_compute_instance_v2 wakamevdc_instance)
         outputs['module'].values.inject(0) do |sum, module_output|
           instance_types.inject(sum) do |sum, type|
             sum + (module_output[type] || {}).size
@@ -119,6 +119,10 @@ module CloudConductor
             os_password: cloud.secret,
             os_auth_url: cloud.entry_point + 'v2.0',
             os_tenant_name: cloud.tenant_name
+          }
+        when 'wakame-vdc'
+          {
+            api_endpoint: cloud.entry_point
           }
         else
           {}

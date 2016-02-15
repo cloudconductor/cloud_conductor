@@ -13,6 +13,8 @@ module CloudConductor
           @variables = %w(bootstrap_expect aws_access_key aws_secret_key aws_region ssh_key_file)
         when 'openstack'
           @variables = %w(bootstrap_expect os_user_name os_tenant_name os_password os_auth_url ssh_key_file)
+        when 'wakame-vdc'
+          @variables = %w(bootstrap_expect api_endpoint ssh_key_file)
         end
       end
 
