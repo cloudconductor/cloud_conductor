@@ -51,7 +51,7 @@ class Pattern < ActiveRecord::Base
       self.type = metadata[:type]
       self.providers = metadata[:providers].to_json
       self.parameters = read_parameters(path).to_json
-      self.roles = read_roles(path).to_json
+      self.roles = metadata[:roles]
     end
   end
 end

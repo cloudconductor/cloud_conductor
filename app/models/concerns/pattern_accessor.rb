@@ -59,22 +59,6 @@ module PatternAccessor
     results
   end
 
-  def read_roles(path)
-    template = load_template(path)
-    return [] if template[:Resources].nil?
-
-    resources = {}
-    resources.update template[:Resources].select(&type?('AWS::AutoScaling::LaunchConfiguration'))
-    resources.update template[:Resources].select(&type?('AWS::EC2::Instance'))
-
-    roles = resources.map do |key, resource|
-      next key if resource[:Metadata].nil?
-      next key if resource[:Metadata][:Role].nil?
-      resource[:Metadata][:Role]
-    end
-    roles.uniq
-  end
-
   def type?(type)
     ->(_, resource) { resource[:Type] == type }
   end

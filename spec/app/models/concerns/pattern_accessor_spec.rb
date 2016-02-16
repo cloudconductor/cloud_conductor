@@ -273,45 +273,6 @@ describe PatternAccessor do
     end
   end
 
-  describe '#read_roles' do
-    it 'return empty array when Resources does not exist' do
-      allow(@accessor).to receive(:load_template).and_return({})
-      expect(@accessor.send(:read_roles, cloned_path)).to eq([])
-    end
-
-    it 'will load template.json and get role list' do
-      template = {
-        Resources: {
-          Dummy1: {
-            Type: 'AWS::EC2::Instance',
-            Metadata: {
-              Role: 'nginx'
-            }
-          },
-          Dummy2: {
-            Type: 'AWS::AutoScaling::LaunchConfiguration',
-            Metadata: {
-              Role: 'rails'
-            }
-          },
-          Dummy3: {
-            Type: 'AWS::EC2::Instance',
-            Metadata: {
-              Role: 'rails'
-            }
-          },
-          Dummy4: {
-            Type: 'AWS::EC2::Instance'
-          }
-        }
-      }.with_indifferent_access
-
-      allow(@accessor).to receive(:load_template).and_return(template)
-      roles = %w(nginx rails Dummy4)
-      expect(@accessor.send(:read_roles, cloned_path)).to match_array(roles)
-    end
-  end
-
   describe '#clone_private_repository' do
     before do
       allow(FileUtils).to receive(:rm_r)
