@@ -34,7 +34,7 @@ resource "null_resource" "consul_bootstrap" {
       host = "${element(<%= collect_outputs('cluster_addresses') %>, count.index)}"
       bastion_user = "centos"
       bastion_key_file = "${var.ssh_key_file}"
-      bastion_host = "${element(<%= collect_outputs('frontend_addresses') %>, 0)}"
+      bastion_host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
     }
   }
 }
@@ -60,7 +60,7 @@ resource "null_resource" "consul_join" {
     connection {
       user = "centos"
       key_file = "${var.ssh_key_file}"
-      host = "${element(<%= collect_outputs('frontend_addresses') %>, 0)}"
+      host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
     }
   }
 }
