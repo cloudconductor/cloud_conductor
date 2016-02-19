@@ -39,7 +39,7 @@ module Consul
         it 'delegate retry logic to #sequential_try' do
           expect(@client).to receive(:sequential_try)
 
-          @stubs.put('/v1/event/fire/dummy') {}
+          @stubs.put('/v1/event/fire/dummy') { [200, {}, '{}'] }
           @client.fire(:dummy)
         end
 
@@ -55,6 +55,7 @@ module Consul
         it 'send PUT request with token' do
           @stubs.put('/v1/event/fire/dummy') do |env|
             expect(env.params['token']).to eq('dummy_token')
+            [200, {}, '{}']
           end
           @client.fire(:dummy)
         end
@@ -62,6 +63,7 @@ module Consul
         it 'send PUT request with node filter' do
           @stubs.put('/v1/event/fire/dummy') do |env|
             expect(env.params['node']).to eq('node1|node2')
+            [200, {}, '{}']
           end
           @client.fire(:dummy, node: %w(node1 node2))
         end
@@ -69,6 +71,7 @@ module Consul
         it 'send PUT request with service filter' do
           @stubs.put('/v1/event/fire/dummy') do |env|
             expect(env.params['service']).to eq('service1|service2')
+            [200, {}, '{}']
           end
           @client.fire(:dummy, service: %w(service1 service2))
         end
@@ -76,8 +79,14 @@ module Consul
         it 'send PUT request with tag filter' do
           @stubs.put('/v1/event/fire/dummy') do |env|
             expect(env.params['tag']).to eq('tag1|tag2')
+            [200, {}, '{}']
           end
           @client.fire(:dummy, tag: %w(tag1 tag2))
+        end
+
+        it 'raise exception when request returns failed status code' do
+          @stubs.put('/v1/event/fire/dummy') { [400, {}, ''] }
+          expect { @client.fire(:dummy) }.to raise_error(RuntimeError)
         end
       end
 
@@ -95,6 +104,21 @@ module Consul
 
           result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
           expect(result).to eq('dummy_result')
+        end
+
+        it 'return nil when some faraday returns nil' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return(nil)
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq(nil)
         end
       end
     end

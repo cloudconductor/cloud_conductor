@@ -26,7 +26,8 @@ module Consul
           faraday.params[:token] = @token
           faraday.params[:recurse] = true if is_recurse
           response = faraday.get("kv/#{key}")
-          return nil unless response.success?
+          return nil if response.status == 404
+          fail response.body unless response.success?
 
           result = {}
           JSON.parse(response.body).each do |entry|
@@ -41,7 +42,9 @@ module Consul
         sequential_try do |faraday|
           value = value.to_json if value.is_a? Hash
           faraday.params = { token: @token }
-          faraday.put("kv/#{key}", value)
+          response = faraday.put("kv/#{key}", value)
+          fail response.body unless response.success?
+          response
         end
       end
 
@@ -65,7 +68,9 @@ module Consul
         @faradaies.find do |faraday|
           begin
             break yield faraday
-          rescue
+          rescue => e
+            Log.warn "Some reqeust to KVS has failed via #{faraday.host}"
+            Log.warn e.message
             nil
           end
         end

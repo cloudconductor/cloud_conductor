@@ -28,7 +28,7 @@ module Consul
           faraday.params[:tag] = filter[:tag].join('|') if filter[:tag]
 
           response = faraday.put("event/fire/#{name}")
-          break nil unless response.success?
+          fail response.body unless response.success?
 
           JSON.parse(response.body)['ID']
         end
@@ -40,7 +40,9 @@ module Consul
         @faradaies.find do |faraday|
           begin
             break yield faraday
-          rescue
+          rescue => e
+            Log.warn "Event can't be send cluster via #{faraday.host}"
+            Log.warn e.message
             nil
           end
         end

@@ -71,9 +71,9 @@ module Consul
           expect(nodes[1][:address]).to eq('10.0.1.2')
         end
 
-        it 'request nil when some error occurred while request' do
-          @stubs.get('/v1/catalog/nodes') { [404, {}, ''] }
-          expect(@client.nodes).to be_nil
+        it 'raise exception when request returns failed status code' do
+          @stubs.get('/v1/catalog/nodes') { [400, {}, ''] }
+          expect { @client.nodes }.to raise_error(RuntimeError)
         end
       end
 
@@ -91,6 +91,21 @@ module Consul
 
           result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
           expect(result).to eq('dummy_result')
+        end
+
+        it 'return nil when some faraday returns nil' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return(nil)
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq(nil)
         end
       end
     end

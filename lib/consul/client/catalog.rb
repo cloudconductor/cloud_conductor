@@ -9,7 +9,7 @@ module Consul
         sequential_try do |faraday|
           faraday.params[:dc] = data_center if data_center
           response = faraday.get('catalog/nodes')
-          break nil unless response.success?
+          fail response.body unless response.success?
 
           JSON.parse(response.body).map do |entry|
             { node: entry['Node'], address: entry['Address'] }
@@ -23,7 +23,9 @@ module Consul
         @faradaies.find do |faraday|
           begin
             break yield faraday
-          rescue
+          rescue => e
+            Log.warn "Some reqeust to Catalog has failed via #{faraday.host}"
+            Log.warn e.message
             nil
           end
         end

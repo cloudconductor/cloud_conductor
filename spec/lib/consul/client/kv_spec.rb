@@ -53,6 +53,11 @@ module Consul
           expect(@client.get('not_found')).to be_nil
         end
 
+        it 'raise error if request returns failed status code which except 404' do
+          @stubs.get('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.get('dummy') }.to raise_error(RuntimeError)
+        end
+
         it 'return string if consul does not return JSON format string' do
           add_stub '/v1/kv/dummy', 'dummy_value'
           expect(@client.get('dummy')).to be_is_a String
@@ -105,6 +110,7 @@ module Consul
         it 'send GET request with token' do
           @stubs.get('/v1/kv/json') do |env|
             expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '{}']
           end
           @client.get 'json'
         end
@@ -112,6 +118,7 @@ module Consul
         it 'send GET request with recursive option and token' do
           @stubs.get('/v1/kv/json') do |env|
             expect(env.url.query).to eq('recurse=true&token=dummy_token')
+            [200, {}, '{}']
           end
           @client.get 'json', true
         end
@@ -119,7 +126,9 @@ module Consul
 
       describe '#put' do
         let(:should_yield) do
-          (-> {}).tap { |proc| expect(proc).to receive(:call) }
+          (-> {}).tap do |proc|
+            expect(proc).to receive(:call) { [200, {}, '{}'] }
+          end
         end
 
         before do
@@ -141,6 +150,7 @@ module Consul
         it 'will request PUT /v1/kv with value' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('dummy_value')
+            [200, {}, '{}']
           end
           @client.put 'dummy', 'dummy_value'
         end
@@ -148,6 +158,7 @@ module Consul
         it 'will request PUT /v1/kv with JSON encoded value if value is Hash' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('{"key":"value"}')
+            [200, {}, '{}']
           end
           @client.put 'dummy', key: 'value'
         end
@@ -155,8 +166,14 @@ module Consul
         it 'send PUT request with token' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '{}']
           end
           @client.put 'dummy', key: 'value'
+        end
+
+        it 'raise error if request returns failed status code' do
+          @stubs.put('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.put('dummy', key: 'value') }.to raise_error(RuntimeError)
         end
       end
 
@@ -224,6 +241,21 @@ module Consul
 
           result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
           expect(result).to eq('dummy_result')
+        end
+
+        it 'return nil when some faraday returns nil' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return(nil)
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq(nil)
         end
       end
     end
