@@ -11,6 +11,7 @@ module CloudConductor
         @environment.update_attribute(:status, :PROGRESS)
 
         build_infrastructure
+        wait_for_leader_election(@environment)
         send_events(@environment)
 
         @environment.update_attribute(:status, :CREATE_COMPLETE)
@@ -47,6 +48,12 @@ module CloudConductor
       def destroy_infrastructure
         # This method will be implemented on subclasses
         fail 'Unimplement method'
+      end
+
+      def wait_for_leader_election(environment)
+        Timeout.timeout(CloudConductor::Config.system_build.timeout) do
+          sleep 3 until environment.consul.running?
+        end
       end
 
       def send_events(environment)
