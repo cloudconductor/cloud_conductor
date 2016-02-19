@@ -68,8 +68,7 @@ module CloudConductor
         end
       end
 
-      # rubocop:disable MethodLength, CyclomaticComplexity, PerceivedComplexity
-      def wait_for_finished(stack, timeout)
+      def wait_for_finished(stack, timeout) # rubocop:disable MethodLength, CyclomaticComplexity
         elapsed_time = 0
 
         Log.debug "Wait until status of stack has changed for #{stack.name}"
@@ -102,18 +101,12 @@ module CloudConductor
             outputs = stack.outputs
             next if outputs['ConsulAddresses'].nil?
 
-            consul_addresses = outputs['ConsulAddresses']
-            Log.debug "  Outputs has ConsulAddresses(#{consul_addresses})"
-
-            consul_config = CloudConductor::Config.consul
-            consul = Consul::Client.new consul_addresses, consul_config.port, consul_config.options.save
-            next unless consul.running?
+            Log.debug "  Outputs has ConsulAddresses(#{outputs['ConsulAddresses']})"
           end
 
           break
         end
       end
-      # rubocop:enable MethodLength, CyclomaticComplexity, PerceivedComplexity
 
       def update_environment(outputs)
         Log.info 'Platform stack has created.'
