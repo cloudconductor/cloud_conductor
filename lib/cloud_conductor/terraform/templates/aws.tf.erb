@@ -29,10 +29,10 @@ resource "null_resource" "consul_bootstrap" {
       "sudo service consul restart"
       ]
     connection {
-      user = "ec2-user"
+      user = "${var.ssh_username}"
       key_file = "${var.ssh_key_file}"
       host = "${element(<%= collect_outputs('cluster_addresses') %>, count.index)}"
-      bastion_user = "ec2-user"
+      bastion_user = "${var.ssh_username}"
       bastion_key_file = "${var.ssh_key_file}"
       bastion_host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
     }
@@ -58,7 +58,7 @@ resource "null_resource" "consul_join" {
       "exit 1"
     ]
     connection {
-      user = "ec2-user"
+      user = "${var.ssh_username}"
       key_file = "${var.ssh_key_file}"
       host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
     }
