@@ -187,8 +187,6 @@ module CloudConductor
           allow(@optional_stack).to receive(:status).and_return(:CREATE_COMPLETE)
           allow(@optional_stack).to receive(:outputs).and_return('ConsulAddresses' => '127.0.0.1')
           allow(@optional_stack).to receive(:events).and_return([])
-
-          allow(Consul::Client).to receive_message_chain(:new, :running?).and_return true
         end
 
         it 'execute without error' do
@@ -235,11 +233,6 @@ module CloudConductor
         it 'return successfully when outputs doesn\'t have ConsulAddresses on optional stack' do
           allow(@optional_stack).to receive(:outputs).and_return(dummy: 'value')
           @builder.send(:wait_for_finished, @optional_stack, CloudFormation::CHECK_PERIOD)
-        end
-
-        it 'infinity loop and timeout while consul doesn\'t running' do
-          allow(Consul::Client).to receive_message_chain(:new, :running?).and_return false
-          expect { @builder.send(:wait_for_finished, @platform_stack, CloudFormation::CHECK_PERIOD) }.to raise_error(RuntimeError)
         end
       end
 
