@@ -40,7 +40,10 @@ module Consul
     end
 
     def running?
-      @faradaies.any? { |faraday| faraday.get('/').success? }
+      @faradaies.any? do |faraday|
+        response = faraday.get('status/leader')
+        response.success? && response.body != '""'
+      end
     rescue
       false
     end

@@ -22,11 +22,13 @@ module CloudConductor
       describe '#build' do
         before do
           allow(@builder).to receive(:build_infrastructure)
+          allow(@builder).to receive(:wait_for_leader_election)
           allow(@builder).to receive(:send_events)
         end
 
         it 'call subroutines that can override in child classes' do
           expect(@builder).to receive(:build_infrastructure)
+          expect(@builder).to receive(:wait_for_leader_election)
           expect(@builder).to receive(:send_events)
           @builder.build
         end
