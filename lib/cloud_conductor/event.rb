@@ -19,6 +19,7 @@ module CloudConductor
     end
 
     def fire(name, payload = {}, filter = {})
+      Log.info "#{name} event will be fire"
       payload.each do |key, value|
         @client.kv.merge key, value
       end
@@ -30,7 +31,9 @@ module CloudConductor
       wait(event_id)
       result = find(event_id)
 
-      unless result.success?
+      if result.success?
+        Log.info "#{name} event has finished successfully"
+      else
         details = JSON.pretty_generate(JSON.parse(result.refresh!.to_json))
         fail "#{name} event has failed.\n#{details}"
       end
