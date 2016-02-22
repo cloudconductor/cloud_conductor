@@ -173,13 +173,13 @@ describe Cloud do
 
     it 'update source_image on BaseImage' do
       @cloud.save!
-      expect(@cloud.base_images.first.source_image).to eq('ami-deefefb0')
-      expect(BaseImage.first.source_image).to eq('ami-deefefb0')
+      expect(@cloud.base_images.first.source_image).to eq('ami-d5f2f2bb')
+      expect(BaseImage.first.source_image).to eq('ami-d5f2f2bb')
 
       @cloud.entry_point = 'ap-southeast-1'
       @cloud.update_base_image
-      expect(@cloud.base_images.first.source_image).to eq('ami-aae22bc9')
-      expect(BaseImage.first.source_image).to eq('ami-aae22bc9')
+      expect(@cloud.base_images.first.source_image).to eq('ami-6408c107')
+      expect(BaseImage.first.source_image).to eq('ami-6408c107')
     end
 
     it 'delete previous baseimage when tyep has been changed' do
@@ -195,16 +195,16 @@ describe Cloud do
   describe '#aws_images' do
     it 'return ami id list that corresponding to all of the Region' do
       expected_list = {
-        'ap-northeast-1' => { 'platform' => 'centos', 'image' => 'ami-deefefb0' },
-        'ap-northeast-2' => { 'platform' => 'centos', 'image' => 'ami-d22de3bc' },
-        'ap-southeast-1' => { 'platform' => 'centos', 'image' => 'ami-aae22bc9' },
-        'ap-southeast-2' => { 'platform' => 'centos', 'image' => 'ami-4d51772e' },
-        'eu-west-1' => { 'platform' => 'centos', 'image' => 'ami-0929947a' },
-        'eu-central-1' => { 'platform' => 'centos', 'image' => 'ami-8dcdd7e1' },
-        'sa-east-1' => { 'platform' => 'centos', 'image' => 'ami-d1c042bd' },
-        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-3640735c' },
-        'us-west-1' => { 'platform' => 'centos', 'image' => 'ami-d2ddacb2' },
-        'us-west-2' => { 'platform' => 'centos', 'image' => 'ami-969f7df6' }
+        'ap-northeast-1' => { 'platform' => 'centos', 'image' => 'ami-d5f2f2bb' },
+        'ap-northeast-2' => { 'platform' => 'centos', 'image' => 'ami-eb26e885' },
+        'ap-southeast-1' => { 'platform' => 'centos', 'image' => 'ami-6408c107' },
+        'ap-southeast-2' => { 'platform' => 'centos', 'image' => 'ami-812c0ae2' },
+        'eu-west-1' => { 'platform' => 'centos', 'image' => 'ami-0ff9457c' },
+        'eu-central-1' => { 'platform' => 'centos', 'image' => 'ami-6ffce603' },
+        'sa-east-1' => { 'platform' => 'centos', 'image' => 'ami-2ce56740' },
+        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-18c5f672' },
+        'us-west-1' => { 'platform' => 'centos', 'image' => 'ami-48324228' },
+        'us-west-2' => { 'platform' => 'centos', 'image' => 'ami-abca28cb' }
       }
 
       expect(@cloud.aws_images).to eq(expected_list)
