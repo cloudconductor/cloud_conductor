@@ -1,6 +1,9 @@
 ap-northeast-1:
   platform: centos
   image: ami-deefefb0
+ap-northeast-2:
+  platform: centos
+  image: ami-d22de3bc
 ap-southeast-1:
   platform: centos
   image: ami-aae22bc9
