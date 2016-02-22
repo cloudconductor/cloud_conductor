@@ -321,7 +321,7 @@ module CloudConductor
 
           result = @builder.send(:image_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
-          expect(result).to eq(
+          expect(result).to include(
             web_image: 'ami-000000',
             ap_image: 'ami-111111',
             db_image: 'ami-222222'
@@ -338,7 +338,7 @@ module CloudConductor
 
           result = @builder.send(:image_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
-          expect(result).to eq(
+          expect(result).to include(
             web_image: 'ami-000000',
             db_image: 'ami-222222'
           )
@@ -351,8 +351,22 @@ module CloudConductor
 
           result = @builder.send(:image_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
-          expect(result).to eq(
+          expect(result).to include(
             web_ap_image: 'ami-000000'
+          )
+        end
+
+        it 'returns hash which has ssh username to connect' do
+          base_image = FactoryGirl.build(:base_image, ssh_username: 'centos')
+          image = FactoryGirl.build(:image, role: 'web', cloud: cloud, image: 'ami-000000', base_image: base_image)
+          pattern_snapshots = FactoryGirl.build_list(:pattern_snapshot, 1)
+          pattern_snapshots[0].images << image
+          environment.blueprint_history.pattern_snapshots = pattern_snapshots
+
+          result = @builder.send(:image_variables, cloud, environment)
+          expect(result).to be_is_a(Hash)
+          expect(result).to include(
+            ssh_username: 'centos'
           )
         end
       end

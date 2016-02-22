@@ -81,12 +81,7 @@ module CloudConductor
             outputs = stack.outputs
             next if outputs['ConsulAddresses'].nil?
 
-            consul_addresses = outputs['ConsulAddresses']
-            Log.debug "  Outputs has ConsulAddresses(#{consul_addresses})"
-
-            consul_config = CloudConductor::Config.consul
-            consul = Consul::Client.new consul_addresses, consul_config.port, consul_config.options.save
-            next unless consul.running?
+            Log.debug "  Outputs has ConsulAddresses(#{outputs['ConsulAddresses']})"
           end
 
           break

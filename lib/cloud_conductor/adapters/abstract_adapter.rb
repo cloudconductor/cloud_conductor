@@ -20,19 +20,39 @@ module CloudConductor
       end
 
       # rubocop: disable UnusedMethodArgument
-      def create_stack(name, template, parameters, options = {})
+      def create_stack(name, template, parameters)
         fail 'Unimplement method'
       end
 
-      def get_stack_status(name, options = {})
+      def update_stack(name, template, parameters)
         fail 'Unimplement method'
       end
 
-      def get_outputs(name, options = {})
+      def get_stack_status(name)
         fail 'Unimplement method'
       end
 
-      def destroy_stack(name, options = {})
+      def get_stack_events(name)
+        fail 'Unimplement method'
+      end
+
+      def get_outputs(name)
+        fail 'Unimplement method'
+      end
+
+      def availability_zones
+        fail 'Unimplement method'
+      end
+
+      def destroy_stack(name)
+        fail 'Unimplement method'
+      end
+
+      def destroy_image(name)
+        fail 'Unimplement method'
+      end
+
+      def post_process
         fail 'Unimplement method'
       end
       # rubocop: enable UnusedMethodArgument

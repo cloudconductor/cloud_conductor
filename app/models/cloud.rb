@@ -10,7 +10,7 @@ class Cloud < ActiveRecord::Base
   validates :name, presence: true, uniqueness: { scope: :project_id }
   validates_presence_of :project, :name, :entry_point, :key, :secret, :type
   validates_presence_of :tenant_name, if: -> { type == 'openstack' }
-  validates :type, inclusion: { in: %w(aws openstack) }
+  validates :type, inclusion: { in: %w(aws openstack wakame-vdc) }
   validates :entry_point, inclusion: { in: AWS_REGIONS }, if: -> { type == 'aws' }
 
   before_destroy :raise_error_in_use
@@ -32,7 +32,7 @@ class Cloud < ActiveRecord::Base
 
   def update_base_image
     base_images.destroy_all if type_changed? && persisted?
-    return if type == 'openstack'
+    return if type != 'aws'
 
     if base_images.empty?
       aws_image = aws_images[entry_point]

@@ -82,23 +82,28 @@ module Consul
         (-> {}).tap { |proc| expect(proc).to receive(:call) }
       end
 
-      it 'will request http://host:8500/ ' do
-        @stubs.get('/', &should_yield)
+      it 'will request http://host:8500/v1/status/leader' do
+        @stubs.get('/v1/status/leader', &should_yield)
         @client.running?
       end
 
-      it 'return true when API return 200 status code' do
-        @stubs.get('/') { [200, {}, 'Consul Agent'] }
+      it 'return true when API return 200 status code and leader address' do
+        @stubs.get('/v1/status/leader') { [200, {}, '"127.0.0.1:8300"'] }
         expect(@client.running?).to be_truthy
       end
 
       it 'return false when API return 500 status code' do
-        @stubs.get('/') { [500, {}, ''] }
+        @stubs.get('/v1/status/leader') { [500, {}, ''] }
+        expect(@client.running?).to be_falsey
+      end
+
+      it 'return false before leader elect in consul cluster' do
+        @stubs.get('/v1/status/leader') { [200, {}, '""'] }
         expect(@client.running?).to be_falsey
       end
 
       it 'return false when some error occurred while request' do
-        @stubs.get('/') { fail Faraday::ConnectionFailed, '' }
+        @stubs.get('/v1/status/leader') { fail Faraday::ConnectionFailed, '' }
         expect(@client.running?).to be_falsey
       end
     end
