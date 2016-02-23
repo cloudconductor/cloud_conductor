@@ -23,7 +23,7 @@ resource "null_resource" "consul_bootstrap" {
   }
   provisioner "remote-exec" {
     inline = [
-      "sudo sed -i -e 's/\"bind_addr\".*/\"bind_addr\": \"${element(concat(split(", ", module.tomcat_pattern.cluster_addresses)), count.index)}\",/g' /etc/consul.d/default.json",
+      "sudo sed -i -e 's/\"bind_addr\".*/\"bind_addr\": \"${element(<%= collect_outputs('cluster_addresses') %>, count.index)}\",/g' /etc/consul.d/default.json",
       "sudo sed -i -e '/BOOTSTRAP_EXPECT/d' /opt/cloudconductor/config",
       "sudo su -c \"/bin/echo BOOTSTRAP_EXPECT=${var.bootstrap_expect} >> /opt/cloudconductor/config\"",
       "sudo service consul restart"
