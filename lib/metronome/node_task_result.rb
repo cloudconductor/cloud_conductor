@@ -24,7 +24,7 @@ module Metronome
       self.status = hash['Status'].to_sym
       self.started_at = DateTime.parse(hash['StartedAt']) if hash['StartedAt']
       self.finished_at = DateTime.parse(hash['FinishedAt']) if hash['FinishedAt']
-      self.log = log.force_encoding('UTF-8')
+      self.log = log.force_encoding('UTF-8') if log
     end
 
     def finished?
