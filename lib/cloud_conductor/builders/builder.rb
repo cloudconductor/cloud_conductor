@@ -75,9 +75,6 @@ module CloudConductor
           name: environment.system.name,
           dns: environment.system.domain
         }
-        payload['cloudconductor/account_token'] = {
-          auth_token: get_account_authentication_token(environment)
-        }
 
         environment.stacks.created.each do |stack|
           payload.deep_merge! stack.payload
