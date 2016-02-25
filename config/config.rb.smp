@@ -4,9 +4,6 @@ environment = (ENV['RACK_ENV'] || ENV['RAILS_ENV'] || :development).to_sym
 application_log_path "log/conductor_#{environment}.log"
 access_log_path 'log/conductor_access.log'
 
-# cloudconductor server settings
-cloudconductor.url 'http://your-cloudconductor-server.example.com/api/v1'
-
 # cloudconductor_init settings
 cloudconductor_init.url 'https://github.com/cloudconductor/cloud_conductor_init.git'
 cloudconductor_init.revision 'master'
@@ -27,13 +24,6 @@ dns.ttl 60
 # dns.service 'bind9'
 # dns.server 'your-dns-server.example.com'
 # dns.key_file '/etc/rndc.key'
-
-# zabbix server settings
-zabbix.enabled false
-zabbix.url 'http://your-zabbix-server.example.com/zabbix/api_jsonrpc.php'
-zabbix.user 'Admin'
-zabbix.password 'zabbix'
-zabbix.default_template_name 'Template App HTTP Service'
 
 # consul settings
 consul.port 8501
