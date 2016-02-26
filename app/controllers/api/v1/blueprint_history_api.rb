@@ -24,13 +24,17 @@ module API
             desc 'Get blueprint history parameters'
             params do
               requires :ver, type: Integer, desc: 'Blueprint history version'
+              optional :cloud_ids, type: String, desc: 'Cloud ids to build environment'
             end
             get '/:ver/parameters' do
               blueprint = ::Blueprint.find(params[:blueprint_id])
               authorize!(:read, blueprint)
               history = blueprint.histories.where(version: params[:ver]).first!
+
+              providers = history.providers.map { |_, providers| providers.first }.uniq
+              clouds = params[:cloud_ids].split(/,\s*/).map { |cloud_id| Cloud.find(cloud_id).type } if params[:cloud_ids]
               history.pattern_snapshots.each_with_object({}) do |pattern, hash|
-                hash[pattern.name] = pattern.filtered_parameters
+                hash[pattern.name] = pattern.filtered_parameters(false, clouds, providers)
               end
             end
 
