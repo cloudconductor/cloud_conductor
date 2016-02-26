@@ -38,7 +38,7 @@ class BlueprintHistory < ActiveRecord::Base
       JSON.parse(provider)
     end
 
-    providers.map(&:keys).inject(&:|).each do |cloud|
+    (providers.map(&:keys).inject(&:|) || []).each do |cloud|
       providers.each do |provider|
         list = [provider[cloud]].flatten.compact
         result[cloud] ||= list
