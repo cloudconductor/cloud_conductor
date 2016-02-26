@@ -46,7 +46,14 @@ class BlueprintHistory < ActiveRecord::Base
       end
     end
 
-    result.reject { |_key, value| value.empty? }
+    result.reject! { |_key, value| value.empty? }
+
+    order = CloudConductor::Config.system_build.providers
+    result.each do |_key, value|
+      value.sort! do |a, b|
+        (order.index(a.to_sym) || order.size) <=> (order.index(b.to_sym) || order.size)
+      end
+    end
   end
 
   def ssh_private_key
