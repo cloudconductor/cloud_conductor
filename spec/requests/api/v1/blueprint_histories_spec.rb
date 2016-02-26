@@ -6,6 +6,34 @@ describe API do
     before do
       blueprint_history
       blueprint_history.pattern_snapshots << pattern_snapshot
+      pattern_snapshot.parameters = <<-EOS
+        {
+          "cloud_formation": {
+            "WebInstanceType" : {
+              "Description" : "WebServer instance type",
+              "Type" : "String"
+            }
+          },
+          "terraform": {
+            "aws": {
+              "web_instance_type" : {
+                "description" : "WebServer instance type",
+                "default" : "t2.small"
+              }
+            },
+            "openstack": {
+              "ap_instance_type" : {
+                "description" : "APServer instance type",
+                "default" : "t2.small"
+              }
+            }
+          }
+        }
+      EOS
+      pattern_snapshot.providers = '{"aws":["cloud_formation","terraform"],"openstack":["cloud_formation","terraform"]}'
+      pattern_snapshot.save!
+
+      allow(CloudConductor::Config.system_build).to receive(:providers).and_return([:terraform, :cloud_formation])
     end
 
     describe 'GET /blueprints/:blueprint_id/histories' do
@@ -40,7 +68,22 @@ describe API do
       let(:url) { "/api/v1/blueprints/#{blueprint.id}/histories/#{blueprint_history.version}/parameters" }
       let(:result) do
         result = {}
-        result[blueprint_history.pattern_snapshots.first.name] = {}
+        result[blueprint_history.pattern_snapshots.first.name] = {
+          terraform: {
+            aws: {
+              web_instance_type: {
+                description: 'WebServer instance type',
+                default: 't2.small'
+              }
+            },
+            openstack: {
+              ap_instance_type: {
+                description: 'APServer instance type',
+                default: 't2.small'
+              }
+            }
+          }
+        }
         result
       end
 
@@ -66,6 +109,27 @@ describe API do
       end
 
       context 'project_operator', project_operator: true do
+        it_behaves_like('200 OK')
+      end
+
+      context 'filter by providers and clouds', project_operator: true do
+        let(:params) do
+          { 'cloud_ids' => cloud.id.to_s }
+        end
+        let(:result) do
+          result = {}
+          result[blueprint_history.pattern_snapshots.first.name] = {
+            terraform: {
+              aws: {
+                web_instance_type: {
+                  description: 'WebServer instance type',
+                  default: 't2.small'
+                }
+              }
+            }
+          }
+          result
+        end
         it_behaves_like('200 OK')
       end
     end
