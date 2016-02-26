@@ -1,5 +1,6 @@
 class Pattern < ActiveRecord::Base
   include PatternAccessor
+  include Encryptor
   self.inheritance_column = nil
 
   belongs_to :project
@@ -14,12 +15,6 @@ class Pattern < ActiveRecord::Base
   end
 
   before_save :update_metadata
-
-  def crypt
-    secure = Rails.application.key_generator.generate_key('secret key')
-    sign_secure = Rails.application.key_generator.generate_key('signed secret key')
-    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
-  end
 
   def secret_key
     encrypted_secret_key = read_attribute(:secret_key)
