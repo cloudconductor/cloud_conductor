@@ -24,17 +24,25 @@ class PatternSnapshot < ActiveRecord::Base
     super({ except: :parameters, methods: :status }.merge(options))
   end
 
-  def filtered_parameters(is_include_computed = false)
-    return JSON.parse(parameters) if is_include_computed
-
+  # rubocop:disable CyclomaticComplexity, PerceivedComplexity
+  def filtered_parameters(is_include_computed = false, clouds = nil, providers = nil)
     filtered_parameters = JSON.parse(parameters || '{}')
 
+    # Reject unused cloud
+    (filtered_parameters['terraform'] || {}).slice!(*clouds) if clouds
+
+    # Reject unused provider
+    filtered_parameters.slice!(*providers) if providers
+
+    # Reject computed parameter
+    return filtered_parameters if is_include_computed
     (filtered_parameters['cloud_formation'] || {}).reject!(&computed?)
     (filtered_parameters['terraform'] || {}).each do |_, variables|
       variables.reject!(&computed?)
     end
     filtered_parameters
   end
+  # rubocop:enable CyclomaticComplexity, PerceivedComplexity
 
   def computed?
     ->(_, v) { (v['Description'] || v['description']) =~ /^\[computed\]/ }

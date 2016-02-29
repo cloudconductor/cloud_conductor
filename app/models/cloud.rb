@@ -1,4 +1,5 @@
 class Cloud < ActiveRecord::Base
+  include Encryptor
   self.inheritance_column = nil
 
   belongs_to :project
@@ -15,12 +16,6 @@ class Cloud < ActiveRecord::Base
 
   before_destroy :raise_error_in_use
   before_save :update_base_image
-
-  def crypt
-    secure = Rails.application.key_generator.generate_key('encrypted secret')
-    sign_secure = Rails.application.key_generator.generate_key('signed encrypted secret')
-    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
-  end
 
   def secret
     crypt.decrypt_and_verify(encrypted_secret)

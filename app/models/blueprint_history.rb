@@ -1,5 +1,6 @@
 class BlueprintHistory < ActiveRecord::Base
   include PatternAccessor
+  include Encryptor
   belongs_to :blueprint
   has_many :pattern_snapshots, dependent: :destroy
 
@@ -9,12 +10,6 @@ class BlueprintHistory < ActiveRecord::Base
   before_create :set_ssh_private_key
   before_create :set_version
   before_create :build_pattern_snapshots
-
-  def crypt
-    secure = Rails.application.key_generator.generate_key('encrypted secret')
-    sign_secure = Rails.application.key_generator.generate_key('signed encrypted secret')
-    ActiveSupport::MessageEncryptor.new(secure, sign_secure)
-  end
 
   def project
     blueprint.project
@@ -38,7 +33,7 @@ class BlueprintHistory < ActiveRecord::Base
       JSON.parse(provider)
     end
 
-    providers.map(&:keys).inject(&:|).each do |cloud|
+    (providers.map(&:keys).inject(&:|) || []).each do |cloud|
       providers.each do |provider|
         list = [provider[cloud]].flatten.compact
         result[cloud] ||= list
@@ -46,7 +41,14 @@ class BlueprintHistory < ActiveRecord::Base
       end
     end
 
-    result.reject { |_key, value| value.empty? }
+    result.reject! { |_key, value| value.empty? }
+
+    order = CloudConductor::Config.system_build.providers
+    result.each do |_key, value|
+      value.sort! do |a, b|
+        (order.index(a.to_sym) || order.size) <=> (order.index(b.to_sym) || order.size)
+      end
+    end
   end
 
   def ssh_private_key

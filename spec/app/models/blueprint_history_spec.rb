@@ -241,7 +241,7 @@ Q2YDsDEKKlGHNNAQKVgANuHKf7Q2exap2LsxveBjwMxpLlSbAiiIEXA=
 
     it 'return usable providers on aws if all pattern_snapshots can use terraform' do
       @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
-      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloud_formation", "terraform"] }'
       @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"] }'
       expect(@history.providers).to eq('aws' => %w(terraform))
     end
@@ -255,7 +255,7 @@ Q2YDsDEKKlGHNNAQKVgANuHKf7Q2exap2LsxveBjwMxpLlSbAiiIEXA=
 
     it 'return empty provider on aws if pattern_snapshots have unique provider' do
       @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
-      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloud_formation"] }'
       @history.pattern_snapshots[2].providers = '{ "aws": ["dummy"] }'
       expect(@history.providers).to eq({})
     end
@@ -269,16 +269,28 @@ Q2YDsDEKKlGHNNAQKVgANuHKf7Q2exap2LsxveBjwMxpLlSbAiiIEXA=
 
     it 'return usable providers on aws if provider in metadata.yml as string instead of array' do
       @history.pattern_snapshots[0].providers = '{ "aws": "terraform" }'
-      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloud_formation", "terraform"] }'
       @history.pattern_snapshots[2].providers = '{ "aws": ["terraform", "dummy"] }'
       expect(@history.providers).to eq('aws' => %w(terraform))
     end
 
     it 'isn\'t effected by nil provider' do
       @history.pattern_snapshots[0].providers = '{ "aws": ["terraform"] }'
-      @history.pattern_snapshots[1].providers = '{ "aws": ["cloudformation", "terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloud_formation", "terraform"] }'
       @history.pattern_snapshots[2].providers = nil
       expect(@history.providers).to eq('aws' => %w(terraform))
+    end
+
+    it 'return sorted providers by config' do
+      @history.pattern_snapshots[0].providers = '{ "aws": ["cloud_formation", "terraform"] }'
+      @history.pattern_snapshots[1].providers = '{ "aws": ["cloud_formation", "terraform"] }'
+      @history.pattern_snapshots[2].providers = '{ "aws": ["cloud_formation", "terraform"] }'
+
+      allow(CloudConductor::Config.system_build).to receive(:providers).and_return([:terraform, :cloud_formation])
+      expect(@history.providers).to eq('aws' => %w(terraform cloud_formation))
+
+      allow(CloudConductor::Config.system_build).to receive(:providers).and_return([:cloud_formation, :terraform])
+      expect(@history.providers).to eq('aws' => %w(cloud_formation terraform))
     end
   end
 

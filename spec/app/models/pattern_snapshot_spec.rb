@@ -350,5 +350,46 @@ describe PatternSnapshot do
         }
       )
     end
+
+    it 'reject openstack parameters when specified aws cloud' do
+      expect(@pattern.filtered_parameters(true, ['aws'])).to eq(
+        'cloud_formation' => {
+          'WebImageId' => {
+            'Description' => '[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.',
+            'Type' => 'String'
+          },
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        },
+        'terraform' => {
+          'aws' => {
+            'web_image_id' => {
+              'description' => '[computed] WebServer Image Id. This parameter is automatically filled by CloudConductor.'
+            },
+            'web_instance_type' => {
+              'description' => 'WebServer instance type',
+              'default' => 't2.small'
+            }
+          }
+        }
+      )
+    end
+
+    it 'reject unused openstack parameters when specified cloud' do
+      expect(@pattern.filtered_parameters(true, nil, ['cloud_formation'])).to eq(
+        'cloud_formation' => {
+          'WebImageId' => {
+            'Description' => '[computed] DBServer Image Id. This parameter is automatically filled by CloudConductor.',
+            'Type' => 'String'
+          },
+          'WebInstanceType' => {
+            'Description' => 'WebServer instance type',
+            'Type' => 'String'
+          }
+        }
+      )
+    end
   end
 end
