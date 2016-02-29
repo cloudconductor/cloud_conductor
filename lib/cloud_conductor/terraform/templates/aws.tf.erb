@@ -27,7 +27,7 @@ resource "null_resource" "consul_bootstrap" {
       "sudo su -c \"sed -i -e '/BOOTSTRAP_EXPECT/d' /opt/cloudconductor/config\"",
       "sudo su -c \"/bin/echo BOOTSTRAP_EXPECT=${var.bootstrap_expect} >> /opt/cloudconductor/config\"",
       "sudo service consul restart",
-      "sleep 3"
+      "sleep 10"
       ]
     connection {
       user = "${var.ssh_username}"
