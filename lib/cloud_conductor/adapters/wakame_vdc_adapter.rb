@@ -17,6 +17,19 @@ module CloudConductor
         image = Hijiki::DcmgrResource::V1203::Image.find(image_id)
 
         image.destroy if image && image.state != 'deleted'
+        destroy_backup_object(image.backup_object_id)
+        true
+      end
+
+      def destroy_backup_object(backup_object_id)
+        faraday = Faraday.new(@options[:entry_point])
+        result = faraday.get("backup_objects/#{backup_object_id}")
+        return false if result.status == 404
+        return false if JSON.parse(result.body)['state'] == 'deleted'
+
+        result = faraday.delete("backup_objects/#{backup_object_id}")
+        fail unless result.success?
+        true
       end
     end
   end
