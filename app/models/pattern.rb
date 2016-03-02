@@ -29,7 +29,7 @@ class Pattern < ActiveRecord::Base
 
   def as_json(options = {})
     original_secret_key = secret_key
-    self.secret_key = '********'
+    self.secret_key = '********' unless original_secret_key.blank?
     json = super({ except: :parameters, methods: :secret_key }.merge(options))
     self.secret_key = original_secret_key
     json
