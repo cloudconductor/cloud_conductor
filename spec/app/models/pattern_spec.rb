@@ -103,4 +103,12 @@ describe Pattern do
       @pattern.send(:update_metadata)
     end
   end
+
+  describe '#as_json' do
+    it 'cloak sensitive attribute' do
+      @pattern.secret_key = 'dummy_key'
+      hash = @pattern.as_json
+      expect(hash['secret_key']).to eq('********')
+    end
+  end
 end
