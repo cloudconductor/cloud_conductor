@@ -110,5 +110,10 @@ describe Pattern do
       hash = @pattern.as_json
       expect(hash['secret_key']).to eq('********')
     end
+
+    it 'return secret_key as nil when secret_key of pattern is nil' do
+      hash = @pattern.as_json
+      expect(hash['secret_key']).to be_nil
+    end
   end
 end
