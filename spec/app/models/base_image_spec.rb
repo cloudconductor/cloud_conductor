@@ -26,7 +26,7 @@ describe BaseImage do
     it 'set default to ssh_username' do
       base_image = BaseImage.new
 
-      expect(base_image.ssh_username).to eq('ec2-user')
+      expect(base_image.ssh_username).to eq('centos')
     end
 
     it 'set specified value to platform, platform_version  and ssh_username' do

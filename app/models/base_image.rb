@@ -10,7 +10,7 @@ class BaseImage < ActiveRecord::Base
   end
 
   after_initialize do
-    self.ssh_username ||= 'ec2-user'
+    self.ssh_username ||= 'centos'
   end
 
   scope :select_by_project_id, -> (project_id) { joins(:cloud).where(clouds: { project_id: project_id }) }
