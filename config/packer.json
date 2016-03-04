@@ -37,6 +37,10 @@
         "  sudo ROLE={{user `role`}} CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/bootstrap.log && exit 1)",
         "fi",
 
+        "if [ -f /etc/hostname ]; then",
+        "  sudo rm -rf /etc/hostname",
+        "fi",
+
         "sync"
       ]
     }
