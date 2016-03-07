@@ -4,7 +4,6 @@ username: <%= cloud.key %>
 password: <%= cloud.secret %>
 tenant_name: <%= cloud.tenant_name %>
 identity_endpoint: <%= cloud.entry_point %>v2.0/tokens
-domain_name: default
 region: RegionOne
 flavor: <%= cloud.client.adapter.flavor(CloudConductor::Config.packer.openstack_flavor_name).id %>
 image_name: '{{user `pattern_name`}}-{{user `image_name`}}-<%= platform %>-{{uuid}}'
