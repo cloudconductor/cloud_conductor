@@ -43,14 +43,6 @@ describe System do
       @system.save!
     end
 
-    it 'call #enable_monitoring callback if system has primary environment' do
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      expect(@system).to receive(:enable_monitoring)
-      @system.save!
-    end
-
     it 'doesn\'t call #update_dns and #enable_monitoring callback if system hasn\'t primary environment' do
       @system.environments << environment
 
@@ -74,18 +66,6 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:update_dns).and_raise
-      expect { @system.save! }.to raise_error(RuntimeError)
-
-      expect(Environment.find(environment).status).to eq(:ERROR)
-    end
-
-    it 'update status of primary environment when some error occurred while request to monitoring service' do
-      environment.status = :CREATE_COMPLETE
-      environment.save!
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      allow(@system).to receive(:enable_monitoring).and_raise
       expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
@@ -147,18 +127,6 @@ describe System do
 
       expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
       @system.send(:update_dns)
-    end
-  end
-
-  describe '#enable_monitoring' do
-    it 'call ZabbixClient#register' do
-      allow(@system).to receive(:enable_monitoring).and_call_original
-
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      expect(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)
-      @system.send(:enable_monitoring)
     end
   end
 end
