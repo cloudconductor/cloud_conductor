@@ -97,7 +97,7 @@ module CloudConductor
       end
 
       def get_account_authentication_token(environment)
-        return environment.system.project.accounts.authentication_token
+        environment.system.project.accounts.authentication_token
       end
     end
   end
