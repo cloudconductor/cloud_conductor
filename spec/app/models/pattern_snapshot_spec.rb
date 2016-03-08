@@ -159,8 +159,6 @@ describe PatternSnapshot do
       @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
-      expect(@pattern.platform).to eq('CentOS')
-      expect(@pattern.platform_version).to eq('6.5')
       expect(@pattern.providers).to eq('{"aws":["cloud_formation"]}')
       expect(@pattern.roles).to eq('["web","ap"]')
     end
