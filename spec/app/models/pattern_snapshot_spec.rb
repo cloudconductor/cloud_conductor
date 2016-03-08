@@ -131,7 +131,8 @@ describe PatternSnapshot do
             platform: 'CentOS',
             platform_version: '6.5'
           }
-        ]
+        ],
+        roles: %w(web ap)
       }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
@@ -161,6 +162,7 @@ describe PatternSnapshot do
       expect(@pattern.platform).to eq('CentOS')
       expect(@pattern.platform_version).to eq('6.5')
       expect(@pattern.providers).to eq('{"aws":["cloud_formation"]}')
+      expect(@pattern.roles).to eq('["web","ap"]')
     end
 
     it 'set nil to providers when metadata does not contain providers' do
