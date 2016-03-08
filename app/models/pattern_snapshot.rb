@@ -98,7 +98,7 @@ class PatternSnapshot < ActiveRecord::Base
   private
 
   def support?(supports, platform)
-    supports ||= []
+    return true unless supports
     supports.any? { |support| Platform.family(support[:platform]) == Platform.family(platform) }
   end
 

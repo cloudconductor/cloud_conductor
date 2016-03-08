@@ -413,6 +413,10 @@ describe PatternSnapshot do
       ]
     end
 
+    it 'return true when supports is nil' do
+      expect(@pattern.send(:support?, nil, 'ubuntu')).to be_truthy
+    end
+
     it 'return true when target platform match metadata' do
       expect(@pattern.send(:support?, @supports, 'centos')).to be_truthy
     end
