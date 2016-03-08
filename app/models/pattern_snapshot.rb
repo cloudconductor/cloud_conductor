@@ -50,6 +50,7 @@ class PatternSnapshot < ActiveRecord::Base
 
   def freeze_pattern(path)
     metadata = load_metadata(path)
+    fail 'Target platform or platform version does not supported' unless support?(metadata[:supports], platform)
 
     self.name = metadata[:name]
     self.type = metadata[:type]
@@ -95,6 +96,11 @@ class PatternSnapshot < ActiveRecord::Base
   end
 
   private
+
+  def support?(supports, platform)
+    supports ||= []
+    supports.any? { |support| Platform.family(support[:platform]) == Platform.family(platform) }
+  end
 
   def freeze_revision(path)
     Dir.chdir path do

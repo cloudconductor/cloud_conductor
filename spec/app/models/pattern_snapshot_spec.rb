@@ -138,6 +138,7 @@ describe PatternSnapshot do
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:freeze_revision)
+      allow(@pattern).to receive(:support?).and_return(true)
     end
 
     it 'will call #load_metadata' do
@@ -168,6 +169,11 @@ describe PatternSnapshot do
 
       @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.providers).to be_nil
+    end
+
+    it 'raise error when #support? return false' do
+      allow(@pattern).to receive(:support?).and_return(false)
+      expect { @pattern.send(:freeze_pattern, cloned_path) }.to raise_error(RuntimeError)
     end
   end
 
@@ -390,6 +396,33 @@ describe PatternSnapshot do
           }
         }
       )
+    end
+  end
+
+  describe '#support?' do
+    before do
+      @supports = [
+        {
+          platform: 'centos',
+          platform_version: '6.5'
+        },
+        {
+          platform: 'centos',
+          platform_version: '7.1'
+        }
+      ]
+    end
+
+    it 'return true when target platform match metadata' do
+      expect(@pattern.send(:support?, @supports, 'centos')).to be_truthy
+    end
+
+    it 'return true when target platform family match metadata' do
+      expect(@pattern.send(:support?, @supports, 'redhat')).to be_truthy
+    end
+
+    it 'return true when target platform and platform_version match metadata exactly' do
+      expect(@pattern.send(:support?, @supports, 'ubuntu')).to be_falsey
     end
   end
 end
