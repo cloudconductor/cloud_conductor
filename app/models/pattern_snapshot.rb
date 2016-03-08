@@ -50,7 +50,11 @@ class PatternSnapshot < ActiveRecord::Base
 
   def freeze_pattern(path)
     metadata = load_metadata(path)
-    fail 'Target platform or platform version does not supported' unless support?(metadata[:supports], platform)
+    unless support?(metadata[:supports], platform)
+      message = "#{metadata[:name]} does not support #{platform}"
+      message << " #{platform_version}" if platform_version
+      fail message
+    end
 
     self.name = metadata[:name]
     self.type = metadata[:type]
