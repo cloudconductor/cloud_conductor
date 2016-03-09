@@ -131,12 +131,14 @@ describe PatternSnapshot do
             platform: 'CentOS',
             platform_version: '6.5'
           }
-        ]
+        ],
+        roles: %w(web ap)
       }
       allow(@pattern).to receive(:freeze_pattern).and_call_original
       allow(@pattern).to receive(:load_metadata).and_return(metadata)
       allow(@pattern).to receive(:read_parameters).and_return({})
       allow(@pattern).to receive(:freeze_revision)
+      allow(@pattern).to receive(:support?).and_return(true)
     end
 
     it 'will call #load_metadata' do
@@ -158,9 +160,8 @@ describe PatternSnapshot do
       @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.name).to eq('name')
       expect(@pattern.type).to eq('platform')
-      expect(@pattern.platform).to eq('CentOS')
-      expect(@pattern.platform_version).to eq('6.5')
       expect(@pattern.providers).to eq('{"aws":["cloud_formation"]}')
+      expect(@pattern.roles).to eq('["web","ap"]')
     end
 
     it 'set nil to providers when metadata does not contain providers' do
@@ -168,6 +169,11 @@ describe PatternSnapshot do
 
       @pattern.send(:freeze_pattern, cloned_path)
       expect(@pattern.providers).to be_nil
+    end
+
+    it 'raise error when #support? return false' do
+      allow(@pattern).to receive(:support?).and_return(false)
+      expect { @pattern.send(:freeze_pattern, cloned_path) }.to raise_error(RuntimeError)
     end
   end
 
@@ -390,6 +396,37 @@ describe PatternSnapshot do
           }
         }
       )
+    end
+  end
+
+  describe '#support?' do
+    before do
+      @supports = [
+        {
+          platform: 'centos',
+          platform_version: '6.5'
+        },
+        {
+          platform: 'centos',
+          platform_version: '7.1'
+        }
+      ]
+    end
+
+    it 'return true when supports is nil' do
+      expect(@pattern.send(:support?, nil, 'ubuntu')).to be_truthy
+    end
+
+    it 'return true when target platform match metadata' do
+      expect(@pattern.send(:support?, @supports, 'centos')).to be_truthy
+    end
+
+    it 'return true when target platform family match metadata' do
+      expect(@pattern.send(:support?, @supports, 'redhat')).to be_truthy
+    end
+
+    it 'return true when target platform and platform_version match metadata exactly' do
+      expect(@pattern.send(:support?, @supports, 'ubuntu')).to be_falsey
     end
   end
 end
