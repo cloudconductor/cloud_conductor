@@ -1,30 +1,30 @@
 ap-northeast-1:
   platform: centos
-  image: ami-31d0df5f
+  image: ami-048c826a
 ap-northeast-2:
   platform: centos
-  image: ami-c0509eae
+  image: ami-757db31b
 ap-southeast-1:
   platform: centos
-  image: ami-d32be3b0
+  image: ami-4963ab2a
 ap-southeast-2:
   platform: centos
-  image: ami-f0092893
+  image: ami-4ad6f729
 eu-west-1:
   platform: centos
-  image: ami-062f9675
+  image: ami-2921995a
 eu-central-1:
   platform: centos
-  image: ami-72e5011d
+  image: ami-7c16f213
 sa-east-1:
   platform: centos
-  image: ami-63df520f
+  image: ami-049b1668
 us-east-1:
   platform: centos
-  image: ami-b690abdc
+  image: ami-48afaa22
 us-west-1:
   platform: centos
-  image: ami-f1700391
+  image: ami-9dabd8fd
 us-west-2:
   platform: centos
-  image: ami-6a937c0a
+  image: ami-ea58b78a
