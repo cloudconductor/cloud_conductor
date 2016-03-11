@@ -130,8 +130,11 @@ module API
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
-              CloudConductor::SystemBuilder.new(new_environment).build
-              new_environment.system.update_attributes!(primary_environment: new_environment) if declared_params[:switch]
+              new_environment.build
+
+              if declared_params[:switch] && new_environment.status == :CREATE_COMPLETE
+                new_environment.system.update_attributes!(primary_environment: new_environment)
+              end
             end
           end
 
