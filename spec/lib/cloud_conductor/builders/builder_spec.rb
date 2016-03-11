@@ -43,6 +43,15 @@ module CloudConductor
           expect { @builder.build }.to raise_error(RuntimeError)
           expect(environment.status).to eq(:ERROR)
         end
+
+        it 'change application history status' do
+          environment.status = :CREATE_COMPLETE
+          FactoryGirl.create(:deployment, environment: environment, application_history: application_history)
+
+          expect(environment.deployments.first.status).to eq('NOT_DEPLOYED')
+          @builder.build
+          expect(environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
+        end
       end
 
       describe '#destroy' do
@@ -110,15 +119,6 @@ module CloudConductor
         it 'will request spec event to consul' do
           expect(@event).to receive(:sync_fire).with(:spec)
           @builder.send(:send_events, environment)
-        end
-
-        it 'change application history status if deploy event is finished' do
-          environment.status = :CREATE_COMPLETE
-          FactoryGirl.create(:deployment, environment: environment, application_history: application_history)
-
-          expect(environment.deployments.first.status).to eq('NOT_DEPLOYED')
-          @builder.send(:send_events, environment)
-          expect(environment.deployments.first.status).to eq('DEPLOY_COMPLETE')
         end
       end
 

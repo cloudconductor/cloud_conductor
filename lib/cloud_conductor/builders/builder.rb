@@ -15,6 +15,9 @@ module CloudConductor
         send_events(@environment)
 
         @environment.update_attribute(:status, :CREATE_COMPLETE)
+        @environment.deployments.each do |deployment|
+          deployment.update_attributes!(status: 'DEPLOY_COMPLETE')
+        end
         Log.info "Created environment(#{@environment.name}) on #{@cloud.name}"
       rescue => e
         @environment.update_attribute(:status, :ERROR)
@@ -61,10 +64,6 @@ module CloudConductor
         environment.event.sync_fire(:restore, application_payload(environment))
         environment.event.sync_fire(:deploy, application_payload(environment)) unless environment.deployments.empty?
         environment.event.sync_fire(:spec)
-
-        environment.deployments.each do |deployment|
-          deployment.update_attributes!(status: 'DEPLOY_COMPLETE')
-        end
       end
 
       def configure_payload(environment)
