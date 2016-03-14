@@ -31,8 +31,12 @@ module API
               authorize!(:read, blueprint)
               history = blueprint.histories.where(version: params[:ver]).first!
 
-              providers = history.providers.map { |_, providers| providers.first }.uniq
-              clouds = params[:cloud_ids].split(/,\s*/).map { |cloud_id| Cloud.find(cloud_id).type } if params[:cloud_ids]
+              providers = history.providers
+              if params[:cloud_ids]
+                clouds = params[:cloud_ids].split(/,\s*/).map { |cloud_id| Cloud.find(cloud_id).type }
+                providers = history.providers.slice(*clouds)
+              end
+              providers = providers.map { |_, providers| providers.first }.uniq
               history.pattern_snapshots.each_with_object({}) do |pattern, hash|
                 hash[pattern.name] = pattern.filtered_parameters(false, clouds, providers)
               end
