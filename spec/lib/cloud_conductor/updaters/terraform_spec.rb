@@ -116,6 +116,10 @@ module CloudConductor
       end
 
       describe '#bootstrap_expect' do
+        it 'return 0 when target hash is empty' do
+          expect(@updater.send(:bootstrap_expect, {})).to eq(0)
+        end
+
         it 'return size of instances in output that is created by terraform plan for aws' do
           resources = {
             'null_resource' => {},
