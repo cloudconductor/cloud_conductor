@@ -74,7 +74,7 @@ module CloudConductor
         resources = terraform.plan(variables, 'module-depth' => 1)
 
         # terraform apply
-        variables[:bootstrap_expect] = bootstrap_expect(resources)
+        variables[:bootstrap_expect] = bootstrap_expect(resources[:add])
         terraform.apply(variables)
         terraform.output
       end

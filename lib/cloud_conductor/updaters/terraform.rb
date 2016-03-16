@@ -53,12 +53,18 @@ module CloudConductor
         # terraform get
         terraform.get({}, update: true)
 
+        # terraform show
+        current_resources = terraform.show
+
         # terraform plan
         variables[:bootstrap_expect] = 0
         resources = terraform.plan(variables, 'module-depth' => 1)
 
         # terraform apply
-        variables[:bootstrap_expect] = bootstrap_expect(resources)
+        current_instance = bootstrap_expect(current_resources)
+        add_instance = bootstrap_expect(resources[:add])
+        destroy_instance = bootstrap_expect(resources[:destroy])
+        variables[:bootstrap_expect] = current_instance + add_instance - destroy_instance
         terraform.apply(variables)
         terraform.output
       end

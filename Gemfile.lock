@@ -7,7 +7,7 @@ GIT
 
 GIT
   remote: https://github.com/cloudconductor/ruby_terraform.git
-  revision: b6119888acdb9d97948950700ba51febfe9266c7
+  revision: ababe9f9dab109919111a3faf2d04fa9f3cd6368
   branch: develop
   specs:
     ruby_terraform (0.1.0)

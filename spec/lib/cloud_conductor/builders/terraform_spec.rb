@@ -114,7 +114,8 @@ module CloudConductor
         before do
           allow(@builder).to receive(:bootstrap_expect).and_return([])
 
-          @terraform = double(:terraform, get: true, plan: {}, apply: true, output: {})
+          planned_resources = { add: {}, destroy: {}, change: {} }
+          @terraform = double(:terraform, get: true, plan: planned_resources, apply: true, output: {})
           allow(RubyTerraform::Client).to receive(:new).and_return(@terraform)
         end
 
