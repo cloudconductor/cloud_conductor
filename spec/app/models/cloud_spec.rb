@@ -162,7 +162,7 @@ describe Cloud do
 
     it 'set base_images when cloud type is AWS' do
       @cloud.update_base_image
-      expect(@cloud.base_images.size).to eq(1)
+      expect(@cloud.base_images.size).to eq(2)
     end
 
     it 'does not set base_images when cloud type is OpenStack' do
@@ -171,20 +171,28 @@ describe Cloud do
       expect(@cloud.base_images).to be_empty
     end
 
+    it 'create base_images by images.yml' do
+      expect { @cloud.save! }.to change { BaseImage.count }.by(2)
+      expect(@cloud.base_images.map(&:source_image)).to match_array(%w(ami-048c826a ami-b18c82df))
+      expect(BaseImage.all.map(&:source_image)).to match_array(%w(ami-048c826a ami-b18c82df))
+      expect(BaseImage.all.map(&:platform_version)).to match_array(%w(6.7 7.2))
+      expect(BaseImage.all.map(&:ssh_username)).to match_array(%w(centos centos))
+    end
+
     it 'update source_image on BaseImage' do
       @cloud.save!
-      expect(@cloud.base_images.first.source_image).to eq('ami-048c826a')
-      expect(BaseImage.first.source_image).to eq('ami-048c826a')
+      expect(@cloud.base_images.map(&:source_image)).to match_array(%w(ami-048c826a ami-b18c82df))
+      expect(BaseImage.all.map(&:source_image)).to match_array(%w(ami-048c826a ami-b18c82df))
 
       @cloud.entry_point = 'ap-southeast-1'
       @cloud.update_base_image
-      expect(@cloud.base_images.first.source_image).to eq('ami-4963ab2a')
-      expect(BaseImage.first.source_image).to eq('ami-4963ab2a')
+      expect(@cloud.base_images.map(&:source_image)).to match_array(%w(ami-4963ab2a ami-e362aa80))
+      expect(BaseImage.all.map(&:source_image)).to match_array(%w(ami-4963ab2a ami-e362aa80))
     end
 
     it 'delete previous baseimage when tyep has been changed' do
       @cloud.save!
-      expect(BaseImage.count).to eq(1)
+      expect(BaseImage.count).to eq(2)
 
       @cloud.type = 'openstack'
       @cloud.update_base_image
@@ -195,16 +203,46 @@ describe Cloud do
   describe '#aws_images' do
     it 'return ami id list that corresponding to all of the Region' do
       expected_list = {
-        'ap-northeast-1' => { 'platform' => 'centos', 'image' => 'ami-048c826a' },
-        'ap-northeast-2' => { 'platform' => 'centos', 'image' => 'ami-757db31b' },
-        'ap-southeast-1' => { 'platform' => 'centos', 'image' => 'ami-4963ab2a' },
-        'ap-southeast-2' => { 'platform' => 'centos', 'image' => 'ami-4ad6f729' },
-        'eu-west-1' => { 'platform' => 'centos', 'image' => 'ami-2921995a' },
-        'eu-central-1' => { 'platform' => 'centos', 'image' => 'ami-7c16f213' },
-        'sa-east-1' => { 'platform' => 'centos', 'image' => 'ami-049b1668' },
-        'us-east-1' => { 'platform' => 'centos', 'image' => 'ami-72a8a918' },
-        'us-west-1' => { 'platform' => 'centos', 'image' => 'ami-9dabd8fd' },
-        'us-west-2' => { 'platform' => 'centos', 'image' => 'ami-ea58b78a' }
+        'ap-northeast-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-048c826a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-b18c82df', 'ssh_username' => 'centos' }
+        ],
+        'ap-northeast-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-757db31b', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-5476b83a', 'ssh_username' => 'centos' }
+        ],
+        'ap-southeast-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-4963ab2a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-e362aa80', 'ssh_username' => 'centos' }
+        ],
+        'ap-southeast-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-4ad6f729', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-16d0f175', 'ssh_username' => 'centos' }
+        ],
+        'eu-west-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-2921995a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-802c94f3', 'ssh_username' => 'centos' }
+        ],
+        'eu-central-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-7c16f213', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-8d0aeee2', 'ssh_username' => 'centos' }
+        ],
+        'sa-east-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-049b1668', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-5f991433', 'ssh_username' => 'centos' }
+        ],
+        'us-east-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-72a8a918', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-7eafaa14', 'ssh_username' => 'centos' }
+        ],
+        'us-west-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-9dabd8fd', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-84abd8e4', 'ssh_username' => 'centos' }
+        ],
+        'us-west-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-ea58b78a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-e85bb488', 'ssh_username' => 'centos' }
+        ]
       }
 
       expect(@cloud.aws_images).to eq(expected_list)

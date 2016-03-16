@@ -30,11 +30,13 @@ class Cloud < ActiveRecord::Base
     return if type != 'aws'
 
     if base_images.empty?
-      aws_image = aws_images[entry_point]
-      base_images.build(source_image: aws_image['image'], platform: aws_image['platform'])
+      aws_images[entry_point].each do |image|
+        base_images.build(image)
+      end
     else
-      aws_image = aws_images[entry_point]
-      base_images.first.update_attributes(source_image: aws_image['image'], platform: aws_image['platform'])
+      aws_images[entry_point].each_with_index do |image, idx|
+        base_images[idx].update_attributes(image)
+      end
     end
   end
 
