@@ -66,8 +66,11 @@ module CloudConductor
       def bootstrap_expect(resources)
         instance_types = %w(aws_instance openstack_compute_instance_v2 wakamevdc_instance)
         resources['module'].values.inject(0) do |sum, module_resources|
-          instance_types.inject(sum) do |sum, type|
-            sum + (module_resources[type] || {}).size
+          sum + instance_types.inject(0) do |sum, type|
+            sum + (module_resources[type] || {}).inject(0) do |sum, (_, instance_resources)|
+              next sum + 1 if instance_resources == {}
+              sum + instance_resources.keys.count { |key| key =~ /^\d+$/ }
+            end
           end
         end
       end
