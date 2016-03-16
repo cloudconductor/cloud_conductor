@@ -157,6 +157,24 @@ describe Environment do
     end
   end
 
+  describe '#update' do
+    before do
+      @environment.stacks = [FactoryGirl.build(:stack)]
+      @updater = double(:updater, update: true)
+      allow(CloudConductor::Updaters).to receive(:updater).and_return(@updater)
+    end
+
+    it 'call Updater#update' do
+      expect(@updater).to receive(:update).once.and_return(true)
+      @environment.update
+    end
+
+    it 'raise exception when Updater#update has occurred exception' do
+      allow(@updater).to receive(:update).and_raise
+      expect { @environment.update }.to raise_error(RuntimeError)
+    end
+  end
+
   describe '#dup' do
     it 'duplicate all attributes in environment without some attributes which dependent previous environment' do
       @environment.save!

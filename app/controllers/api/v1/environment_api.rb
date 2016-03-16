@@ -86,6 +86,7 @@ module API
           optional :name, type: String, desc: 'Environment name'
           optional :description, type: String, desc: 'Environment description'
           optional :user_attributes, type: String, desc: 'User Attributes JSON'
+          optional :template_parameters, type: String, desc: 'Variables to build environment by cfn/terraform'
         end
         put '/:id' do
           environment = ::Environment.find(params[:id])
@@ -94,7 +95,9 @@ module API
           environment.update_attributes!(declared_params.except(:id, :switch).merge(status: :PENDING))
 
           Thread.new do
-            CloudConductor::Updaters::CloudFormation.new(environment).update
+            ActiveRecord::Base.connection_pool.with_connection do
+              environment.update_infrastructure
+            end
           end
 
           environment
