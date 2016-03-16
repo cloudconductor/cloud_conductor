@@ -55,19 +55,19 @@ module CloudConductor
 
         # terraform plan
         variables[:bootstrap_expect] = 0
-        outputs = terraform.plan(variables, 'module-depth' => 1)
+        resources = terraform.plan(variables, 'module-depth' => 1)
 
         # terraform apply
-        variables[:bootstrap_expect] = bootstrap_expect(outputs)
+        variables[:bootstrap_expect] = bootstrap_expect(resources)
         terraform.apply(variables)
         terraform.output
       end
 
-      def bootstrap_expect(outputs)
+      def bootstrap_expect(resources)
         instance_types = %w(aws_instance openstack_compute_instance_v2 wakamevdc_instance)
-        outputs['module'].values.inject(0) do |sum, module_output|
+        resources['module'].values.inject(0) do |sum, module_resources|
           instance_types.inject(sum) do |sum, type|
-            sum + (module_output[type] || {}).size
+            sum + (module_resources[type] || {}).size
           end
         end
       end

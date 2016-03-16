@@ -134,7 +134,7 @@ module CloudConductor
 
       describe '#bootstrap_expect' do
         it 'return size of instances in output that is created by terraform plan for aws' do
-          outputs = {
+          resources = {
             'null_resource' => {},
             'module' => {
               'tomcat' => {
@@ -152,11 +152,11 @@ module CloudConductor
             }
           }
 
-          expect(@builder.send(:bootstrap_expect, outputs)).to eq(4)
+          expect(@builder.send(:bootstrap_expect, resources)).to eq(4)
         end
 
         it 'return size of instances in output that is created by terraform plan for openstack' do
-          outputs = {
+          resources = {
             'null_resource' => {},
             'module' => {
               'tomcat' => {
@@ -174,11 +174,11 @@ module CloudConductor
             }
           }
 
-          expect(@builder.send(:bootstrap_expect, outputs)).to eq(4)
+          expect(@builder.send(:bootstrap_expect, resources)).to eq(4)
         end
 
         it 'return size of instances in output that is created by terraform plan for aws with count argument' do
-          outputs = {
+          resources = {
             'null_resource' => {},
             'module' => {
               'tomcat' => {
@@ -203,7 +203,7 @@ module CloudConductor
             }
           }
 
-          expect(@builder.send(:bootstrap_expect, outputs)).to eq(7)
+          expect(@builder.send(:bootstrap_expect, resources)).to eq(7)
         end
       end
 
