@@ -73,7 +73,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     end
   end
 
-  def build
+  def build_infrastructure
     result = candidates.sorted.map(&:cloud).any? do |cloud|
       begin
         builder = CloudConductor::Builders.builder(cloud, self)
@@ -85,7 +85,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
     fail 'Failed to create environment over all candidates' unless result
   end
 
-  def update
+  def update_infrastructure
     cloud = stacks.first.cloud
     updater = CloudConductor::Updaters.updater(cloud, self)
     updater.update

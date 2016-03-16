@@ -68,7 +68,7 @@ module API
 
           Thread.new do
             ActiveRecord::Base.connection_pool.with_connection do
-              environment.build
+              environment.build_infrastructure
 
               if system.primary_environment.nil? && environment.status == :CREATE_COMPLETE
                 system.update_attributes!(primary_environment: environment)

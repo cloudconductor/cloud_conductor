@@ -128,7 +128,7 @@ describe Environment do
   describe '#update_stacks' do
   end
 
-  describe '#build' do
+  describe '#build_infrastructure' do
     before do
       @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: cloud)
       @environment.save!
@@ -139,12 +139,12 @@ describe Environment do
 
     it 'call Builder#build just once when successfully created' do
       expect(@builder).to receive(:build).once.and_return(true)
-      @environment.build
+      @environment.build_infrastructure
     end
 
     it 'call Builder#build twice when failed to create first cloud' do
       expect(@builder).to receive(:build).twice.and_return(false, true)
-      @environment.build
+      @environment.build_infrastructure
     end
 
     it 'call Builder#build twice when raise exception while creating on first cloud' do
@@ -153,11 +153,11 @@ describe Environment do
         count += 1
         count <= 1 ? fail : true
       end
-      @environment.build
+      @environment.build_infrastructure
     end
   end
 
-  describe '#update' do
+  describe '#update_infrastructure' do
     before do
       @environment.stacks = [FactoryGirl.build(:stack)]
       @updater = double(:updater, update: true)
@@ -166,12 +166,12 @@ describe Environment do
 
     it 'call Updater#update' do
       expect(@updater).to receive(:update).once.and_return(true)
-      @environment.update
+      @environment.update_infrastructure
     end
 
     it 'raise exception when Updater#update has occurred exception' do
       allow(@updater).to receive(:update).and_raise
-      expect { @environment.update }.to raise_error(RuntimeError)
+      expect { @environment.update_infrastructure }.to raise_error(RuntimeError)
     end
   end
 
