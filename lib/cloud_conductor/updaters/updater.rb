@@ -18,7 +18,7 @@ module CloudConductor
         Log.info "Updated environment(#{@environment.name}) on #{@cloud.name}"
       rescue => e
         @environment.update_attribute(:status, :ERROR)
-        Log.warn "Following errors have been occurred while creating environment(#{@environment.name}) on #{@cloud.name}"
+        Log.warn "Following errors have been occurred while updating environment(#{@environment.name}) on #{@cloud.name}"
         Log.warn e.message
         Log.debug e.backtrace
         raise
