@@ -24,7 +24,6 @@ module CloudConductor
       private
 
       def update_infrastructure
-        @nodes = get_nodes(@environment)
         until @environment.stacks.select(&:pending?).empty?
           platforms = @environment.stacks.select(&:pending?).select(&:platform?)
           optionals = @environment.stacks.select(&:pending?).select(&:optional?)

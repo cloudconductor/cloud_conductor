@@ -74,11 +74,6 @@ module CloudConductor
           allow(@updater).to receive(:update_environment)
         end
 
-        it 'keep previous nodes' do
-          @updater.send(:update_infrastructure)
-          expect(@updater.instance_variable_get(:@nodes)).to eq(['dummy_node'])
-        end
-
         it 'create all stacks' do
           @updater.send(:update_infrastructure)
           expect(@environment.stacks.all?(&:create_complete?)).to be_truthy
