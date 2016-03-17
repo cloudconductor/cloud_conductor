@@ -16,6 +16,12 @@ module CloudConductor
         expect { Builders.builder(@cloud, @environment) }.to raise_error(RuntimeError)
       end
 
+      it 'raise error if providers is empty' do
+        @config_providers = [:terraform, :cloud_formation]
+        @providers = {}
+        expect { Builders.builder(@cloud, @environment) }.to raise_error("All providers can\'t create this environment on #{@cloud.type}")
+      end
+
       it 'returns builder instance that has highest priority in configured providers' do
         @config_providers = [:terraform, :cloud_formation]
         @providers = {
