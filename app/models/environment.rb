@@ -78,18 +78,24 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
       begin
         builder = CloudConductor::Builders.builder(cloud, self)
         builder.build
-      rescue
+      rescue => e
+        Log.error e.message
         false
       end
     end
-    fail 'Failed to create environment over all candidates' unless result
+    unless result
+      update_attribute(:status, :ERROR)
+      fail 'Failed to create environment over all candidates' unless result
+    end
   end
 
   def update_infrastructure
     cloud = stacks.first.cloud
     updater = CloudConductor::Updaters.updater(cloud, self)
     updater.update
-  rescue
+  rescue => e
+    Log.error e.message
+    update_attribute(:status, :ERROR)
     raise 'Failed to update environment over all candidates'
   end
 
