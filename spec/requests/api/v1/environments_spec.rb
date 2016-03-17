@@ -3,7 +3,10 @@ describe API do
   include_context 'default_api_settings'
 
   describe 'EnvironmentAPI' do
-    before { environment }
+    before do
+      allow(Thread).to receive(:new)
+      environment
+    end
 
     describe 'GET /environments' do
       let(:method) { 'get' }
