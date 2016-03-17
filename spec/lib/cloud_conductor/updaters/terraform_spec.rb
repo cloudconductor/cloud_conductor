@@ -1,3 +1,5 @@
+require 'cloud_conductor/updaters/terraform'
+
 module CloudConductor
   module Updaters
     describe Terraform do
