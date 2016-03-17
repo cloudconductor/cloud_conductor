@@ -30,7 +30,7 @@ module CloudConductor
         templates = Dir.glob(directory).map do |path|
           HCLParser.new.parse(File.read(path))
         end
-        templates.inject(&:deep_merge).deep_symbolize_keys
+        (templates.inject(&:deep_merge) || {}).deep_symbolize_keys
       end
 
       def generate_variables(template, mappings)

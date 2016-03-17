@@ -52,7 +52,8 @@ module CloudConductor
         end
         parent = CloudConductor::Terraform::Parent.new(cloud)
         environment.blueprint_history.pattern_snapshots.each do |snapshot|
-          parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])
+          child = CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])
+          parent.modules << child if Dir.exist? child.source
         end
 
         FileUtils.mkdir_p template_directory unless Dir.exist? template_directory
