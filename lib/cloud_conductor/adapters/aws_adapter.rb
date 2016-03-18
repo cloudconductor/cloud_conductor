@@ -24,10 +24,12 @@ module CloudConductor
 
       def create_stack(name, template, parameters)
         cloud_formation.stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
+        true
       end
 
       def update_stack(name, template, parameters)
         cloud_formation.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
+        true
       rescue => e
         if e.message == 'No updates are to be performed.'
           Log.info "Ignore updating stack(#{name})"
