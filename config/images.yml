@@ -1,7 +1,7 @@
 ap-northeast-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-048c826a
+    source_image: ami-76131818
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -10,7 +10,7 @@ ap-northeast-1:
 ap-northeast-2:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-757db31b
+    source_image: ami-85925beb
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -19,7 +19,7 @@ ap-northeast-2:
 ap-southeast-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-4963ab2a
+    source_image: ami-ce15dead
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -28,7 +28,7 @@ ap-southeast-1:
 ap-southeast-2:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-4ad6f729
+    source_image: ami-2901214a
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -37,7 +37,7 @@ ap-southeast-2:
 eu-west-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-2921995a
+    source_image: ami-3be36648
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -46,7 +46,7 @@ eu-west-1:
 eu-central-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-7c16f213
+    source_image: ami-650dea0a
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -55,7 +55,7 @@ eu-central-1:
 sa-east-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-049b1668
+    source_image: ami-3c32bf50
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -64,7 +64,7 @@ sa-east-1:
 us-east-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-72a8a918
+    source_image: ami-04f0f06e
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -73,7 +73,7 @@ us-east-1:
 us-west-1:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-9dabd8fd
+    source_image: ami-7e6a181e
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
@@ -82,7 +82,7 @@ us-west-1:
 us-west-2:
   - platform: centos
     platform_version: 6.7
-    source_image: ami-ea58b78a
+    source_image: ami-417a9321
     ssh_username: centos
   - platform: centos
     platform_version: 7.2
