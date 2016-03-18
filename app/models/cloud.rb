@@ -15,7 +15,7 @@ class Cloud < ActiveRecord::Base
   validates :entry_point, inclusion: { in: AWS_REGIONS }, if: -> { type == 'aws' }
 
   before_destroy :raise_error_in_use
-  before_save :update_base_image
+  before_create :create_base_image, if: -> { type == 'aws' }
 
   def secret
     crypt.decrypt_and_verify(encrypted_secret)
@@ -25,16 +25,9 @@ class Cloud < ActiveRecord::Base
     self.encrypted_secret = crypt.encrypt_and_sign(s)
   end
 
-  def update_base_image
-    base_images.destroy_all if type_changed? && persisted?
-    return if type != 'aws'
-
-    if base_images.empty?
-      aws_image = aws_images[entry_point]
-      base_images.build(source_image: aws_image['image'], platform: aws_image['platform'])
-    else
-      aws_image = aws_images[entry_point]
-      base_images.first.update_attributes(source_image: aws_image['image'], platform: aws_image['platform'])
+  def create_base_image
+    aws_images[entry_point].each do |image|
+      base_images.build(image)
     end
   end
 

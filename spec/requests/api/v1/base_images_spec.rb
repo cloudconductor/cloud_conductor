@@ -8,7 +8,7 @@ describe API do
     describe 'GET /base_images' do
       let(:method) { 'get' }
       let(:url) { '/api/v1/base_images' }
-      let(:result) { format_iso8601([base_image]) }
+      let(:result) { format_iso8601(cloud.base_images) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -33,7 +33,7 @@ describe API do
 
       context 'with cloud' do
         let(:params) { { cloud_id: base_image.cloud.id } }
-        let(:result) { format_iso8601([base_image]) }
+        let(:result) { format_iso8601(cloud.base_images) }
 
         context 'not_logged_in' do
           it_behaves_like('401 Unauthorized')
@@ -84,7 +84,7 @@ describe API do
 
       context 'with project' do
         let(:params) { { project_id: base_image.project.id } }
-        let(:result) { format_iso8601([base_image]) }
+        let(:result) { format_iso8601(cloud.base_images) }
 
         context 'not_logged_in' do
           it_behaves_like('401 Unauthorized')
