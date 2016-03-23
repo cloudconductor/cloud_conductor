@@ -24,7 +24,7 @@ class Cloud < ActiveRecord::Base
   end
 
   def secret=(s)
-    self.encrypted_secret = crypt.encrypt_and_sign(s) if s
+    self.encrypted_secret = s && crypt.encrypt_and_sign(s)
   end
 
   def create_base_image
