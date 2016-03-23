@@ -38,7 +38,7 @@ module API
           requires :name, type: String, desc: 'Cloud name'
           requires :type, type: String, desc: 'Cloud type (aws or openstack)'
           requires :key, type: String, desc: 'AccessKey or username to authenticate cloud'
-          requires :secret, type: String, desc: 'SecretKey or password to authenticate cloud'
+          optional :secret, type: String, desc: 'SecretKey or password to authenticate cloud'
           requires :entry_point, type: String, desc: 'Entry point (e.g. ap-northeast-1 or http://<your-openstack>:5000/)'
           optional :description, type: String, desc: 'Cloud description'
           optional :tenant_name, type: String, desc: 'Tenant name (OpenStack only)'

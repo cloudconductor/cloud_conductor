@@ -103,12 +103,21 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
     end
 
-    it 'returns false when secret is unset' do
+    it 'returns false when secret is unset and type isn\'t wakame-vdc' do
       @cloud.secret = nil
       expect(@cloud.valid?).to be_falsey
 
       @cloud.secret = ''
       expect(@cloud.valid?).to be_falsey
+    end
+
+    it 'returns true when secret is unset and type is wakame-vdc' do
+      @cloud.type = 'wakame-vdc'
+      @cloud.secret = nil
+      expect(@cloud.valid?).to be_truthy
+
+      @cloud.secret = ''
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns false when type is neither aws, openstack nor dummy' do
