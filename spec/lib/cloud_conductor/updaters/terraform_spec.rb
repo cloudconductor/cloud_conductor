@@ -257,7 +257,8 @@ module CloudConductor
 
       describe '#template_directory' do
         it 'return template directory which contains environment name and cloud name' do
-          expect(@updater.send(:template_directory)).to match(/#{environment.name}_#{cloud_aws.name}/)
+          environment.created_at = DateTime.new(2016, 3, 23, 9, 46, 10, '+0900')
+          expect(@updater.send(:template_directory)).to match(/environment#{environment.id}_20160323094610_#{cloud_aws.name}/)
         end
       end
 

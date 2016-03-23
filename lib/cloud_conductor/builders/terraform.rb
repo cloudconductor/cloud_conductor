@@ -114,7 +114,8 @@ module CloudConductor
       end
 
       def template_directory
-        File.expand_path("../../../tmp/terraform/#{@environment.name}_#{@cloud.name}", File.dirname(__FILE__))
+        date = @environment.created_at.localtime.strftime('%Y%m%d%H%M%S')
+        File.expand_path("../../../tmp/terraform/environment#{@environment.id}_#{date}_#{@cloud.name}", File.dirname(__FILE__))
       end
 
       def terraform_variables(ssh_key_file = '')
