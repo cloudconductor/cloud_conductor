@@ -56,7 +56,8 @@ class Deployment < ActiveRecord::Base
   private
 
   def update_dns_record
-    return unless environment.system.domain && application_history.application.domain
+    return if environment.system.domain.blank?
+    return if application_history.application.domain.blank?
 
     CloudConductor::DNSClient.new.update(application_history.application.domain, environment.system.domain, 'CNAME')
   end

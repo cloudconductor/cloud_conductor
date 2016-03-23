@@ -142,15 +142,23 @@ describe Deployment do
       @deployment.send(:update_dns_record)
     end
 
-    it 'does not register CNAME record to DNS server when system domain is null' do
-      @environment.system.domain = nil
+    it 'does not register CNAME record to DNS server when system domain is null or empty' do
       expect(@client).not_to receive(:update)
+
+      @environment.system.domain = nil
+      @deployment.send(:update_dns_record)
+
+      @environment.system.domain = ''
       @deployment.send(:update_dns_record)
     end
 
-    it 'does not register CNAME record to DNS server when application domain is null' do
-      @application_history.application.domain = nil
+    it 'does not register CNAME record to DNS server when application domain is null or empty' do
       expect(@client).not_to receive(:update)
+
+      @application_history.application.domain = nil
+      @deployment.send(:update_dns_record)
+
+      @application_history.application.domain = ''
       @deployment.send(:update_dns_record)
     end
   end
