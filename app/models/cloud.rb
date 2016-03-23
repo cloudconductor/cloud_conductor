@@ -19,11 +19,12 @@ class Cloud < ActiveRecord::Base
   before_create :create_base_image, if: -> { type == 'aws' }
 
   def secret
+    return nil unless encrypted_secret
     crypt.decrypt_and_verify(encrypted_secret)
   end
 
   def secret=(s)
-    self.encrypted_secret = crypt.encrypt_and_sign(s)
+    self.encrypted_secret = crypt.encrypt_and_sign(s) if s
   end
 
   def create_base_image
