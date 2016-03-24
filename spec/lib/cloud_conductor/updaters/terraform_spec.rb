@@ -98,6 +98,7 @@ module CloudConductor
       describe '#execute_terraform' do
         before do
           allow(@updater).to receive(:bootstrap_expect).and_return([])
+          allow(@updater).to receive(:destroy_rules)
 
           planned_resources = { add: {}, destroy: {}, change: {} }
           @terraform = double(:terraform, get: true, show: {}, plan: planned_resources, apply: true, output: {})
@@ -116,6 +117,45 @@ module CloudConductor
         it 'return terraform output as hash' do
           result = @updater.send(:execute_terraform, {})
           expect(result).to eq({})
+        end
+      end
+
+      describe '#destroy_rules' do
+        it 'destroy all aws_security_group_rule resources' do
+          resources = {
+            'module' => {
+              'amanda_pattern' => {
+                'aws_security_group' => {
+                  'backup_restore_security_group' => {}
+                },
+                'aws_security_group_rule' => {
+                  'rule1' => {},
+                  'rule2' => {}
+                }
+              },
+              'common_network' => {
+                'aws_internet_gateway' => {
+                  'main' => {}
+                }
+              },
+              'fluentd_pattern' => {
+                'aws_security_group_rule' => {
+                  'rule3' => {},
+                  'rule4' => {}
+                }
+              }
+            }
+          }
+
+          expected_rules = []
+          expected_rules << 'module.amanda_pattern.aws_security_group_rule.rule1'
+          expected_rules << 'module.amanda_pattern.aws_security_group_rule.rule2'
+          expected_rules << 'module.fluentd_pattern.aws_security_group_rule.rule3'
+          expected_rules << 'module.fluentd_pattern.aws_security_group_rule.rule4'
+
+          terraform = double(:terraform)
+          expect(terraform).to receive(:destroy).with(anything, target: expected_rules)
+          @updater.send(:destroy_rules, terraform, {}, resources)
         end
       end
 

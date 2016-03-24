@@ -56,8 +56,10 @@ module CloudConductor
         # terraform show
         current_resources = terraform.show
 
-        # terraform plan
         variables[:bootstrap_expect] = 0
+        destroy_rules(terraform, variables, current_resources) if @cloud.type == 'aws'
+
+        # terraform plan
         resources = terraform.plan(variables, 'module-depth' => 1)
 
         # terraform apply
@@ -67,6 +69,16 @@ module CloudConductor
         variables[:bootstrap_expect] = current_instance + add_instance - destroy_instance
         terraform.apply(variables)
         terraform.output
+      end
+
+      def destroy_rules(terraform, variables, resources)
+        rules = resources['module'].map do |pattern_name, resources|
+          (resources['aws_security_group_rule'] || {}).keys.map do |name|
+            "module.#{pattern_name}.aws_security_group_rule.#{name}"
+          end
+        end.flatten
+
+        terraform.destroy(variables, target: rules)
       end
 
       def bootstrap_expect(resources)
