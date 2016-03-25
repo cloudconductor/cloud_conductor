@@ -177,6 +177,50 @@ module Consul
         end
       end
 
+      describe '#delete' do
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.delete('/v1/kv/dummy') { [200, {}, ''] }
+          @client.delete 'dummy'
+        end
+
+        it 'return true if specified key does not exist' do
+          @stubs.delete('/v1/kv/not_found') { [404, {}, ''] }
+          expect(@client.delete('not_found')).to be_truthy
+        end
+
+        it 'raise error if request returns failed status code which except 404' do
+          @stubs.delete('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.delete('dummy') }.to raise_error(RuntimeError)
+        end
+
+        it 'request DELETE /v1/kv with key and return true' do
+          @stubs.delete('/v1/kv/dummy') { [200, {}, ''] }
+          expect(@client.delete('dummy')).to be_truthy
+        end
+
+        it 'send DELETE request with token' do
+          @stubs.delete('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '']
+          end
+          @client.delete 'dummy'
+        end
+
+        it 'send DELETE request with recursive option and token' do
+          @stubs.delete('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('recurse=true&token=dummy_token')
+            [200, {}, '']
+          end
+          @client.delete 'dummy', true
+        end
+      end
+
       describe '#merge' do
         before do
           allow(@client).to receive(:get)

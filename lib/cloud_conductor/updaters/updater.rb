@@ -34,6 +34,7 @@ module CloudConductor
       def send_events(environment)
         target_nodes = get_nodes(environment) - @nodes
 
+        environment.consul.kv.delete('cloudconductor/servers')
         environment.event.sync_fire(:configure)
         unless target_nodes.empty?
           environment.event.sync_fire(:restore, {}, node: target_nodes)

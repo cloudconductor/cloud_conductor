@@ -48,6 +48,18 @@ module Consul
         end
       end
 
+      def delete(key, is_recurse = false)
+        sequential_try do |faraday|
+          faraday.params.clear
+          faraday.params[:token] = @token
+          faraday.params[:recurse] = true if is_recurse
+          response = faraday.delete("kv/#{key}")
+          return true if response.status == 404
+          fail response.body unless response.success?
+          true
+        end
+      end
+
       def merge(key, value)
         previous = get(key)
         value = previous.deep_merge value if previous.is_a? Hash
