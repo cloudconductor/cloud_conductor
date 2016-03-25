@@ -29,7 +29,7 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   after_initialize do
     self.template_parameters ||= '{}'
-    self.user_attributes ||= '{}'
+    self.user_attributes ||= Hash[stacks.map { |stack| [stack.pattern_snapshot.name, JSON.parse(stack.parameters)] }].to_json
     self.platform_outputs ||= '{}'
     self.status ||= :PENDING
   end
