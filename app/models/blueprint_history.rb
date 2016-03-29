@@ -92,9 +92,11 @@ class BlueprintHistory < ActiveRecord::Base
       pattern_snapshots.build(
         url: relation.pattern.url,
         revision: relation.revision || relation.pattern.revision,
+        protocol: relation.pattern.protocol,
         platform: relation.platform,
         platform_version: relation.platform_version,
-        secret_key: relation.pattern.secret_key)
+        secret_key: relation.pattern.secret_key
+      )
     end
 
     archives_directory = File.expand_path('./tmp/archives/')
