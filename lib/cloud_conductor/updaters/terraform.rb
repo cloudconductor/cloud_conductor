@@ -121,13 +121,13 @@ module CloudConductor
 
       def terraform_variables(ssh_key_file = '')
         variables = {}
-        variables.merge!(cloud_variables(@cloud))
+        variables.merge!(cloud_variables(@cloud, @environment))
         variables.merge!(image_variables(@cloud, @environment))
         variables[:ssh_key_file] = ssh_key_file
         variables
       end
 
-      def cloud_variables(cloud) # rubocop:disable MethodLength
+      def cloud_variables(cloud, environment) # rubocop:disable MethodLength
         case cloud.type
         when 'aws'
           {
@@ -140,7 +140,8 @@ module CloudConductor
             os_user_name: cloud.key,
             os_password: cloud.secret,
             os_auth_url: cloud.entry_point + 'v2.0',
-            os_tenant_name: cloud.tenant_name
+            os_tenant_name: cloud.tenant_name,
+            environment_id: environment.id
           }
         when 'wakame-vdc'
           {

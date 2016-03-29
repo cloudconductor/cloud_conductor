@@ -288,7 +288,7 @@ module CloudConductor
       describe '#cloud_variables' do
         it 'returns hash which has some keys to authorize aws if cloud is aws' do
           cloud = FactoryGirl.build(:cloud, :aws)
-          result = @builder.send(:cloud_variables, cloud)
+          result = @builder.send(:cloud_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
           expect(result).to eq(
             aws_access_key: cloud.key,
@@ -299,19 +299,20 @@ module CloudConductor
 
         it 'returns hash which has some keys to authorize openstack if cloud is openstack' do
           cloud = FactoryGirl.build(:cloud, :openstack)
-          result = @builder.send(:cloud_variables, cloud)
+          result = @builder.send(:cloud_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
           expect(result).to eq(
             os_user_name: cloud.key,
             os_password: cloud.secret,
             os_auth_url: cloud.entry_point + 'v2.0',
-            os_tenant_name: cloud.tenant_name
+            os_tenant_name: cloud.tenant_name,
+            environment_id: environment.id
           )
         end
 
         it 'returns empty hash if unknown cloud has been specified' do
           cloud = Cloud.new(type: :unknown)
-          result = @builder.send(:cloud_variables, cloud)
+          result = @builder.send(:cloud_variables, cloud, environment)
           expect(result).to be_is_a(Hash)
           expect(result).to eq({})
         end
