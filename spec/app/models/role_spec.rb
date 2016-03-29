@@ -41,14 +41,6 @@ describe Role do
       expect { @role.destroy }.to change { Role.count }.by(-1)
     end
 
-    it 'delete all assignment_role records' do
-      @role.assignments << FactoryGirl.build(:assignment, project: project, account: FactoryGirl.create(:account))
-      @role.assignments << FactoryGirl.build(:assignment, project: project, account: FactoryGirl.create(:account))
-      @role.save!
-      expect(@role.assignment_roles.size).to eq(2)
-      expect { @role.destroy }.to change { AssignmentRole.count }.by(-2)
-    end
-
     it 'delete all permission records' do
       @role.permissions.delete_all
       @role.permissions << FactoryGirl.create(:permission, :read_only, role: @role, model: 'project')
@@ -62,7 +54,7 @@ describe Role do
       allow(@role).to receive(:used?).and_return(true)
 
       expect do
-        expect { @role.destroy }.to(raise_error('Can\'t destroy role that is used in some account assignments.'))
+        expect { @role.destroy }.to raise_error('Can\'t destroy role that is used in some account assignments.')
       end.not_to change { Role.count }
     end
   end

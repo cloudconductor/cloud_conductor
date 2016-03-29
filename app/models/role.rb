@@ -1,4 +1,6 @@
 class Role < ActiveRecord::Base
+  before_destroy :raise_error_in_use
+
   belongs_to :project
   has_many :assignment_roles, dependent: :destroy
   has_many :assignments, through: :assignment_roles
@@ -9,8 +11,6 @@ class Role < ActiveRecord::Base
   validates_presence_of :name, :project
 
   validates :name, uniqueness: { scope: :project_id }
-
-  before_destroy :raise_error_in_use
 
   scope :granted_to, lambda { |project_id, account_id|
     joins(:assignments)
