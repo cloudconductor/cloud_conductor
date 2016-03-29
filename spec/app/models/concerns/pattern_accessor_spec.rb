@@ -359,4 +359,23 @@ describe PatternAccessor do
       expect { @accessor.send(:clone_repositories, @pattern_snapshots, archives_directory) }.to raise_error('PatternAccessor#cloen_repositories needs block')
     end
   end
+
+  describe '#compress_patterns' do
+    before do
+      allow(FileUtils).to receive(:mkdir_p)
+      allow(Dir).to receive(:glob).and_return(['xxxxx/tomcat_pattern'])
+      allow(Open3).to receive(:capture3)
+    end
+
+    it 'will create temporary directory when temporary directory not found' do
+      directory = './tmp_test/'
+      expect(FileUtils).to receive(:mkdir_p).with(directory)
+      @accessor.send(:compress_patterns, archives_directory, directory)
+    end
+
+    it 'will compress patterns' do
+      expect(Open3).to receive(:capture3).with('tar', '-zcvf', %r{/tmp/archives/[a-f0-9-]{36}\.tar}, '-C', %r{/tmp/archives/[a-f0-9-]{36}}, 'tomcat_pattern')
+      @accessor.send(:compress_patterns, archives_directory, File.expand_path('./tmp/archives/'))
+    end
+  end
 end
