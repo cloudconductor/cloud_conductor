@@ -352,6 +352,10 @@ describe API do
         end
 
         context 'administrator', admin: true do
+          before do
+            project_operator_role.assignments.destroy_all
+          end
+
           it_behaves_like('204 No Content')
           it_behaves_like('create audit with project_id')
         end
