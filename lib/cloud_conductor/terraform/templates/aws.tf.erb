@@ -26,6 +26,8 @@ resource "null_resource" "consul_bootstrap" {
     inline = [
       "sudo su -c \"sed -i -e '/BOOTSTRAP_EXPECT/d' /opt/cloudconductor/config\"",
       "sudo su -c \"/bin/echo BOOTSTRAP_EXPECT=${var.bootstrap_expect} >> /opt/cloudconductor/config\"",
+      "sudo su -c \"sed -i -e '/CLUSTER_ADDRESSES/d' /opt/cloudconductor/config\"",
+      "sudo su -c \"/bin/echo CLUSTER_ADDRESSES=\\'${join(", ", <%= collect_outputs('cluster_addresses') %>)}\\' >> /opt/cloudconductor/config\"",
       "sudo service consul restart",
       "sleep 10"
       ]
