@@ -257,6 +257,7 @@ describe API do
     describe 'POST /blueprints/:id/build' do
       before do
         allow_any_instance_of(BlueprintHistory).to receive(:build_pattern_snapshots)
+        allow(CloudConductor::Config.consul.options).to receive(:acl).and_return(true)
       end
 
       let(:method) { 'post' }
