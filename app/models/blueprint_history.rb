@@ -101,6 +101,15 @@ class BlueprintHistory < ActiveRecord::Base
 
     archives_directory = File.expand_path('./tmp/archives/')
     patterns_directory = File.join(archives_directory, SecureRandom.uuid)
+
+    freeze_patterns(archives_directory, patterns_directory)
+
+    fail 'Patterns don\'t have usable providers on any cloud' if providers.empty?
+  end
+
+  private
+
+  def freeze_patterns(archives_directory, patterns_directory)
     clone_repositories(pattern_snapshots, patterns_directory) do |snapshots|
       archived_path = compress_patterns(patterns_directory, archives_directory)
       snapshots.each do |snapshot|
@@ -110,18 +119,5 @@ class BlueprintHistory < ActiveRecord::Base
         end
       end
     end
-
-    fail 'Patterns don\'t have usable providers on any cloud' if providers.empty?
-  end
-
-  private
-
-  def compress_patterns(source_directory, dest_directory)
-    FileUtils.mkdir_p(dest_directory) unless Dir.exist?(dest_directory)
-    archived_path = File.join(dest_directory, "#{SecureRandom.uuid}.tar")
-
-    file_names = Dir.glob("#{source_directory}/*").map(&File.method(:basename))
-    Open3.capture3('tar', '-zcvf', archived_path, '-C', source_directory, *file_names)
-    archived_path
   end
 end
