@@ -14,16 +14,16 @@ Requirements
 System Requirements
 -------------------
 
-- OS: Red Hat Enterprise Linux 6.5 or CentOS 6.5
+- OS: Red Hat Enterprise Linux or CentOS (6.5 or later and 7.x)
 
 Prerequisites
 -------------
 
 - git
-- sqlite-devel (or other database software)
 - ruby (>= 2.1.2)
 - rubygems
 - bundler
+- PostgreSQL (9.4 or later)
 
 
 Quick Start
@@ -48,8 +48,16 @@ Install Packer (Please replace amd64 to 386 in case of working on 32bit operatin
 
 ```bash
 sudo mkdir /opt/packer
-wget https://dl.bintray.com/mitchellh/packer/packer_0.8.6_linux_amd64.zip
-sudo unzip packer_0.8.6_linux_amd64.zip -d /opt/packer
+wget https://releases.hashicorp.com/packer/0.9.0/packer_0.9.0_linux_amd64.zip
+sudo unzip packer_0.9.0_linux_amd64.zip -d /opt/packer
+```
+
+Install Terraform
+
+```bash
+sudo mkdir /opt/terraform
+wget https://releases.hashicorp.com/terraform/0.6.13/terraform_0.6.13_linux_amd64.zip
+sudo unzip terraform_0.6.13_linux_amd64.zip -d /opt/terraform
 ```
 
 Clone repository
@@ -58,10 +66,16 @@ Clone repository
 git clone https://github.com/cloudconductor/cloud_conductor.git
 ```
 
-Install required gems
+Checkout submodules
 
 ```bash
 cd cloud_conductor
+git submodule update --init
+```
+
+Install required gems
+
+```bash
 bundle install
 ```
 
@@ -72,15 +86,17 @@ cp config/config.rb.smp config/config.rb
 vi config/config.rb
 ----------
 Edit configurations below.
-  cloudconductor.url
   dns.service
   dns.access_key, dns.secret_key or dns.server, dns.key_file
-  zabbix.url
-  zabbix.user
-  zabbix.password
-  zabbix.default_template_name
 
-Please see Getting Started in CloudConductor Official Website.
+----------
+cp config/database.yml.smp config/database.yml
+vi config/database.yml
+----------
+Edit configurations below.
+  username
+  password
+
 ----------
 secret_key_base=$(bundle exec rake secret)
 sed -i -e "s/secret_key_base: .*/secret_key_base: ${secret_key_base}/g" config/secrets.yml
@@ -93,6 +109,8 @@ bundle exec rake register:admin RAILS_ENV=production
     Password: <password>
     Password Confirmation: <password>
 ```
+
+Please see [Getting Started](http://cloudconductor.org/documents/getting-started) in [CloudConductor Official Website](http://cloudconductor.org) for more information.
 
 ### Run server
 
@@ -109,7 +127,7 @@ kill -QUIT `cat ./unicorn.pid`
 Copyright and License
 =====================
 
-Copyright 2014, 2015 TIS inc.
+Copyright 2014-2016 TIS inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -123,6 +141,11 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
+
+Libraries We Use
+=====================
+* ruby-hcl https://github.com/sikula/ruby-hcl
+ * Copyright (c) 2015 sikula under the ([MIT LICENCE](https://raw.githubusercontent.com/sikula/ruby-hcl/f143e20b1d5ed04bac03a363d472508d0f556a83/LICENSE))
 
 Contact
 ========
