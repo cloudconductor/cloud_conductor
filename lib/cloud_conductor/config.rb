@@ -29,15 +29,26 @@ module CloudConductor
       default :path, '/opt/packer/packer'
       default :aws_instance_type, 'c3.large'
     end
-    config_context :dns do
+    config_context :terraform do
+      default :path, '/opt/terraform/terraform'
     end
-    config_context :zabbix do
+    config_context :dns do
     end
     config_context :consul do
       config_context :options do
         config_context :ssl_options do
         end
       end
+    end
+    config_context :event do
+      default :timeout, 1800
+    end
+    config_context :system_build do
+      default :providers, [:terraform, :cloud_formation]
+      default :timeout, 1800
+    end
+    config_context :audit_log do
+      default :export_limit, 100
     end
   end
 end

@@ -14,37 +14,38 @@
 # limitations under the License.
 require 'consul/client/kv'
 require 'consul/client/event'
+require 'consul/client/catalog'
 
 module Consul
   class Client
     attr_reader :kv, :event, :catalog
 
-    def initialize(host, port = 8500, options = {})
-      fail 'Consul::Client require host option' unless host
+    def initialize(hosts, port = 8500, options = {})
+      fail 'Consul::Client require host option' unless hosts
 
-      if options[:ssl]
-        url = URI::HTTPS.build(host: host, port: port, path: '/v1')
-        @faraday = Faraday.new url, ssl: options[:ssl_options]
-      else
-        url = URI::HTTP.build(host: host, port: port, path: '/v1')
-        @faraday = Faraday.new url
+      hosts = hosts.split(',').map(&:strip) if hosts.is_a? String
+      @faradaies = hosts.map do |host|
+        if options[:ssl]
+          url = URI::HTTPS.build(host: host, port: port, path: '/v1')
+          Faraday.new url, ssl: options[:ssl_options]
+        else
+          url = URI::HTTP.build(host: host, port: port, path: '/v1')
+          Faraday.new url
+        end
       end
 
-      @kv = Consul::Client::KV.new @faraday, options
-      @event = Consul::Client::Event.new @faraday
-      @catalog = Consul::Client::Catalog.new @faraday
+      @kv = Consul::Client::KV.new @faradaies, options
+      @event = Consul::Client::Event.new @faradaies, options
+      @catalog = Consul::Client::Catalog.new @faradaies
     end
 
     def running?
-      response = @faraday.get('/')
-      response.success?
+      @faradaies.any? do |faraday|
+        response = faraday.get('status/leader')
+        response.success? && response.body != '""'
+      end
     rescue
       false
-    end
-
-    def inspect
-      object_id = '0x%014x'.format(self.object_id * 2)
-      "#<#{self.class.name}:#{object_id}>"
     end
   end
 end

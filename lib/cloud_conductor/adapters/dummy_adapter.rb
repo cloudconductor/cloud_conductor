@@ -20,7 +20,6 @@ module CloudConductor
       def initialize
       end
 
-      # rubocop: disable UnusedMethodArgument
       def create_stack(name, template, parameters, options = {})
       end
 
@@ -29,7 +28,6 @@ module CloudConductor
 
       def destroy_stack(name, options = {})
       end
-      # rubocop: enable UnusedMethodArgument
     end
   end
 end

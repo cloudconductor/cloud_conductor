@@ -16,14 +16,11 @@ describe Cloud do
   include_context 'default_resources'
 
   before do
-    @cloud = Cloud.new
-    @cloud.project = project
-    @cloud.name = 'Test'
-    @cloud.type = 'aws'
-    @cloud.entry_point = 'ap-northeast-1'
-    @cloud.key = 'TestKey'
-    @cloud.secret = 'TestSecret'
-    @cloud.tenant_name = 'TestTenant'
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
+    @cloud = FactoryGirl.build(:cloud, :aws)
+
+    allow(@cloud).to receive(:create_base_image)
   end
 
   describe '#save' do
@@ -35,6 +32,18 @@ describe Cloud do
       @cloud.description = '*' * 256
       @cloud.save!
     end
+
+    it 'call #create_base_image callback when cloud type is AWS' do
+      expect(@cloud).to receive(:create_base_image)
+      @cloud.save!
+    end
+
+    it 'doesn\'t call #create_base_image callback when cloud type is not AWS' do
+      @cloud.type = 'openstack'
+      @cloud.tenant_name = 'openstack tenant'
+      expect(@cloud).not_to receive(:create_base_image)
+      @cloud.save!
+    end
   end
 
   describe '#valid?' do
@@ -42,6 +51,7 @@ describe Cloud do
       expect(@cloud.valid?).to be_truthy
 
       @cloud.type = 'openstack'
+      @cloud.tenant_name = 'openstack tenant'
       expect(@cloud.valid?).to be_truthy
 
       @cloud.type = 'aws'
@@ -93,12 +103,21 @@ describe Cloud do
       expect(@cloud.valid?).to be_falsey
     end
 
-    it 'returns false when secret is unset' do
+    it 'returns false when secret is unset and type isn\'t wakame-vdc' do
       @cloud.secret = nil
       expect(@cloud.valid?).to be_falsey
 
       @cloud.secret = ''
       expect(@cloud.valid?).to be_falsey
+    end
+
+    it 'returns true when secret is unset and type is wakame-vdc' do
+      @cloud.type = 'wakame-vdc'
+      @cloud.secret = nil
+      expect(@cloud.valid?).to be_truthy
+
+      @cloud.secret = ''
+      expect(@cloud.valid?).to be_truthy
     end
 
     it 'returns false when type is neither aws, openstack nor dummy' do
@@ -135,12 +154,12 @@ describe Cloud do
     end
 
     it 'delete all base image records' do
-      cloud = FactoryGirl.create(:cloud, :openstack, project: project)
-      FactoryGirl.create(:base_image, cloud: cloud)
-      FactoryGirl.create(:base_image, cloud: cloud)
+      @cloud.base_images << FactoryGirl.build(:base_image, cloud: @cloud)
+      @cloud.base_images << FactoryGirl.build(:base_image, cloud: @cloud)
+      @cloud.save!
 
-      expect(cloud.base_images.size).to eq(2)
-      expect { cloud.destroy }.to change { BaseImage.count }.by(-2)
+      expect(@cloud.base_images.size).to eq(2)
+      expect { @cloud.destroy }.to change { BaseImage.count }.by(-2)
     end
 
     it 'raise error and cancel destroy when specified cloud is used in some environments' do
@@ -152,60 +171,68 @@ describe Cloud do
     end
   end
 
-  describe '#set_base_image' do
+  describe '#create_base_image' do
     before do
-      @cloud2 = Cloud.new
-      @cloud2.project = project
-      @cloud2.name = 'Test'
-      @cloud2.type = 'aws'
-      @cloud2.entry_point = 'ap-northeast-1'
-      @cloud2.key = 'TestKey'
-      @cloud2.secret = 'TestSecret'
-      @cloud2.tenant_name = 'TestTenant'
+      allow(@cloud).to receive(:create_base_image).and_call_original
     end
 
-    it 'return nil if cloud type is OpenStack' do
-      cloud = Cloud.new
-      cloud.project = project
-      cloud.name = 'Test'
-      cloud.type = 'openstack'
-      cloud.entry_point = 'dummy'
-      cloud.key = 'TestKey'
-      cloud.secret = 'TestSecret'
-      cloud.tenant_name = 'TestTenant'
-
-      expect(cloud.set_base_image).to be_nil
+    it 'set base_images when cloud type is AWS' do
+      @cloud.create_base_image
+      expect(@cloud.base_images.size).to eq(2)
     end
 
-    it 'call BaseImage create if base_image is empty' do
-      Cloud.skip_callback(:save, :after, :set_base_image)
-      @cloud2.save!
-      expect(@cloud2.base_images).to receive(:create!).with(source_image: 'ami-0d9b720d')
-      @cloud2.set_base_image
-      Cloud.set_callback(:save, :after, :set_base_image)
-    end
-
-    it 'call BaseImage update_attributes! if base_image is not empty' do
-      Cloud.set_callback(:save, :after, :set_base_image)
-      @cloud2.save!
-      expect(@cloud2.base_images).to receive_message_chain(:first, :update_attributes!).with(source_image: 'ami-36556364')
-      @cloud2.entry_point = 'ap-southeast-1'
-      @cloud2.set_base_image
+    it 'create base_images by images.yml' do
+      expect { @cloud.save! }.to change { BaseImage.count }.by(2)
+      expect(@cloud.base_images.map(&:source_image)).to match_array(%w(ami-76131818 ami-b18c82df))
+      expect(BaseImage.all.map(&:source_image)).to match_array(%w(ami-76131818 ami-b18c82df))
+      expect(BaseImage.all.map(&:platform_version)).to match_array(%w(6.7 7.2))
+      expect(BaseImage.all.map(&:ssh_username)).to match_array(%w(centos centos))
     end
   end
 
   describe '#aws_images' do
     it 'return ami id list that corresponding to all of the Region' do
       expected_list = {
-        'ap-northeast-1' => 'ami-0d9b720d',
-        'ap-southeast-1' => 'ami-36556364',
-        'ap-southeast-2' => 'ami-11b0c12b',
-        'eu-west-1' => 'ami-ede0739a',
-        'eu-central-1' => 'ami-98a79585',
-        'sa-east-1' => 'ami-7f56ef62',
-        'us-east-1' => 'ami-0e80db66',
-        'us-west-1' => 'ami-777f9b33',
-        'us-west-2' => 'ami-3b1a390b'
+        'ap-northeast-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-76131818', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-b18c82df', 'ssh_username' => 'centos' }
+        ],
+        'ap-northeast-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-85925beb', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-5476b83a', 'ssh_username' => 'centos' }
+        ],
+        'ap-southeast-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-ce15dead', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-e362aa80', 'ssh_username' => 'centos' }
+        ],
+        'ap-southeast-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-2901214a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-16d0f175', 'ssh_username' => 'centos' }
+        ],
+        'eu-west-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-3be36648', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-802c94f3', 'ssh_username' => 'centos' }
+        ],
+        'eu-central-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-650dea0a', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-8d0aeee2', 'ssh_username' => 'centos' }
+        ],
+        'sa-east-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-3c32bf50', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-5f991433', 'ssh_username' => 'centos' }
+        ],
+        'us-east-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-04f0f06e', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-7eafaa14', 'ssh_username' => 'centos' }
+        ],
+        'us-west-1' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-7e6a181e', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-84abd8e4', 'ssh_username' => 'centos' }
+        ],
+        'us-west-2' => [
+          { 'platform' => 'centos', 'platform_version' => 6.7, 'source_image' => 'ami-417a9321', 'ssh_username' => 'centos' },
+          { 'platform' => 'centos', 'platform_version' => 7.2, 'source_image' => 'ami-e85bb488', 'ssh_username' => 'centos' }
+        ]
       }
 
       expect(@cloud.aws_images).to eq(expected_list)
@@ -254,12 +281,12 @@ describe Cloud do
   describe '#as_json' do
     it 'mask secret column' do
       result = @cloud.as_json.with_indifferent_access
-      expect(result[:name]).to eq('Test')
-      expect(result[:type]).to eq('aws')
-      expect(result[:entry_point]).to eq('ap-northeast-1')
-      expect(result[:key]).to eq('TestKey')
+      expect(result[:name]).to eq(@cloud.name)
+      expect(result[:type]).to eq(@cloud.type)
+      expect(result[:entry_point]).to eq(@cloud.entry_point)
+      expect(result[:key]).to eq(@cloud.key)
       expect(result[:secret]).to eq('********')
-      expect(result[:tenant_name]).to eq('TestTenant')
+      expect(result[:tenant_name]).to eq(@cloud.tenant_name)
     end
   end
 

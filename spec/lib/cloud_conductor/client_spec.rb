@@ -27,6 +27,8 @@ module CloudConductor
 
     describe '#new' do
       it 'returns initialized client with aws adapter' do
+        attributes = %w(key secret entry_point)
+        expect(CloudConductor::Adapters::AWSAdapter).to receive(:new).with(hash_including(*attributes)).and_call_original
         cloud_aws = FactoryGirl.create(:cloud, :aws)
         client = Client.new cloud_aws
         expect(client.type).to eq('aws')
@@ -34,6 +36,8 @@ module CloudConductor
       end
 
       it 'returns initialized client with openstack adapter' do
+        attributes = %w(key secret entry_point tenant_name)
+        expect(CloudConductor::Adapters::OpenStackAdapter).to receive(:new).with(hash_including(*attributes)).and_call_original
         cloud_openstack = FactoryGirl.create(:cloud, :openstack)
         client = Client.new cloud_openstack
         expect(client.type).to eq('openstack')
@@ -43,23 +47,31 @@ module CloudConductor
 
     describe '#create_stack' do
       before do
-        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(true)
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
+        @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
 
       it 'call adapter#create_stack with same arguments without pattern' do
         expect(@client.adapter).to receive(:create_stack).with('stack_name', anything, kind_of(Hash))
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'call adapter#create_stack with template.json in repository' do
         expect(@client.adapter).to receive(:create_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern_snapshot, {}
+      end
+
+      it 'doesn\'t call adapter#create_stack when target pattern doesn\'t contain template.json' do
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(false)
+        expect(@client.adapter).not_to receive(:create_stack)
+        @client.create_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
-        image1 = pattern.images.first
-        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        image1 = pattern_snapshot.images.first
+        image2 = FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud)
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-z0-9_]*ImageId/) }).to eq(2)
 
@@ -68,39 +80,47 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters)
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
+        FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys).to be_include('WebApDbImageId')
         end
 
         expect(@client.adapter).to receive(:create_stack).with(anything, anything, expected_parameters)
-        @client.create_stack 'stack_name', pattern, {}
+        @client.create_stack 'stack_name', pattern_snapshot, {}
       end
     end
 
     describe '#update_stack' do
       before do
-        allow(pattern).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(pattern_snapshot).to receive(:clone_repository).and_yield('/tmp/patterns')
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(true)
         allow(@client).to receive_message_chain(:open, :read).and_return('{ "dummy": "dummy_value" }')
+        @pattern_snapshot = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
       end
 
       it 'call adapter#update_stack with same arguments without pattern' do
         expect(@client.adapter).to receive(:update_stack).with('stack_name', anything, kind_of(Hash))
-        @client.update_stack 'stack_name', pattern, {}
+        @client.update_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'call adapter#update_stack with template.json in repository' do
         expect(@client.adapter).to receive(:update_stack).with(anything, '{ "dummy": "dummy_value" }', anything)
-        @client.update_stack 'stack_name', pattern, {}
+        @client.update_stack 'stack_name', pattern_snapshot, {}
+      end
+
+      it 'doesn\'t call adapter#update_stack when target pattern doesn\'t contain template.json' do
+        allow(File).to receive(:exist?).with('/tmp/patterns/template.json').and_return(false)
+        expect(@client.adapter).not_to receive(:update_stack)
+        @client.update_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'add ImageId/Image pair to parameter-hash' do
-        image1 = pattern.images.first
-        image2 = FactoryGirl.create(:image, pattern: pattern, cloud: cloud)
+        image1 = pattern_snapshot.images.first
+        image2 = FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud)
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys.count { |key| key.match(/[a-zA-Z0-9_]*ImageId/) }).to eq(2)
           expect(parameters["#{image1.role.camelize}ImageId"]).to eq(image1.image)
@@ -108,17 +128,17 @@ module CloudConductor
         end
 
         expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters)
-        @client.update_stack 'stack_name', pattern, {}
+        @client.update_stack 'stack_name', pattern_snapshot, {}
       end
 
       it 'use key of ImageId that remove special characters from image.role' do
-        FactoryGirl.create(:image, pattern: pattern, cloud: cloud, role: 'web, ap, db')
+        FactoryGirl.create(:image, pattern_snapshot: @pattern_snapshot, cloud: cloud, role: 'web, ap, db')
         expected_parameters = satisfy do |parameters|
           expect(parameters.keys).to be_include('WebApDbImageId')
         end
 
         expect(@client.adapter).to receive(:update_stack).with(anything, anything, expected_parameters)
-        @client.update_stack 'stack_name', pattern, {}
+        @client.update_stack 'stack_name', pattern_snapshot, {}
       end
     end
 

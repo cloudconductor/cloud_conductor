@@ -2,9 +2,30 @@ module API
   module V1
     class BaseImageAPI < API::V1::Base
       resource :base_images do
+        before do
+          project = current_project(BaseImage)
+          @project_id = nil
+          @project_id = project.id if project
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List base images'
+        params do
+          optional :cloud_id, type: Integer, desc: 'Cloud id'
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::BaseImage.all.select do |base_image|
+          if params[:cloud_id]
+            base_images = ::BaseImage.where(cloud_id: params[:cloud_id])
+          elsif params[:project_id]
+            base_images = ::BaseImage.select_by_project_id(params[:project_id])
+          else
+            base_images = ::BaseImage.all
+          end
+          base_images.select do |base_image|
             can?(:read, base_image)
           end
         end
@@ -21,13 +42,16 @@ module API
 
         desc 'Create base_image'
         params do
-          requires :cloud_id, type: Integer, desc: 'Cloud id'
+          requires :cloud_id, type: Integer, exists_id: :cloud, desc: 'Cloud id'
           requires :ssh_username, type: String, desc: 'SSH login username to created instance'
           requires :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os, type: String, desc: 'Operating system name', default: 'CentOS-6.5'
+          requires :platform, type: String, desc: 'Operating system name'
+          optional :platform_version, type: String, desc: 'Operating system version'
         end
         post '/' do
-          authorize!(:create, ::BaseImage)
+          cloud = ::Cloud.find_by(id: params[:cloud_id])
+          authorize!(:read, cloud)
+          authorize!(:create, ::BaseImage, project: cloud.project)
           ::BaseImage.create!(declared_params)
         end
 
@@ -36,7 +60,8 @@ module API
           requires :id, type: Integer, desc: 'BaseImage id'
           optional :ssh_username, type: String, desc: 'SSH login username to created instance'
           optional :source_image, type: String, desc: 'AMI id on AWS or image UUID on openstack'
-          optional :os, type: String, desc: 'Operating system name', default: 'CentOS-6.5'
+          optional :platform, type: String, desc: 'Operating system name'
+          optional :platform_version, type: String, desc: 'Operating system version'
         end
         put '/:id' do
           base_image = ::BaseImage.find(params[:id])

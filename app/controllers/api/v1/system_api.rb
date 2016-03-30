@@ -2,9 +2,22 @@ module API
   module V1
     class SystemAPI < API::V1::Base
       resource :systems do
+        before do
+          temp = current_project(System)
+          @project_id = nil
+          @project_id = temp.id if temp
+        end
+
+        after do
+          track_api(@project_id)
+        end
+
         desc 'List systems'
+        params do
+          optional :project_id, type: Integer, desc: 'Project id'
+        end
         get '/' do
-          ::System.all.select do |system|
+          ::System.where(params.slice(:project_id).to_hash).select do |system|
             can?(:read, system)
           end
         end
@@ -21,13 +34,15 @@ module API
 
         desc 'Create system'
         params do
-          requires :project_id, type: Integer, desc: 'Project id'
+          requires :project_id, type: Integer, exists_id: :project, desc: 'Project id'
           requires :name, type: String, desc: 'System name'
           optional :description, type: String, desc: 'System description'
           optional :domain, type: String, desc: 'System domain name'
         end
         post '/' do
-          authorize!(:create, ::System)
+          project = ::Project.find_by(id: params[:project_id])
+          authorize!(:read, project)
+          authorize!(:create, ::System, project: project)
           ::System.create!(declared_params)
         end
 

@@ -16,7 +16,7 @@ module Consul
   class Client
     describe KV do
       before do
-        @stubs  = Faraday::Adapter::Test::Stubs.new
+        @stubs = Faraday::Adapter::Test::Stubs.new
 
         original_method = Faraday.method(:new)
         allow(Faraday).to receive(:new) do |*args, &block|
@@ -37,9 +37,25 @@ module Consul
           @stubs.get(path) { [200, {}, body] }
         end
 
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          add_stub '/v1/kv/dummy', 'dummy_value'
+          @client.get 'dummy'
+        end
+
         it 'return nil if specified key does not exist' do
           @stubs.get('/v1/kv/not_found') { [404, {}, ''] }
           expect(@client.get('not_found')).to be_nil
+        end
+
+        it 'raise error if request returns failed status code which except 404' do
+          @stubs.get('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.get('dummy') }.to raise_error(RuntimeError)
         end
 
         it 'return string if consul does not return JSON format string' do
@@ -94,6 +110,7 @@ module Consul
         it 'send GET request with token' do
           @stubs.get('/v1/kv/json') do |env|
             expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '{}']
           end
           @client.get 'json'
         end
@@ -101,6 +118,7 @@ module Consul
         it 'send GET request with recursive option and token' do
           @stubs.get('/v1/kv/json') do |env|
             expect(env.url.query).to eq('recurse=true&token=dummy_token')
+            [200, {}, '{}']
           end
           @client.get 'json', true
         end
@@ -108,7 +126,20 @@ module Consul
 
       describe '#put' do
         let(:should_yield) do
-          (-> {}).tap { |proc| expect(proc).to receive(:call) }
+          (-> {}).tap do |proc|
+            expect(proc).to receive(:call) { [200, {}, '{}'] }
+          end
+        end
+
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.put('/v1/kv/dummy', &should_yield)
+          @client.put 'dummy', 'dummy_value'
         end
 
         it 'will request PUT /v1/kv with key' do
@@ -119,6 +150,7 @@ module Consul
         it 'will request PUT /v1/kv with value' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('dummy_value')
+            [200, {}, '{}']
           end
           @client.put 'dummy', 'dummy_value'
         end
@@ -126,6 +158,7 @@ module Consul
         it 'will request PUT /v1/kv with JSON encoded value if value is Hash' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.body).to eq('{"key":"value"}')
+            [200, {}, '{}']
           end
           @client.put 'dummy', key: 'value'
         end
@@ -133,8 +166,58 @@ module Consul
         it 'send PUT request with token' do
           @stubs.put('/v1/kv/dummy') do |env|
             expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '{}']
           end
           @client.put 'dummy', key: 'value'
+        end
+
+        it 'raise error if request returns failed status code' do
+          @stubs.put('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.put('dummy', key: 'value') }.to raise_error(RuntimeError)
+        end
+      end
+
+      describe '#delete' do
+        before do
+          allow(@client).to receive(:sequential_try).and_yield(@faraday)
+        end
+
+        it 'delegate retry logic to #sequential_try' do
+          expect(@client).to receive(:sequential_try)
+
+          @stubs.delete('/v1/kv/dummy') { [200, {}, ''] }
+          @client.delete 'dummy'
+        end
+
+        it 'return true if specified key does not exist' do
+          @stubs.delete('/v1/kv/not_found') { [404, {}, ''] }
+          expect(@client.delete('not_found')).to be_truthy
+        end
+
+        it 'raise error if request returns failed status code which except 404' do
+          @stubs.delete('/v1/kv/dummy') { [400, {}, ''] }
+          expect { @client.delete('dummy') }.to raise_error(RuntimeError)
+        end
+
+        it 'request DELETE /v1/kv with key and return true' do
+          @stubs.delete('/v1/kv/dummy') { [200, {}, ''] }
+          expect(@client.delete('dummy')).to be_truthy
+        end
+
+        it 'send DELETE request with token' do
+          @stubs.delete('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('token=dummy_token')
+            [200, {}, '']
+          end
+          @client.delete 'dummy'
+        end
+
+        it 'send DELETE request with recursive option and token' do
+          @stubs.delete('/v1/kv/dummy') do |env|
+            expect(env.url.query).to eq('recurse=true&token=dummy_token')
+            [200, {}, '']
+          end
+          @client.delete 'dummy', true
         end
       end
 
@@ -185,6 +268,38 @@ module Consul
           result = @client.send(:safety_parse, value)
           expect(result).to be_is_a(String)
           expect(result).to eq('dummy string')
+        end
+      end
+
+      describe '#sequential_try' do
+        it 'retry with next faraday when previous faraday is failed' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return('dummy_result')
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq('dummy_result')
+        end
+
+        it 'return nil when some faraday returns nil' do
+          faraday1 = @faraday.clone
+          faraday2 = @faraday.clone
+          faraday3 = @faraday.clone
+          @client.instance_variable_set(:@faradaies, [faraday1, faraday2, faraday3])
+
+          block = double(:block)
+          expect(block).to receive(:call).with(faraday1).and_raise
+          expect(block).to receive(:call).with(faraday2).and_return(nil)
+          expect(block).to_not receive(:call).with(faraday3)
+
+          result = @client.send(:sequential_try) { |faraday| block.call(faraday) }
+          expect(result).to eq(nil)
         end
       end
     end

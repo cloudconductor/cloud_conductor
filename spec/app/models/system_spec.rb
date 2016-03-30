@@ -16,17 +16,16 @@ describe System do
   include_context 'default_resources'
 
   before do
-    @system = System.new
-    @system.project = project
-    @system.name = 'test'
-    @system.domain = 'example.com'
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
 
-    allow(@system).to receive(:update_dns)
-    allow(@system).to receive(:enable_monitoring)
+    @system = FactoryGirl.build(:system, project: project)
+
     allow(CloudConductor::Config).to receive_message_chain(:zabbix, :enabled).and_return(true)
   end
 
   describe '#save' do
+    let(:blueprint_history) { FactoryGirl.build(:blueprint_history, blueprint: blueprint) }
+    let(:environment) { FactoryGirl.build(:environment, system: @system, blueprint_history: blueprint_history, candidates_attributes: [FactoryGirl.attributes_for(:candidate, cloud: cloud)]) }
     it 'create with valid parameters' do
       expect { @system.save! }.to change { System.count }.by(1)
     end
@@ -41,14 +40,6 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       expect(@system).to receive(:update_dns)
-      @system.save!
-    end
-
-    it 'call #enable_monitoring callback if system has primary environment' do
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      expect(@system).to receive(:enable_monitoring)
       @system.save!
     end
 
@@ -75,19 +66,7 @@ describe System do
       @system.primary_environment = @system.environments.first
 
       allow(@system).to receive(:update_dns).and_raise
-      expect { @system.save! }.to raise_error
-
-      expect(Environment.find(environment).status).to eq(:ERROR)
-    end
-
-    it 'update status of primary environment when some error occurred while request to monitoring service' do
-      environment.status = :CREATE_COMPLETE
-      environment.save!
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      allow(@system).to receive(:enable_monitoring).and_raise
-      expect { @system.save! }.to raise_error
+      expect { @system.save! }.to raise_error(RuntimeError)
 
       expect(Environment.find(environment).status).to eq(:ERROR)
     end
@@ -100,22 +79,22 @@ describe System do
     end
 
     it 'delete all application records' do
-      @system.applications << FactoryGirl.create(:application, system: @system)
-      @system.applications << FactoryGirl.create(:application, system: @system)
+      @system.applications << FactoryGirl.build(:application, system: @system)
+      @system.applications << FactoryGirl.build(:application, system: @system)
 
-      expect(@system.applications.size).to eq(2)
-      expect { @system.destroy }.to change { Application.count }.by(-2)
+      @system.save!
+
+      system = System.eager_load(:applications).find(@system)
+
+      expect(system.applications.size).to eq(2)
+      expect { system.destroy }.to change { Application.count }.by(-2)
     end
 
     it 'delete all environment records' do
-      Environment.skip_callback :destroy, :before, :destroy_stacks
-
       @system.environments << environment
 
       expect(@system.environments.size).to eq(1)
       expect { @system.destroy }.to change { Environment.count }.by(-1)
-
-      Environment.set_callback :destroy, :before, :destroy_stacks, unless: -> { stacks.empty? }
     end
   end
 
@@ -139,26 +118,15 @@ describe System do
   end
 
   describe '#update_dns' do
-    it 'call DNSClient#update when ip_address isn\'t nil' do
+    it 'call DNSClient#update when frontend_address isn\'t nil' do
       allow(@system).to receive(:update_dns).and_call_original
 
       @system.environments << environment
       @system.primary_environment = @system.environments.first
+      environment.frontend_address = '127.0.0.1'
 
       expect(CloudConductor::DNSClient).to receive_message_chain(:new, :update).with(@system.domain, '127.0.0.1')
       @system.send(:update_dns)
-    end
-  end
-
-  describe '#enable_monitoring' do
-    it 'call ZabbixClient#register' do
-      allow(@system).to receive(:enable_monitoring).and_call_original
-
-      @system.environments << environment
-      @system.primary_environment = @system.environments.first
-
-      expect(CloudConductor::ZabbixClient).to receive_message_chain(:new, :register)
-      @system.send(:enable_monitoring)
     end
   end
 end

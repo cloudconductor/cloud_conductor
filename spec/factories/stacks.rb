@@ -14,22 +14,15 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :stack, class: Stack do
-    environment { create(:environment) }
-    pattern { create(:pattern, :platform) }
-    cloud { create(:cloud, :aws) }
+    environment { build(:environment) }
+    pattern_snapshot { build(:pattern_snapshot, type: :platform, blueprint_history: environment.blueprint_history, images: FactoryGirl.build_list(:image, 1, status: :CREATE_COMPLETE)) }
+    cloud { build(:cloud, :aws, project: environment.system.project) }
 
     sequence(:name) { |n| "stack-#{n}" }
-    template_parameters '{}'
-    parameters '{ "dummy": "value" }'
 
-    before(:create) do
-      Stack.skip_callback :save, :before, :create_stack
-      Stack.skip_callback :save, :before, :update_stack
-    end
-
-    after(:create) do
-      Stack.set_callback :save, :before, :create_stack, if: -> { ready_for_create? }
-      Stack.set_callback :save, :before, :update_stack, if: -> { ready_for_update? }
+    after(:build) do |stack, _evaluator|
+      allow(stack).to receive(:create_stack)
+      allow(stack).to receive(:update_stack)
     end
   end
 end

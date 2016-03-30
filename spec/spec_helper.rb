@@ -3,7 +3,7 @@ require 'simplecov'
 require 'simplecov-rcov'
 
 ENV['RAILS_ENV'] ||= 'test'
-require ::File.expand_path('../../config/environment',  __FILE__)
+require ::File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
 require 'pry'
 
@@ -13,11 +13,15 @@ ActiveRecord::Migration.maintain_test_schema!
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
+  config.example_status_persistence_file_path = './tmp/examples.txt'
 
   config.before :all do
     FactoryGirl.factories.clear
     FactoryGirl.find_definitions
     FactoryGirl.reload
+    FactoryGirl::SyntaxRunner.class_eval do
+      include RSpec::Mocks::ExampleMethods
+    end
   end
 
   config.before :suite do

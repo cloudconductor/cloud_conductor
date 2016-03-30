@@ -30,6 +30,56 @@ describe API do
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
       end
+
+      context 'with project' do
+        let(:params) { { project_id: system.project.id } }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
     end
 
     describe 'GET /systems/:id' do
@@ -85,14 +135,41 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
+      end
+
+      context 'in not existing project_id' do
+        let(:params) { FactoryGirl.attributes_for(:system, project_id: 9999) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('400 BadRequest')
+        end
       end
     end
 
@@ -127,14 +204,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
     end
 
@@ -162,21 +242,24 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
     end
 
     describe 'PUT /systems/:id/switch' do
       let(:method) { 'put' }
       let(:url) { "/api/v1/systems/#{system.id}/switch" }
-      let(:new_environment) { FactoryGirl.create(:environment, system_id: system.id, blueprint_id: blueprint.id, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
+      let(:new_environment) { FactoryGirl.create(:environment, system_id: system.id, blueprint_history_id: blueprint_history.id, candidates_attributes: [{ cloud_id: cloud.id, priority: 10 }]) }
       let(:params) { { environment_id: new_environment.id } }
       let(:result) do
         system.as_json.merge(
@@ -206,14 +289,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
     end
   end

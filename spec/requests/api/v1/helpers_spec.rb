@@ -46,21 +46,21 @@ module API
 
       describe '#authoize!' do
         it 'call Ability#authorize!' do
-          expect(@helpers).to receive_message_chain(:current_ability, :authorize!).with(:read, Project)
+          expect(@helpers).to receive_message_chain(:create_ability, :authorize!).with(:read, Project)
           @helpers.authorize!(:read, Project)
         end
       end
 
       describe '#can?' do
         it 'call Ability#can?' do
-          expect(@helpers).to receive_message_chain(:current_ability, :can?).with(:read, Project)
+          expect(@helpers).to receive_message_chain(:create_ability, :can?).with(:read, Project)
           @helpers.can?(:read, Project)
         end
       end
 
       describe '#cannot?' do
         it 'call Ability#cannot?' do
-          expect(@helpers).to receive_message_chain(:current_ability, :cannot?).with(:read, Project)
+          expect(@helpers).to receive_message_chain(:create_ability, :cannot?).with(:read, Project)
           @helpers.cannot?(:read, Project)
         end
       end

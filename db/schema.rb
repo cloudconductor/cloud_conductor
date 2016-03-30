@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150423113621) do
+ActiveRecord::Schema.define(version: 20160208100121) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -61,32 +61,71 @@ ActiveRecord::Schema.define(version: 20150423113621) do
     t.string   "domain"
   end
 
+  create_table "assignment_roles", force: true do |t|
+    t.integer  "assignment_id"
+    t.integer  "role_id"
+    t.datetime "created_at",    null: false
+    t.datetime "updated_at",    null: false
+  end
+
+  add_index "assignment_roles", ["assignment_id", "role_id"], name: "index_assignment_roles_on_assignment_id_and_role_id", unique: true, using: :btree
+
   create_table "assignments", force: true do |t|
-    t.integer  "project_id",             null: false
-    t.integer  "account_id",             null: false
-    t.integer  "role",       default: 0
-    t.datetime "created_at",             null: false
-    t.datetime "updated_at",             null: false
+    t.integer  "project_id", null: false
+    t.integer  "account_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   add_index "assignments", ["project_id", "account_id"], name: "index_assignments_on_project_id_and_account_id", unique: true, using: :btree
 
+  create_table "audits", force: true do |t|
+    t.string   "ip"
+    t.integer  "account"
+    t.integer  "status"
+    t.string   "request"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "project_id"
+  end
+
+  add_index "audits", ["project_id"], name: "index_audits_on_project_id", using: :btree
+
   create_table "base_images", force: true do |t|
     t.integer  "cloud_id"
-    t.string   "os"
     t.string   "source_image"
     t.string   "ssh_username"
-    t.datetime "created_at",   null: false
-    t.datetime "updated_at",   null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "platform"
+    t.string   "platform_version"
+  end
+
+  create_table "blueprint_histories", force: true do |t|
+    t.integer  "blueprint_id",              null: false
+    t.integer  "version",                   null: false
+    t.string   "consul_secret_key"
+    t.datetime "created_at",                null: false
+    t.datetime "updated_at",                null: false
+    t.text     "encrypted_ssh_private_key"
+  end
+
+  create_table "blueprint_patterns", force: true do |t|
+    t.integer  "blueprint_id",     null: false
+    t.integer  "pattern_id",       null: false
+    t.string   "revision"
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
+    t.string   "platform"
+    t.string   "platform_version"
   end
 
   create_table "blueprints", force: true do |t|
     t.integer  "project_id"
     t.string   "name"
     t.text     "description"
-    t.string   "consul_secret_key"
-    t.datetime "created_at",        null: false
-    t.datetime "updated_at",        null: false
+    t.datetime "created_at",  null: false
+    t.datetime "updated_at",  null: false
   end
 
   create_table "candidates", force: true do |t|
@@ -104,10 +143,10 @@ ActiveRecord::Schema.define(version: 20150423113621) do
     t.string   "type"
     t.string   "entry_point"
     t.string   "key"
-    t.string   "secret"
+    t.string   "encrypted_secret"
     t.string   "tenant_name"
-    t.datetime "created_at",  null: false
-    t.datetime "updated_at",  null: false
+    t.datetime "created_at",       null: false
+    t.datetime "updated_at",       null: false
   end
 
   create_table "deployments", force: true do |t|
@@ -120,18 +159,19 @@ ActiveRecord::Schema.define(version: 20150423113621) do
 
   create_table "environments", force: true do |t|
     t.integer  "system_id"
-    t.integer  "blueprint_id"
     t.string   "name"
     t.text     "description"
     t.string   "status"
-    t.string   "ip_address"
+    t.string   "frontend_address"
     t.text     "platform_outputs"
-    t.datetime "created_at",       null: false
-    t.datetime "updated_at",       null: false
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.integer  "blueprint_history_id"
+    t.text     "template_parameters"
+    t.string   "consul_addresses"
   end
 
   create_table "images", force: true do |t|
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.integer  "base_image_id"
     t.string   "name"
@@ -139,28 +179,67 @@ ActiveRecord::Schema.define(version: 20150423113621) do
     t.string   "image"
     t.text     "message"
     t.string   "status"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.datetime "created_at",          null: false
+    t.datetime "updated_at",          null: false
+    t.integer  "pattern_snapshot_id"
   end
 
-  create_table "patterns", force: true do |t|
-    t.integer  "blueprint_id"
+  create_table "pattern_snapshots", force: true do |t|
+    t.integer  "blueprint_history_id", null: false
     t.string   "name"
     t.string   "type"
     t.string   "protocol"
     t.string   "url"
     t.string   "revision"
     t.text     "parameters"
-    t.text     "backup_config"
-    t.datetime "created_at",    null: false
-    t.datetime "updated_at",    null: false
+    t.string   "roles"
+    t.datetime "created_at",           null: false
+    t.datetime "updated_at",           null: false
+    t.string   "platform"
+    t.string   "platform_version"
+    t.string   "providers"
+    t.text     "secret_key"
   end
+
+  create_table "patterns", force: true do |t|
+    t.string   "name"
+    t.string   "type"
+    t.string   "protocol"
+    t.string   "url"
+    t.string   "revision"
+    t.text     "parameters"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer  "project_id"
+    t.string   "roles"
+    t.string   "providers"
+    t.text     "secret_key"
+  end
+
+  create_table "permissions", force: true do |t|
+    t.integer  "role_id"
+    t.string   "model"
+    t.string   "action"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  add_index "permissions", ["role_id", "model", "action"], name: "index_permissions_on_role_id_and_model_and_action", unique: true, using: :btree
 
   create_table "projects", force: true do |t|
     t.string   "name",        null: false
     t.text     "description"
     t.datetime "created_at",  null: false
     t.datetime "updated_at",  null: false
+  end
+
+  create_table "roles", force: true do |t|
+    t.integer  "project_id"
+    t.string   "name"
+    t.string   "description"
+    t.datetime "created_at",                  null: false
+    t.datetime "updated_at",                  null: false
+    t.boolean  "preset",      default: false, null: false
   end
 
   create_table "sessions", force: true do |t|
@@ -175,7 +254,6 @@ ActiveRecord::Schema.define(version: 20150423113621) do
 
   create_table "stacks", force: true do |t|
     t.integer  "environment_id"
-    t.integer  "pattern_id"
     t.integer  "cloud_id"
     t.string   "name"
     t.string   "status"
@@ -183,6 +261,7 @@ ActiveRecord::Schema.define(version: 20150423113621) do
     t.text     "parameters"
     t.datetime "created_at",          null: false
     t.datetime "updated_at",          null: false
+    t.integer  "pattern_snapshot_id"
   end
 
   create_table "systems", force: true do |t|

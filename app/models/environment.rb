@@ -2,44 +2,46 @@ require 'open-uri'
 
 class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :system
-  belongs_to :blueprint
+  belongs_to :blueprint_history
   has_many :candidates, dependent: :destroy, inverse_of: :environment
   has_many :clouds, through: :candidates
   has_many :stacks, validate: false
-  has_many :deployments, dependent: :destroy, inverse_of: :environment
+  has_many :deployments, -> { includes :application_history }, dependent: :destroy, inverse_of: :environment
   has_many :application_histories, through: :deployments
   accepts_nested_attributes_for :candidates
 
-  attr_accessor :template_parameters, :user_attributes
+  attr_accessor :user_attributes
 
-  validates_presence_of :system, :blueprint, :candidates
+  validates_presence_of :system, :blueprint_history, :candidates
   validates :name, presence: true, uniqueness: true
   validate do
     clouds = candidates.map(&:cloud)
     errors.add(:clouds, 'can\'t contain duplicate cloud in clouds attribute') unless clouds.size == clouds.uniq.size
   end
   validate do
-    errors.add(:blueprint, 'status does not create_complete') unless blueprint.status == :CREATE_COMPLETE
-  end
-
-  before_save :create_or_update_stacks, if: -> { status == :PENDING }
-  before_destroy do
-    Thread.new do
-      ActiveRecord::Base.connection_pool.with_connection do
-        destroy_stacks
-      end
+    if blueprint_history
+      errors.add(:blueprint_history, 'status does not create_complete') unless blueprint_history.status == :CREATE_COMPLETE
     end
   end
 
+  before_save :create_or_update_stacks, if: -> { status == :PENDING }
+  before_destroy :destroy_stacks_in_background
+
   after_initialize do
     self.template_parameters ||= '{}'
-    self.user_attributes ||= '{}'
+    self.user_attributes ||= Hash[stacks.map { |stack| [stack.pattern_snapshot.name, JSON.parse(stack.parameters)] }].to_json
     self.platform_outputs ||= '{}'
     self.status ||= :PENDING
   end
 
+  scope :select_by_project_id, -> (project_id) { joins(:system).where(systems: { project_id: project_id }) }
+
+  def project
+    system.project
+  end
+
   def create_or_update_stacks
-    if (new_record? || blueprint_id_changed?) && stacks.empty?
+    if (new_record? || blueprint_history_id_changed?) && stacks.empty?
       create_stacks
     elsif template_parameters != '{}' || user_attributes != '{}'
       update_stacks
@@ -48,35 +50,53 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   def create_stacks
     primary_cloud = candidates.sort.first.cloud
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
-    blueprint.patterns.each do |pattern|
+    blueprint_history.pattern_snapshots.each do |pattern_snapshot|
+      pattern_name = pattern_snapshot.name
       stacks.build(
         cloud: primary_cloud,
-        pattern: pattern,
-        name: "#{system.name}-#{id}-#{pattern.name}",
-        template_parameters: cfn_parameters_hash.key?(pattern.name) ? JSON.dump(cfn_parameters_hash[pattern.name]) : '{}',
-        parameters: user_attributes_hash.key?(pattern.name) ? JSON.dump(user_attributes_hash[pattern.name]) : '{}'
+        pattern_snapshot: pattern_snapshot,
+        name: "#{system.name}-#{id}-#{pattern_name}",
+        template_parameters: cfn_parameters(pattern_name).to_json,
+        parameters: (user_attributes_hash[pattern_name] || {}).to_json
       )
     end
   end
 
   def update_stacks
-    cfn_parameters_hash = JSON.parse(template_parameters)
     user_attributes_hash = JSON.parse(user_attributes)
     stacks.each do |stack|
-      if cfn_parameters_hash.key?(stack.pattern.name)
-        new_template_parameters = JSON.dump(cfn_parameters_hash[stack.pattern.name])
-      else
-        new_template_parameters = '{}'
-      end
-      if user_attributes_hash.key?(stack.pattern.name)
-        new_user_attributes = JSON.dump(user_attributes_hash[stack.pattern.name])
-      else
-        new_user_attributes = '{}'
-      end
+      pattern_name = stack.pattern_snapshot.name
+      new_template_parameters = cfn_parameters(pattern_name).to_json
+      new_user_attributes = (user_attributes_hash[pattern_name] || {}).to_json
       stack.update!(template_parameters: new_template_parameters, parameters: new_user_attributes, status: :PENDING)
     end
+  end
+
+  def build_infrastructure
+    result = candidates.sorted.map(&:cloud).any? do |cloud|
+      begin
+        builder = CloudConductor::Builders.builder(cloud, self)
+        builder.build
+      rescue => e
+        Log.error e.message
+        false
+      end
+    end
+    unless result
+      update_attribute(:status, :ERROR)
+      fail 'Failed to create environment over all candidates' unless result
+    end
+  end
+
+  def update_infrastructure
+    cloud = stacks.first.cloud
+    updater = CloudConductor::Updaters.updater(cloud, self)
+    updater.update
+  rescue => e
+    Log.error e.message
+    update_attribute(:status, :ERROR)
+    raise 'Failed to update environment over all candidates'
   end
 
   def status
@@ -110,7 +130,8 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
     basename = name.sub(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/, '')
     environment.name = "#{basename}-#{SecureRandom.uuid}"
-    environment.ip_address = nil
+    environment.frontend_address = nil
+    environment.consul_addresses = nil
     environment.platform_outputs = '{}'
     environment.status = :PENDING
 
@@ -122,36 +143,32 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def consul
-    fail 'ip_address does not specified' unless ip_address
+    fail 'consul_addresses does not specified' unless consul_addresses
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
-    Consul::Client.new(ip_address, CloudConductor::Config.consul.port, options)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
+    Consul::Client.new(consul_addresses, CloudConductor::Config.consul.port, options)
   end
 
   def event
-    fail 'ip_address does not specified' unless ip_address
+    fail 'consul_addresses does not specified' unless consul_addresses
 
-    options = CloudConductor::Config.consul.options.save.merge(token: blueprint.consul_secret_key)
-    CloudConductor::Event.new(ip_address, CloudConductor::Config.consul.port, options)
+    options = CloudConductor::Config.consul.options.save.merge(token: blueprint_history.consul_secret_key)
+    CloudConductor::Event.new(consul_addresses, CloudConductor::Config.consul.port, options)
   end
 
-  TIMEOUT = 1800
+  def destroy_stacks_in_background
+    Thread.new do
+      ActiveRecord::Base.connection_pool.with_connection do
+        destroy_stacks
+      end
+    end
+  end
+
   def destroy_stacks
     return if stacks.empty?
-    platforms = stacks.select(&:platform?)
-    optionals = stacks.select(&:optional?)
-    stacks.delete_all
 
-    begin
-      optionals.each(&:destroy)
-      Timeout.timeout(TIMEOUT) do
-        sleep 10 until optionals.all?(&stack_destroyed?)
-      end
-    rescue Timeout::Error
-      Log.warn "Exceeded timeout while destroying stacks #{optionals}"
-    ensure
-      platforms.each(&:destroy)
-    end
+    builder = CloudConductor::Builders.builder(stacks.first.cloud, self)
+    builder.destroy
   end
 
   def latest_deployments
@@ -163,10 +180,11 @@ class Environment < ActiveRecord::Base # rubocop:disable ClassLength
 
   private
 
-  def stack_destroyed?
-    lambda do |stack|
-      return true unless stack.exists_on_cloud?
-      [:DELETE_COMPLETE, :DELETE_FAILED].include? stack.cloud.client.get_stack_status(stack.name)
+  def cfn_parameters(pattern_name)
+    pattern_mappings = JSON.parse(template_parameters)[pattern_name] || {}
+    cfn_mappings = pattern_mappings['cloud_formation'] || {}
+    cfn_mappings.each_with_object({}) do |(k, v), h|
+      h[k] = v['value']
     end
   end
 end

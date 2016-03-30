@@ -20,14 +20,9 @@ FactoryGirl.define do
     description 'sample system'
     primary_environment_id nil
 
-    before(:create) do
-      System.skip_callback :save, :before, :update_dns
-      System.skip_callback :save, :before, :enable_monitoring
-    end
-
-    after(:create) do
-      System.set_callback :save, :before, :update_dns, if: -> { primary_environment && domain }
-      System.set_callback :save, :before, :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
+    after(:build) do |system, _evaluator|
+      allow(system).to receive(:update_dns)
+      allow(system).to receive(:enable_monitoring)
     end
   end
 end

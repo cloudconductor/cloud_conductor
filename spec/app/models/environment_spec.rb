@@ -16,13 +16,17 @@ describe Environment do
   include_context 'default_resources'
 
   before do
-    @cloud_aws = FactoryGirl.create(:cloud, :aws)
-    @cloud_openstack = FactoryGirl.create(:cloud, :openstack)
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
 
-    @environment = FactoryGirl.build(:environment, system: system, blueprint: blueprint,
+    @cloud_aws = FactoryGirl.create(:cloud, :aws, project: project)
+    @cloud_openstack = FactoryGirl.create(:cloud, :openstack, project: project)
+
+    @system = System.eager_load(:project).find(system)
+    @blueprint_history = FactoryGirl.build(:blueprint_history, blueprint: blueprint)
+    @environment = FactoryGirl.build(:environment, system: @system, blueprint_history: @blueprint_history,
                                                    candidates_attributes: [{ cloud_id: @cloud_aws.id, priority: 1 },
                                                                            { cloud_id: @cloud_openstack.id, priority: 2 }])
-    allow(@environment).to receive(:create_or_update_stacks)
+    allow(CloudConductor::Config).to receive_message_chain(:system_build, :timeout).and_return(1800)
   end
 
   describe '#save' do
@@ -78,11 +82,6 @@ describe Environment do
   end
 
   describe '#destroy' do
-    before do
-      allow(Thread).to receive(:new).and_yield
-      allow(@environment).to receive(:destroy_stacks)
-    end
-
     it 'delete environment record' do
       @environment.save!
       expect { @environment.destroy }.to change { Environment.count }.by(-1)
@@ -108,25 +107,18 @@ describe Environment do
       expect(@environment.candidates.size).to eq(0)
     end
 
-    it 'call #destroy_stacks callback' do
-      @environment.stacks << FactoryGirl.build(:stack, environment: @environment)
-      expect(@environment).to receive(:destroy_stacks)
+    it 'call #destroy_stacks_in_background callback' do
+      expect(@environment).to receive(:destroy_stacks_in_background)
       @environment.destroy
     end
+  end
 
-    it 'delete environment that has multiple stacks' do
-      threads = Thread.list
-
-      @environment.save!
-      @environment.stacks.delete_all
-      platform_pattern = FactoryGirl.create(:pattern, :platform, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      optional_pattern = FactoryGirl.create(:pattern, :optional, images: [FactoryGirl.build(:image, base_image: base_image, cloud: cloud)])
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: platform_pattern)
-      FactoryGirl.create(:stack, environment: @environment, status: :CREATE_COMPLETE, pattern: optional_pattern)
-
-      @environment.destroy
-
-      (Thread.list - threads).each(&:join)
+  describe '#destroy_stacks_in_background' do
+    it 'call #destroy_stacks in background thread' do
+      allow(@environment).to receive(:destroy_stacks_in_background).and_call_original
+      allow(Thread).to receive(:new).and_yield
+      expect(@environment).to receive(:destroy_stacks)
+      @environment.destroy_stacks_in_background
     end
   end
 
@@ -136,11 +128,59 @@ describe Environment do
   describe '#update_stacks' do
   end
 
+  describe '#build_infrastructure' do
+    before do
+      @environment.candidates << FactoryGirl.build(:candidate, environment: @environment, cloud: cloud)
+      @environment.save!
+
+      @builder = double(:builder, build: true)
+      allow(CloudConductor::Builders).to receive(:builder).and_return(@builder)
+    end
+
+    it 'call Builder#build just once when successfully created' do
+      expect(@builder).to receive(:build).once.and_return(true)
+      @environment.build_infrastructure
+    end
+
+    it 'call Builder#build twice when failed to create first cloud' do
+      expect(@builder).to receive(:build).twice.and_return(false, true)
+      @environment.build_infrastructure
+    end
+
+    it 'call Builder#build twice when raise exception while creating on first cloud' do
+      count = 0
+      expect(@builder).to receive(:build).twice do
+        count += 1
+        count <= 1 ? fail : true
+      end
+      @environment.build_infrastructure
+    end
+  end
+
+  describe '#update_infrastructure' do
+    before do
+      @environment.stacks = [FactoryGirl.build(:stack)]
+      @updater = double(:updater, update: true)
+      allow(CloudConductor::Updaters).to receive(:updater).and_return(@updater)
+    end
+
+    it 'call Updater#update' do
+      expect(@updater).to receive(:update).once.and_return(true)
+      @environment.update_infrastructure
+    end
+
+    it 'raise exception when Updater#update has occurred exception' do
+      allow(@updater).to receive(:update).and_raise
+      expect { @environment.update_infrastructure }.to raise_error(RuntimeError)
+    end
+  end
+
   describe '#dup' do
-    it 'duplicate all attributes in environment without name and ip_address' do
+    it 'duplicate all attributes in environment without some attributes which dependent previous environment' do
+      @environment.save!
       duplicated_environment = @environment.dup
       expect(duplicated_environment.system).to eq(@environment.system)
-      expect(duplicated_environment.blueprint).to eq(@environment.blueprint)
+      expect(duplicated_environment.blueprint_history).to eq(@environment.blueprint_history)
       expect(duplicated_environment.description).to eq(@environment.description)
     end
 
@@ -150,9 +190,14 @@ describe Environment do
       expect(duplicated_environment.name).to match(/-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
     end
 
-    it 'clear ip_address' do
-      @environment.ip_address = '192.168.0.1'
-      expect(@environment.dup.ip_address).to be_nil
+    it 'clear frontend_address' do
+      @environment.frontend_address = '192.168.0.1'
+      expect(@environment.dup.frontend_address).to be_nil
+    end
+
+    it 'clear consul_addresses' do
+      @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
+      expect(@environment.dup.consul_addresses).to be_nil
     end
 
     it 'clear platform_outputs' do
@@ -193,25 +238,25 @@ describe Environment do
   end
 
   describe '#consul' do
-    it 'will fail when ip_address does not specified' do
-      @environment.ip_address = nil
-      expect { @environment.consul }.to raise_error('ip_address does not specified')
+    it 'will fail when consul_addresses does not specified' do
+      @environment.consul_addresses = nil
+      expect { @environment.consul }.to raise_error('consul_addresses does not specified')
     end
 
-    it 'return consul client when ip_address already specified' do
-      @environment.ip_address = '127.0.0.1'
+    it 'return consul client when consul_addresses already specified' do
+      @environment.consul_addresses = '127.0.0.1'
       expect(@environment.consul).to be_a Consul::Client
     end
   end
 
   describe '#event' do
-    it 'will fail when ip_address does not specified' do
-      @environment.ip_address = nil
-      expect { @environment.event }.to raise_error('ip_address does not specified')
+    it 'will fail when consul_addresses does not specified' do
+      @environment.consul_addresses = nil
+      expect { @environment.event }.to raise_error('consul_addresses does not specified')
     end
 
-    it 'return event client when ip_address already specified' do
-      @environment.ip_address = '127.0.0.1'
+    it 'return event client when consul_addresses already specified' do
+      @environment.consul_addresses = '127.0.0.1'
       expect(@environment.event).to be_is_a CloudConductor::Event
     end
   end
@@ -231,7 +276,8 @@ describe Environment do
   describe '#as_json' do
     before do
       @environment.id = 1
-      @environment.ip_address = '127.0.0.1'
+      @environment.frontend_address = '127.0.0.1'
+      @environment.consul_addresses = '192.168.0.1, 192.168.0.2'
       allow(@environment).to receive(:status).and_return(:PROGRESS)
       allow(@environment).to receive(:application_status).and_return(:DEPLOY_COMPLETE)
     end
@@ -240,7 +286,8 @@ describe Environment do
       hash = @environment.as_json
       expect(hash['id']).to eq(@environment.id)
       expect(hash['name']).to eq(@environment.name)
-      expect(hash['ip_address']).to eq(@environment.ip_address)
+      expect(hash['frontend_address']).to eq(@environment.frontend_address)
+      expect(hash['consul_addresses']).to eq(@environment.consul_addresses)
       expect(hash['status']).to eq(@environment.status)
       expect(hash['application_status']).to eq(@environment.application_status)
     end
@@ -248,68 +295,21 @@ describe Environment do
 
   describe '#destroy_stacks' do
     before do
-      pattern1 = FactoryGirl.create(:pattern, :optional)
-      pattern2 = FactoryGirl.create(:pattern, :platform)
-      pattern3 = FactoryGirl.create(:pattern, :optional)
-
-      @environment.stacks.delete_all
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern1, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern2, cloud: @cloud_aws)
-      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern: pattern3, cloud: @cloud_aws)
-
-      @environment.save!
-
-      allow(@environment).to receive(:sleep)
-      allow_any_instance_of(Stack).to receive(:destroy)
-
-      original_timeout = Timeout.method(:timeout)
-      allow(Timeout).to receive(:timeout) do |_, &block|
-        original_timeout.call(0.1, &block)
-      end
-
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { true })
+      @builder = double(:builder, build: true)
+      allow(CloudConductor::Builders).to receive(:builder).and_return(@builder)
     end
 
-    it 'destroy all stacks of environment' do
-      expect(@environment.stacks).not_to be_empty
-      @environment.destroy_stacks
-      expect(@environment.stacks).to be_empty
-    end
-
-    it 'destroy optional patterns before platform' do
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
+    it 'does not call Builder#destroy when stacks are empty' do
+      expect(@builder).not_to receive(:destroy)
       @environment.destroy_stacks
     end
 
-    it 'doesn\'t destroy platform pattern until timeout if optional pattern can\'t destroy' do
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false })
+    it 'call Builder#destroy' do
+      pattern_snapshot = FactoryGirl.build(:pattern_snapshot, type: 'optional', blueprint_history: @blueprint_history)
+      @environment.stacks << FactoryGirl.build(:stack, status: :CREATE_COMPLETE, environment: @environment, pattern_snapshot: pattern_snapshot, cloud: @cloud_aws)
 
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment).to receive(:sleep).at_least(:once).ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
+      expect(@builder).to receive(:destroy)
       @environment.destroy_stacks
-    end
-
-    it 'wait and destroy platform pattern when destroyed all optional patterns' do
-      allow(@environment).to receive(:stack_destroyed?).and_return(-> (_) { false }, -> (_) { true })
-
-      expect(@environment.stacks[0]).to receive(:destroy).ordered
-      expect(@environment.stacks[2]).to receive(:destroy).ordered
-      expect(@environment).to receive(:sleep).once.ordered
-      expect(@environment.stacks[1]).to receive(:destroy).ordered
-
-      @environment.destroy_stacks
-    end
-
-    it 'ensure destroy platform when some error occurred while destroying optional' do
-      allow(@environment.stacks[0]).to receive(:destroy).and_raise(RuntimeError)
-      expect(@environment.stacks[1]).to receive(:destroy)
-      expect { @environment.destroy_stacks }.to raise_error(RuntimeError)
     end
   end
 
@@ -350,12 +350,12 @@ describe Environment do
     end
 
     it 'return :DEPLOY_COMPLETE if latest deployment has succeeded each application' do
-      application1 = FactoryGirl.create(:application)
-      application2 = FactoryGirl.create(:application)
+      application1 = FactoryGirl.build(:application, system: @system)
+      application2 = FactoryGirl.build(:application, system: @system)
 
-      history1 = FactoryGirl.create(:application_history, application: application1)
-      history2 = FactoryGirl.create(:application_history, application: application2)
-      history3 = FactoryGirl.create(:application_history, application: application1)
+      history1 = FactoryGirl.build(:application_history, application: application1)
+      history2 = FactoryGirl.build(:application_history, application: application2)
+      history3 = FactoryGirl.build(:application_history, application: application1)
 
       FactoryGirl.create(:deployment, environment: @environment, application_history: history1, status: :ERROR)
       FactoryGirl.create(:deployment, environment: @environment, application_history: history2, status: :DEPLOY_COMPLETE)
@@ -371,18 +371,52 @@ describe Environment do
     end
 
     it 'return latest deployments each application' do
-      application1 = FactoryGirl.create(:application)
-      application2 = FactoryGirl.create(:application)
+      application1 = FactoryGirl.build(:application, system: @system)
+      application2 = FactoryGirl.build(:application, system: @system)
 
-      history1 = FactoryGirl.create(:application_history, application: application1)
-      history2 = FactoryGirl.create(:application_history, application: application2)
-      history3 = FactoryGirl.create(:application_history, application: application1)
+      history1 = FactoryGirl.build(:application_history, application: application1)
+      history2 = FactoryGirl.build(:application_history, application: application2)
+      history3 = FactoryGirl.build(:application_history, application: application1)
 
       _deployment1 = FactoryGirl.create(:deployment, environment: @environment, application_history: history1)
       deployment2 = FactoryGirl.create(:deployment, environment: @environment, application_history: history2)
       deployment3 = FactoryGirl.create(:deployment, environment: @environment, application_history: history3)
 
       expect(@environment.latest_deployments).to match_array([deployment2, deployment3])
+    end
+  end
+
+  describe '#cfn_parameters' do
+    it 'returns extract part of JSON for CloudFormation/Heat from template_parameters' do
+      @environment.template_parameters = <<-EOS
+      {
+        "dummy_pattern": {
+          "cloud_formation": {
+            "WebInstanceType": {
+              "type": "static",
+              "value": "t2.micro"
+            },
+            "WebInstanceSize": {
+              "type": "static",
+              "value": "2"
+            }
+          },
+          "terraform": {
+            "aws": {
+              "web_instance_type": {
+                "type": "static",
+                "value": "t2.small"
+              }
+            }
+          }
+        }
+      }
+      EOS
+      result = @environment.send(:cfn_parameters, 'dummy_pattern')
+      expect(result).to eq(
+        'WebInstanceType' => 't2.micro',
+        'WebInstanceSize' => '2'
+      )
     end
   end
 end

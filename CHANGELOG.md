@@ -1,6 +1,18 @@
 CHANGELOG
 =========
 
+## version 2.0.0 (2016/03/30)
+
+  - Support packer version 0.9.0
+  - Support terraform version 0.6.13. It becomes selectable as one of the providers.
+  - Support CentOS 7. It becomes selectable as one of the base-image for server-instance.
+  - Add role permission feature. It becomes able to set of user Role permissions for each user and each project feature.
+  - Change API specification for GUI feature support.
+  - Add audit log.
+  - Support private pattern of managed on private git repository.
+  - Remove zabbix disaster recovery. Switch to optional-pattern as system_monitoring_pattern.
+  - Support wakame-vdc.
+
 ## version 1.1.1 (2015/10/15)
 
   - Suppress redundant copies when build/rebuild environment.

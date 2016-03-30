@@ -18,20 +18,10 @@ describe ApplicationHistory do
   let(:today) { Date.today.strftime('%Y%m%d') }
 
   before do
-    @history = ApplicationHistory.new
-    @history.application = application
-    @history.type = 'static'
-    @history.protocol = 'http'
-    @history.url = 'http://example.com/'
-    @history.revision = 'master'
-    @history.pre_deploy = 'echo pre'
-    @history.post_deploy = 'echo post'
-    @history.parameters = '{ "dummy": "value" }'
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
 
-    # @event = double(:event, fire: 1)
-    # allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
-    # allow(@event).to receive_message_chain(:find, :success?).and_return(true)
-    # allow_any_instance_of(System).to receive(:event).and_return(@event)
+    @application = Application.eager_load(system: [:project]).find(application)
+    @history = FactoryGirl.build(:application_history, application: @application)
   end
 
   describe '#save' do

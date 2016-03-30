@@ -16,16 +16,17 @@ describe Stack do
   include_context 'default_resources'
 
   before do
-    @stack = Stack.new
-    @stack.name = 'Test'
-    @stack.pattern = pattern
-    @stack.cloud = cloud
-    @stack.environment = environment
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
+    @pattern_snapshot = PatternSnapshot.eager_load(:images).find(pattern_snapshot)
+    @environment = Environment.eager_load(:system, blueprint_history: [:pattern_snapshots]).find(environment)
+    @stack = FactoryGirl.build(:stack, pattern_snapshot: @pattern_snapshot, cloud: cloud, environment: @environment)
   end
 
   describe '.in_progress' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :PROGRESS)
+      @environment = Environment.eager_load(system: [:project]).find(environment)
+      stack = FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, status: :PROGRESS)
       expect(Stack.in_progress).to include(stack)
       [:PENDING, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR, :CREATE_COMPLETE].each do |state|
         stack.update_columns(status: state)
@@ -36,7 +37,9 @@ describe Stack do
 
   describe '.created' do
     it 'returns stacks in progress status' do
-      stack = FactoryGirl.create(:stack, environment: environment, pattern: pattern, status: :CREATE_COMPLETE)
+      @environment = Environment.eager_load(system: [:project]).find(environment)
+      @pattern_snapshot = PatternSnapshot.eager_load(:images).find(pattern_snapshot)
+      stack = FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: @pattern_snapshot, status: :CREATE_COMPLETE)
       expect(Stack.created).to include(stack)
       [:PENDING, :PROGRESS, :READY_FOR_CREATE, :READY_FOR_UPDATE, :ERROR].each do |state|
         stack.update_columns(status: state)
@@ -59,7 +62,9 @@ describe Stack do
     end
 
     it 'return true when name is not unique in two Clouds' do
-      FactoryGirl.create(:stack, environment: environment, pattern: pattern, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
+      @environment = Environment.eager_load(:system).find(environment)
+      @cloud = FactoryGirl.create(:cloud, :openstack, project: project)
+      FactoryGirl.create(:stack, environment: @environment, pattern_snapshot: pattern_snapshot, name: 'Test', cloud: FactoryGirl.create(:cloud, :openstack))
       expect(@stack.valid?).to be_truthy
     end
 
@@ -68,13 +73,13 @@ describe Stack do
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when pattern is unset' do
-      @stack.pattern = nil
+    it 'returns false when pattern_snapshot is unset' do
+      @stack.pattern_snapshot = nil
       expect(@stack.valid?).to be_falsey
     end
 
-    it 'returns false when pattern status isn\'t CREATE_COMPLETE' do
-      @stack.pattern.images << FactoryGirl.create(:image, status: :PROGRESS, pattern: @stack.pattern)
+    it 'returns false when pattern_snapshot status isn\'t CREATE_COMPLETE' do
+      @stack.pattern_snapshot.images << FactoryGirl.create(:image, status: :PROGRESS, pattern_snapshot: @stack.pattern_snapshot)
       expect(@stack.valid?).to be_falsey
     end
 
@@ -100,11 +105,6 @@ describe Stack do
   end
 
   describe '#save' do
-    before do
-      allow(@stack).to receive(:create_stack)
-      allow(@stack).to receive(:update_stack)
-    end
-
     it 'create with valid parameters' do
       expect { @stack.save! }.to change { Stack.count }.by(1)
     end
@@ -136,15 +136,15 @@ describe Stack do
 
   describe '#update_name' do
     it 'call Client#create_stack' do
-      expect(@stack.name).to eq('Test')
       @stack.update_name
-      expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern.name}")
+      expect(@stack.name).to eq("#{@stack.environment.system.name}-#{@stack.environment.id}-#{@stack.pattern_snapshot.name}")
     end
   end
 
   describe '#create_stack' do
     before do
-      allow(@stack).to receive_message_chain(:client, :create_stack)
+      allow(@stack).to receive(:create_stack).and_call_original
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(true)
     end
 
     it 'call Client#create_stack' do
@@ -152,11 +152,20 @@ describe Stack do
       @stack.create_stack
     end
 
-    it 'update status to :PROGRESS if Client#create_stack hasn\'t error occurred' do
+    it 'update status to :PROGRESS if Client#create_stack return stack without error' do
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(true)
       @stack.status = :READY_FOR_CREATE
       @stack.create_stack
 
       expect(@stack.attributes['status']).to eq(:PROGRESS)
+    end
+
+    it 'update status to :CREATE_COMPETE if Client#create_stack return nil without error' do
+      allow(@stack).to receive_message_chain(:client, :create_stack).and_return(nil)
+      @stack.status = :READY_FOR_CREATE
+      @stack.create_stack
+
+      expect(@stack.attributes['status']).to eq(:CREATE_COMPLETE)
     end
 
     it 'update status to :ERROR if Client#create_stack raise error' do
@@ -170,12 +179,29 @@ describe Stack do
 
   describe '#update_stack' do
     before do
+      allow(@stack).to receive(:update_stack).and_call_original
       allow(@stack).to receive_message_chain(:client, :update_stack)
     end
 
     it 'call Client#update_stack' do
       expect(@stack).to receive_message_chain(:client, :update_stack)
       @stack.update_stack
+    end
+
+    it 'update status to :PROGRESS if Client#update_stack return stack without error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_return(true)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.update_stack
+
+      expect(@stack.attributes['status']).to eq(:PROGRESS)
+    end
+
+    it 'update status to :CREATE_COMPETE if Client#update_stack return nil without error' do
+      allow(@stack).to receive_message_chain(:client, :update_stack).and_return(nil)
+      @stack.status = :READY_FOR_UPDATE
+      @stack.update_stack
+
+      expect(@stack.attributes['status']).to eq(:CREATE_COMPLETE)
     end
 
     it 'update status to :ERROR if Client#update_stack raise error' do
@@ -291,19 +317,9 @@ describe Stack do
 
   describe '#payload' do
     it 'return hash that has parameters of stack' do
-      key = "cloudconductor/patterns/#{@stack.pattern.name}/attributes"
+      key = "cloudconductor/patterns/#{@stack.pattern_snapshot.name}/attributes"
       attributes = @stack.payload[key]
       expect(attributes).to eq(JSON.parse(@stack.parameters, symbolize_names: true))
-    end
-
-    it 'return hash that has backup configuration' do
-      key = "cloudconductor/patterns/#{@stack.pattern.name}/config"
-      config = @stack.payload[key]
-      expect(config).to eq(
-        cloudconductor: {
-          backup_restore: JSON.parse(@stack.parameters, symbolize_names: true)
-        }
-      )
     end
   end
 
@@ -358,24 +374,24 @@ describe Stack do
 
   describe '#platform?' do
     it 'return true if stack has platform pattern' do
-      @stack.pattern.type = 'platform'
+      @stack.pattern_snapshot.type = 'platform'
       expect(@stack.platform?).to be_truthy
     end
 
     it 'return false if stack has optional pattern' do
-      @stack.pattern.type = 'optional'
+      @stack.pattern_snapshot.type = 'optional'
       expect(@stack.platform?).to be_falsey
     end
   end
 
   describe '#optional?' do
     it 'return true if stack has optional pattern' do
-      @stack.pattern.type = 'optional'
+      @stack.pattern_snapshot.type = 'optional'
       expect(@stack.optional?).to be_truthy
     end
 
     it 'return false if stack has platform pattern' do
-      @stack.pattern.type = 'platform'
+      @stack.pattern_snapshot.type = 'platform'
       expect(@stack.optional?).to be_falsey
     end
   end

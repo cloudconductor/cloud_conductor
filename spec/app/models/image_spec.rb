@@ -16,12 +16,10 @@ describe Image do
   include_context 'default_resources'
 
   before do
-    @image = Image.new
-    @image.role = 'dummy'
-    @image.cloud = cloud
-    @image.pattern = pattern
-    @image.base_image = base_image
-    @image.image = 'dummy_image_id'
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
+    @pattern = PatternSnapshot.eager_load(:blueprint_history).find(pattern_snapshot)
+    @image = FactoryGirl.build(:image, cloud: cloud, pattern_snapshot: @pattern, base_image: base_image)
   end
 
   describe '#initialize' do
@@ -69,7 +67,7 @@ describe Image do
     end
 
     it 'returns false when pattern is unset' do
-      @image.pattern = nil
+      @image.pattern_snapshot = nil
       expect(@image.valid?).to be_falsey
     end
 
@@ -94,7 +92,7 @@ describe Image do
 
   describe '#destroy_image' do
     it 'call client#destroy_image with image id' do
-      allow(@image).to receive_message_chain(:cloud, :client, :destroy_image).with('dummy_image_id')
+      allow(@image).to receive_message_chain(:cloud, :client, :destroy_image).with(@image.image)
       @image.destroy_image
     end
   end

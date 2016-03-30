@@ -4,25 +4,41 @@
     "cloudconductor_init_url": null,
     "cloudconductor_init_revision": null,
     "pattern_name": null,
-    "patterns_json": null,
     "role": null,
     "image_name": null,
-    "consul_secret_key": null
+    "consul_secret_key": null,
+    "ssh_public_key": null,
+    "archived_src_path": null,
+    "archived_dest_path": "~/patterns.tar"
   },
   "builders": [
   ],
   "provisioners": [
     {
+      "type": "file",
+      "source": "{{user `archived_src_path`}}",
+      "destination": "{{user `archived_dest_path`}}"
+    },
+    {
       "type": "shell",
       "inline_shebang": "/bin/bash -ex",
       "inline": [
+        "echo ssh-rsa {{user `ssh_public_key`}} >> ~/.ssh/authorized_keys",
+
         "sudo git clone {{user `cloudconductor_init_url`}} {{user `cloudconductor_root`}}",
 
         "cd {{user `cloudconductor_root`}}",
         "sudo git checkout {{user `cloudconductor_init_revision`}}",
 
+        "sudo tar -xvf {{user `archived_dest_path`}} -C {{user `cloudconductor_root`}}/patterns/",
+        "rm {{user `archived_dest_path`}}",
+
         "if [ -f ./bin/init.sh ]; then",
-        "  sudo ROLE={{user `role`}} PATTERNS_JSON='{{user `patterns_json`}}' CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/bootstrap.log && exit 1)",
+        "  sudo ROLE={{user `role`}} CONSUL_SECRET_KEY='{{user `consul_secret_key`}}' ./bin/init.sh || (cat {{user `cloudconductor_root`}}/logs/bootstrap.log && exit 1)",
+        "fi",
+
+        "if [ -f /etc/hostname ]; then",
+        "  sudo rm -rf /etc/hostname",
         "fi",
 
         "sync"

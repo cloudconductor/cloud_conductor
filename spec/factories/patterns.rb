@@ -14,10 +14,9 @@
 # limitations under the License.
 FactoryGirl.define do
   factory :pattern do
-    blueprint
+    project
     protocol 'git'
     revision 'master'
-    backup_config '{}'
 
     trait :platform do
       sequence(:name) { |n| "platform_pattern-#{n}" }
@@ -31,12 +30,8 @@ FactoryGirl.define do
       type 'optional'
     end
 
-    before(:create) do
-      Pattern.skip_callback :save, :before, :execute_packer
-    end
-
-    after(:create) do
-      Pattern.set_callback :save, :before, :execute_packer, if: -> { url_changed? || revision_changed? }
+    after(:build) do |pattern, _evaluator|
+      allow(pattern).to receive(:update_metadata)
     end
   end
 end

@@ -31,6 +31,7 @@ module CloudConductor
         }
       }
       @client = PackerClient.new options
+      @project = FactoryGirl.build(:project)
     end
 
     describe '#initialize' do
@@ -69,23 +70,25 @@ module CloudConductor
         allow(FileUtils).to receive(:rm)
 
         @images = []
-        @images << FactoryGirl.create(:image)
-        @images << FactoryGirl.create(:image)
+        @images << FactoryGirl.create(:image, project: @project)
+        @images << FactoryGirl.create(:image, project: @project)
       end
 
       it 'will call #create_json to create json file' do
         expect(@client).to receive(:create_json).with(@images)
-        @client.build(@images, @parameters)
+        @client.build(@images, @parameters, proc {})
       end
 
       it 'will call #build_command to create packer command' do
         expected_parameters = @parameters.merge(packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
         expect(@client).to receive(:build_command).with(expected_parameters)
-        @client.build(@images, @parameters)
+        @client.build(@images, @parameters, proc {})
       end
 
       it 'will yield block with parsed results' do
-        expect { |b| @client.build(@images, @parameters, &b) }.to yield_with_args('dummy' => { status: :SUCCESS })
+        block = double(:block)
+        expect(block).to receive(:call).with('dummy' => { status: :SUCCESS })
+        @client.build(@images, @parameters, block)
       end
 
       it 'remove temporary json for packer when finished block without error' do
@@ -96,7 +99,7 @@ module CloudConductor
       it 'remove temporary json for packer when some errors occurred while yielding block' do
         expect(FileUtils).to receive(:rm).with('/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json')
 
-        @client.build(@images, @parameters) { fail }
+        @client.build(@images, @parameters, proc { fail })
         expect(@images.map(&:status)).to all(eq(:ERROR))
       end
 
@@ -117,8 +120,8 @@ module CloudConductor
     describe '#create_json' do
       before do
         @images = []
-        @images << FactoryGirl.create(:image)
-        @images << FactoryGirl.create(:image)
+        @images << FactoryGirl.create(:image, project: @project)
+        @images << FactoryGirl.create(:image, project: @project)
 
         allow(Dir).to receive(:exist?).and_return true
         allow(FileUtils).to receive(:mkdir_p)
@@ -161,23 +164,10 @@ module CloudConductor
         @parameters = {
           role: 'nginx',
           pattern_name: 'default_pattern_name',
-          patterns: {
-            name: {
-              url: 'http://example.com/',
-              revision: 'develop'
-            }
-          },
           consul_secret_key: 'default_key',
-          packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json'
+          packer_json_path: '/tmp/packer/7915c5f6-33b3-4c6d-b66b-521f61a82e8b.json',
+          archived_path: File.join('/tmp/archives/', "#{SecureRandom.uuid}.tar")
         }
-      end
-
-      it 'return command with patterns_json' do
-        vars = []
-        vars << '-var patterns_json=\{\"name\":\{\"url\":\"http://example.com/\",\"revision\":\"develop\"\}\}'
-
-        command = @client.send(:build_command, @parameters)
-        expect(command).to include(*vars)
       end
 
       it 'return command with cloudconductor_root' do
@@ -249,10 +239,10 @@ module CloudConductor
 
     describe '#parse' do
       before do
-        @cloud_aws = FactoryGirl.create(:cloud, :aws, name: 'aws')
-        @cloud_openstack = FactoryGirl.create(:cloud, :openstack, name: 'openstack')
-        @base_image_aws = FactoryGirl.create(:base_image, cloud: @cloud_aws, os: 'centos')
-        @base_image_openstack = FactoryGirl.create(:base_image, cloud: @cloud_openstack, os: 'centos')
+        @cloud_aws = FactoryGirl.build(:cloud, :aws, name: 'aws', project: @project)
+        @cloud_openstack = FactoryGirl.build(:cloud, :openstack, name: 'openstack', project: @project)
+        @base_image_aws = FactoryGirl.build(:base_image, cloud: @cloud_aws, platform: 'centos', platform_version: '6.5')
+        @base_image_openstack = FactoryGirl.build(:base_image, cloud: @cloud_openstack, platform: 'centos', platform_version: '6.5')
       end
 
       def load_csv(path)
@@ -262,29 +252,29 @@ module CloudConductor
 
       it 'return success status and image of all builders when success all builders' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
-        images << FactoryGirl.create(:image, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
 
         result = @client.send(:parse, load_csv('success.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web openstack-centos----web))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web openstack-centos-6.5----web))
 
-        aws = result['aws-centos----web']
+        aws = result['aws-centos-6.5----web']
         expect(aws[:status]).to eq(:SUCCESS)
         expect(aws[:image]).to match(/ami-[0-9a-f]{8}/)
 
-        openstack = result['openstack-centos----web']
+        openstack = result['openstack-centos-6.5----web']
         expect(openstack[:status]).to eq(:SUCCESS)
         expect(openstack[:image]).to match(/[0-9a-f\-]{36}/)
       end
 
       it 'return error status and error message about aws builder when source image does not exists while build on aws' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
 
         result = @client.send(:parse, load_csv('error_aws_image_not_found.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web))
 
-        aws = result['aws-centos----web']
+        aws = result['aws-centos-6.5----web']
         expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match(/Error querying AMI: The image id '\[ami-[0-9a-f]{8}\]' does not exist \(InvalidAMIID.NotFound\)/)
@@ -292,12 +282,12 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when SSH connecetion failed while build on aws' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
 
         result = @client.send(:parse, load_csv('error_aws_ssh_faild.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web))
 
-        aws = result['aws-centos----web']
+        aws = result['aws-centos-6.5----web']
         expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to eq('Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain')
@@ -305,12 +295,12 @@ module CloudConductor
 
       it 'return error status and error message about aws builder when an error has occurred while provisioning' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
 
         result = @client.send(:parse, load_csv('error_aws_provisioners_faild.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web))
 
-        aws = result['aws-centos----web']
+        aws = result['aws-centos-6.5----web']
         expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match('Script exited with non-zero exit status: \d+')
@@ -318,12 +308,12 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when source image does not exists while build on openstack' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
 
         result = @client.send(:parse, load_csv('error_openstack_image_not_found.csv'), images)
-        expect(result.keys).to match_array(%w(openstack-centos----web))
+        expect(result.keys).to match_array(%w(openstack-centos-6.5----web))
 
-        openstack = result['openstack-centos----web']
+        openstack = result['openstack-centos-6.5----web']
         expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match(%r{Error launching source server: Expected HTTP response code \[202\] when accessing URL\(http://[0-9\.]+:8774/v2/[0-9a-f]+/servers\); got 400 instead with the following body:\\n\{"badRequest": \{"message": "Can not find requested image", "code": 400\}\}})
@@ -331,12 +321,12 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when SSH connecetion failed while build on openstack' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
 
         result = @client.send(:parse, load_csv('error_openstack_ssh_faild.csv'), images)
-        expect(result.keys).to match_array(%w(openstack-centos----web))
+        expect(result.keys).to match_array(%w(openstack-centos-6.5----web))
 
-        openstack = result['openstack-centos----web']
+        openstack = result['openstack-centos-6.5----web']
         expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to eq('Error waiting for SSH: ssh: handshake failed: ssh: unable to authenticate, attempted methods [none publickey], no supported methods remain')
@@ -344,12 +334,12 @@ module CloudConductor
 
       it 'return error status and error message about openstack builder when an error has occurred while provisioning' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
 
         result = @client.send(:parse, load_csv('error_openstack_provisioners_faild.csv'), images)
-        expect(result.keys).to match_array(%w(openstack-centos----web))
+        expect(result.keys).to match_array(%w(openstack-centos-6.5----web))
 
-        openstack = result['openstack-centos----web']
+        openstack = result['openstack-centos-6.5----web']
         expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
@@ -357,18 +347,18 @@ module CloudConductor
 
       it 'return error status and error message about all builders when multiple builders failed' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
-        images << FactoryGirl.create(:image, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_openstack, base_image: @base_image_openstack, role: 'web')
 
         result = @client.send(:parse, load_csv('error_concurrency.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web openstack-centos----web))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web openstack-centos-6.5----web))
 
-        aws = result['aws-centos----web']
+        aws = result['aws-centos-6.5----web']
         expect(aws[:status]).to eq(:ERROR)
         expect(aws[:image]).to be_nil
         expect(aws[:message]).to match('Script exited with non-zero exit status: \d+')
 
-        openstack = result['openstack-centos----web']
+        openstack = result['openstack-centos-6.5----web']
         expect(openstack[:status]).to eq(:ERROR)
         expect(openstack[:image]).to be_nil
         expect(openstack[:message]).to match('Script exited with non-zero exit status: \d+')
@@ -376,12 +366,12 @@ module CloudConductor
 
       it 'return success status and image when pattern has comman separated roles' do
         images = []
-        images << FactoryGirl.create(:image, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web, ap')
+        images << FactoryGirl.create(:image, project: @project, cloud: @cloud_aws, base_image: @base_image_aws, role: 'web, ap')
 
         result = @client.send(:parse, load_csv('success_with_multiple_roles.csv'), images)
-        expect(result.keys).to match_array(%w(aws-centos----web-ap))
+        expect(result.keys).to match_array(%w(aws-centos-6.5----web-ap))
 
-        aws = result['aws-centos----web-ap']
+        aws = result['aws-centos-6.5----web-ap']
         expect(aws[:status]).to eq(:SUCCESS)
         expect(aws[:image]).to match(/ami-[0-9a-f]{8}/)
       end

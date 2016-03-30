@@ -2,6 +2,20 @@ module API
   module V1
     class ProjectAPI < API::V1::Base
       resource :projects do
+        before do
+          @project_id = nil
+          @project_id = params[:id] if params.key?(:id)
+        end
+
+        after do
+          if @project_id.nil? && params.key?(:name)
+            project = Project.find_by_name(params[:name])
+            @project_id = project.id if project
+          end
+
+          track_api(@project_id)
+        end
+
         desc 'List projects'
         get '/' do
           ::Project.all.select do |project|

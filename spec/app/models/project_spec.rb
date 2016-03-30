@@ -1,7 +1,6 @@
 describe Project do
   before do
-    @project = Project.new
-    @project.name = 'test'
+    @project = FactoryGirl.build(:project)
   end
 
   describe '#save' do
@@ -13,6 +12,16 @@ describe Project do
       @project.description = '*' * 256
       @project.save!
     end
+
+    it 'call #assign_project_administrator callback' do
+      expect(@project).to receive(:assign_project_administrator)
+      @project.save!
+    end
+
+    it 'call #create_monitoring_account callback' do
+      expect(@project).to receive(:create_monitoring_account)
+      @project.save!
+    end
   end
 
   describe '#destroy' do
@@ -22,29 +31,29 @@ describe Project do
     end
 
     it 'delete all assignment records' do
-      account1 = FactoryGirl.create(:account)
-      account2 = FactoryGirl.create(:account)
-      FactoryGirl.create(:assignment, project: @project, account: account1)
-      FactoryGirl.create(:assignment, project: @project, account: account2)
-
-      expect(@project.assignments.size).to eq(3)
-      expect { @project.destroy }.to change { Assignment.count }.by(-3)
+      @project.save!
+      expect(@project.assignments.size).to eq(1)
+      expect { @project.destroy }.to change { Assignment.count }.by(-1)
     end
 
     it 'delete all cloud records' do
       FactoryGirl.create(:cloud, :aws, project: @project)
       FactoryGirl.create(:cloud, :aws, project: @project)
 
-      expect(@project.clouds.size).to eq(2)
-      expect { @project.destroy }.to change { Cloud.count }.by(-2)
+      project = Project.eager_load(:clouds, :roles).find(@project)
+
+      expect(project.clouds.size).to eq(2)
+      expect { project.destroy }.to change { Cloud.count }.by(-2)
     end
 
     it 'delete all system records' do
       FactoryGirl.create(:system, project: @project)
       FactoryGirl.create(:system, project: @project)
 
-      expect(@project.systems.size).to eq(2)
-      expect { @project.destroy }.to change { System.count }.by(-2)
+      project = Project.eager_load(:systems, :roles).find(@project)
+
+      expect(project.systems.size).to eq(2)
+      expect { project.destroy }.to change { System.count }.by(-2)
     end
 
     it 'delete all blueprint records' do
@@ -52,8 +61,26 @@ describe Project do
       FactoryGirl.create(:blueprint, project: @project)
       FactoryGirl.create(:blueprint, project: @project)
 
-      expect(@project.blueprints.size).to eq(2)
-      expect { @project.destroy }.to change { Blueprint.count }.by(-2)
+      project = Project.eager_load(:blueprints, :roles).find(@project)
+
+      expect(project.blueprints.size).to eq(2)
+      expect { project.destroy }.to change { Blueprint.count }.by(-2)
+    end
+
+    it 'call #delete_monitoring_account callback' do
+      expect(@project).to receive(:delete_monitoring_account)
+      @project.save!
+      @project.destroy
+    end
+
+    it 'delete all role records' do
+      FactoryGirl.create(:role, project: @project)
+      FactoryGirl.create(:role, project: @project)
+
+      project = Project.eager_load(:roles).find(@project)
+
+      expect(project.roles.size).to eq(4)
+      expect { project.destroy }.to change { Role.count }.by(-4)
     end
   end
 
@@ -92,11 +119,16 @@ describe Project do
       @project.create_monitoring_account
       expect(@project.assignments).not_to be_empty
       expect(@project.assignments.first.account).to eq(Account.last)
-      expect(@project.assignments.first.role).to eq('operator')
+      expect(@project.assignments.first.roles.first.name).to eq('operator')
     end
   end
 
   describe '#delete_monitoring_account' do
+    before do
+      allow(@project).to receive(:create_monitoring_account).and_call_original
+      allow(@project).to receive(:delete_monitoring_account).and_call_original
+    end
+
     it 'delete monitoring account' do
       @project.create_monitoring_account
       expect { @project.delete_monitoring_account }.to change { Account.count }.by(-1)
@@ -116,7 +148,7 @@ describe Project do
         # Need to reload for avoid to ActiveRecord bug
         project = Project.find(@project)
 
-        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).role }.from('administrator').to('operator')
+        expect { project.assign_project_member(@account) }.to change { @project.assignments.find_by(account: @account).roles.first.name }.from('administrator').to('operator')
       end
     end
 
@@ -128,19 +160,51 @@ describe Project do
         project = Project.find(@project)
 
         expect { project.assign_project_member(@account, :administrator) }.to change { Assignment.count }.by(1)
-        expect(project.assignments.find_by(account: @account).role).to eq('administrator')
+        expect(project.assignments.find_by(account: @account).roles.first.name).to eq('administrator')
       end
     end
   end
 
   describe '#base_images' do
     it 'collect base images belongs to this project' do
-      cloud = FactoryGirl.create(:cloud, :aws, project: @project)
-      FactoryGirl.create(:base_image, cloud: cloud, os: 'CentOS-6.6')
+      cloud = FactoryGirl.build(:cloud, :aws, project: @project)
+      FactoryGirl.create(:base_image, cloud: cloud, platform: 'CentOS')
 
-      results = @project.base_images('CentOS-6.5')
+      results = @project.base_images('CentOS')
       expect(results.size).to eq(1)
-      expect(results.first.os).to eq('CentOS-6.5')
+      expect(results.first.platform).to eq('CentOS')
+    end
+  end
+
+  describe 'create_preset_roles' do
+    it 'create roles' do
+      @project.save!
+
+      expect(Role.where(project: @project).count).to eq(2)
+
+      role_admin = Role.find_by(project: @project, name: 'administrator')
+      expect(role_admin).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'project').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'assignment').action).to eq('manage')
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'read')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'account', action: 'create')).to_not be_nil
+      expect(Permission.find_by(role: role_admin, model: 'role').action).to eq('manage')
+
+      models = [:cloud, :base_image, :pattern, :blueprint, :system, :environment, :application, :application_history, :deployment]
+
+      models.each do |model|
+        expect(Permission.find_by(role: role_admin, model: model).action).to eq('manage')
+      end
+
+      role_operator = Role.find_by(project: @project, name: 'operator')
+      expect(role_operator).to_not be_nil
+      expect(Permission.find_by(role: role_operator, model: 'project').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'assignment').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'account').action).to eq('read')
+      expect(Permission.find_by(role: role_operator, model: 'role').action).to eq('read')
+      models.each do |model|
+        expect(Permission.find_by(role: role_operator, model: model).action).to eq('manage')
+      end
     end
   end
 end

@@ -2,10 +2,13 @@ class Assignment < ActiveRecord::Base
   belongs_to :project
   belongs_to :account
 
-  enum role: { operator: 0, administrator: 1 }
+  has_many :assignment_roles, dependent: :destroy
+  has_many :roles, through: :assignment_roles
 
   validates_associated :project, :account
-  validates_presence_of :role
+  validates_presence_of :project, :account
 
-  attr_accessor :email
+  def email
+    account.email
+  end
 end

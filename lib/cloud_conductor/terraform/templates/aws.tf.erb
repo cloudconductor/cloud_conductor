@@ -1,0 +1,77 @@
+<% variables.each do |variable| -%>
+variable "<%= variable %>" {}
+<% end -%>
+
+provider "aws" {
+  access_key = "${var.aws_access_key}"
+  secret_key = "${var.aws_secret_key}"
+  region = "${var.aws_region}"
+}
+
+<% modules.each do |m| %>
+module "<%= m.name %>" {
+  source = "<%= m.source %>"
+  <%- m.variables.each do |key, value| -%>
+  <%= key %> = "<%= value %>"
+  <%- end -%>
+}
+<% end %>
+
+resource "null_resource" "consul_bootstrap" {
+  count = "${var.bootstrap_expect}"
+  triggers {
+    cluster_addresses = "${join(", ", <%= collect_outputs('cluster_addresses') %>)}"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "sudo su -c \"sed -i -e '/BOOTSTRAP_EXPECT/d' /opt/cloudconductor/config\"",
+      "sudo su -c \"/bin/echo BOOTSTRAP_EXPECT=${var.bootstrap_expect} >> /opt/cloudconductor/config\"",
+      "sudo su -c \"sed -i -e '/CLUSTER_ADDRESSES/d' /opt/cloudconductor/config\"",
+      "sudo su -c \"/bin/echo CLUSTER_ADDRESSES=\\'${join(", ", <%= collect_outputs('cluster_addresses') %>)}\\' >> /opt/cloudconductor/config\"",
+      "sudo service consul restart",
+      "sleep 10"
+      ]
+    connection {
+      user = "${var.ssh_username}"
+      key_file = "${var.ssh_key_file}"
+      host = "${element(<%= collect_outputs('cluster_addresses') %>, count.index)}"
+      bastion_user = "${var.ssh_username}"
+      bastion_key_file = "${var.ssh_key_file}"
+      bastion_host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
+    }
+  }
+}
+
+resource "null_resource" "consul_join" {
+  depends_on = ["null_resource.consul_bootstrap"]
+  count = "${var.bootstrap_expect}"
+  triggers {
+    cluster_addresses = "${join(", ", <%= collect_outputs('cluster_addresses') %>)}"
+  }
+  provisioner "remote-exec" {
+    inline = [
+      "for i in `seq 10 `; do",
+      "  sleep 3",
+      "  consul join ${element(<%= collect_outputs('cluster_addresses') %>, count.index)}",
+      "  if [ $? -ne 0 ]; then",
+      "    continue 1",
+      "  fi",
+      "  exit 0",
+      "done",
+      "exit 1"
+    ]
+    connection {
+      user = "${var.ssh_username}"
+      key_file = "${var.ssh_key_file}"
+      host = "${element(<%= collect_outputs('frontend_address') %>, 0)}"
+    }
+  }
+}
+
+<% modules.each do |m| -%>
+<% m.outputs.each do |key| -%>
+output "<%= m.name %>.<%= key %>" {
+  value = "${module.<%= m.name %>.<%= key %>}"
+}
+<% end %>
+<% end %>

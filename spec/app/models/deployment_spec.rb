@@ -16,15 +16,16 @@ describe Deployment do
   include_context 'default_resources'
 
   before do
-    @deployment = Deployment.new
-    @deployment.environment = environment
-    @deployment.environment.status = :CREATE_COMPLETE
-    @deployment.application_history = application_history
+    allow_any_instance_of(Project).to receive(:create_preset_roles)
+
+    @environment = Environment.eager_load(:system).find(environment)
+    @application_history = ApplicationHistory.eager_load(:application).find(application_history)
+    @deployment = FactoryGirl.build(:deployment, environment: @environment, application_history: @application_history)
 
     @event = double(:event, fire: 1, sync_fire: 1)
     allow(@event).to receive_message_chain(:find, :finished?).and_return(true)
     allow(@event).to receive_message_chain(:find, :success?).and_return(true)
-    allow(environment).to receive(:event).and_return(@event)
+    allow(@environment).to receive(:event).and_return(@event)
   end
 
   describe '#initialize' do
@@ -56,7 +57,7 @@ describe Deployment do
     end
 
     it 'call #consul_request callback' do
-      environment.ip_address = '127.0.0.1'
+      environment.consul_addresses = '127.0.0.1'
 
       expect(@deployment).to receive(:consul_request)
       @deployment.save!
@@ -64,6 +65,10 @@ describe Deployment do
   end
 
   describe '#consul_request' do
+    before do
+      allow(@deployment).to receive(:consul_request).and_call_original
+    end
+
     it 'call #deploy_application to deploy application in background' do
       expect(@deployment).to receive(:deploy_application)
       @deployment.send(:consul_request)
@@ -137,15 +142,23 @@ describe Deployment do
       @deployment.send(:update_dns_record)
     end
 
-    it 'does not register CNAME record to DNS server when system domain is null' do
-      system.domain = nil
+    it 'does not register CNAME record to DNS server when system domain is null or empty' do
       expect(@client).not_to receive(:update)
+
+      @environment.system.domain = nil
+      @deployment.send(:update_dns_record)
+
+      @environment.system.domain = ''
       @deployment.send(:update_dns_record)
     end
 
-    it 'does not register CNAME record to DNS server when application domain is null' do
-      application_history.application.domain = nil
+    it 'does not register CNAME record to DNS server when application domain is null or empty' do
       expect(@client).not_to receive(:update)
+
+      @application_history.application.domain = nil
+      @deployment.send(:update_dns_record)
+
+      @application_history.application.domain = ''
       @deployment.send(:update_dns_record)
     end
   end

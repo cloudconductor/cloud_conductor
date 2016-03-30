@@ -16,10 +16,13 @@ module CloudConductor
   describe Event do
     before do
       @client = double(:client)
+      allow(@client).to receive(:host).and_return('localhost')
+      allow(@client).to receive(:port).and_return(8500)
       allow(@client).to receive_message_chain(:kv, :merge)
       allow(@client).to receive_message_chain(:kv, :get)
       allow(@client).to receive_message_chain(:event, :fire)
       allow(Consul::Client).to receive(:new).and_return(@client)
+      allow(CloudConductor::Config).to receive_message_chain(:event, :timeout).and_return(1800)
 
       @event = CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
     end
@@ -30,8 +33,9 @@ module CloudConductor
         CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
       end
 
-      it 'keep token in instance variable' do
-        expect(@event.instance_variable_get(:@token)).to eq('dummy_token')
+      it 'create consul client for host' do
+        event = CloudConductor::Event.new 'localhost', 8500, token: 'dummy_token'
+        expect(event.instance_variable_get(:@client)).to eq(@client)
       end
     end
 
@@ -49,7 +53,7 @@ module CloudConductor
       end
 
       it 'call Event#fire with token' do
-        expect(@client).to receive_message_chain(:event, :fire).with(:configure, 'dummy_token', {})
+        expect(@client).to receive_message_chain(:event, :fire).with(:configure, {})
         @event.fire(:configure, {})
       end
 
@@ -101,7 +105,7 @@ module CloudConductor
       it 'fail if wait method has timed out' do
         allow(@event).to receive(:wait).and_raise(Timeout::Error)
 
-        expect { @event.sync_fire(:error) }.to raise_error
+        expect { @event.sync_fire(:error) }.to raise_error(RuntimeError)
       end
 
       it 'fail if success? method returns false' do

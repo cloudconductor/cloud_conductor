@@ -5,3 +5,6 @@ LineLength:
 
 ClassLength:
   Enabled: false
+
+ModuleLength:
+  Enabled: false

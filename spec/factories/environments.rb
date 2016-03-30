@@ -13,20 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 FactoryGirl.define do
-  factory :environment, class: Environment do
+  factory :environment_without_candidates, class: Environment do
     sequence(:name) { |n| "environment-#{n}" }
     description 'environment description'
-    system
-    blueprint
+    system { FactoryGirl.build(:system) }
+    blueprint_history { FactoryGirl.build(:blueprint_history, project: system.project) }
     platform_outputs '{}'
-    ip_address '127.0.0.1'
+    frontend_address '127.0.0.1'
+    consul_addresses '127.0.0.1'
 
-    before(:create) do
-      Environment.skip_callback :save, :before, :create_or_update_stacks
+    after(:build) do |environment, _evaluator|
+      allow(environment).to receive(:create_or_update_stacks)
+      allow(environment).to receive(:destroy_stacks_in_background)
     end
 
-    after(:create) do
-      Environment.set_callback :save, :before, :create_or_update_stacks, if: -> { status == :PENDING }
+    factory :environment, class: Environment do
+      after(:build) do |environment, evaluator|
+        if evaluator.candidates.blank?
+          environment.candidates = FactoryGirl.build_list(:candidate, 2, environment: environment, project: environment.system.project)
+        end
+      end
     end
   end
 end

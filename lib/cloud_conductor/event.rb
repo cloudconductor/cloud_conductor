@@ -14,18 +14,16 @@
 # limitations under the License.
 module CloudConductor
   class Event
-    TIMEOUT = 1800
-
-    def initialize(host, port = 8500, options = {})
-      @token = options[:token]
-      @client = Consul::Client.new(host, port, options)
+    def initialize(hosts, port = 8500, options = {})
+      @client = Consul::Client.new(hosts, port, options)
     end
 
     def fire(name, payload = {}, filter = {})
+      Log.info "#{name} event will be fire"
       payload.each do |key, value|
         @client.kv.merge key, value
       end
-      @client.event.fire name, @token, filter
+      @client.event.fire name, filter
     end
 
     def sync_fire(name, payload = {}, filter = {})
@@ -33,7 +31,9 @@ module CloudConductor
       wait(event_id)
       result = find(event_id)
 
-      unless result.success?
+      if result.success?
+        Log.info "#{name} event has finished successfully"
+      else
         details = JSON.pretty_generate(JSON.parse(result.refresh!.to_json))
         fail "#{name} event has failed.\n#{details}"
       end
@@ -41,7 +41,7 @@ module CloudConductor
     end
 
     def wait(event_id)
-      Timeout.timeout(TIMEOUT) do
+      Timeout.timeout(CloudConductor::Config.event.timeout) do
         loop do
           result = find(event_id)
           break if result && result.finished?

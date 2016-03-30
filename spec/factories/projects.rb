@@ -9,7 +9,11 @@ FactoryGirl.define do
 
     after(:create) do |project, evaluator|
       unless evaluator.owner.nil?
-        FactoryGirl.create(:assignment, project: project, account: evaluator.owner, role: :administrator)
+        role = project.roles.find do |role|
+          role.name == 'administrator'
+        end || FactoryGirl.create(:role, project: project, name: 'administrator')
+        assignment = FactoryGirl.build(:assignment, project: project, account: evaluator.owner, roles: [role])
+        assignment.save!
       end
     end
   end

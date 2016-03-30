@@ -24,10 +24,12 @@ module CloudConductor
 
       def create_stack(name, template, parameters)
         cloud_formation.stacks.create convert_name(name), template, parameters: convert_parameters(parameters)
+        true
       end
 
       def update_stack(name, template, parameters)
         cloud_formation.stacks[convert_name(name)].update(template: template, parameters: convert_parameters(parameters))
+        true
       rescue => e
         if e.message == 'No updates are to be performed.'
           Log.info "Ignore updating stack(#{name})"
@@ -40,11 +42,15 @@ module CloudConductor
       end
 
       def get_stack_status(name)
-        cloud_formation.stacks[convert_name(name)].status.to_sym
+        stack = cloud_formation.stacks[convert_name(name)]
+        fail "Stack #{name} does not exist" if stack.nil?
+        stack.status.to_sym
       end
 
       def get_stack_events(name)
-        cloud_formation.stacks[convert_name(name)].events.map do |event|
+        stack = cloud_formation.stacks[convert_name(name)]
+        fail "Stack #{name} does not exist" if stack.nil?
+        stack.events.map do |event|
           {
             timestamp: event.timestamp.localtime.iso8601,
             resource_status: event.resource_status,
@@ -114,7 +120,7 @@ module CloudConductor
       end
 
       def convert_name(name)
-        name.gsub('_', '-')
+        name.tr('_', '-')
       end
 
       def convert_parameters(parameters)

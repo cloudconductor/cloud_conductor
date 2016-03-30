@@ -8,7 +8,6 @@ class System < ActiveRecord::Base
   validates :name, presence: true, uniqueness: true
 
   before_save :update_dns, if: -> { primary_environment && domain }
-  before_save :enable_monitoring, if: -> { primary_environment && domain && CloudConductor::Config.zabbix.enabled }
 
   after_rollback do
     primary_environment && primary_environment.update_columns(status: :ERROR)
@@ -16,11 +15,6 @@ class System < ActiveRecord::Base
 
   def update_dns
     dns_client = CloudConductor::DNSClient.new
-    dns_client.update domain, primary_environment.ip_address
-  end
-
-  def enable_monitoring
-    zabbix_client = CloudConductor::ZabbixClient.new
-    zabbix_client.register self
+    dns_client.update domain, primary_environment.frontend_address
   end
 end

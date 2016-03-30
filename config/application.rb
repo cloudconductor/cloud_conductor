@@ -10,7 +10,6 @@ require 'devise/orm/active_record'
 module CloudConductor
   class Application < Rails::Application
     config.autoload_paths += %W(#{config.root}/lib)
-    config.autoload_paths += Dir["#{config.root}/lib/**/"]
 
     config.after_initialize do
       CloudConductor::Config.from_file "#{config.root}/config/config.rb"

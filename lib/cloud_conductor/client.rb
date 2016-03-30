@@ -22,11 +22,14 @@ module CloudConductor
     def initialize(cloud)
       @cloud = cloud
       @type = cloud.type
+      attributes = @cloud.attributes.merge('secret' => @cloud.secret)
       case cloud.type
       when 'aws'
-        @adapter = CloudConductor::Adapters::AWSAdapter.new @cloud.attributes
+        @adapter = CloudConductor::Adapters::AWSAdapter.new attributes
       when 'openstack'
-        @adapter = CloudConductor::Adapters::OpenStackAdapter.new @cloud.attributes
+        @adapter = CloudConductor::Adapters::OpenStackAdapter.new attributes
+      when 'wakame-vdc'
+        @adapter = CloudConductor::Adapters::WakameVdcAdapter.new attributes
       else
         fail "Cannot find #{cloud.type} adapter"
       end
@@ -34,8 +37,10 @@ module CloudConductor
 
     def create_stack(name, pattern, parameters)
       template = ''
-      pattern.clone_repository do |path|
-        template = open(File.expand_path('template.json', path)).read
+      pattern.clone_repository(pattern.url, pattern.revision) do |path|
+        template_path = File.expand_path('template.json', path)
+        return nil unless File.exist?(template_path)
+        template = open(template_path).read
       end
 
       az_list = @adapter.availability_zones
@@ -54,8 +59,10 @@ module CloudConductor
 
     def update_stack(name, pattern, parameters)
       template = ''
-      pattern.clone_repository do |path|
-        template = open(File.expand_path('template.json', path)).read
+      pattern.clone_repository(pattern.url, pattern.revision) do |path|
+        template_path = File.expand_path('template.json', path)
+        return nil unless File.exist?(template_path)
+        template = open(template_path).read
       end
 
       az_list = @adapter.availability_zones

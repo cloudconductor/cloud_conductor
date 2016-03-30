@@ -1,3 +1,5 @@
+require 'validators/exists_id'
+
 module API
   module V1
     class Base < Grape::API
@@ -5,9 +7,6 @@ module API
         super
         subclass.instance_eval do
           helpers API::V1::Helpers
-          version 'v1'
-          format :json
-          default_format :json
 
           before do
             authenticate_account_from_token! unless require_no_authentication
@@ -39,7 +38,10 @@ module API
         end
 
         rescue_from :all do |e|
-          # logger.error()
+          if Rails.env == 'development'
+            Log.error(e)
+            e.backtrace.each { |line| Log.error(line) }
+          end
           error_response(message: "#{e.message}", status: 500)
         end
       end

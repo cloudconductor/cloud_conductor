@@ -17,7 +17,7 @@ module CloudConductor
     describe AbstractAdapter do
       describe '#new' do
         it 'raise exception when instantiate abstract class' do
-          expect { AbstractAdapter.new }.to raise_error
+          expect { AbstractAdapter.new }.to raise_error(RuntimeError)
         end
       end
     end

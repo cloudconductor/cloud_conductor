@@ -63,6 +63,12 @@ module ApiSpecHelper
     end
   end
 
+  shared_examples_for '400 BadRequest' do
+    it 'return 400 and bad request message' do
+      expect(subject.status).to be(400)
+    end
+  end
+
   shared_examples_for '401 Unauthorized' do
     it 'returns 401 and unauthorized message' do
       expect(subject.body).to match_json_expression(error: 'Requires valid auth_token.')
@@ -79,8 +85,23 @@ module ApiSpecHelper
 
   shared_examples_for '404 Not Found' do
     it 'returns 404 and not found message' do
-      expect(subject.body).to match_json_expression(error: /Couldn't find \w+ with 'id'=\d+/)
       expect(subject.status).to be(404)
+    end
+  end
+
+  shared_examples_for 'create audit with project_id' do
+    it 'create audit and project_id is not nil' do
+      subject
+      expect(Audit.count).to be(1)
+      expect(Audit.last.project_id).not_to be_nil
+    end
+  end
+
+  shared_examples_for 'create audit without project_id' do
+    it 'create audit and project_id is nil' do
+      subject
+      expect(Audit.count).to be(1)
+      expect(Audit.last.project_id).to be_nil
     end
   end
 

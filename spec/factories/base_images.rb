@@ -1,8 +1,9 @@
 FactoryGirl.define do
   factory :base_image, class: BaseImage do
-    cloud { create(:cloud, :aws) }
-    os 'CentOS-6.5'
-    ssh_username 'ec2-user'
+    cloud { build(:cloud, :aws) }
+    platform 'centos'
+    sequence(:platform_version, &:to_s)
+    ssh_username 'centos'
     source_image SecureRandom.uuid
   end
 end

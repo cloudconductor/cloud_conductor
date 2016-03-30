@@ -8,7 +8,7 @@ describe API do
     describe 'GET /base_images' do
       let(:method) { 'get' }
       let(:url) { '/api/v1/base_images' }
-      let(:result) { format_iso8601([base_image]) }
+      let(:result) { format_iso8601(cloud.base_images) }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -29,6 +29,108 @@ describe API do
 
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
+      end
+
+      context 'with cloud' do
+        let(:params) { { cloud_id: base_image.cloud.id } }
+        let(:result) { format_iso8601(cloud.base_images) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists cloud_id' do
+          let(:params) { { cloud_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
+      end
+
+      context 'with project' do
+        let(:params) { { project_id: base_image.project.id } }
+        let(:result) { format_iso8601(cloud.base_images) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          let(:result) { [] }
+          it_behaves_like('200 OK')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('200 OK')
+        end
+
+        context 'in not exists project_id' do
+          let(:params) { { project_id: 9999 } }
+          let(:result) { [] }
+
+          context 'not_logged_in' do
+            it_behaves_like('401 Unauthorized')
+          end
+
+          context 'normal_account', normal: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'administrator', admin: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_owner', project_owner: true do
+            it_behaves_like('200 OK')
+          end
+
+          context 'project_operator', project_operator: true do
+            it_behaves_like('200 OK')
+          end
+        end
       end
     end
 
@@ -66,7 +168,7 @@ describe API do
     describe 'POST /base_images' do
       let(:method) { 'post' }
       let(:url) { '/api/v1/base_images' }
-      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id) }
+      let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: cloud.id, platform_version: '6.5') }
       let(:result) do
         params.merge(
           'id' => Fixnum,
@@ -85,14 +187,41 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('201 Created')
+        it_behaves_like('create audit with project_id')
+      end
+
+      context 'in not existing coloud_id' do
+        let(:params) { FactoryGirl.attributes_for(:base_image, cloud_id: 9999) }
+
+        context 'not_logged_in' do
+          it_behaves_like('401 Unauthorized')
+        end
+
+        context 'normal_account', normal: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'administrator', admin: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_owner', project_owner: true do
+          it_behaves_like('400 BadRequest')
+        end
+
+        context 'project_operator', project_operator: true do
+          it_behaves_like('400 BadRequest')
+        end
       end
     end
 
@@ -101,7 +230,7 @@ describe API do
       let(:url) { "/api/v1/base_images/#{base_image.id}" }
       let(:params) do
         {
-          'os' => 'CentOS-7.0',
+          'platform' => 'CentOS',
           'ssh_username' => 'root',
           'source_image' => SecureRandom.uuid
         }
@@ -128,21 +257,23 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('200 OK')
+        it_behaves_like('create audit with project_id')
       end
     end
 
     describe 'DELETE /base_images/:id' do
       let(:method) { 'delete' }
-      let(:url) { "/api/v1/base_images/#{new_base_image.id}" }
-      let(:new_base_image) { FactoryGirl.create(:base_image, cloud_id: cloud.id) }
+      let(:url) { "/api/v1/base_images/#{base_image.id}" }
 
       context 'not_logged_in' do
         it_behaves_like('401 Unauthorized')
@@ -159,14 +290,17 @@ describe API do
 
       context 'administrator', admin: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_owner', project_owner: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
 
       context 'project_operator', project_operator: true do
         it_behaves_like('204 No Content')
+        it_behaves_like('create audit with project_id')
       end
     end
   end

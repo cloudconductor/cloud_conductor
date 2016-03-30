@@ -21,6 +21,8 @@ gem 'mixlib-log'
 
 gem 'aws-sdk', '~>1.0'
 gem 'fog'
+gem 'activeresource'
+gem 'ruby-hijiki'
 gem 'zbxapi', '0.3.8'
 
 gem 'rb-readline'
@@ -35,6 +37,7 @@ group :development, :test do
   gem 'pry-doc'
   gem 'pry-stack_explorer'
   gem 'pry-rails'
+  gem 'ruby_terraform'
 end
 
 group :development do

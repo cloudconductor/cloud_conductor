@@ -1,10 +1,10 @@
 class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   belongs_to :environment
-  belongs_to :pattern
+  belongs_to :pattern_snapshot
   belongs_to :cloud
 
   validates :name, presence: true, uniqueness: { scope: :cloud_id }
-  validates_presence_of :environment, :pattern, :cloud
+  validates_presence_of :environment, :pattern_snapshot, :cloud
 
   validates_each :template_parameters, :parameters do |record, attr, value|
     begin
@@ -15,7 +15,9 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   validate do
-    errors.add(:pattern, 'can\'t use pattern that contains uncompleted image') if pattern && pattern.status != :CREATE_COMPLETE
+    if pattern_snapshot && pattern_snapshot.status != :CREATE_COMPLETE
+      errors.add(:pattern_snapshot, 'can\'t use pattern_snapshot that contains uncompleted image')
+    end
   end
 
   scope :in_progress, -> { where(status: :PROGRESS) }
@@ -38,13 +40,19 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def update_name
-    return unless environment && pattern
+    return unless environment && pattern_snapshot
     system = environment.system
-    self.name = "#{system.name}-#{environment.id}-#{pattern.name}"
+    self.name = "#{system.name}-#{environment.id}-#{pattern_snapshot.name}"
   end
 
   def create_stack
-    client.create_stack(name, pattern, generate_parameters)
+    if client.create_stack(name, pattern_snapshot, generate_parameters)
+      self.status = :PROGRESS
+    else
+      self.status = :CREATE_COMPLETE
+    end
+
+    Log.info("Create stack on #{cloud.name} ... SUCCESS")
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -59,13 +67,16 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
     Log.warn("Create stack on #{cloud.name} ... FAILED")
     Log.warn "Unexpected error has occurred while creating stack(#{name}) on #{cloud.name}"
     Log.warn(e)
-  else
-    self.status = :PROGRESS
-    Log.info("Create stack on #{cloud.name} ... SUCCESS")
   end
 
   def update_stack
-    client.update_stack name, pattern, generate_parameters
+    if client.update_stack name, pattern_snapshot, generate_parameters
+      self.status = :PROGRESS
+    else
+      self.status = :CREATE_COMPLETE
+    end
+
+    Log.info("Update stack on #{cloud.name} ... SUCCESS")
   rescue Excon::Errors::SocketError
     self.status = :ERROR
     Log.warn "Failed to connect to #{cloud.name}"
@@ -75,14 +86,11 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   rescue Net::OpenTimeout
     self.status = :ERROR
     Log.warn "Timeout has occurred while creating stack(#{name}) on #{cloud.name}"
-  else
-    self.status = :PROGRESS
-    Log.info("Update stack on #{cloud.name} ... SUCCESS")
   end
 
   def generate_parameters
     common_parameters = {}
-    common_parameters = JSON.parse(environment.platform_outputs, symbolize_names: true) if pattern.type == 'optional'
+    common_parameters = JSON.parse(environment.platform_outputs, symbolize_names: true) if pattern_snapshot.type == 'optional'
     stack_parameters = JSON.parse(template_parameters, symbolize_names: true)
     common_parameters.deep_merge(stack_parameters)
   end
@@ -95,11 +103,11 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
   end
 
   def platform?
-    pattern && pattern.type == 'platform'
+    pattern_snapshot && pattern_snapshot.type == 'platform'
   end
 
   def optional?
-    pattern && pattern.type == 'optional'
+    pattern_snapshot && pattern_snapshot.type == 'optional'
   end
 
   def exists_on_cloud?
@@ -149,12 +157,7 @@ class Stack < ActiveRecord::Base # rubocop:disable ClassLength
 
   def payload
     payload = {}
-    payload["cloudconductor/patterns/#{pattern.name}/attributes"] = JSON.parse(parameters, symbolize_names: true)
-    payload["cloudconductor/patterns/#{pattern.name}/config"] = {
-      cloudconductor: {
-        backup_restore: JSON.parse(pattern.backup_config, symbolize_names: true)
-      }
-    }
+    payload["cloudconductor/patterns/#{pattern_snapshot.name}/attributes"] = JSON.parse(parameters, symbolize_names: true)
 
     payload
   end
