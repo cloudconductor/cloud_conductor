@@ -5,13 +5,6 @@ GIT
     cfn_converter (0.1.0)
       activesupport (~> 4.1)
 
-GIT
-  remote: https://github.com/cloudconductor/ruby_terraform.git
-  revision: ef551f0dd86960807e818cadb4d715a5dcae0dfa
-  branch: develop
-  specs:
-    ruby_terraform (0.1.0)
-
 GEM
   remote: https://rubygems.org/
   specs:
@@ -333,6 +326,7 @@ GEM
       tins (<= 1.6.0)
     ruby-hijiki (0.0.3)
     ruby-progressbar (1.7.5)
+    ruby_terraform (0.1.0)
     shellany (0.0.1)
     simplecov (0.9.2)
       docile (~> 1.1.0)
@@ -415,7 +409,7 @@ DEPENDENCIES
   rspec-rails
   rspec_junit_formatter
   ruby-hijiki
-  ruby_terraform!
+  ruby_terraform
   simplecov
   simplecov-rcov
   spring
