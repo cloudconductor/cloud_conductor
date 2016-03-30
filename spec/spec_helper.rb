@@ -11,6 +11,11 @@ Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 FactoryGirl.definition_file_paths = [::File.expand_path('../factories', __FILE__)]
 ActiveRecord::Migration.maintain_test_schema!
 
+SimpleCov.start do
+  coverage_dir 'tmp/coverage'
+  formatter SimpleCov::Formatter::RcovFormatter
+end
+
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
   config.example_status_persistence_file_path = './tmp/examples.txt'
