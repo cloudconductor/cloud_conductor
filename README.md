@@ -142,6 +142,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 
+Libraries We Use
+=====================
+* ruby-hcl https://github.com/sikula/ruby-hcl
+ * Copyright (c) 2015 sikula under the ([MIT LICENCE](https://raw.githubusercontent.com/sikula/ruby-hcl/f143e20b1d5ed04bac03a363d472508d0f556a83/LICENSE))
+
 Contact
 ========
 
