@@ -86,7 +86,6 @@ cp config/config.rb.smp config/config.rb
 vi config/config.rb
 ----------
 Edit configurations below.
-  cloudconductor.url
   dns.service
   dns.access_key, dns.secret_key or dns.server, dns.key_file
 
