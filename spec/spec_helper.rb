@@ -2,6 +2,12 @@ require 'rubygems'
 require 'simplecov'
 require 'simplecov-rcov'
 
+SimpleCov.start do
+  coverage_dir 'tmp/coverage'
+  formatter SimpleCov::Formatter::RcovFormatter
+  add_filter '/spec'
+end
+
 ENV['RAILS_ENV'] ||= 'test'
 require ::File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
@@ -10,11 +16,6 @@ require 'pry'
 Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 FactoryGirl.definition_file_paths = [::File.expand_path('../factories', __FILE__)]
 ActiveRecord::Migration.maintain_test_schema!
-
-SimpleCov.start do
-  coverage_dir 'tmp/coverage'
-  formatter SimpleCov::Formatter::RcovFormatter
-end
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
