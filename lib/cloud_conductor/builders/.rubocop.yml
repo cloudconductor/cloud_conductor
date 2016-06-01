@@ -1,4 +1,4 @@
 inherit_from: ../../../.rubocop.yml
 
 ClassLength:
-  Max: 130
+  Max: 150
