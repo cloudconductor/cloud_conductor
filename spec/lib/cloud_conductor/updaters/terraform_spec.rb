@@ -414,8 +414,8 @@ module CloudConductor
 
       describe '#merge_default_mapping' do
         before do
-          @neutron = double(:neutron, networks: [])
-          allow(Fog::Network).to receive(:new).and_return(@neutron)
+          network = double(:network, id: '11111111-1111-1111-1111-111111111111')
+          allow(@updater).to receive(:default_gateway).and_return(network)
         end
 
         it 'return nil without exception when mapping is nil' do
@@ -423,18 +423,27 @@ module CloudConductor
         end
 
         it 'return without change when gateway_id is already specified' do
-          variables = { gateway_id: { type: 'static', value: '00000000-0000-0000-0000-000000000000' } }
-          result = @updater.send(:merge_default_mapping, cloud_openstack, variables)
+          mapping = { gateway_id: { type: 'static', value: '00000000-0000-0000-0000-000000000000' } }
+          result = @updater.send(:merge_default_mapping, cloud_openstack, mapping)
           expect(result[:gateway_id][:value]).to eq('00000000-0000-0000-0000-000000000000')
         end
 
         it 'update gateway_id by default external network via neutron' do
+          mapping = { gateway_id: { type: 'static', value: 'auto' } }
+          result = @updater.send(:merge_default_mapping, cloud_openstack, mapping)
+          expect(result[:gateway_id][:value]).to eq('11111111-1111-1111-1111-111111111111')
+        end
+      end
+
+      describe '#default_gateway' do
+        it 'return network' do
+          @neutron = double(:neutron, networks: [])
+          allow(Fog::Network).to receive(:new).and_return(@neutron)
+
           network = double(:network, id: '11111111-1111-1111-1111-111111111111', router_external: true)
           allow(@neutron).to receive(:networks).and_return([network])
 
-          variables = { gateway_id: { type: 'static', value: 'auto' } }
-          result = @updater.send(:merge_default_mapping, cloud_openstack, variables)
-          expect(result[:gateway_id][:value]).to eq('11111111-1111-1111-1111-111111111111')
+          expect(@updater.send(:default_gateway, cloud_openstack)).to eq(network)
         end
       end
     end
