@@ -392,6 +392,10 @@ module CloudConductor
           allow(Fog::Network).to receive(:new).and_return(@neutron)
         end
 
+        it 'return nil without exception when mapping is nil' do
+          @builder.send(:merge_default_mapping, cloud_openstack, nil)
+        end
+
         it 'return without change when gateway_id is already specified' do
           mapping = { gateway_id: { type: 'static', value: '00000000-0000-0000-0000-000000000000' } }
           result = @builder.send(:merge_default_mapping, cloud_openstack, mapping)

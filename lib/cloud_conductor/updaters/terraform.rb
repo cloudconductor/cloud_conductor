@@ -169,7 +169,7 @@ module CloudConductor
       def merge_default_mapping(cloud, mapping)
         return mapping unless cloud.type == 'openstack'
 
-        return mapping unless mapping[:gateway_id]
+        return mapping unless mapping && mapping[:gateway_id]
         return mapping unless mapping[:gateway_id][:type] == 'static' && mapping[:gateway_id][:value] == 'auto'
 
         neutron = ::Fog::Network.new(
