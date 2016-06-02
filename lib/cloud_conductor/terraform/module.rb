@@ -10,7 +10,7 @@ module CloudConductor
         @snapshot = snapshot
         @cloned_path = clone_repository(snapshot.url, snapshot.revision)
         @source = "#{@cloned_path}/templates/#{@cloud.type}"
-        @mappings = mappings
+        @mappings = mappings || {}
 
         load_metadata("#{@cloned_path}/metadata.yml")
         template = load_templates("#{@source}/*.tf")

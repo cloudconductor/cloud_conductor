@@ -168,9 +168,14 @@ module CloudConductor
       def merge_default_mapping(cloud, mapping)
         return mapping unless cloud.type == 'openstack'
 
-        return mapping unless mapping[:gateway_id]
+        return mapping unless mapping && mapping[:gateway_id]
         return mapping unless mapping[:gateway_id][:type] == 'static' && mapping[:gateway_id][:value] == 'auto'
 
+        mapping[:gateway_id][:value] = default_gateway(cloud).id
+        mapping
+      end
+
+      def default_gateway(cloud)
         neutron = ::Fog::Network.new(
           provider: :OpenStack,
           openstack_auth_url: cloud.entry_point + 'v2.0/tokens',
@@ -181,8 +186,7 @@ module CloudConductor
 
         network = neutron.networks.find(&:router_external)
         fail "#{cloud.name} doesn't have external network" unless network
-        mapping[:gateway_id][:value] = network.id
-        mapping
+        network
       end
     end
   end

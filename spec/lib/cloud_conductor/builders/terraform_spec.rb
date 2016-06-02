@@ -388,8 +388,12 @@ module CloudConductor
 
       describe '#merge_default_mapping' do
         before do
-          @neutron = double(:neutron, networks: [])
-          allow(Fog::Network).to receive(:new).and_return(@neutron)
+          network = double(:network, id: '11111111-1111-1111-1111-111111111111')
+          allow(@builder).to receive(:default_gateway).and_return(network)
+        end
+
+        it 'return nil without exception when mapping is nil' do
+          @builder.send(:merge_default_mapping, cloud_openstack, nil)
         end
 
         it 'return without change when gateway_id is already specified' do
@@ -399,12 +403,21 @@ module CloudConductor
         end
 
         it 'update gateway_id by default external network via neutron' do
-          network = double(:network, id: '11111111-1111-1111-1111-111111111111', router_external: true)
-          allow(@neutron).to receive(:networks).and_return([network])
-
           mapping = { gateway_id: { type: 'static', value: 'auto' } }
           result = @builder.send(:merge_default_mapping, cloud_openstack, mapping)
           expect(result[:gateway_id][:value]).to eq('11111111-1111-1111-1111-111111111111')
+        end
+      end
+
+      describe '#default_gateway' do
+        it 'return network' do
+          @neutron = double(:neutron, networks: [])
+          allow(Fog::Network).to receive(:new).and_return(@neutron)
+
+          network = double(:network, id: '11111111-1111-1111-1111-111111111111', router_external: true)
+          allow(@neutron).to receive(:networks).and_return([network])
+
+          expect(@builder.send(:default_gateway, cloud_openstack)).to eq(network)
         end
       end
     end
