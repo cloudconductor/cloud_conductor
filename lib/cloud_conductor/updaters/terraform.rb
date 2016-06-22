@@ -36,7 +36,8 @@ module CloudConductor
         end
         parent = CloudConductor::Terraform::Parent.new(cloud)
         environment.blueprint_history.pattern_snapshots.each do |snapshot|
-          parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mappings[snapshot.name])
+          mapping = merge_default_mapping(cloud, mappings[snapshot.name])
+          parent.modules << CloudConductor::Terraform::Module.new(cloud, snapshot, mapping)
         end
 
         FileUtils.mkdir_p template_directory unless Dir.exist? template_directory
@@ -163,6 +164,30 @@ module CloudConductor
         end
         results[:ssh_username] = target_images.first.base_image.ssh_username unless target_images.empty?
         results
+      end
+
+      def merge_default_mapping(cloud, mapping)
+        return mapping unless cloud.type == 'openstack'
+
+        return mapping unless mapping && mapping[:gateway_id]
+        return mapping unless mapping[:gateway_id][:type] == 'static' && mapping[:gateway_id][:value] == 'auto'
+
+        mapping[:gateway_id][:value] = default_gateway(cloud).id
+        mapping
+      end
+
+      def default_gateway(cloud)
+        neutron = ::Fog::Network.new(
+          provider: :OpenStack,
+          openstack_auth_url: cloud.entry_point + 'v2.0/tokens',
+          openstack_api_key: cloud.secret,
+          openstack_username: cloud.key,
+          openstack_tenant: cloud.tenant_name
+        )
+
+        network = neutron.networks.find(&:router_external)
+        fail "#{cloud.name} doesn't have external network" unless network
+        network
       end
     end
   end

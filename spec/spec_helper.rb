@@ -2,6 +2,13 @@ require 'rubygems'
 require 'simplecov'
 require 'simplecov-rcov'
 
+SimpleCov.start do
+  coverage_dir 'tmp/coverage'
+  formatter SimpleCov::Formatter::RcovFormatter
+  add_filter '/spec'
+  add_filter '/vendor'
+end
+
 ENV['RAILS_ENV'] ||= 'test'
 require ::File.expand_path('../../config/environment', __FILE__)
 require 'rspec/rails'
