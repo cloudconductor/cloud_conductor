@@ -1,6 +1,10 @@
 CHANGELOG
 =========
 
+## version 2.0.1 (2016/06/22)
+
+  - Decide external network on openstack automatically.
+
 ## version 2.0.0 (2016/03/30)
 
   - Support packer version 0.9.0
